@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "library_name": "WatcherDB V3.3 Knowledge Base (Local)",
   "created": "2026-04-28",
-  "updated": "2026-06-02",
+  "updated": "2026-09-03",
   "owner_specialist": "core-librarian",
   "curator_micro_agent": "v33-knowledge-base-curator",
   "central_library_ref": "C:\\Users\\ue_e-snetto\\.nestor-library\\",
@@ -34,7 +34,13 @@
           "sensitivity": "internal-only",
           "size_bytes": 6356,
           "checksum_sha256": "a28fb72dd6a40c1e64ba5bf15814edcdc2f98d9a6d652d7c85394eece999f589",
-          "gates_passed": ["dedup", "license", "quality", "sensitivity", "namespace"],
+          "gates_passed": [
+            "dedup",
+            "license",
+            "quality",
+            "sensitivity",
+            "namespace"
+          ],
           "description": "Spec V3.3 local de thresholds de disk space per-categoria de drive (System 25/15, Log 20/10, Data 20/10, Archive 15/5). Smart Defaults Camada 2 shipped Wave T 2026-06-02. Inclui razao por categoria, implementation paths (V1 view + V3.3 portal Surfaces A+C + V6), edge cases AGG VIEW, anti-pattern per-DB matrix descartado.",
           "cross_ref": "~/.nestor-library/watcherdb-family/architecture/disk_thresholds.md"
         }
@@ -75,7 +81,8 @@
           ],
           "license": "internal",
           "added": "2026-04-28",
-          "checksum_sha256": "b68b1e0934df0e37bfb761826aeabcecff37248bed253550c335dada96cf1f7a"
+          "checksum_sha256": "7963b2abff7dfcda135c9b9c8c9a96009d2e263e9527736bf5840ea8744fe196",
+          "last_validated": "2026-09-03"
         }
       ]
     },
@@ -96,6 +103,34 @@
           "license": "internal",
           "added": "2026-04-28",
           "checksum_sha256": "a6aee7b51f423e1c9cc26f036cc006b01742b04946f9338ae250692aa8fedcbb"
+        },
+        {
+          "id": "domain-i18n-glossary-v34",
+          "path": "domain/i18n_glossary.md",
+          "title": "Glossário i18n — WatcherDB V3.4",
+          "tags": [
+            "i18n",
+            "glossary",
+            "locales",
+            "en-default",
+            "pt-pt",
+            "pt-br",
+            "es",
+            "terminology",
+            "acentuacao"
+          ],
+          "license": "internal",
+          "doc_type": "domain-glossary",
+          "added": "2026-09-03",
+          "last_validated": "2026-09-03",
+          "ingested_by": "orquestrador (script I18N_PTBR_PASSO1_apply.py, commit 5612d68; editado ed4e514)",
+          "owner_specialist": "v33-i18n-linguist",
+          "sensitivity": "internal-only",
+          "size_bytes": 2597,
+          "checksum_sha256": "e67a5654cd7143df7ecef17a1415200a4d5436db7a4a6b56d6efdfd874b9e890",
+          "gates_passed": [],
+          "gates_note": "pendente: core-librarian deve correr os 5 gates (dedup, license, quality, sensitivity, namespace)",
+          "description": "Glossário de termos i18n para en/pt/pt-BR/es — termos que ficam em inglês, pares pt-PT↔pt-BR e regra de acentuação rigorosa; fonte para v33-i18n-linguist e v33-i18n-coverage."
         }
       ]
     },
@@ -125,10 +160,10 @@
     }
   },
   "stats": {
-    "total_docs": 5,
+    "total_docs": 6,
     "seed_docs": 4,
     "promoted_from_docs_dir": 0,
     "stale_threshold_days": 180
   },
-  "notes": "Bootstrap inicial — Fase 1. Checksums recalculados em 2026-04-28 via v33-knowledge-base-curator smoke test (Fase 3). Drift check: PASS (manifest = filesystem)."
+  "notes": "Bootstrap inicial — Fase 1. Checksums recalculados em 2026-04-28 via v33-knowledge-base-curator smoke test (Fase 3). Drift check: PASS (manifest = filesystem). 2026-09-03: glossário i18n registado (gates pendentes) + checksum AD rotation recalculado; drift aberto: 4 docs em architecture/ sem entrada (onboarding core-librarian)."
 }
