@@ -103,7 +103,7 @@ Para qualquer feature nova:
 
 - SPA `watcherdb_portal.html` (vanilla JS, Chart.js)
 - Modal system com `data-admin-gated`
-- PT-PT (default, `pt.json`), PT-BR (`pt-BR.json`, overlay esparso: só chaves que diferem de pt-PT; fallback por chave), EN (en-US), ES (neutro). Ground truth: `static/js/watcherdb_i18n_v2.js` SUPPORTED_LANGS + FALLBACK_CHAIN. Glossário: `knowledge_base/domain/i18n_glossary.md`. Decisão owner 2026-09-03.
+- **EN (en-US) é o idioma por omissão** (decisão owner 2026-09-03; quem já escolheu mantém). PT-PT (`pt.json`, ground truth de chaves), PT-BR (`pt-BR.json`, overlay esparso: só chaves que diferem de pt-PT; fallback por chave), ES (neutro). Ground truth: `static/js/watcherdb_i18n_v2.js` SUPPORTED_LANGS + FALLBACK_CHAIN. Glossário: `knowledge_base/domain/i18n_glossary.md`. Decisão owner 2026-09-03.
 
 ### Thresholds configuráveis (Fase 1 — global-only)
 

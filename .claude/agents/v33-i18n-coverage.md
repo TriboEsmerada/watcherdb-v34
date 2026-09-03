@@ -13,7 +13,7 @@ model: sonnet
 Validar cobertura i18n triplo (PT / EN / ES) num template HTML alterado,
 flagging hardcoded strings e chaves em falta.
 
-**Ground truth runtime:** `static/js/watcherdb_i18n_v2.js` (`DEFAULT_LANG = 'pt'`, `SUPPORTED_LANGS = ['pt', 'pt-BR', 'en', 'es']`, `FALLBACK_CHAIN` por chave). Historial: spec pt-PT/pt-BR/en-US foi aspiracional até 2026-06-02 (Wave U drift fix); em 2026-09-03 o owner decidiu pt.json = pt-PT pós-AO90 e acrescentou `pt-BR.json` como **overlay esparso** (só chaves que diferem de pt; o resto cai em pt). Locales obrigatórios continuam pt/en/es.
+**Ground truth runtime:** `static/js/watcherdb_i18n_v2.js` (`DEFAULT_LANG = 'en'` desde 2026-09-03 — decisão owner; `SUPPORTED_LANGS = ['pt', 'pt-BR', 'en', 'es']`, `FALLBACK_CHAIN` por chave; `pt.json` continua o ground truth de chaves). Historial: spec pt-PT/pt-BR/en-US foi aspiracional até 2026-06-02 (Wave U drift fix); em 2026-09-03 o owner decidiu pt.json = pt-PT pós-AO90 e acrescentou `pt-BR.json` como **overlay esparso** (só chaves que diferem de pt; o resto cai em pt). Locales obrigatórios continuam pt/en/es.
 
 ## Inputs esperados
 

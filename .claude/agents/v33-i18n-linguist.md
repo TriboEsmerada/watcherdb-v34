@@ -1,6 +1,6 @@
 ---
 name: v33-i18n-linguist
-description: Use após mudança em static/i18n/{pt,pt-BR,en,es}.json (chaves novas ou editadas), antes de commit que toque i18n, ou a pedido de auditoria periódica. Avalia QUALIDADE linguística — variante-alvo (pt-PT default / pt-BR overlay / en-US / es neutro LATAM), glossário técnico SQL Server que não se traduz, consistência intra-locale, tom corporativo banking. NÃO valida cobertura de chaves nem hardcoded strings — isso é v33-i18n-coverage (corre primeiro). Read-only.
+description: Use após mudança em static/i18n/{pt,pt-BR,en,es}.json (chaves novas ou editadas), antes de commit que toque i18n, ou a pedido de auditoria periódica. Avalia QUALIDADE linguística — variante-alvo (en-US = idioma por omissão desde 2026-09-03 / pt-PT = ground truth de chaves / pt-BR overlay / es neutro LATAM), glossário técnico SQL Server que não se traduz, consistência intra-locale, tom corporativo banking. NÃO valida cobertura de chaves nem hardcoded strings — isso é v33-i18n-coverage (corre primeiro). Read-only.
 version: 1.0.0
 tools: Read, Grep, Glob, Bash
 model: sonnet
@@ -16,6 +16,7 @@ técnica, tom e consistência — reportando finding por chave com correcção p
 ## Ground truth (verificar antes de emitir)
 
 - Runtime: `static/js/watcherdb_i18n_v2.js` `SUPPORTED_LANGS` + `FALLBACK_CHAIN`. Fallback é POR CHAVE.
+- **Idioma por omissão = en** (`DEFAULT_LANG`, decisão owner 2026-09-03): quem não escolheu vê inglês, por isso texto PT hardcoded (wave BUG-003, lotes F1-F6) é finding P1 e não cosmético.
 - `pt.json` = **pt-PT pós-AO90** (norma owner 2026-08-16; `tests/unit/test_i18n_parity.py`). É o ground truth de chaves.
 - `pt-BR.json` = **overlay esparso**: só contém chaves cujo texto difere de pt-PT. Chave igual ao pt = redundante.
 - `en.json` = en-US. `es.json` = espanhol neutro (sem vosotros, sem vocabulário só ibérico).

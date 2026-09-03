@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Inglês passa a idioma por omissão do portal** (decisão owner 03/09). Aplica-se a quem
+  ainda não escolheu idioma; a preferência guardada (`watcherdb_lang`) continua a mandar.
+  `pt.json` mantém-se como ground truth de chaves (paridade testada) e o fallback en → pt
+  mantém-se, pelo que uma chave em falta em inglês mostra português, nunca a chave crua.
+  `<html lang>` do portal passa a `en`. [tier: Std]
+
 - **i18n lote F1 (wave BUG-003): dashboard KPI e modais de backup/integridade deixam de ter
   texto português hardcoded** (pedido owner 03/09 ao ver a modal em PT-BR: "se esse tem os outros
   devem estar assim tbm"). ~110 strings dos cartões `_advRow`/`_advCard`, dos cartões das modais

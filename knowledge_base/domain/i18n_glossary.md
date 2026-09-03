@@ -1,7 +1,7 @@
 # Glossário i18n — WatcherDB V3.4
 
 Fonte para `v33-i18n-linguist` e `v33-i18n-coverage`. Decisões do owner 2026-09-03:
-`pt.json` = pt-PT pós-AO90 (default); `pt-BR.json` = overlay esparso (só o que difere);
+`en.json` = idioma por omissão (decisão owner 2026-09-03); `pt.json` = pt-PT pós-AO90 e ground truth de chaves; `pt-BR.json` = overlay esparso (só o que difere);
 `en.json` = en-US; `es.json` = espanhol neutro (sem vosotros, sem léxico só ibérico).
 Acentuação rigorosa em pt / pt-BR / es é exigência explícita (finding P1 quando falta).
 

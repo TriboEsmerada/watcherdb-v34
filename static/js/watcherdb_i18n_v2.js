@@ -10,7 +10,7 @@
  * - data-i18n attributes: declarative translation
  * - Persistence: localStorage
  *
- * Supports: PT-PT (default, pt.json), PT-BR (pt-BR.json = overlay esparso com fallback por chave para pt), EN, ES
+ * Supports: EN (default), PT-PT (pt.json = ground truth de chaves), PT-BR (pt-BR.json = overlay esparso com fallback por chave para pt), ES
  *
  * Usage:
  *   t('kpi.instances_ok')                        → simple translation
@@ -29,7 +29,7 @@
     // ========================================
     // CONFIGURATION
     // ========================================
-    const DEFAULT_LANG = 'pt';
+    const DEFAULT_LANG = 'en';   // decisao owner 2026-09-03: ingles por omissao; pt.json continua ground truth de chaves
     const SUPPORTED_LANGS = ['pt', 'pt-BR', 'en', 'es'];
     const FALLBACK_CHAIN = {
         pt: ['pt'],
