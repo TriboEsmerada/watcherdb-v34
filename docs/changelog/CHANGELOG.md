@@ -9,6 +9,17 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **i18n lote F1 (wave BUG-003): dashboard KPI e modais de backup/integridade deixam de ter
+  texto português hardcoded** (pedido owner 03/09 ao ver a modal em PT-BR: "se esse tem os outros
+  devem estar assim tbm"). ~110 strings dos cartões `_advRow`/`_advCard`, dos cartões das modais
+  (Último, Tipo, Falhas, Veredicto, CHECKDB, solução recomendada…), das acções de clique e das
+  linhas de resumo/reconciliação passam a chaves `kpi_adv.*` (novas, 4 locales) ou a chaves já
+  existentes (`modal.*`, `kpi_report.*`, `kpi_modal.*`). Helper `_kpiTp` para placeholders `{n}`.
+  Acentuação corrigida em todos os fallbacks; "Outros falhou" → "Outros falharam"; "accionáveis"
+  → "acionáveis" (AO90). Lotes seguintes (F2 títulos dos cartões principais, F3 ajudas "?", F4
+  acentos na documentação dos KPIs, F5 relatórios, F6 diagnósticos) planeados pelo
+  frontend-specialist. [tier: Std]
+
 - **Selector de idioma em drill-down no header** (pedido owner 03/09; parecer
   frontend-specialist). O botão que rodava PT → PT-BR → EN → ES em ciclo dá lugar ao
   dropdown do próprio motor (`WatcherI18N.createLanguageSelector`, CSS já ligado), com

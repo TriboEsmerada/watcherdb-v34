@@ -34868,6 +34868,7 @@
         // Reutiliza KPI_METADATA (getValue/getEnvBreakdown/kpiType/modalTitle) -> ZERO campos hardcoded.
         // i18n via t() (motor watcherdb_i18n_v2). Dados reais de window.dashboardData. Nunca dados fake.
         function _kpiT(key, fb) { try { const v = (typeof t === 'function') ? t(key) : null; return (v && v !== key) ? v : fb; } catch (e) { return fb; } }
+        function _kpiTp(key, fb, p) { let s = _kpiT(key, fb); Object.keys(p || {}).forEach(k => { s = s.split('{' + k + '}').join(p[k]); }); return s; }  // placeholders {n} (lote F1 2026-09-03)
         function _kpiEsc(s) { try { return (typeof escapeHtml === 'function') ? escapeHtml(String(s)) : String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); } catch (e) { return String(s); } }
         function _kpiDefVal(id, data) {
             // 2026-07-25 (owner, opcao B): pseudo-id sem card proprio -- P4 (CHECKDB
@@ -36036,11 +36037,11 @@
             const clkH = { cat: 'kpiAdvToggleCat', env: 'kpiAdvToggleEnv', sev: 'kpiAdvSetSev' };
             const RC = {};
             const add = (key, html) => { RC[key] = _show(key) ? html : ''; };
-            add('availability', _advCard('fa-server', 'Disponibilidade', 'Estado das instancias do ambiente',
+            add('availability', _advCard('fa-server', _kpiT('kpi_report.cat_availability', 'Disponibilidade'), _kpiT('kpi_adv.availability_card_subtitle', 'Estado das instâncias do ambiente'),
                 // 2026-08-03 (owner): hero "100%" removido — redundante com as rows
                 // Online/Offline; o resumo executivo ja mostra a % de disponibilidade.
                 `<div class="kpiadv-list">` +
-                _advRow(C.ok, 'Online', online, '', 'instance-availability', 'Instances OK') + _advRow(off > 0 ? C.crit : C.gray, 'Offline', off, off > 0 ? 'critico' : '', 'instance-availability', 'Instances Off') +
+                _advRow(C.ok, 'Online', online, '', 'instance-availability', _kpiT('kpi_adv.instances_ok_modal_title', 'Instâncias OK')) + _advRow(off > 0 ? C.crit : C.gray, 'Offline', off, off > 0 ? _kpiT('kpi_adv.badge_critical', 'crítico') : '', 'instance-availability', _kpiT('kpi_adv.instances_off_modal_title', 'Instâncias Offline')) +
                 // 2026-07-19: rows do antigo card "Servicos & Servidores" fundidas aqui
                 // (semanticamente e' disponibilidade; liberta 1 slot na grelha de baixo
                 // para o card Integridade fechar 4+4 — feedback owner: card orfao feio)
@@ -36051,28 +36052,28 @@
                 // FIND-20260811-103: o drill abria 'sql-services-down' (SERVER_OFFLINE_
                 // GROUPED_VIEW, Diagnosis='sql_down') — fonte DIFERENTE da que o card
                 // conta (SERVICE_STATUS_AGG_VIEW). 'service-status' le a mesma view.
-                _advRow(ev(ss, 'down_count') > 0 ? C.crit : C.ok, 'Instancias c/ servicos em baixo', ev(ss, 'down_count'), '', 'service-status', 'SQL Services Down') + `</div>`));
-            add('performance', _advCard('fa-gauge-high', 'Performance', 'Carga e contencao',
+                _advRow(ev(ss, 'down_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.services_down_label', 'Instâncias c/ serviços em baixo'), ev(ss, 'down_count'), '', 'service-status', _kpiT('kpi_adv.services_down_modal_title', 'Serviços SQL em Baixo')) + `</div>`));
+            add('performance', _advCard('fa-gauge-high', _kpiT('kpi_report.cat_performance', 'Performance'), _kpiT('kpi_adv.performance_card_subtitle', 'Carga e contenção'),
                 `<div class="kpiadv-list">` +
-                _advRow(ev(cpu, 'count') > 0 ? C.crit : C.ok, 'CPU critico', ev(cpu, 'count'), '', 'cpu-critical', 'CPU Critico - Instancias com CPU Alto') +
-                _advRow(ev(mem, 'count') > 0 ? C.crit : C.ok, 'Memoria critico', ev(mem, 'count'), '', 'memory-critical', 'Memoria Critico - Instancias com Memoria Alta') +
+                _advRow(ev(cpu, 'count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.cpu_critical_label', 'CPU crítico'), ev(cpu, 'count'), '', 'cpu-critical', _kpiT('kpi_adv.cpu_critical_modal_title', 'CPU Crítico - Instâncias com CPU Alto')) +
+                _advRow(ev(mem, 'count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.memory_critical_label', 'Memória crítica'), ev(mem, 'count'), '', 'memory-critical', _kpiT('kpi_adv.memory_critical_modal_title', 'Memória Crítica - Instâncias com Memória Alta')) +
                 // 2026-08-03 (owner): count = instancias em WARNING/CRITICAL (>20/>50
                 // processos runnable), nao processos — rotulo alinhado a unidade real.
                 // 2026-08-17 (owner): rotulo diz o que mede — fila de CPU (sessoes RUNNABLE) acima do
                 // threshold configuravel processes_runnable (registo: warning 20). N vem do cache
                 // de thresholds quando ja carregado; senao mostra o default do registo.
-                _advRow(ev(pa, 'count') > 0 ? C.warn : C.ok, 'Fila de CPU', ev(pa, 'count'), '', 'processes-alarm', 'CPU queue (runnable sessions)') + `</div>`));
+                _advRow(ev(pa, 'count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.cpu_queue_label', 'Fila de CPU'), ev(pa, 'count'), '', 'processes-alarm', _kpiT('kpi_adv.cpu_queue_modal_title', 'Fila de CPU (sessões runnable)')) + `</div>`));
                 // Rodape removido (owner 2026-07-28): "Erros log" (_advFoot) saiu do card
                 // Performance; Deadlocks 24h ja tinha saido 2026-07-19 (row propria em Bloqueios).
-            add('disk_space', _advCard('fa-hard-drive', 'Espaco em Disco', 'Utilizacao e latencia',
+            add('disk_space', _advCard('fa-hard-drive', _kpiT('kpi_report.cat_disk_space', 'Espaço em Disco'), _kpiT('kpi_adv.disk_space_card_subtitle', 'Utilização e latência'),
                 // 2026-08-03 (owner): hero "Discos criticos" removido — duplicava a
                 // row "Criticos" logo abaixo com o mesmo valor.
                 `<div class="kpiadv-list">` +
                 // 2026-08-03 (owner, auditoria): critical/warning_count contam
                 // INSTANCIAS (drives ficam no drill); latencia conta DRIVES.
-                _advRow(ev(dfs, 'critical_count') > 0 ? C.crit : C.ok, 'Instancias c/ discos criticos', ev(dfs, 'critical_count'), '', 'disk-file-system-critical', 'DB Disk File System - Crítico') + _advRow(ev(dfs, 'warning_count') > 0 ? C.warn : C.ok, 'Instancias c/ discos em aviso', ev(dfs, 'warning_count'), '', 'disk-file-system-warning', 'DB Disk File System - Warning') +
-                _advRow(ev(dl, 'critical_count') > 0 ? C.crit : C.ok, 'Drives c/ latencia critica', ev(dl, 'critical_count'), '', 'disk-latency-critical', 'Disk Latency Critical - Drives com Alta Latencia') + `</div>`));
-            add('backups', _advCard('fa-shield-halved', 'Backups', 'Estado e falhas de backup',
+                _advRow(ev(dfs, 'critical_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.disk_fs_critical_label', 'Instâncias c/ discos críticos'), ev(dfs, 'critical_count'), '', 'disk-file-system-critical', _kpiT('kpi_adv.disk_fs_critical_modal_title', 'DB Disk File System - Crítico')) + _advRow(ev(dfs, 'warning_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.disk_fs_warning_label', 'Instâncias c/ discos em aviso'), ev(dfs, 'warning_count'), '', 'disk-file-system-warning', _kpiT('kpi_adv.disk_fs_warning_modal_title', 'DB Disk File System - Aviso')) +
+                _advRow(ev(dl, 'critical_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.disk_latency_critical_label', 'Drives c/ latência crítica'), ev(dl, 'critical_count'), '', 'disk-latency-critical', _kpiT('modal.disk_latency_critical', 'Disk Latency Critical - Drives com Alta Latência')) + `</div>`));
+            add('backups', _advCard('fa-shield-halved', _kpiT('kpi_report.cat_backups', 'Backups'), _kpiT('kpi_adv.backups_card_subtitle', 'Estado e falhas de backup'),
                 `<div class="kpiadv-list">` +
                 // 2026-07-28 (owner): FULL separado de DIFF -- um FULL falhado parte
                 // a cadeia de recuperacao, um DIFF depende do ultimo FULL; juntos
@@ -36080,11 +36081,11 @@
                 // tiver volume (linha sempre-zero seria o ruido que acabamos de tirar
                 // das modais); quando aparece, e' sinal de convencao de nomes por cobrir.
                 // Os 3 abrem a modal de falhas de backup, que tem filtro por tipo.
-                _advRow(ev(bk, 'full_failed_count') > 0 ? C.crit : C.ok, 'Full falhou', ev(bk, 'full_failed_count'), '', 'backup-failed', 'Full Failed', 'FULL') +
-                _advRow(ev(bk, 'diff_failed_count') > 0 ? C.crit : C.ok, 'Diff falhou', ev(bk, 'diff_failed_count'), '', 'backup-failed', 'Diff Failed', 'DIFF') +
+                _advRow(ev(bk, 'full_failed_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.backup_full_failed', 'Full falhou'), ev(bk, 'full_failed_count'), '', 'backup-failed', _kpiT('kpi_adv.backup_full_failed_modal_title', 'Backup FULL Falhou'), 'FULL') +
+                _advRow(ev(bk, 'diff_failed_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.backup_diff_failed', 'Diff falhou'), ev(bk, 'diff_failed_count'), '', 'backup-failed', _kpiT('kpi_adv.backup_diff_failed_modal_title', 'Backup DIFF Falhou'), 'DIFF') +
                 (ev(bk, 'other_failed_count') > 0
-                    ? _advRow(C.crit, 'Outros falhou', ev(bk, 'other_failed_count'), '', 'backup-failed', 'Others Failed', 'OTHER') : '') +
-                _advRow(ev(bk, 'log_failed_count') > 0 ? C.crit : C.ok, 'Log falhou', ev(bk, 'log_failed_count'), '', 'backup-log-failed', 'Backup Log Failed (Unresolved)') +
+                    ? _advRow(C.crit, _kpiT('kpi_adv.backup_others_failed', 'Outros falharam'), ev(bk, 'other_failed_count'), '', 'backup-failed', _kpiT('kpi_adv.backup_others_failed_modal_title', 'Outros Backups Falharam'), 'OTHER') : '') +
+                _advRow(ev(bk, 'log_failed_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.backup_log_failed', 'Log falhou'), ev(bk, 'log_failed_count'), '', 'backup-log-failed', _kpiT('kpi_adv.backup_log_failed_modal_title', 'Falha de Backup Log (não resolvida)')) +
                 // 2026-08-31 (owner): "Em atraso" partida em critico/aviso. Desde
                 // 2026-08-06 o painel Por Categoria soma delayed_critical_count aos
                 // criticos de Backups (365 no ecra do dia), mas o tile so tinha o
@@ -36098,8 +36099,8 @@
                 // (dedupe no backend) — rotulo mantem-se, unidade documentada no help.
                 // 2026-09-01 (owner): cada linha abre a modal PRE-FILTRADA pela sua
                 // classe (tokens CLASS:* — mesmo mecanismo do pre-filtro FULL/DIFF).
-                _advRow(ev(bk, 'delayed_critical_count') > 0 ? C.crit : C.ok, 'Em atraso (critico)', ev(bk, 'delayed_critical_count'), '', 'backup-delayed', 'Backup Delayed - Critico', 'CLASS:actionable_critical') +
-                _advRow(ev(bk, 'delayed_warning_count') > 0 ? C.warn : C.ok, 'Em atraso (aviso)', ev(bk, 'delayed_warning_count'), '', 'backup-delayed', 'Backup Delayed - Aviso', 'CLASS:actionable_warning') +
+                _advRow(ev(bk, 'delayed_critical_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.backup_delayed_critical', 'Em atraso (crítico)'), ev(bk, 'delayed_critical_count'), '', 'backup-delayed', _kpiT('kpi_adv.backup_delayed_critical_modal_title', 'Backup em Atraso - Crítico'), 'CLASS:actionable_critical') +
+                _advRow(ev(bk, 'delayed_warning_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.backup_delayed_warning', 'Em atraso (aviso)'), ev(bk, 'delayed_warning_count'), '', 'backup-delayed', _kpiT('kpi_adv.backup_delayed_warning_modal_title', 'Backup em Atraso - Aviso'), 'CLASS:actionable_warning') +
                 // Council R2/R3: bandas novas, sempre contadas e navegaveis (o
                 // modal mostra as linhas com badge de classe). A superficie
                 // dedicada backup-ag-system-gap (Wave M.4.a) fica como follow-up.
@@ -36107,8 +36108,8 @@
                 // perdao chain-reset (R2) — so' existe DIFF "parado" quando ha' um
                 // FULL fresco a cobri-lo; FULL/LOG parados JA contam em atraso.
                 // Rotulo diz isso; "agendamento parado" por job vive em jobs-overdue.
-                _advRow(ev(bk, 'diff_schedule_stopped_count') > 0 ? C.warn : C.ok, 'Cadeia DIFF parada (FULL a cobrir)', ev(bk, 'diff_schedule_stopped_count'), '', 'backup-delayed', 'Cadeia DIFF parada (FULL a cobrir)', 'CLASS:diff_schedule_stopped') +
-                _advRow(ev(bk, 'ag_system_gap_count') > 0 ? C.warn : C.ok, 'System DBs de nós AG s/ rotina', ev(bk, 'ag_system_gap_count'), '', 'backup-delayed', 'System DBs de nos AG sem rotina', 'CLASS:ag_system_gap') +
+                _advRow(ev(bk, 'diff_schedule_stopped_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.diff_chain_stopped', 'Cadeia DIFF parada (FULL a cobrir)'), ev(bk, 'diff_schedule_stopped_count'), '', 'backup-delayed', _kpiT('kpi_adv.diff_chain_stopped', 'Cadeia DIFF parada (FULL a cobrir)'), 'CLASS:diff_schedule_stopped') +
+                _advRow(ev(bk, 'ag_system_gap_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.ag_system_gap_label', 'System DBs de nós AG s/ rotina'), ev(bk, 'ag_system_gap_count'), '', 'backup-delayed', _kpiT('kpi_adv.ag_system_gap_modal_title', 'System DBs de nós AG sem rotina'), 'CLASS:ag_system_gap') +
                 // "Backup danificado" estava SOMADO ao "Sem checksum": falha real
                 // escondida dentro do volume de um problema de configuracao. Sem
                 // drill por agora (falta endpoint filtrado por is_damaged) --
@@ -36119,60 +36120,60 @@
                 // BACKUP WITH CHECKSUM para detectar, e 1153 bases nao o usam.
                 // Padrao ja usado em 'Outros falhou' e 'Nao mensuravel'.
                 (ev(bk, 'is_damaged_count') > 0
-                    ? _advRow(C.crit, 'Backup danificado', ev(bk, 'is_damaged_count'), '', '', 'Backup Damaged')
+                    ? _advRow(C.crit, _kpiT('kpi_adv.backup_damaged_label', 'Backup danificado'), ev(bk, 'is_damaged_count'), '', '', _kpiT('kpi_adv.backup_damaged_modal_title', 'Backup Danificado'))
                     : '') +
                 // "Sem checksum" SAIU do KPI (owner 2026-07-28): e' estado de
                 // configuracao, nao evento -- marca o mesmo valor ate alguem correr
                 // a remediacao, e o volume dominava o card. Passa a informacao no
                 // tab Backups.
                 `</div>`));
-            add('disk_health', _advCard('fa-heart-pulse', 'Saude do Disco', 'Latencia e TempDB',
+            add('disk_health', _advCard('fa-heart-pulse', _kpiT('kpi_report.cat_disk_health', 'Saúde do Disco'), _kpiT('kpi_adv.disk_health_card_subtitle', 'Latência e TempDB'),
                 `<div class="kpiadv-list">` +
                 // 2026-08-03 (owner, auditoria): latencia conta DRIVES (linhas host+drive
                 // acima do threshold); TempDB conta instancias (1 tempdb por instancia).
-                _advRow(ev(dl, 'critical_count') > 0 ? C.crit : C.ok, 'Drives c/ latencia critica', ev(dl, 'critical_count'), '', 'disk-latency-critical', 'Disk Latency Critical - Drives com Alta Latencia') +
+                _advRow(ev(dl, 'critical_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.disk_latency_critical_label', 'Drives c/ latência crítica'), ev(dl, 'critical_count'), '', 'disk-latency-critical', _kpiT('modal.disk_latency_critical', 'Disk Latency Critical - Drives com Alta Latência')) +
                 // FIND-20260811-104: a linha de AVISO abria a modal dos CRITICOS
-                _advRow(ev(dl, 'warning_count') > 0 ? C.warn : C.ok, 'Drives c/ latencia em aviso', ev(dl, 'warning_count'), '', 'disk-latency-warning', 'Disk Latency Warning - Drives com Latencia em Aviso') +
-                _advRow(ev(td, 'critical_count') > 0 ? C.crit : C.ok, 'TempDB critico', ev(td, 'critical_count'), '', 'tempdb-status-critical', 'TempDB - Disco Crítico') +
-                _advRow(ev(td, 'warning_count') > 0 ? C.warn : C.ok, 'TempDB aviso', ev(td, 'warning_count'), '', 'tempdb-status-warning', 'TempDB - Disco Atenção') + `</div>`));
-            add('high_availability', _advCard('fa-sitemap', 'Alta Disponibilidade', 'AlwaysOn e Mirroring',
+                _advRow(ev(dl, 'warning_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.disk_latency_warning_label', 'Drives c/ latência em aviso'), ev(dl, 'warning_count'), '', 'disk-latency-warning', _kpiT('modal.disk_latency_warning', 'Disk Latency Warning - Drives com Latência Elevada')) +
+                _advRow(ev(td, 'critical_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.tempdb_critical_label', 'TempDB crítico'), ev(td, 'critical_count'), '', 'tempdb-status-critical', _kpiT('modal.tempdb_critical', 'TempDB - Disco Crítico')) +
+                _advRow(ev(td, 'warning_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.tempdb_warning_label', 'TempDB aviso'), ev(td, 'warning_count'), '', 'tempdb-status-warning', _kpiT('modal.tempdb_warning', 'TempDB - Disco Atenção')) + `</div>`));
+            add('high_availability', _advCard('fa-sitemap', _kpiT('kpi_report.cat_high_availability', 'Alta Disponibilidade'), _kpiT('kpi_adv.ha_card_subtitle', 'Always On e Mirroring'),
                 `<div class="kpiadv-list">` +
                 // 2026-08-03 (owner, auditoria): AlwaysOn conta INSTANCIAS (DISTINCT
                 // Instance); Mirroring conta DATABASES espelhadas com problema.
-                _advRow(ev(ao, 'unhealthy_count') > 0 ? C.crit : C.ok, 'AlwaysOn não saudável', ev(ao, 'unhealthy_count'), '', 'always-on', 'DB Always On - Não Saudável') +
-                _advRow(ev(mi, 'unhealthy_count') > 0 ? C.crit : C.ok, 'Mirroring não saudável', ev(mi, 'unhealthy_count'), '', 'mirroring', 'DB Mirroring - Não Saudável') + `</div>`));
+                _advRow(ev(ao, 'unhealthy_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.alwayson_unhealthy_label', 'Always On não saudável'), ev(ao, 'unhealthy_count'), '', 'always-on', _kpiT('modal.alwayson_unhealthy', 'DB Always On - Não Saudável')) +
+                _advRow(ev(mi, 'unhealthy_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.mirroring_unhealthy_label', 'Mirroring não saudável'), ev(mi, 'unhealthy_count'), '', 'mirroring', _kpiT('modal.mirroring_unhealthy', 'DB Mirroring - Não Saudável')) + `</div>`));
             // 2026-07-19: card "Servicos & Servidores" removido — rows fundidas no card
             // Disponibilidade (acima). 2026-07-27: KPI 'server-offline' (eventos do
             // collector central) removido por decisao owner — grupo 'services' saiu do
             // KPI_REPORT_GROUPS; row 'Servicos em baixo' (service_status dos servidores
             // do JSON) mantem-se, drill via 'sql-services-down'.
-            add('filegroups_tlog', _advCard('fa-layer-group', 'Filegroups & Transaction Log', 'Crescimento e logs',
+            add('filegroups_tlog', _advCard('fa-layer-group', _kpiT('kpi_report.cat_filegroups_tlog', 'Filegroups & Transaction Log'), _kpiT('kpi_adv.fg_card_subtitle', 'Crescimento e logs'),
                 `<div class="kpiadv-list">` +
                 // 2026-07-27 (owner): valor alinhado ao label — conta FILEGROUPS/drives
                 // (items_total), nao instancias (critical_count fica p/ drill)
-                _advRow(ev(fg, 'critical_items_total') > 0 ? C.crit : C.ok, 'Filegroups criticos', ev(fg, 'critical_items_total'), '', 'filegroup-usage-critical', 'FileGroups Usage - Critical') +
-                _advRow(ev(fg, 'warning_items_total') > 0 ? C.warn : C.ok, 'Filegroups aviso', ev(fg, 'warning_items_total'), '', 'filegroup-usage-warning', 'FileGroups Usage - Warning') +
+                _advRow(ev(fg, 'critical_items_total') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.filegroups_critical_label', 'Filegroups críticos'), ev(fg, 'critical_items_total'), '', 'filegroup-usage-critical', _kpiT('modal.filegroup_critical', 'FileGroups Usage - Critical')) +
+                _advRow(ev(fg, 'warning_items_total') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.filegroups_warning_label', 'Filegroups aviso'), ev(fg, 'warning_items_total'), '', 'filegroup-usage-warning', _kpiT('modal.filegroup_warning', 'FileGroups Usage - Warning')) +
                 // 2026-08-03 (owner, auditoria): critical_count conta INSTANCIAS
                 // (databases ficam no drill) — rotulo alinhado.
-                _advRow(ev(tl, 'critical_count') > 0 ? C.crit : C.ok, 'Instancias c/ t-log critico', ev(tl, 'critical_count'), '', 'transaction-logs-critical', 'DB Transaction Logs - Crítico') + `</div>`));
-            add('blocking', _advCard('fa-lock', 'Bloqueios & Deadlocks', 'Contencao de sessoes',
+                _advRow(ev(tl, 'critical_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.tlog_critical_label', 'Instâncias c/ t-log crítico'), ev(tl, 'critical_count'), '', 'transaction-logs-critical', _kpiT('modal.tlog_critical', 'DB Transaction Logs - Crítico')) + `</div>`));
+            add('blocking', _advCard('fa-lock', _kpiT('kpi_report.cat_blocking', 'Bloqueios & Deadlocks'), _kpiT('kpi_adv.blocking_card_subtitle', 'Contenção de sessões'),
                 `<div class="kpiadv-list">` +
                 // 2026-08-03 (owner, auditoria): count = instancias com sessoes
                 // bloqueadas (sessoes individuais ficam no drill) — rotulo alinhado.
-                _advRow(ev(bsx, 'count') > 0 ? C.crit : C.ok, 'Instancias c/ sessoes bloqueadas', ev(bsx, 'count'), '', 'blocked-sessions', 'Blocked Sessions') +
-                _advRow(ev(bu, 'count') > 0 ? C.warn : C.ok, 'Utilizadores bloqueados', ev(bu, 'count'), '', 'blocked-users', 'Blocked Users') +
-                _advRow(ev(dlk, 'count') > 0 ? C.warn : C.ok, 'Deadlocks 24h', ev(dlk, 'count'), '', 'deadlocks', 'Deadlocks (Last 24h)') + `</div>`));
+                _advRow(ev(bsx, 'count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.blocked_sessions_instances_label', 'Instâncias c/ sessões bloqueadas'), ev(bsx, 'count'), '', 'blocked-sessions', _kpiT('kpi_adv.blocked_sessions_modal_title', 'Sessões Bloqueadas')) +
+                _advRow(ev(bu, 'count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.blocked_users_label', 'Utilizadores bloqueados'), ev(bu, 'count'), '', 'blocked-users', _kpiT('kpi_adv.blocked_users_modal_title', 'Utilizadores Bloqueados')) +
+                _advRow(ev(dlk, 'count') > 0 ? C.warn : C.ok, 'Deadlocks 24h', ev(dlk, 'count'), '', 'deadlocks', _kpiT('kpi_adv.deadlocks_24h_modal_title', 'Deadlocks (últimas 24h)')) + `</div>`));
             // Wave X (2026-07-19): card Integridade — corrupcao e cobertura CHECKDB.
             // Valor N/D quando a view partilhada nao existe (nunca "0" falso).
-            add('integrity', _advCard('fa-file-shield', 'Integridade', 'Corrupcao e CHECKDB',
+            add('integrity', _advCard('fa-file-shield', _kpiT('kpi_report.cat_integrity', 'Integridade'), _kpiT('kpi_adv.integrity_card_subtitle', 'Corrupção e CHECKDB'),
                 `<div class="kpiadv-list">` +
-                _advRow(ev(ig, 'p1_count') > 0 ? C.crit : C.ok, 'Corrompidas (suspect pages)', igNA ? 'N/D' : ev(ig, 'p1_count'), ev(ig, 'p1_count') > 0 ? 'critico' : '', 'integrity-p1', 'Integridade — Corrompidas (P1)') +
-                _advRow(ev(ig, 'p3_count') > 0 ? C.warn : C.ok, 'Nunca validadas (CHECKDB)', igNA ? 'N/D' : ev(ig, 'p3_count'), '', 'integrity-p3', 'Integridade — Nunca Validadas (P3)') +
-                _advRow(ev(ig, 'p4_count') > 0 ? C.warn : C.ok, 'CHECKDB > 30 dias', igNA ? 'N/D' : ev(ig, 'p4_count'), '', 'integrity-p4', 'Integridade — CHECKDB Antigo (P4)') +
+                _advRow(ev(ig, 'p1_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.integrity_p1_label', 'Corrompidas (suspect pages)'), igNA ? 'N/D' : ev(ig, 'p1_count'), ev(ig, 'p1_count') > 0 ? _kpiT('kpi_adv.badge_critical', 'crítico') : '', 'integrity-p1', _kpiT('kpi_adv.integrity_p1_modal_title', 'Integridade — Corrompidas (P1)')) +
+                _advRow(ev(ig, 'p3_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.integrity_p3_label', 'Nunca validadas (CHECKDB)'), igNA ? 'N/D' : ev(ig, 'p3_count'), '', 'integrity-p3', _kpiT('kpi_adv.integrity_p3_modal_title', 'Integridade — Nunca Validadas (P3)')) +
+                _advRow(ev(ig, 'p4_count') > 0 ? C.warn : C.ok, _kpiT('kpi_adv.integrity_p4_label', 'CHECKDB > 30 dias'), igNA ? 'N/D' : ev(ig, 'p4_count'), '', 'integrity-p4', _kpiT('kpi_adv.integrity_p4_modal_title', 'Integridade — CHECKDB Antigo (P4)')) +
                 // Item B: coleta CHECKDB falhou (permissao/DB inacessivel) — NAO e' "nunca
                 // validado". So aparece quando a view ja expoe Measurability (!= null).
                 (ig.unmeasurable_count != null
-                    ? _advRow(ig.unmeasurable_count > 0 ? C.warn : C.ok, 'Nao mensuravel (coleta falhou)', igNA ? 'N/D' : n(ig.unmeasurable_count), '', 'integrity-unmeasurable', 'Integridade — Nao Mensuravel (coleta falhou)')
+                    ? _advRow(ig.unmeasurable_count > 0 ? C.warn : C.ok, _kpiT('kpi_adv.integrity_unmeasurable_label', 'Não mensurável (recolha falhou)'), igNA ? 'N/D' : n(ig.unmeasurable_count), '', 'integrity-unmeasurable', _kpiT('kpi_adv.integrity_unmeasurable_modal_title', 'Integridade — Não Mensurável (recolha falhou)'))
                     : '') + `</div>`));
                 // Rodape removido (owner 2026-07-28): PAGE_VERIFY != CHECKSUM + DBs avaliadas
                 // sairam do card Integridade (detalhe continua no drill-down).
@@ -36180,7 +36181,7 @@
             let h = '<div class="kpiadv-2">' + _repExecCard(d, F, clkH) + (RC.availability || '') + '</div>';
             h += '<div class="kpiadv-2">' + _repCatCard(d, F, clkH) + _repEnvCard(d, F, clkH) + '</div>';
             const lower = ['performance', 'disk_space', 'backups', 'disk_health', 'high_availability', 'integrity', 'filegroups_tlog', 'blocking'].map(k => RC[k]).filter(Boolean).join('');
-            h += '<div class="kpiadv-4">' + (lower || `<div class="kpiadv-nodata">Sem indicadores para o filtro selecionado.</div>`) + '</div>';
+            h += '<div class="kpiadv-4">' + (lower || `<div class="kpiadv-nodata">${_kpiT('kpi_adv.no_indicators_filter', 'Sem indicadores para o filtro selecionado.')}</div>`) + '</div>';
             return h;
         }
 
@@ -39010,7 +39011,7 @@ Tempo de Resposta: ${responseTime}
                                         </div>
                                         <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 8px;">
                                             <div style="font-size: 12px;">
-                                                <span style="color: var(--color-text-disabled);">Estado:</span>
+                                                <span style="color: var(--color-text-disabled);">${_kpiT('kpi_modal.status', 'Estado')}:</span>
                                                 <span style="color: ${sevColor}; font-weight: 600;">${diagDesc}</span>
                                             </div>
                                             <div style="font-size: 12px;">
@@ -39339,7 +39340,7 @@ Tempo de Resposta: ${responseTime}
                             metricsHtml = `
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Min Livre:</span> <span style="color: ${freeColor}; font-weight: 700; font-size: 14px;" aria-label="Espaco minimo livre: ${minFree} porcento">${minFree}%</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Avg Livre:</span> <span style="color: var(--color-text-bright);">${avgFree}%</span></div>
-                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Livre:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${freeGB} GB</span> <span style="color: var(--color-border-strong);">/ ${totalGB} GB</span></div>
+                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.free_label', 'Livre')}:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${freeGB} GB</span> <span style="color: var(--color-border-strong);">/ ${totalGB} GB</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Drives:</span> <span style="color: var(--color-text-bright);">${drives}</span></div>
                                 <div style="font-size: 11px; margin-top: 4px; padding: 4px 6px; background: rgba(100, 116, 139, 0.12); border-radius: 4px; border-left: 2px solid var(--color-border-strong);"
                                      title="Categoria de drive detectada automaticamente pelo mount point."
@@ -39417,15 +39418,15 @@ Tempo de Resposta: ${responseTime}
                             const freeGB = parseFloat(instance.disk_free_gb || 0).toFixed(1);
                             const usedColor = parseFloat(usedPct) >= 90 ? getSevTokens('CRITICAL').fill : parseFloat(usedPct) >= 70 ? getSevTokens('WARNING').fill : getSevTokens('OK').fill;
                             metricsHtml = `
-                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Uso Disco:</span> <span style="color: ${usedColor}; font-weight: 700; font-size: 14px;">${usedPct}%</span></div>
+                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.disk_usage_label', 'Uso Disco')}:</span> <span style="color: ${usedColor}; font-weight: 700; font-size: 14px;">${usedPct}%</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">TempDB:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${fileGB} GB</span></div>
-                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Livre:</span> <span style="color: var(--color-text-bright);">${freeGB} GB</span></div>
+                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.free_label', 'Livre')}:</span> <span style="color: var(--color-text-bright);">${freeGB} GB</span></div>
                                 ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 600;">${criticalVal} critical</span></div>` : ''}
                                 ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;">${warningVal} warning</span></div>` : ''}`;
                         } else if (kpiType.includes('blocked-sessions')) {
                             const blockedCount = parseInt(instance.Blocked_Count || instance.blocked_count || 0);
                             metricsHtml = `
-                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Sessoes Bloqueadas:</span> <span style="color: #ef4444; font-weight: 700; font-size: 14px;">${blockedCount}</span></div>`;
+                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.blocked_sessions_label', 'Sessões Bloqueadas')}:</span> <span style="color: #ef4444; font-weight: 700; font-size: 14px;">${blockedCount}</span></div>`;
                         } else if (kpiType.includes('disk-latency')) {
                             const readLat = parseFloat(instance.Avg_Read_Latency_MS || 0).toFixed(1);
                             const writeLat = parseFloat(instance.Avg_Write_Latency_MS || 0).toFixed(1);
@@ -39458,10 +39459,10 @@ Tempo de Resposta: ${responseTime}
                             const gapColor = gapH >= 72 ? getSevTokens('CRITICAL').fill : gapH >= 24 ? getSevTokens('WARNING').fill : getSevTokens('INFO').fill;
                             metricsHtml = `
                                 ${dbName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Database:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${dbName}</span></div>` : ''}
-                                ${bkpTypeLabel ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Tipo:</span> <span style="color: var(--color-text-bright);">${bkpTypeLabel}</span></div>` : ''}
-                                ${lastBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Ultimo:</span> <span style="color: var(--color-text-bright);">${fmtDt(lastBkp)}</span> ${hoursSince > 0 ? `<span style="color: var(--color-text-tertiary);">(${hoursSince}h atras)</span>` : ''}</div>` : ''}
+                                ${bkpTypeLabel ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.type_label', 'Tipo')}:</span> <span style="color: var(--color-text-bright);">${bkpTypeLabel}</span></div>` : ''}
+                                ${lastBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.last_label', 'Último')}:</span> <span style="color: var(--color-text-bright);">${fmtDt(lastBkp)}</span> ${hoursSince > 0 ? `<span style="color: var(--color-text-tertiary);">(${_kpiTp('kpi_adv.hours_ago', '{n}h atrás', { n: hoursSince })})</span>` : ''}</div>` : ''}
                                 ${expectedBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${t('kpi_modal.delayed_warning_limit') || 'Limite de aviso'}:</span> <span style="color: var(--color-text-bright);">${fmtDt(expectedBkp)}</span>${gapH > 0 ? ` <span style="color: ${gapColor}; font-weight: 700;">(${t('kpi_modal.delayed_exceeded_by', { n: gapH }) || `excedido há ${gapH}h`})</span>` : ''}</div>` : ''}
-                                ${snapshotTs ? `<div style="font-size: 11px; color: var(--color-text-disabled);"><i class="fas fa-camera" style="margin-right: 3px;"></i>Snapshot: ${fmtDt(snapshotTs)}</div>` : ''}`;
+                                ${snapshotTs ? `<div style="font-size: 11px; color: var(--color-text-disabled);"><i class="fas fa-camera" style="margin-right: 3px;"></i>${_kpiT('kpi_modal.snapshot_label', 'Snapshot')}: ${fmtDt(snapshotTs)}</div>` : ''}`;
                         } else if (kpiType.includes('backup')) {
                             const bkpType = instance.Backup_Type || instance.backup_type || instance.Backup_Type_Classified || '';
                             const bkpTypeLabel = bkpType === 'D' ? 'FULL' : bkpType === 'I' ? 'DIFF' : bkpType === 'L' ? 'LOG' : bkpType;
@@ -39475,10 +39476,10 @@ Tempo de Resposta: ${responseTime}
                             const bkpMsg = (instance.Message || instance.message || '').toString();
                             metricsHtml = `
                                 ${dbName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Database:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${dbName}</span></div>` : ''}
-                                ${bkpTypeLabel ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Tipo:</span> <span style="color: var(--color-text-bright);">${bkpTypeLabel}</span></div>` : ''}
+                                ${bkpTypeLabel ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.type_label', 'Tipo')}:</span> <span style="color: var(--color-text-bright);">${bkpTypeLabel}</span></div>` : ''}
                                 ${bkpJobName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Job:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${bkpJobName}</span></div>` : ''}
                                 ${bkpStepName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Step:</span> <span style="color: var(--color-text-bright);">${bkpStepName}</span></div>` : ''}
-                                ${lastBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Ultimo Backup:</span> <span style="color: var(--color-text-bright);">${lastBkp}</span></div>` : ''}
+                                ${lastBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.last_backup_label', 'Último Backup')}:</span> <span style="color: var(--color-text-bright);">${lastBkp}</span></div>` : ''}
                                 ${(kpiType === 'backup-failed' || kpiType === 'backup-log-failed') ? _kpiBackupRecoveredHtml(instance) : ''}
                                 ${(kpiType === 'backup-failed' || kpiType === 'backup-log-failed') ? _kpiJobNextRunHtml(instance) : ''}
                                 ${bkpMsg ? `<div style="font-size: 11px; margin-top: 4px; color: var(--color-text-tertiary); max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${bkpMsg.replace(/"/g, '&quot;')}">${bkpMsg.substring(0, 160)}</div>` : ''}`;
@@ -39503,7 +39504,7 @@ Tempo de Resposta: ${responseTime}
                                 ${agDb ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Database:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${agDb}</span></div>` : ''}
                                 ${agName && !agIsGuid ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">AG:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${agName}</span></div>` : ''}
                                 ${agName && agIsGuid ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">AG ID:</span> <span style="color: var(--color-text-disabled); font-size: 10px;">${agName.substring(0, 18)}...</span></div>` : ''}
-                                ${agEstado.trim() ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Estado:</span> <span style="color: #fca5a5; font-weight: 600;">${agEstado}</span></div>` : ''}
+                                ${agEstado.trim() ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_modal.status', 'Estado')}:</span> <span style="color: #fca5a5; font-weight: 600;">${agEstado}</span></div>` : ''}
                                 ${problemReasons ? `<div style="font-size: 12px;"><span style="color: #fca5a5;">Motivo:</span> <span style="color: #fca5a5;">${problemReasons}</span></div>` : ''}`;
                         } else if (kpiType.includes('service-status')) {
                             const serviceName = instance.Service_Name || instance.service_name || '';
@@ -39517,7 +39518,7 @@ Tempo de Resposta: ${responseTime}
                             metricsHtml = `
                                 ${servicesList ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Servicos em baixo${downCount ? ' (' + downCount + ')' : ''}:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${servicesList}</span></div>` : ''}
                                 ${serviceName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Servico:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${serviceName}</span></div>` : ''}
-                                ${serviceState ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Estado:</span> <span style="color: ${serviceState === 'Running' ? '#22c55e' : '#ef4444'};">${serviceState}</span></div>` : ''}`;
+                                ${serviceState ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_modal.status', 'Estado')}:</span> <span style="color: ${serviceState === 'Running' ? '#22c55e' : '#ef4444'};">${serviceState}</span></div>` : ''}`;
                         } else if (kpiType.includes('jobs')) {
                             kpiIcon = kpiType === 'jobs-collisions' ? 'fa-clock' : 'fa-exclamation-circle';
                             if (kpiType === 'jobs-collisions') {
@@ -39528,8 +39529,8 @@ Tempo de Resposta: ${responseTime}
                                 metricsHtml = `
                                     <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Job A:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${jobA}</span></div>
                                     <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Job B:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${jobB}</span></div>
-                                    <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Sobreposicao:</span> <span style="color: #f59e0b; font-weight: 700;">${overlapMin} min</span></div>
-                                    ${hasFailure ? '<div style="font-size: 12px;"><span style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Com falha associada</span></div>' : ''}`;
+                                    <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.overlap_label', 'Sobreposição')}:</span> <span style="color: #f59e0b; font-weight: 700;">${overlapMin} min</span></div>
+                                    ${hasFailure ? '<div style="font-size: 12px;"><span style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + _kpiT('kpi_adv.job_collision_has_failure', 'Com falha associada') + '</span></div>' : ''}`;
                             } else {
                                 const jobName = instance.Job_Name || instance.job_name || instance.JobName || '';
                                 const failedCount = parseInt(instance.Failed || instance.failed_count || instance.Failed_Count || instance.CNT || instance.cnt || 1);
@@ -39539,8 +39540,8 @@ Tempo de Resposta: ${responseTime}
                                 metricsHtml = `
                                     ${jobName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Job:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${jobName}</span></div>` : ''}
                                     ${stepName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Step:</span> <span style="color: var(--color-text-bright);">${stepName}</span></div>` : ''}
-                                    <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Falhas:</span> <span style="color: #ef4444; font-weight: 700;">${failedCount}</span></div>
-                                    ${lastRun ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Ultima Execucao:</span> <span style="color: var(--color-text-bright);">${lastRun}</span></div>` : ''}
+                                    <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.failures_label', 'Falhas')}:</span> <span style="color: #ef4444; font-weight: 700;">${failedCount}</span></div>
+                                    ${lastRun ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.last_job_run_label', 'Última Execução')}:</span> <span style="color: var(--color-text-bright);">${lastRun}</span></div>` : ''}
                                     ${errorMsg ? `<div style="font-size: 11px; margin-top: 4px; color: var(--color-text-tertiary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${errorMsg}">${errorMsg.substring(0, 100)}</div>` : ''}`;
                             }
                         } else if (kpiType.includes('deadlock')) {
@@ -39573,9 +39574,9 @@ Tempo de Resposta: ${responseTime}
                             metricsHtml = `
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Deadlocks (24h):</span> <span style="color: ${countColor}; font-weight: 700; font-size: 14px;">${dlCount}</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Databases:</span> ${_dlList(dbsList, dbsAffected)}</div>
-                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Objetos:</span> ${_dlList(objsList, objsAffected)}</div>
-                                ${state ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Estado:</span> <span style="color: ${state === 'CRITICAL' ? getSevTokens('CRITICAL').fill : state === 'WARNING' ? getSevTokens('WARNING').fill : getSevTokens('INFO').fill}; font-weight: 700;">${state}</span></div>` : ''}
-                                ${lastStr ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Ultimo:</span> <span style="color: var(--color-text-bright);">${lastStr}</span></div>` : ''}`;
+                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.objects_label', 'Objetos')}:</span> ${_dlList(objsList, objsAffected)}</div>
+                                ${state ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_modal.status', 'Estado')}:</span> <span style="color: ${state === 'CRITICAL' ? getSevTokens('CRITICAL').fill : state === 'WARNING' ? getSevTokens('WARNING').fill : getSevTokens('INFO').fill}; font-weight: 700;">${state}</span></div>` : ''}
+                                ${lastStr ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.last_label', 'Último')}:</span> <span style="color: var(--color-text-bright);">${lastStr}</span></div>` : ''}`;
                         } else if (kpiType.indexOf('integrity') === 0) {
                             // Wave X (2026-07-19): veredicto de integridade por database
                             // (spec: DIAG_ERROR_824_SWEEP.sql do owner, seccao [4])
@@ -39595,7 +39596,7 @@ Tempo de Resposta: ${responseTime}
                                              igVerdict === 'P4' ? getSevTokens('INFO').fill : 'var(--color-text-disabled)';
                             // Data-sentinela do collector (0001-01-01 / dias<0) = nunca validado
                             const igChkIsSentinel = !igLastChk || String(igLastChk).startsWith('0001') || (igDays != null && igDays < 0);
-                            const igChkStr = igChkIsSentinel ? 'Nunca' : `${String(igLastChk).substring(0, 10)} (${igDays}d)`;
+                            const igChkStr = igChkIsSentinel ? _kpiT('kpi_adv.never', 'Nunca') : `${String(igLastChk).substring(0, 10)} (${igDays}d)`;
                             // Solucao recomendada por caso (decisao owner 2026-07-19: o KPI
                             // reporta E prescreve — comando pronto, nao corrige nada sozinho).
                             // FRONTEIRA DE TIER (checker 2026-07-19): isto e' texto ESTATICO
@@ -39605,16 +39606,16 @@ Tempo de Resposta: ${responseTime}
                             const igFixes = [];
                             if (igVerdict === 'P1') {
                                 igFixes.push(`DBCC CHECKDB ('${igDb}') WITH PHYSICAL_ONLY, NO_INFOMSGS, ALL_ERRORMSGS;`);
-                                igFixes.push('Avaliar extensao antes de decidir repair vs restore de backup integro. Varias DBs P1 na mesma instancia = validar storage/IO path primeiro.');
+                                igFixes.push(_kpiT('kpi_adv.integrity_fix_p1_detail', 'Avaliar a extensão antes de decidir entre repair vs restore de backup íntegro. Várias DBs P1 na mesma instância = validar primeiro o storage/IO path.'));
                             } else if (igVerdict === 'P3') {
                                 igFixes.push(`DBCC CHECKDB ('${igDb}') WITH NO_INFOMSGS, ALL_ERRORMSGS;`);
-                                igFixes.push('Depois da 1a validacao, incluir na rotina agendada (ex: Ola Hallengren DatabaseIntegrityCheck). Nota AG: CHECKDB em secundario legivel nao persiste lastknowngood.');
+                                igFixes.push(_kpiT('kpi_adv.integrity_fix_p3_detail', 'Depois da 1.ª validação, incluir na rotina agendada (ex.: Ola Hallengren DatabaseIntegrityCheck). Nota AG: o CHECKDB num secundário legível não persiste o lastknowngood.'));
                             } else if (igVerdict === 'P4') {
-                                igFixes.push(`Reactivar o schedule da rotina de CHECKDB — ultima validacao ha ${igDays} dias.`);
+                                igFixes.push(_kpiTp('kpi_adv.reactivate_checkdb', 'Reativar o schedule da rotina de CHECKDB — última validação há {n} dias.', { n: igDays }));
                             }
                             if (igNeedsPV) igFixes.push(`ALTER DATABASE [${igDb}] SET PAGE_VERIFY CHECKSUM WITH NO_WAIT;`);
                             if (igShrink) igFixes.push(`ALTER DATABASE [${igDb}] SET AUTO_SHRINK OFF WITH NO_WAIT;`);
-                            if (igNoChk > 0) igFixes.push(`Backups sem CHECKSUM (${igNoChk} eventos <=7d): adicionar WITH CHECKSUM na rotina de backup.`);
+                            if (igNoChk > 0) igFixes.push(_kpiTp('kpi_adv.backups_no_checksum', 'Backups sem CHECKSUM ({n} eventos <=7d): adicionar WITH CHECKSUM na rotina de backup.', { n: igNoChk }));
                             // Item B (2026-07-23): responder "porque falhou" no proprio card —
                             // Error_Number/Error_Message vem da VERDICT view (ex: 2571 permissao)
                             const igCollStatus = (instance.Collection_Status || '').toUpperCase();
@@ -39623,21 +39624,21 @@ Tempo de Resposta: ${responseTime}
                             const igFailHtml = igCollStatus === 'COLLECTION_ERROR' ? `
                                 <div style="margin-top: 6px; padding: 8px; background: rgba(239,68,68,0.08); border-left: 3px solid #ef4444; border-radius: 4px;">
                                     <div style="font-size: 11px; color: #f87171; font-weight: 700; margin-bottom: 4px;"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> ${t('kpi_modal.why_failed') || 'Porque a coleta falhou'}</div>
-                                    <div style="font-size: 11px; font-family: 'Consolas', monospace; color: var(--color-text-bright); white-space: pre-wrap; word-break: break-word; user-select: all;">${String(igErrNum) === '2571' ? (t('kpi_modal.err_2571_detail') || 'Erro 2571: esta versao de SQL (< 2016 SP2) nao tem DATABASEPROPERTYEX(LastGoodCheckDbTime) — a coleta exigiria DBCC, indisponivel sem privilegios elevados.') : `${igErrNum != null && igErrNum !== 0 ? `Erro ${igErrNum}: ` : ''}${igErrMsg || 'Sem detalhe registado pelo coletor'}`}</div>
+                                    <div style="font-size: 11px; font-family: 'Consolas', monospace; color: var(--color-text-bright); white-space: pre-wrap; word-break: break-word; user-select: all;">${String(igErrNum) === '2571' ? (t('kpi_modal.err_2571_detail') || 'Erro 2571: esta versao de SQL (< 2016 SP2) nao tem DATABASEPROPERTYEX(LastGoodCheckDbTime) — a coleta exigiria DBCC, indisponivel sem privilegios elevados.') : `${igErrNum != null && igErrNum !== 0 ? _kpiTp('kpi_adv.error_prefix', 'Erro {n}: ', { n: igErrNum }) : ''}${igErrMsg || _kpiT('kpi_adv.no_collector_detail', 'Sem detalhe registado pelo coletor')}`}</div>
                                     ${String(igErrNum) === '2571' ? `<div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px;">${t('kpi_modal.fix_grant') || 'Instancia antiga (SQL < 2016 SP2): sem DATABASEPROPERTYEX, o coletor depende de DBCC, que a conta de monitorizacao nao pode executar. Resolve-se com upgrade da instancia (SQL 2012/2014 EOL) ou GRANT pontual de excecao.'}</div>` : ''}
                                 </div>` : '';
                             const igFixHtml = igFixes.length ? `
                                 <div style="margin-top: 6px; padding: 8px; background: rgba(59,130,246,0.08); border-left: 3px solid #3b82f6; border-radius: 4px;">
-                                    <div style="font-size: 11px; color: #3b82f6; font-weight: 700; margin-bottom: 4px;"><i class="fas fa-wrench"></i> Solucao recomendada</div>
+                                    <div style="font-size: 11px; color: #3b82f6; font-weight: 700; margin-bottom: 4px;"><i class="fas fa-wrench"></i> ${_kpiT('kpi_adv.recommended_fix', 'Solução recomendada')}</div>
                                     ${igFixes.map(f => `<div style="font-size: 11px; font-family: ${f.indexOf(';') >= 0 ? "'Consolas', monospace" : 'inherit'}; color: var(--color-text-bright); margin-bottom: 3px; white-space: pre-wrap; word-break: break-word; user-select: all;">${f}</div>`).join('')}
                                 </div>` : '';
                             metricsHtml = `
                                 ${igDb ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Database:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${igDb}</span></div>` : ''}
-                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Veredicto:</span> <span style="color: ${igVColor}; font-weight: 700;">${igVerdict}</span> <span style="color: var(--color-text-tertiary);">${igReason}</span></div>
-                                ${igSuspPages > 0 ? `<div style="font-size: 12px;"><span style="color: ${getSevTokens('CRITICAL').fill};">Paginas suspeitas:</span> <span style="color: ${getSevTokens('CRITICAL').fill}; font-weight: 700;">${igSuspPages}</span> <span style="color: var(--color-text-disabled);">(${igSuspErrs} erros${igLastSusp ? ', ultimo ' + String(igLastSusp).substring(0, 16).replace('T', ' ') : ''})</span></div>` : ''}
-                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Ultimo CHECKDB:</span> <span style="color: ${igChkIsSentinel ? getSevTokens('WARNING').fill : 'var(--color-text-bright)'};">${igChkStr}</span></div>
-                                ${igNeedsPV ? `<div style="font-size: 12px;"><span style="color: ${getSevTokens('WARNING').fill};">PAGE_VERIFY:</span> <span style="color: ${getSevTokens('WARNING').fill}; font-weight: 700;">${igPV || 'NONE'}</span> <span style="color: var(--color-text-disabled);">(recomendado CHECKSUM)</span></div>` : ''}
-                                ${igShrink ? `<div style="font-size: 12px;"><span style="color: ${getSevTokens('WARNING').fill};">AUTO_SHRINK ligado</span></div>` : ''}
+                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.verdict_label', 'Veredicto')}:</span> <span style="color: ${igVColor}; font-weight: 700;">${igVerdict}</span> <span style="color: var(--color-text-tertiary);">${igReason}</span></div>
+                                ${igSuspPages > 0 ? `<div style="font-size: 12px;"><span style="color: ${getSevTokens('CRITICAL').fill};">${_kpiT('kpi_adv.suspect_pages_label', 'Páginas suspeitas')}:</span> <span style="color: ${getSevTokens('CRITICAL').fill}; font-weight: 700;">${igSuspPages}</span> <span style="color: var(--color-text-disabled);">(${igSuspErrs} ${_kpiT('kpi_adv.errors_word', 'erros')}${igLastSusp ? _kpiTp('kpi_adv.integrity_suspect_last_seen', ', último {date}', { date: String(igLastSusp).substring(0, 16).replace('T', ' ') }) : ''})</span></div>` : ''}
+                                <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.last_checkdb_label', 'Último CHECKDB')}:</span> <span style="color: ${igChkIsSentinel ? getSevTokens('WARNING').fill : 'var(--color-text-bright)'};">${igChkStr}</span></div>
+                                ${igNeedsPV ? `<div style="font-size: 12px;"><span style="color: ${getSevTokens('WARNING').fill};">PAGE_VERIFY:</span> <span style="color: ${getSevTokens('WARNING').fill}; font-weight: 700;">${igPV || 'NONE'}</span> <span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.recommended_checksum', '(recomendado CHECKSUM)')}</span></div>` : ''}
+                                ${igShrink ? `<div style="font-size: 12px;"><span style="color: ${getSevTokens('WARNING').fill};">${_kpiT('kpi_adv.auto_shrink_on', 'AUTO_SHRINK ligado')}</span></div>` : ''}
                                 ${instance.Recovery_Model ? `<div style="font-size: 11px;"><span style="color: var(--color-text-disabled);">Recovery:</span> <span style="color: var(--color-text-tertiary);">${instance.Recovery_Model}</span>${instance.State_Desc ? ` <span style="color: var(--color-text-disabled);">| Estado:</span> <span style="color: var(--color-text-tertiary);">${instance.State_Desc}</span>` : ''}</div>` : ''}
                                 ${igFailHtml}
                                 ${igFixHtml}`;
@@ -39666,7 +39667,7 @@ Tempo de Resposta: ${responseTime}
 
                         // Backup types - action text especial
                         let effectiveKpiType = kpiType;
-                        let actionText = 'Clique para abrir esta instancia no SQL Diagnostics';
+                        let actionText = _kpiT('kpi_adv.action_open_sql_diag', 'Clique para abrir esta instância no SQL Diagnostics');
                         let bkpDatabase = '';
                         let tlogDrillHint = '';  // 2026-09-02: link para o drill-down de diagnostico do log (modal TLOG)
                         if (kpiType === 'backup-delayed') {
@@ -39681,13 +39682,13 @@ Tempo de Resposta: ${responseTime}
                             //   'L' = Log
                             // Bug histórico: D/I estavam invertidos no mapping abaixo.
                             // Badge rendering em data-bkptype (L34088) já estava correto (D→FULL, I→DIFF).
-                            if (bkpType === 'L') { effectiveKpiType = 'backup-delayed-log'; actionText = 'Clique para ver Gaps de LOG Backup'; }
-                            else if (bkpType === 'D') { effectiveKpiType = 'backup-delayed-full'; actionText = 'Clique para ver Gaps de FULL Backup'; }
-                            else if (bkpType === 'I') { effectiveKpiType = 'backup-delayed-diff'; actionText = 'Clique para ver Gaps de DIFF Backup'; }
+                            if (bkpType === 'L') { effectiveKpiType = 'backup-delayed-log'; actionText = _kpiT('kpi_adv.action_view_log_gaps', 'Clique para ver Gaps de Backup LOG'); }
+                            else if (bkpType === 'D') { effectiveKpiType = 'backup-delayed-full'; actionText = _kpiT('kpi_adv.action_view_full_gaps', 'Clique para ver Gaps de Backup FULL'); }
+                            else if (bkpType === 'I') { effectiveKpiType = 'backup-delayed-diff'; actionText = _kpiT('kpi_adv.action_view_diff_gaps', 'Clique para ver Gaps de Backup DIFF'); }
                         } else if (kpiType === 'backup-failed') {
-                            actionText = 'Clique para abrir o modulo Backup';
+                            actionText = _kpiT('kpi_adv.action_open_backup_module', 'Clique para abrir o módulo Backup');
                         } else if (kpiType === 'backup-jobs-disabled') {
-                            actionText = 'Clique para abrir o modulo Backup (Jobs Disabled)';
+                            actionText = _kpiT('kpi_adv.action_open_backup_module_jobs_disabled', 'Clique para abrir o módulo Backup (Jobs Desativados)');
                         } else if (_isTlogModal(kpiType)) {
                             // 2026-09-02: card por BASE — nome da base a' cabeca, instancia
                             // em segundo plano (data-instance-name mantem a instancia para
@@ -43915,13 +43916,13 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                     _dcAll.forEach(el => { const c = el.dataset.delayclass || 'actionable'; if (c in _dcCount) _dcCount[c]++; });
                     if (_dcCount.chain_reset + _dcCount.diff_schedule_stopped + _dcCount.ag_system_gap > 0) {
                         reconLine = `<div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px;">`
-                            + `Critério revisto (council 01/09): <strong>${_dcCount.actionable}</strong> accionáveis`
-                            + ` · ${_dcCount.chain_reset} cadeia reiniciada (FULL cobre)`
-                            + ` · ${_dcCount.diff_schedule_stopped} cadeia DIFF parada (FULL a cobrir)`
-                            + ` · ${_dcCount.ag_system_gap} política por-nó AG</div>`;
+                            + _kpiTp('kpi_adv.recon_actionable', 'Critério revisto (council 01/09): {n} acionáveis', { n: '<strong>' + _dcCount.actionable + '</strong>' })
+                            + _kpiTp('kpi_adv.recon_chain_reset', ' · {n} cadeia reiniciada (FULL cobre)', { n: _dcCount.chain_reset })
+                            + _kpiTp('kpi_adv.recon_diff_stopped', ' · {n} cadeia DIFF parada (FULL a cobrir)', { n: _dcCount.diff_schedule_stopped })
+                            + _kpiTp('kpi_adv.recon_ag_policy', ' · {n} política por-nó AG', { n: _dcCount.ag_system_gap }) + `</div>`;
                     }
                 }
-                summaryDiv.innerHTML = `Mostrando <strong style="color: var(--color-text-link);">${visibleCount}</strong> de ${originalCount} (filtro: <strong style="color: var(--color-text-link);">${filterLabel}</strong>)` + reconLine;
+                summaryDiv.innerHTML = _kpiTp('kpi_adv.showing_n_of_total_filter', 'Mostrando {n} de {total} (filtro: {filter})', { n: '<strong style="color: var(--color-text-link);">' + visibleCount + '</strong>', total: originalCount, filter: '<strong style="color: var(--color-text-link);">' + filterLabel + '</strong>' }) + reconLine;
             }
         }
 
@@ -44261,13 +44262,13 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                         ? ` · <a href="javascript:void(0)" onclick="toggleChainReset()" style="color: var(--color-text-link);">${_dc.chain_reset} cadeia reiniciada (FULL cobre) — ${window._showChainReset ? 'ocultar' : 'mostrar'}</a>`
                         : '';
                     const _headNum = _visBases.size > 0
-                        ? `<strong style="color: var(--color-text-link);">${_visBases.size}</strong> bases (${visibleCount} linhas por tipo — uma base com FULL+DIFF+LOG em atraso tem 1 linha por tipo)`
+                        ? `<strong style="color: var(--color-text-link);">${_visBases.size}</strong> ${_kpiTp('kpi_adv.bases_lines_note', 'bases ({n} linhas por tipo — uma base com FULL+DIFF+LOG em atraso tem 1 linha por tipo)', { n: visibleCount })}`
                         : `<strong style="color: var(--color-text-link);">${visibleCount}</strong>`;
                     summaryDiv.innerHTML = `${t('kpi_modal.instances_shown') || 'Mostrando'} ${_headNum} (filtro: <strong style="color: var(--color-text-link);">${filterLabel}</strong>)`
                         + `<div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px;">`
-                        + `Critério revisto (council 01/09): <strong>${_dc.actionable}</strong> linhas accionáveis`
-                        + ` · ${_dc.diff_schedule_stopped} cadeia DIFF parada (FULL a cobrir)`
-                        + ` · ${_dc.ag_system_gap} política por-nó AG${_chainLink}</div>`;
+                        + _kpiTp('kpi_adv.recon_actionable_lines', 'Critério revisto (council 01/09): {n} linhas acionáveis', { n: '<strong>' + _dc.actionable + '</strong>' })
+                        + _kpiTp('kpi_adv.recon_diff_stopped', ' · {n} cadeia DIFF parada (FULL a cobrir)', { n: _dc.diff_schedule_stopped })
+                        + _kpiTp('kpi_adv.recon_ag_policy', ' · {n} política por-nó AG', { n: _dc.ag_system_gap }) + `${_chainLink}</div>`;
                 } else if (_isTlogModal(_modalKpiType)) {
                     // 2026-09-02 (modal TLOG por base): cabecalho em BASES visiveis +
                     // instancias distintas — a mesma unidade do tile ("instancias") e
@@ -44433,10 +44434,10 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
             // sem isto, 59+55+40 vs 75 parece erro de soma.
             if (_modalKpiType === 'backup-delayed') {
                 if (typeTotalEl && typeTotalEl.previousElementSibling)
-                    typeTotalEl.previousElementSibling.textContent = 'Bases distintas (uma base pode ter mais de um tipo em atraso)';
+                    typeTotalEl.previousElementSibling.textContent = _kpiT('kpi_adv.distinct_bases_note', 'Bases distintas (uma base pode ter mais de um tipo em atraso)');
                 const _envTotEl = document.getElementById('envChartTotalValue');
                 if (_envTotEl && _envTotEl.previousElementSibling)
-                    _envTotEl.previousElementSibling.textContent = 'Total (bases)';
+                    _envTotEl.previousElementSibling.textContent = 'Total ' + _kpiT('kpi_modal.total_bases_suffix', '(bases)');
             } else if (_isTlogModal(_modalKpiType)) {
                 // 2026-09-02: no TLOG cada linha e' uma base — os dois totais sao
                 // "Total (bases)" (i18n), sem a nota de sobreposicao do delayed.
@@ -44641,7 +44642,7 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                 const originalCount = originalText.match(/\d+/)?.[0] || totalCount;
                 let filterLabel = jobType;
                 if (currentEnvFilter) filterLabel += ` + ${currentEnvFilter}`;
-                summaryDiv.innerHTML = `Mostrando <strong style="color: #a78bfa;">${visibleCount}</strong> de ${originalCount} (filtro: <strong style="color: #a78bfa;">${filterLabel}</strong>)`;
+                summaryDiv.innerHTML = _kpiTp('kpi_adv.showing_n_of_total_filter', 'Mostrando {n} de {total} (filtro: {filter})', { n: '<strong style="color: #a78bfa;">' + visibleCount + '</strong>', total: originalCount, filter: '<strong style="color: #a78bfa;">' + filterLabel + '</strong>' });
             }
         }
 

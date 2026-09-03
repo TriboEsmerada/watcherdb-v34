@@ -160,5 +160,11 @@
   "log": {
     "cat_click_to_fetch": "clica p/ buscar",
     "cat_fetch_error": "Não foi possível buscar esta categoria. Tenta novamente."
+  },
+  "kpi_adv": {
+    "blocked_users_label": "Usuários bloqueados",
+    "blocked_users_modal_title": "Usuários Bloqueados",
+    "integrity_unmeasurable_label": "Não mensurável (coleta falhou)",
+    "integrity_unmeasurable_modal_title": "Integridade — Não Mensurável (coleta falhou)"
   }
 }
