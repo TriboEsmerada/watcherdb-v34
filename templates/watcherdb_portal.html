@@ -36120,7 +36120,11 @@
                 // Council R2/R3: bandas novas, sempre contadas e navegaveis (o
                 // modal mostra as linhas com badge de classe). A superficie
                 // dedicada backup-ag-system-gap (Wave M.4.a) fica como follow-up.
-                _advRow(ev(bk, 'diff_schedule_stopped_count') > 0 ? C.warn : C.ok, 'Agendamento DIFF parado', ev(bk, 'diff_schedule_stopped_count'), '', 'backup-delayed', 'Agendamento DIFF parado', 'CLASS:diff_schedule_stopped') +
+                // 2026-09-03 (owner: "porque so DIFF?"): a banda e' subproduto do
+                // perdao chain-reset (R2) — so' existe DIFF "parado" quando ha' um
+                // FULL fresco a cobri-lo; FULL/LOG parados JA contam em atraso.
+                // Rotulo diz isso; "agendamento parado" por job vive em jobs-overdue.
+                _advRow(ev(bk, 'diff_schedule_stopped_count') > 0 ? C.warn : C.ok, 'Cadeia DIFF parada (FULL a cobrir)', ev(bk, 'diff_schedule_stopped_count'), '', 'backup-delayed', 'Cadeia DIFF parada (FULL a cobrir)', 'CLASS:diff_schedule_stopped') +
                 _advRow(ev(bk, 'ag_system_gap_count') > 0 ? C.warn : C.ok, 'System DBs de nós AG s/ rotina', ev(bk, 'ag_system_gap_count'), '', 'backup-delayed', 'System DBs de nos AG sem rotina', 'CLASS:ag_system_gap') +
                 // "Backup danificado" estava SOMADO ao "Sem checksum": falha real
                 // escondida dentro do volume de um problema de configuracao. Sem
@@ -39458,8 +39462,7 @@ Tempo de Resposta: ${responseTime}
                                 ${dbName ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Database:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${dbName}</span></div>` : ''}
                                 ${bkpTypeLabel ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Tipo:</span> <span style="color: var(--color-text-bright);">${bkpTypeLabel}</span></div>` : ''}
                                 ${lastBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Ultimo:</span> <span style="color: var(--color-text-bright);">${fmtDt(lastBkp)}</span> ${hoursSince > 0 ? `<span style="color: var(--color-text-tertiary);">(${hoursSince}h atras)</span>` : ''}</div>` : ''}
-                                ${expectedBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Esperado:</span> <span style="color: var(--color-text-bright);">${fmtDt(expectedBkp)}</span></div>` : ''}
-                                ${gapH > 0 ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">Gap:</span> <span style="color: ${gapColor}; font-weight: 700;">${gapH}h</span> <span style="color: var(--color-text-tertiary);">atrasado vs expected</span></div>` : ''}
+                                ${expectedBkp ? `<div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${t('kpi_modal.delayed_warning_limit') || 'Limite de aviso'}:</span> <span style="color: var(--color-text-bright);">${fmtDt(expectedBkp)}</span>${gapH > 0 ? ` <span style="color: ${gapColor}; font-weight: 700;">(${t('kpi_modal.delayed_exceeded_by', { n: gapH }) || `excedido há ${gapH}h`})</span>` : ''}</div>` : ''}
                                 ${snapshotTs ? `<div style="font-size: 11px; color: var(--color-text-disabled);"><i class="fas fa-camera" style="margin-right: 3px;"></i>Snapshot: ${fmtDt(snapshotTs)}</div>` : ''}`;
                         } else if (kpiType.includes('backup')) {
                             const bkpType = instance.Backup_Type || instance.backup_type || instance.Backup_Type_Classified || '';
@@ -39719,7 +39722,7 @@ Tempo de Resposta: ${responseTime}
                         if (kpiType === 'backup-delayed' && dClass && dClass !== 'actionable') {
                             const dcMap = {
                                 'chain_reset': ['Cadeia reiniciada — FULL cobre', 'rgba(59,130,246,0.18)', '#93c5fd'],
-                                'diff_schedule_stopped': ['Agendamento DIFF parado', 'rgba(245,158,11,0.18)', '#fcd34d'],
+                                'diff_schedule_stopped': ['Cadeia DIFF parada — FULL a cobrir', 'rgba(245,158,11,0.18)', '#fcd34d'],
                                 'ag_system_gap': ['Política por-nó (AG) — sem backup próprio', 'rgba(168,85,247,0.18)', '#d8b4fe'],
                             };
                             const dc = dcMap[dClass];
@@ -41175,6 +41178,8 @@ Tempo de Resposta: ${responseTime}
                     'WARNING: FULL 120-168h, DIFF 24-30h, LOG 1-2h',
                     'CRITICAL: FULL > 168h, DIFF > 30h, LOG > 2h',
                     'Janela de classificacao: ultimas 48h',
+                    'Na modal, "Limite de aviso" = ultimo backup + threshold de aviso (o instante em que passou a contar); nao e o proximo backup previsto',
+                    'Banda "Cadeia DIFF parada (FULL a cobrir)": DIFF parado ha mais de 7 dias mas com FULL fresco a cobrir. So existe para DIFF porque FULL/LOG parados JA contam em atraso; agendamento parado por job esta em "Sem Proxima Execucao Valida" / "Sem Agendamento no Agent"',
                     'Cor do card muda conforme ambiente: vermelho=PRD, amarelo=QLT, azul=TST'
                 ],
                 thresholds: [
@@ -41195,6 +41200,8 @@ Tempo de Resposta: ${responseTime}
                             'WARNING: FULL 120-168h, DIFF 24-30h, LOG 1-2h',
                             'CRITICAL: FULL > 168h, DIFF > 30h, LOG > 2h',
                             'Classification window: last 48h',
+                            'In the modal, "Warning limit" = last backup + warning threshold (the moment it started counting); it is NOT the next scheduled backup',
+                            'Band "DIFF chain stopped (FULL covers)": DIFF stopped for more than 7 days but a fresh FULL covers it. DIFF-only because stopped FULL/LOG ALREADY count as delayed; per-job stopped schedules live in "No Valid Next Run" / "No Agent Schedule"',
                             'Card color changes by environment: red=PRD, yellow=QLT, blue=TST'
                         ],
                         conditions: ['WARNING FULL 120-168h', 'WARNING DIFF 24-30h', 'WARNING LOG 1-2h', 'CRITICAL FULL > 168h', 'CRITICAL DIFF > 30h', 'CRITICAL LOG > 2h']
@@ -41207,6 +41214,8 @@ Tempo de Resposta: ${responseTime}
                             'WARNING: FULL 120-168h, DIFF 24-30h, LOG 1-2h',
                             'CRITICAL: FULL > 168h, DIFF > 30h, LOG > 2h',
                             'Ventana de clasificacion: ultimas 48h',
+                            'En el modal, "Limite de aviso" = ultimo backup + umbral de aviso (el instante en que empezo a contar); NO es el proximo backup previsto',
+                            'Banda "Cadena DIFF parada (FULL cubre)": DIFF parado mas de 7 dias pero con FULL reciente que lo cubre. Solo DIFF porque FULL/LOG parados YA cuentan como atrasados; agendamiento parado por job esta en "Sin Proxima Ejecucion Valida" / "Sin Agendamiento en el Agent"',
                             'Color del card cambia segun ambiente: rojo=PRD, amarillo=QLT, azul=TST'
                         ],
                         conditions: ['WARNING FULL 120-168h', 'WARNING DIFF 24-30h', 'WARNING LOG 1-2h', 'CRITICAL FULL > 168h', 'CRITICAL DIFF > 30h', 'CRITICAL LOG > 2h']
@@ -43910,7 +43919,7 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                         reconLine = `<div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px;">`
                             + `Critério revisto (council 01/09): <strong>${_dcCount.actionable}</strong> accionáveis`
                             + ` · ${_dcCount.chain_reset} cadeia reiniciada (FULL cobre)`
-                            + ` · ${_dcCount.diff_schedule_stopped} agendamento DIFF parado`
+                            + ` · ${_dcCount.diff_schedule_stopped} cadeia DIFF parada (FULL a cobrir)`
                             + ` · ${_dcCount.ag_system_gap} política por-nó AG</div>`;
                     }
                 }
@@ -44259,7 +44268,7 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                     summaryDiv.innerHTML = `${t('kpi_modal.instances_shown') || 'Mostrando'} ${_headNum} (filtro: <strong style="color: var(--color-text-link);">${filterLabel}</strong>)`
                         + `<div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px;">`
                         + `Critério revisto (council 01/09): <strong>${_dc.actionable}</strong> linhas accionáveis`
-                        + ` · ${_dc.diff_schedule_stopped} agendamento DIFF parado`
+                        + ` · ${_dc.diff_schedule_stopped} cadeia DIFF parada (FULL a cobrir)`
                         + ` · ${_dc.ag_system_gap} política por-nó AG${_chainLink}</div>`;
                 } else if (_isTlogModal(_modalKpiType)) {
                     // 2026-09-02 (modal TLOG por base): cabecalho em BASES visiveis +

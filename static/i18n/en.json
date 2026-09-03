@@ -871,6 +871,8 @@
     "show_recovered_toggle": "show {n} recovered",
     "hide_recovered_toggle": "hide {n} recovered",
     "recovered_count": "already recovered",
+    "delayed_warning_limit": "Warning limit",
+    "delayed_exceeded_by": "exceeded {n}h ago",
     "stale_no_verdict": "jobs snapshot is stale - no recovery verdict",
     "bases_in_instances": "{bases} database(s) {sev} across {instances} instance(s)",
     "total_bases_suffix": "(databases)",

@@ -871,6 +871,8 @@
     "show_recovered_toggle": "mostrar {n} recuperada(s)",
     "hide_recovered_toggle": "ocultar {n} recuperada(s)",
     "recovered_count": "ja recuperada(s)",
+    "delayed_warning_limit": "Limite de aviso",
+    "delayed_exceeded_by": "excedido há {n}h",
     "stale_no_verdict": "snapshot de jobs desatualizado - sem veredicto de recuperacao",
     "bases_in_instances": "{bases} base(s) {sev} em {instances} instância(s)",
     "total_bases_suffix": "(bases)",

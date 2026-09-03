@@ -9,6 +9,26 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Backup Delayed — rótulos honestos na modal e na banda DIFF** (revisão
+  owner 03/09, consenso v33-specialist; Lote A do
+  `PLANO_BACKUP_DELAYED_MELHORIAS_2026-09-03.md`). "Esperado: dd/mm hh:mm"
+  passa a **"Limite de aviso: dd/mm hh:mm (excedido há Nh)"** — o valor era
+  `último backup + threshold de aviso` (o instante em que a linha passou a
+  contar), por construção sempre no passado, e lia-se como "próximo backup
+  previsto"; a linha "Gap … vs expected" (redundante) sai. A banda
+  "Agendamento DIFF parado" passa a **"Cadeia DIFF parada (FULL a cobrir)"**
+  no tile, título da modal, chip de classe e linhas de reconciliação: a banda
+  é subproduto do perdão chain-reset (R2) e só existe para DIFF porque
+  FULL/LOG parados JÁ contam em atraso; agendamento parado por job vive em
+  "Sem Próxima Execução Válida" / "Sem Agendamento no Agent". Help
+  `backup-delayed` (pt/en/es) explica ambos. 2 chaves i18n novas × 3 locales
+  (`kpi_modal.delayed_warning_limit`, `kpi_modal.delayed_exceeded_by`). Zero
+  mudança de números ou de backend. [tier: Std]
+- **Council: `watcherdb-v33-specialist` → `watcherdb-v34-specialist`**
+  (owner 03/09: "estamos no diretório do V3.4"). Mesmo charter, identidade e
+  paths V3.4, secção "Linhagem V3.4" a preservar o histórico V3.3 como
+  precedente. Ficheiro antigo removido no commit. [council]
+
 - **KPI Backup Failed Fase 2 — recuperação verificada nasce no collector**
   (council 21/08 + v1-intel GO-com-condições; substitui o mecanismo da Fase 1
   `b13a7e2` no mesmo dia). O collector V1 (`collect_backup_failures.py`) passa
