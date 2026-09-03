@@ -31,13 +31,16 @@ import win32event
 import win32service
 import win32serviceutil
 
-SERVICE_NAME = "WatcherDBWebServiceV33"  # SOT: deploy/release_vars.psd1
-SERVICE_DISPLAY = "WatcherDB Web Service V3.3"
+# Linha V3.4 (2026-09-03, decisao owner): servico PROPRIO em paralelo ao
+# WatcherDBWebServiceV33 (8433) da pasta V3.3 — nome, porta e prefixo do mutex
+# distintos para os dois coexistirem na mesma maquina.
+SERVICE_NAME = "WatcherDBWebServiceV34"  # SOT: deploy/release_vars.psd1
+SERVICE_DISPLAY = "WatcherDB Web Service V3.4"
 SERVICE_DESC = (
-    "WatcherDB V3.3 Standard Edition - SQL Server monitoring web service "
-    "(port 8433)."
+    "WatcherDB V3.4 Standard Edition - SQL Server monitoring web service "
+    "(port 8434)."
 )
-DEFAULT_PORT = 8433  # SOT: deploy/release_vars.psd1 WebPort
+DEFAULT_PORT = 8434  # SOT: deploy/release_vars.psd1 WebPort
 
 _ERROR_ALREADY_EXISTS = 183
 _ERROR_FAILED_SERVICE_CONTROLLER_CONNECT = 1063
@@ -78,7 +81,7 @@ def acquire_single_instance(data_root) -> tuple:
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     digest = hashlib.sha1(str(data_root).lower().encode("utf-8")).hexdigest()[:12]
     for scope in ("Global", "Local"):
-        name = scope + "\\WatcherDBV33_" + digest
+        name = scope + "\\WatcherDBV34_" + digest
         handle = kernel32.CreateMutexW(None, False, name)
         err = ctypes.get_last_error()
         if not handle:
@@ -355,7 +358,7 @@ def run_console() -> int:
     port = _resolve_port()
     tls_kwargs, tls_msg = _tls_kwargs()
     scheme = "https" if tls_kwargs else "http"
-    print("[START] WatcherDB V3.3 Standard (consola) - " + scheme + "://"
+    print("[START] WatcherDB V3.4 Standard (consola) - " + scheme + "://"
           + host + ":" + str(port) + " | " + tls_msg)
     uvicorn.run(
         watcherdb_main.app,

@@ -65,14 +65,22 @@ Get-CimInstance Win32_Service |
     Sort-Object DisplayName | Format-Table -AutoSize -Wrap
 ```
 
-Esperado apos a limpeza de 2026-07-29 — **4 servicos**:
+Esperado apos a limpeza de 2026-07-29 + servico V3.4 de 2026-09-03 — **5 servicos**:
 
-| Serviço | Estado | Conta |
-|---|---|---|
-| `WatcherDBCollector` | Running | `ue_e-snetto@tapnet.tap.pt` |
-| `WatcherDBWebServiceV33` | Running | `ue_e-snetto@tapnet.tap.pt` |
-| `WatcherDBWebServiceV6` | Running | `TAPNET\ue_e-snetto` |
-| `WatcherDBSSIS` | Stopped (Auto) | `ue_e-snetto@tapnet.tap.pt` |
+| Serviço | Porta | Pasta | Estado | Conta |
+|---|---|---|---|---|
+| `WatcherDBCollector` | — | WATCHERDB INTELLIGENCE V1 | Running | `ue_e-snetto@tapnet.tap.pt` |
+| `WatcherDBWebServiceV33` | 8433 | WATCHERDB_V3.3 (`.venv-build`) | Running | `ue_e-snetto@tapnet.tap.pt` |
+| `WatcherDBWebServiceV34` | 8434 | WATCHERDB_V3.4 (`.venv-build`) | Running | `ue_e-snetto@tapnet.tap.pt` |
+| `WatcherDBWebServiceV6` | 8660 | WATCHERDB_V6 | Running | `TAPNET\ue_e-snetto` |
+| `WatcherDBSSIS` | — | — | Stopped (Auto) | `ue_e-snetto@tapnet.tap.pt` |
+
+> **8434** deixou de estar livre nesta maquina (2026-09-03). O INSTALL_GUIDE cliente
+> (`docs/external/standard/INSTALL_GUIDE.md:469`) usa 8434 como *exemplo* de porta
+> alternativa — valido no cliente, nao aqui; e o runbook de auditoria de 04/07
+> (`AUDITORIA_EMPACOTAMENTO_2026-07-04_RUNBOOK_ETAPA2.md`) criava um servico efemero
+> na 8434 — se for re-corrido, usar 8435. Instalacao/rollback do V34:
+> `SERVICO_V34_8434_RUNBOOK_2026-09-03.md`.
 
 > **Nota de risco:** todos correm com a conta pessoal do owner, e
 > `api/connection_pool.py:694` usa `Trusted_Connection=yes`. Logo **todas** as

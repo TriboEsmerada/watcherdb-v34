@@ -48,11 +48,11 @@ def test_mutex_distinct_data_dirs_coexist(tmp_path):
 
 def test_resolve_port_default_env_and_invalid(monkeypatch):
     monkeypatch.delenv("WATCHERDB_PORT", raising=False)
-    assert watcherdb_service._resolve_port() == 8433
+    assert watcherdb_service._resolve_port() == 8434  # linha V3.4 (03/09)
     monkeypatch.setenv("WATCHERDB_PORT", "8499")
     assert watcherdb_service._resolve_port() == 8499
     monkeypatch.setenv("WATCHERDB_PORT", "nao-numerico")
-    assert watcherdb_service._resolve_port() == 8433
+    assert watcherdb_service._resolve_port() == 8434  # linha V3.4 (03/09)
 
 
 def _svc_stub(monkeypatch, acquire_results):

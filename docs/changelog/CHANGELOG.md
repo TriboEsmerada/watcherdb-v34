@@ -24,6 +24,19 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   `backup-delayed` (pt/en/es) explica ambos. 2 chaves i18n novas × 3 locales
   (`kpi_modal.delayed_warning_limit`, `kpi_modal.delayed_exceeded_by`). Zero
   mudança de números ou de backend. [tier: Std]
+- **Serviço Windows próprio da linha V3.4: `WatcherDBWebServiceV34` na porta
+  8434**, em paralelo ao `WatcherDBWebServiceV33` (8433) da pasta V3.3 (decisão
+  owner 03/09; parecer deploy-architect + port-checker: 8434 livre, fora do
+  mapa canónico). `watcherdb_service.py`: nome/display/descrição V3.4,
+  `DEFAULT_PORT=8434`, prefixo do mutex `WatcherDBV34_`, banner de consola.
+  `deploy/release_vars.psd1`: produto 3.4, serviço/porta, `InstallFolderName` e
+  `DataFolderName='WatcherDB\V3.4'` (evita colisão em ProgramData se algum dia
+  for frozen/MSI), `MsiFileName` 3.4; `UpgradeCode` mantido de propósito (MSI
+  3.4 = upgrade da 3.3 no cliente). Porta em runtime continua a vir de
+  `WATCHERDB_PORT` no `.env` da pasta (não-frozen → não herda 8433). Instalação
+  e rollback: `docs/context/SERVICO_V34_8434_RUNBOOK_2026-09-03.md`. Pipeline
+  MSI (`preflight_target.ps1`, `uninstall.ps1`, `validate_cell.ps1`) fica com
+  defaults 8433/V33 — não usado nesta fase. [infra local]
 - **Council: `watcherdb-v33-specialist` → `watcherdb-v34-specialist`**
   (owner 03/09: "estamos no diretório do V3.4"). Mesmo charter, identidade e
   paths V3.4, secção "Linhagem V3.4" a preservar o histórico V3.3 como
