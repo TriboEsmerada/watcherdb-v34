@@ -4220,7 +4220,7 @@
                  sobreporia o CSS de .profile-menu-item. -->
             <div class="header-user-group" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                 <!-- Language Selector v2 (i18n with flags) -->
-                <div id="headerLangSelector"><button onclick="cycleLangGlobal()" id="globalLangBtn" title="Idioma / Language (PT-EN-ES)" aria-label="Mudar idioma" style="display:flex;align-items:center;gap:6px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;"><i class="fas fa-globe"></i> <span id="globalLangCode">PT</span></button></div>
+                <div id="headerLangSelector"><button onclick="cycleLangGlobal()" id="globalLangBtn" title="Idioma / Language (PT / PT-BR / EN / ES)" aria-label="Mudar idioma" style="display:flex;align-items:center;gap:6px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;"><i class="fas fa-globe"></i> <span id="globalLangCode">PT</span></button></div>
                 <!-- User Badge (auth) + Profile Dropdown -->
                 <div style="position: relative;">
                     <div id="userBadge" class="user-badge" style="display: none;"></div>
@@ -34987,18 +34987,18 @@
 
         // ---- Idioma no cabeçalho dos KPIs (motor i18n nativo: setLanguage/getLanguage) ----
         function kpiCycleLang() {
-            const seq = ['pt', 'en', 'es'];
+            const seq = (typeof WatcherI18N !== 'undefined' && WatcherI18N.SUPPORTED_LANGS) ? WatcherI18N.SUPPORTED_LANGS : ['pt', 'pt-BR', 'en', 'es'];
             const cur = (typeof getLanguage === 'function' ? getLanguage() : 'pt');
-            const nxt = seq[(seq.indexOf(cur) + 1) % 3];
+            const nxt = seq[(seq.indexOf(cur) + 1) % seq.length];
             if (typeof setLanguage === 'function') setLanguage(nxt);
             _kpiSyncLangBtn(nxt);
         }
         // Seletor de idioma GLOBAL (no lugar do antigo "BR PT", no topo) — traduz a app toda
         function cycleLangGlobal() {
-            const seq = ['pt', 'en', 'es'];
+            const seq = (typeof WatcherI18N !== 'undefined' && WatcherI18N.SUPPORTED_LANGS) ? WatcherI18N.SUPPORTED_LANGS : ['pt', 'pt-BR', 'en', 'es'];
             const W = (typeof WatcherI18N !== 'undefined') ? WatcherI18N : null;
             const cur = (typeof getLanguage === 'function') ? getLanguage() : (W && W.getLanguage ? W.getLanguage() : 'pt');
-            const nxt = seq[(seq.indexOf(cur) + 1) % 3];
+            const nxt = seq[(seq.indexOf(cur) + 1) % seq.length];
             if (typeof setLanguage === 'function') setLanguage(nxt);
             else if (W && W.setLanguage) W.setLanguage(nxt);
             const b = document.getElementById('globalLangCode'); if (b) b.textContent = nxt.toUpperCase();
@@ -36288,7 +36288,7 @@
         function kpiReportCatAll() { _kpiRepFilter.cat = []; renderKpiReport(); }
         function kpiReportToggleCat(idx) { idx = +idx; const i = _kpiRepFilter.cat.indexOf(idx); if (i >= 0) _kpiRepFilter.cat.splice(i, 1); else _kpiRepFilter.cat.push(idx); renderKpiReport(); }
         function kpiReportSetSev(s) { _kpiRepFilter.sev = s; renderKpiReport(); }
-        function kpiReportCycleLang() { const seq = ['pt', 'en', 'es']; const cur = (typeof getLanguage === 'function' ? getLanguage() : 'pt'); const nxt = seq[(seq.indexOf(cur) + 1) % 3]; if (typeof setLanguage === 'function') setLanguage(nxt); else renderKpiReport(); }
+        function kpiReportCycleLang() { const seq = (typeof WatcherI18N !== 'undefined' && WatcherI18N.SUPPORTED_LANGS) ? WatcherI18N.SUPPORTED_LANGS : ['pt', 'pt-BR', 'en', 'es']; const cur = (typeof getLanguage === 'function' ? getLanguage() : 'pt'); const nxt = seq[(seq.indexOf(cur) + 1) % seq.length]; if (typeof setLanguage === 'function') setLanguage(nxt); else renderKpiReport(); }
         // Mantem o relatorio aberto POR TRAS da modal (z-index 99985 > overlay 99980)
         function kpiReportOpen(k, t2) { const m = document.getElementById('instancesModal'); if (m) m.style.zIndex = '99985'; if (typeof showProblematicInstances === 'function') showProblematicInstances(k, t2); }
         // Export HTML: pagina toda "como esta" (CSS real do tema) + detalhes de cada categoria (instancias reais).

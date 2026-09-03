@@ -60,7 +60,8 @@ quando invocar, como pedir bem.
 | `v33-feature-matrix-checker` | Dado um diff, valida tier Std vs Pro. PASS/FAIL + linhas a corrigir |
 | `v33-changelog-assistant` | Dado git log range, propõe entrada de RELEASE_NOTES no estilo do projecto |
 | `v33-port-collision-checker` | Scan rápido das portas usadas (8433, 8443, 8449, 8450, 8452, 8460, 8555, 8660); flag de colisão |
-| `v33-i18n-coverage` | Dado HTML alterado, lista chaves pt/en/es em falta |
+| `v33-i18n-coverage` | Dado HTML alterado, lista chaves pt/en/es em falta (+ overrides pt-BR em falta, WARN) |
+| `v33-i18n-linguist` | Dado diff de `static/i18n/*.json`, audita qualidade de tradução: variante (pt-PT / pt-BR overlay / en-US / es neutro), acentuação, glossário SQL Server, consistência intra-locale |
 | `v33-modal-auth-gate-checker` | Confirma que modais novos têm `data-admin-gated` quando tocam endpoints `_require_admin` |
 | `v33-knowledge-base-curator` | Mantém `index.json` da KB local actualizado (checksums + timestamps + tags) |
 
@@ -115,7 +116,7 @@ Durante sprints autorizados: `[PROGRESS HH:MM] X% geral / Y% sprint` a cada ~5mi
 | Re-avaliação do council, gaps | `core-council-architect` |
 | Adicionar doc à biblioteca | `core-librarian` |
 | Tier Std vs Pro de mudança proposta | `v33-feature-matrix-checker` (micro) |
-| Mudança em SPA, validar i18n | `v33-i18n-coverage` (micro) |
+| Mudança em SPA, validar i18n | `v33-i18n-coverage` (micro) → `v33-i18n-linguist` (micro), em sequência |
 | Antes de release tag | `v33-changelog-assistant` (micro) + `v33-port-collision-checker` (micro) |
 
 ## 5. Como escrever bons briefs (checklist)

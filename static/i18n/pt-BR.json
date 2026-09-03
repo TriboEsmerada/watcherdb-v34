@@ -1,0 +1,164 @@
+{
+  "kpi_report": {
+    "desc_backups": "Status e problemas relacionados a backups"
+  },
+  "alwayson": {
+    "check_inventory": "A instância está configurada corretamente no arquivo",
+    "loading_failover": "Carregando eventos de failover...",
+    "fetch_primary_title": "Buscar dados completos do nó primário"
+  },
+  "analysis": {
+    "full_db": "Análise Completa do Banco de Dados"
+  },
+  "backup": {
+    "loading_data": "Carregando dados...",
+    "no_records_found": "Nenhum registro encontrado com os filtros aplicados."
+  },
+  "col": {
+    "blocker_user": "Bloqueador - Usuário",
+    "user": "Usuário",
+    "status": "Status"
+  },
+  "copilot": {
+    "loading_insights": "Carregando insights...",
+    "loading_scores": "Carregando scores de manutenção preditiva..."
+  },
+  "cpu": {
+    "loading": "Carregando análise de CPU..."
+  },
+  "disk": {
+    "click_sort_hint": "Clique nas colunas para ordenar | Clique na linha para ver arquivos",
+    "db_latency_details": "Detalhes de Latência em Arquivo de Banco de Dados",
+    "drill": {
+      "filter_file_ph": "Filtrar arquivo...",
+      "sort_file": "Ordenar por Arquivo"
+    },
+    "loading": "Carregando análise de discos...",
+    "loading_filters": "Carregando índice de databases e filegroups para filtros avançados...",
+    "loading_trends": "Carregando tendências...",
+    "no_history": "Sem dados históricos disponíveis. A coleta de KPIs de disco precisa estar ativa para visualizar tendências.",
+    "search_placeholder": "Buscar drive, label, database, arquivo, filegroup..."
+  },
+  "header": {
+    "settings": "Configurações",
+    "settings_title": "Configurações",
+    "search_placeholder": "Buscar servidor (nome, descrição ou ambiente)..."
+  },
+  "jobs": {
+    "loading": "Carregando análise de Jobs...",
+    "loading_trends": "Carregando tendências de jobs...",
+    "status_label": "Status:",
+    "pdf_status": "Status",
+    "pdf_checklist_status": "Status",
+    "search_placeholder": "Buscar por nome do job..."
+  },
+  "kpi_modal": {
+    "affected_users": "usuário(s) afetado(s)",
+    "err_2571_detail": "Erro 2571: esta versão de SQL (< 2016 SP2) não tem DATABASEPROPERTYEX(LastGoodCheckDbTime) — a coleta exigiria DBCC, indisponível sem privilégios elevados.",
+    "why_failed": "Porque a coleta falhou",
+    "verdict_help": "O que é: cada base de dados recebe um veredicto do exame de integridade.\nP1 Corrompida: páginas danificadas detectadas - agir já.\nP3 Nunca validada: nunca correu CHECKDB.\nP4 Validação velha: último CHECKDB há mais de 30 dias.\nP5 OK: validada recentemente.\nPorque importa: corrupção é silenciosa - só aparece quando já dói. O CHECKDB é o exame de rotina que a apanha cedo.\nO que fazer: clique num veredicto para filtrar a lista; cada card traz o comando pronto. Se a coleta falhou, o card mostra o erro exato.",
+    "status": "Status"
+  },
+  "loading": {
+    "alerts": "Carregando alertas...",
+    "alwayson_data": "Carregando dados do Always On...",
+    "backup": "Carregando análise de backups...",
+    "critical_alerts": "Carregando alertas críticos...",
+    "custom_queries": "Carregando queries customizadas...",
+    "disks_critical": "Carregando discos críticos...",
+    "disks_warning": "Carregando discos warning...",
+    "filegroups_all": "Carregando todos os FileGroups (pode demorar alguns segundos)...",
+    "filegroups_critical": "Carregando FileGroups críticos...",
+    "filegroups_warning": "Carregando FileGroups warning...",
+    "instances": "Carregando instâncias...",
+    "logs": "Carregando análise de logs...",
+    "predictive": "Carregando análise preditiva...",
+    "security": "Carregando análise de segurança...",
+    "settings": "Carregando configurações...",
+    "tde": "Carregando dados de TDE..."
+  },
+  "mem": {
+    "loading": "Carregando análise de memória...",
+    "pressure_na_pending": "<strong>Coleta de dados pendente:</strong> Os dados podem ainda não ter sido coletados pelo sistema de monitoramento"
+  },
+  "modal": {
+    "settings": "Configurações"
+  },
+  "msg": {
+    "loading_data": "Carregando dados..."
+  },
+  "page": {
+    "user_analysis": "Análise de Usuários"
+  },
+  "plural": {
+    "users_count": "{count} usuário|{count} usuários"
+  },
+  "predict": {
+    "check_collection": "Verificar se a coleta de dados está ativa",
+    "no_data_msg": "Coleta de dados não está ativa para este servidor",
+    "use_space_analysis": "Use a análise de espaço atual para monitoramento imediato"
+  },
+  "security": {
+    "loading": "Carregando análise de segurança..."
+  },
+  "services": {
+    "possible_causes": "<strong>Possíveis causas:</strong> Firewall bloqueando acesso remoto ao SCM, permissões insuficientes, ou dados ainda não coletados no WatcherDB Intelligence.",
+    "overall_status": "Status Geral",
+    "status": "Status"
+  },
+  "space": {
+    "loading": "Carregando análise de espaço...",
+    "loading_short": "Carregando..."
+  },
+  "sqldiag": {
+    "q_file_growth": "Crescimento de Arquivos",
+    "q_tempdb": "Monitoramento TempDB",
+    "q_backup": "Status de Backups"
+  },
+  "sqlmodal": {
+    "loading_databases": "(Carregando databases...)"
+  },
+  "success": {
+    "saved": "Configurações salvas com sucesso"
+  },
+  "table": {
+    "user": "Usuário"
+  },
+  "ui": {
+    "loading": "Carregando...",
+    "loading_generic": "Carregando...",
+    "loading_kpis": "Carregando KPIs...",
+    "loading_users": "Carregando análise de usuários...",
+    "status": "Status"
+  },
+  "users": {
+    "group_members": "Usuários do Grupo",
+    "inactive_users": "Usuários Inativos",
+    "loading": "Carregando análise de usuários...",
+    "no_inactive": "Nenhum usuário inativo detectado.",
+    "no_orphan": "Nenhum usuário órfão detectado.",
+    "orphaned": "Usuários Órfãos",
+    "total_users": "Total Usuários",
+    "user": "Usuário",
+    "user_groups": "Grupos do Usuário",
+    "user_info": "Informações do Usuário",
+    "user_not_found_ad": "Usuário não encontrado no AD",
+    "status": "Status"
+  },
+  "sessions": {
+    "loading": "Carregando sessões..."
+  },
+  "overview": {
+    "precheck_status": "Status"
+  },
+  "tde": {
+    "status_tde": "STATUS TDE"
+  },
+  "doc": {
+    "search_placeholder": "Buscar KPI..."
+  },
+  "log": {
+    "cat_click_to_fetch": "clica p/ buscar",
+    "cat_fetch_error": "Não foi possível buscar esta categoria. Tenta novamente."
+  }
+}

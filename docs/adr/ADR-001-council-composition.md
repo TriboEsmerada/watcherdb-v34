@@ -53,12 +53,13 @@ Criar council project-local em `WATCHERDB_V3.3/.claude/agents/` com:
 - `ai-systems-architect` (~/.claude/agents/) — raro em V3.3 (Std sem AI)
 - `python-packaging-architect` (~/.claude/agents/) — coordenação com `deploy-architect`
 
-### Micro-agents (Fase 3 — 6 agents single-task)
+### Micro-agents (Fase 3 — 6 agents single-task; 7.º adicionado 2026-09-03)
 
 - `v33-feature-matrix-checker`
 - `v33-changelog-assistant`
 - `v33-port-collision-checker`
 - `v33-i18n-coverage`
+- `v33-i18n-linguist` (2026-09-03 — qualidade de tradução; par do coverage. Charter: core-council-architect)
 - `v33-modal-auth-gate-checker`
 - `v33-knowledge-base-curator`
 

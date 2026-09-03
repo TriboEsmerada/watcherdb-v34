@@ -9,6 +9,23 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Português do Brasil como 4.º idioma do portal (overlay esparso) + micro-agent
+  `v33-i18n-linguist`** (decisão owner 03/09; charter pelo core-council-architect).
+  `pt.json` fixa-se como **pt-PT pós-AO90** (norma de 16/08) e nasce
+  `static/i18n/pt-BR.json` contendo apenas as chaves cujo texto difere do pt-PT;
+  o motor já resolvia fallback por chave (`FALLBACK_CHAIN`), pelo que pt-BR cai em
+  pt para tudo o resto. Selector passa a 4 opções (🇵🇹 Português (Portugal),
+  🇧🇷 Português (Brasil), English, Español) e os 3 ciclos de idioma do portal
+  deixam de ter `['pt','en','es']` hardcoded. `scripts/i18n_validate.py` e
+  `tests/unit/test_i18n_parity.py` conhecem o overlay (subconjunto de pt, sem
+  chaves órfãs nem overrides idênticos a pt; AO90 e placeholders também em pt-BR).
+  Lote A do linguista: vocabulário pt-BR que vivia em `pt.json` (usuário, arquivo,
+  carregando, coleta, monitoramento, configurações…) passa a pt-PT e o original
+  vai para o overlay. Glossário de termos que não se traduzem em
+  `knowledge_base/domain/i18n_glossary.md`. Pendentes para lotes B-E: acentuação
+  (pt 195 / es 313 chaves com candidatos), es neutro, en-US, 211 chaves pt==en.
+  [tier: Std]
+
 - **Backup Delayed — rótulos honestos na modal e na banda DIFF** (revisão
   owner 03/09, consenso v33-specialist; Lote A do
   `PLANO_BACKUP_DELAYED_MELHORIAS_2026-09-03.md`). "Esperado: dd/mm hh:mm"

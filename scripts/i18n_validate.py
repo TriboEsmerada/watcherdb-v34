@@ -30,7 +30,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(SCRIPT_DIR, '..')
 I18N_DIR = os.path.join(PROJECT_ROOT, 'static', 'i18n')
 REFERENCE_LANG = 'pt'  # The "source of truth" language
-SUPPORTED_LANGS = ['pt', 'en', 'es']
+SUPPORTED_LANGS = ['pt', 'pt-BR', 'en', 'es']
+OVERLAY_LANGS = {'pt-BR'}  # overlay esparso: subconjunto de pt, fallback por chave no runtime (owner 2026-09-03)
 
 # Files to scan for key usage
 SCAN_PATTERNS = [
@@ -116,8 +117,8 @@ def validate_missing_keys(translations):
             continue
         lang_keys = set(translations[lang].keys())
 
-        # Keys in reference but missing in this lang
-        missing = ref_keys - lang_keys
+        # Keys in reference but missing in this lang (overlay langs may be sparse)
+        missing = set() if lang in OVERLAY_LANGS else (ref_keys - lang_keys)
         if missing:
             for key in sorted(missing):
                 errors.append({
@@ -252,7 +253,7 @@ def validate_untranslated(translations):
             if translations[lang][key] == ref_value and len(ref_value) > 3:
                 errors.append({
                     'level': 'WARN',
-                    'type': 'POSSIBLY_UNTRANSLATED',
+                    'type': 'OVERLAY_REDUNDANT' if lang in OVERLAY_LANGS else 'POSSIBLY_UNTRANSLATED',
                     'lang': lang,
                     'key': key,
                     'message': f'Value in {lang} identical to {REFERENCE_LANG}: "{ref_value[:60]}"'
@@ -295,7 +296,7 @@ def auto_fix_missing(translations):
     fixed = 0
 
     for lang in SUPPORTED_LANGS:
-        if lang == REFERENCE_LANG:
+        if lang == REFERENCE_LANG or lang in OVERLAY_LANGS:
             continue
         lang_keys = set(translations[lang].keys())
         missing = ref_keys - lang_keys

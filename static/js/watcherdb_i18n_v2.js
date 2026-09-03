@@ -10,7 +10,7 @@
  * - data-i18n attributes: declarative translation
  * - Persistence: localStorage
  *
- * Supports: PT-BR (default), EN, ES
+ * Supports: PT-PT (default, pt.json), PT-BR (pt-BR.json = overlay esparso com fallback por chave para pt), EN, ES
  *
  * Usage:
  *   t('kpi.instances_ok')                        → simple translation
@@ -30,9 +30,10 @@
     // CONFIGURATION
     // ========================================
     const DEFAULT_LANG = 'pt';
-    const SUPPORTED_LANGS = ['pt', 'en', 'es'];
+    const SUPPORTED_LANGS = ['pt', 'pt-BR', 'en', 'es'];
     const FALLBACK_CHAIN = {
         pt: ['pt'],
+        'pt-BR': ['pt-BR', 'pt'],   // overlay esparso (decisao owner 2026-09-03)
         en: ['en', 'pt'],
         es: ['es', 'en', 'pt']
     };
@@ -165,7 +166,7 @@
      * Set the current language.
      * Loads dictionary if not cached, then applies to UI.
      *
-     * @param {string} lang - Language code ('pt', 'en', 'es')
+     * @param {string} lang - Language code ('pt', 'pt-BR', 'en', 'es')
      * @returns {Promise<void>}
      */
     async function setLanguage(lang) {
@@ -183,7 +184,7 @@
         localStorage.setItem('watcherdb_lang', lang);
 
         // Update HTML lang attribute
-        const langMap = { pt: 'pt-PT', en: 'en', es: 'es' };  // norma PT-PT pos-AO90 (decisao owner 2026-08-16)
+        const langMap = { pt: 'pt-PT', 'pt-BR': 'pt-BR', en: 'en', es: 'es' };  // norma PT-PT pos-AO90 (decisao owner 2026-08-16)
         document.documentElement.lang = langMap[lang] || lang;
 
         // Update selector visual
@@ -460,8 +461,8 @@
         // Update flag display if custom selector
         var flagDisplay = document.getElementById('langFlagDisplay');
         if (flagDisplay) {
-            var flags = { pt: '🇧🇷', en: '🇺🇸', es: '🇪🇸' };
-            var labels = { pt: 'PT', en: 'EN', es: 'ES' };
+            var flags = { pt: '🇵🇹', 'pt-BR': '🇧🇷', en: '🇺🇸', es: '🇪🇸' };
+            var labels = { pt: 'PT', 'pt-BR': 'PT-BR', en: 'EN', es: 'ES' };
             safeHTML(flagDisplay, flags[_currentLang] + ' ' + labels[_currentLang]);
         }
     }
@@ -489,13 +490,18 @@
 
         safeHTML(container, [
             '<button class="i18n-lang-btn" id="langToggleBtn" aria-haspopup="listbox" aria-expanded="false">',
-            '  <span id="langFlagDisplay">🇧🇷 PT</span>',
+            '  <span id="langFlagDisplay">🇵🇹 PT</span>',
             '  <i class="fas fa-chevron-down i18n-lang-chevron"></i>',
             '</button>',
             '<div class="i18n-lang-dropdown" id="langDropdown" role="listbox" aria-label="Select language">',
-            '  <div class="i18n-lang-option" data-lang="pt" role="option" lang="pt-BR">',
+            '  <div class="i18n-lang-option" data-lang="pt" role="option" lang="pt-PT">',
+            '    <span class="i18n-lang-flag">🇵🇹</span>',
+            '    <span class="i18n-lang-name">Português (Portugal)</span>',
+            '    <i class="fas fa-check i18n-lang-check"></i>',
+            '  </div>',
+            '  <div class="i18n-lang-option" data-lang="pt-BR" role="option" lang="pt-BR">',
             '    <span class="i18n-lang-flag">🇧🇷</span>',
-            '    <span class="i18n-lang-name">Português</span>',
+            '    <span class="i18n-lang-name">Português (Brasil)</span>',
             '    <i class="fas fa-check i18n-lang-check"></i>',
             '  </div>',
             '  <div class="i18n-lang-option" data-lang="en" role="option" lang="en">',
@@ -639,7 +645,7 @@
         }
 
         // Set HTML lang attribute
-        var langMap = { pt: 'pt-PT', en: 'en', es: 'es' };  // norma PT-PT pos-AO90 (decisao owner 2026-08-16)
+        var langMap = { pt: 'pt-PT', 'pt-BR': 'pt-BR', en: 'en', es: 'es' };  // norma PT-PT pos-AO90 (decisao owner 2026-08-16)
         document.documentElement.lang = langMap[_currentLang] || _currentLang;
 
         // Start MutationObserver for dynamic content

@@ -1,4 +1,4 @@
-"""Paridade e higiene dos dicionarios i18n (pt/en/es).
+"""Paridade e higiene dos dicionarios i18n (pt/en/es + overlay pt-BR).
 
 Nasce do relatorio de QA externo 2026-08-16 (BUG-003/005/013): o QA propos um
 teste que falhe quando os 3 locales divergem, e outro para texto visivel sem
@@ -16,6 +16,7 @@ import pytest
 
 I18N_DIR = Path(__file__).resolve().parents[2] / "static" / "i18n"
 LOCALES = ("pt", "en", "es")
+OVERLAY_LOCALES = ("pt-BR",)  # overlay esparso de pt (owner 2026-09-03): subconjunto, sem chaves extra
 
 
 def _flatten(node, path=""):
@@ -35,11 +36,11 @@ def _load(locale):
 
 @pytest.fixture(scope="module")
 def dicts():
-    return {loc: _load(loc) for loc in LOCALES}
+    return {loc: _load(loc) for loc in LOCALES + OVERLAY_LOCALES}
 
 
 def test_all_locales_exist():
-    for loc in LOCALES:
+    for loc in LOCALES + OVERLAY_LOCALES:
         assert (I18N_DIR / f"{loc}.json").is_file(), f"{loc}.json em falta"
 
 
@@ -71,7 +72,9 @@ _PRE_AO90 = re.compile(
 def test_pt_uses_post_ao90_spelling(dicts):
     """pt.json nao volta a introduzir grafia pre-AO90 (BUG-005)."""
     offenders = {
-        k: v for k, v in dicts["pt"].items()
+        f"{loc}:{k}": v
+        for loc in ("pt",) + OVERLAY_LOCALES
+        for k, v in dicts[loc].items()
         if isinstance(v, str) and _PRE_AO90.search(v)
     }
     assert not offenders, (
@@ -85,10 +88,22 @@ def test_placeholders_match_across_locales(dicts):
     ph = re.compile(r"\{[a-zA-Z_][a-zA-Z0-9_]*\}")
     pt = dicts["pt"]
     problems = []
-    for loc in ("en", "es"):
+    for loc in ("en", "es") + OVERLAY_LOCALES:
         for key, value in dicts[loc].items():
             if not isinstance(value, str) or not isinstance(pt.get(key), str):
                 continue
             if set(ph.findall(pt[key])) != set(ph.findall(value)):
                 problems.append(f"{loc}:{key}")
     assert not problems, f"placeholders divergentes: {problems[:10]}"
+
+
+def test_ptbr_overlay_is_sparse_subset_of_pt(dicts):
+    """pt-BR e' overlay (owner 2026-09-03): so' chaves que existem em pt E cujo texto difere de pt."""
+    pt = dicts["pt"]
+    for loc in OVERLAY_LOCALES:
+        flat = dicts[loc]
+        assert flat, f"{loc}.json vazio -- overlay sem overrides nao faz sentido"
+        orphans = sorted(k for k in flat if k not in pt)
+        assert not orphans, f"{loc}.json com chaves que pt nao tem: {orphans[:10]}"
+        redundant = sorted(k for k, v in flat.items() if pt.get(k) == v)
+        assert not redundant, f"{loc}.json com overrides identicos a pt (redundantes): {redundant[:10]}"
