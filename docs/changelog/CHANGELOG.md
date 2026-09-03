@@ -41,6 +41,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   `backup-delayed` (pt/en/es) explica ambos. 2 chaves i18n novas × 3 locales
   (`kpi_modal.delayed_warning_limit`, `kpi_modal.delayed_exceeded_by`). Zero
   mudança de números ou de backend. [tier: Std]
+- **Backup Delayed — ordem da lista da modal** (owner 03/09, validação viva na
+  8434: "o order by deve ser desc"). A regra genérica dos KPIs de backup
+  ("evento mais recente primeiro", Wave R+7.T2) é a certa para *falhas* mas
+  invertia a urgência no *em atraso* (último backup mais recente = menos
+  atrasado). Ordem própria do `backup-delayed`: severidade da base (crítico →
+  aviso → política → info), depois horas em atraso DESC; linhas sem horas (C1,
+  sem data nenhuma) vão para o topo. Falhas/jobs/no-checksum mantêm a ordem
+  antiga. [tier: Std]
 - **Serviço Windows próprio da linha V3.4: `WatcherDBWebServiceV34` na porta
   8434**, em paralelo ao `WatcherDBWebServiceV33` (8433) da pasta V3.3 (decisão
   owner 03/09; parecer deploy-architect + port-checker: 8434 livre, fora do

@@ -47,7 +47,9 @@ netstat -ano | findstr :8434                          # esperado: vazio
 ```powershell
 py -3.11 -m venv .venv-build
 .\.venv-build\Scripts\python.exe -m pip install --upgrade pip
-.\.venv-build\Scripts\pip install -r requirements.txt
+# SEMPRE `python -m pip` — o wrapper Scripts\pip.exe da' "Access is denied" nesta
+# maquina (AppLocker/AV bloqueia .exe recem-criado no perfil; visto 03/09).
+.\.venv-build\Scripts\python.exe -m pip install -r requirements.txt
 # (requirements-build.txt so' se fores fazer build PyArmor/PyInstaller; inclui requirements.txt)
 .\.venv-build\Scripts\python.exe -c "import fastapi, uvicorn, pyodbc, win32serviceutil; print('deps OK')"
 ```
@@ -68,8 +70,8 @@ Select-String -Path .\.env -Pattern '^WATCHERDB_PORT='   # esperado: exactamente
 .\.venv-build\Scripts\python.exe watcherdb_service.py
 # esperado: "[IDENTIDADE] BD = sql ..." e "[START] WatcherDB V3.4 Standard (consola) - http://0.0.0.0:8434"
 # noutra janela:
-Invoke-WebRequest http://localhost:8434/healthz -UseBasicParsing | Select-Object StatusCode
-Invoke-WebRequest http://localhost:8434/api/version -UseBasicParsing | Select-Object -ExpandProperty Content
+Invoke-WebRequest https://localhost:8434/healthz -UseBasicParsing | Select-Object StatusCode
+Invoke-WebRequest https://localhost:8434/api/version -UseBasicParsing | Select-Object -ExpandProperty Content
 # Ctrl+C na consola para parar (liberta o mutex)
 ```
 
@@ -98,10 +100,12 @@ New-NetFirewallRule -DisplayName "WatcherDB V34 Web Service" -Direction Inbound 
 ## 6. Validação final
 ```powershell
 netstat -ano | findstr ":8433 :8434"     # 2 LISTENING, PIDs diferentes
-Invoke-WebRequest http://localhost:8434/healthz -UseBasicParsing | Select-Object StatusCode
+Invoke-WebRequest https://localhost:8434/healthz -UseBasicParsing | Select-Object StatusCode
 Get-Content .\logs\service_stderr.log -Tail 20 -ErrorAction SilentlyContinue   # sem traceback
 ```
-Browser: `http://ti-pf5hqwk4.tapnet.tap.pt:8434/watcherdb` → Backups → modal
+Browser: `https://ti-pf5hqwk4.tapnet.tap.pt:8434/watcherdb` (TLS ON herdado do `.env`
+da 3.3 — `WATCHERDB_TLS_CERT/KEY`; em Windows PowerShell 5.1 o `Invoke-WebRequest`
+não tem `-SkipCertificateCheck`, validar no browser) → Backups → modal
 "Em atraso (aviso)": deve mostrar **"Limite de aviso: … (excedido há Nh)"** e a
 linha **"Cadeia DIFF parada (FULL a cobrir)"** (Lote A, commit 7df2ffe) — a 8433
 continua a mostrar o texto antigo (é a V3.3).

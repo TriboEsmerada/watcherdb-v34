@@ -37199,9 +37199,24 @@ Tempo de Resposta: ${responseTime}
 
                 // Wave R+7.T2 (2026-05-25): sort DESC by event datetime para backup KPIs
                 // (cards mais recentes primeiro -- mais accionavel para DBA)
-                if (kpiType === 'backup-failed' || kpiType === 'backup-log-failed' ||
-                    kpiType === 'backup-delayed' || kpiType === 'backup-jobs-disabled' ||
-                    kpiType === 'backup-no-checksum') {
+                if (kpiType === 'backup-delayed') {
+                    // 2026-09-03 (owner: "o order by deve ser desc"): a regra
+                    // "evento mais recente primeiro" e' a certa para FALHAS, mas
+                    // aqui invertia a urgencia — ultimo backup mais recente =
+                    // MENOS atrasado. Ordem propria: severidade da BASE (critico
+                    // antes de aviso), depois horas em atraso DESC; sem horas
+                    // (C1: sem data nenhuma = nunca saudavel) vai para o topo.
+                    const _sevRank = (r) => {
+                        const s = (r.Base_Severity || r.Delayed_Severity || '').toString().toLowerCase();
+                        return s === 'critical' ? 0 : s === 'warning' ? 1 : s === 'policy' ? 2 : 3;
+                    };
+                    const _hours = (r) => {
+                        const h = parseFloat(r.Hours_Since_Backup);
+                        return isNaN(h) ? Number.POSITIVE_INFINITY : h;
+                    };
+                    instances.sort((a, b) => (_sevRank(a) - _sevRank(b)) || (_hours(b) - _hours(a)));
+                } else if (kpiType === 'backup-failed' || kpiType === 'backup-log-failed' ||
+                    kpiType === 'backup-jobs-disabled' || kpiType === 'backup-no-checksum') {
                     instances.sort((a, b) => {
                         const dA = _getBackupCardDate(a);
                         const dB = _getBackupCardDate(b);
