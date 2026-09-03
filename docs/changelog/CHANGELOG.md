@@ -70,6 +70,16 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   e rollback: `docs/context/SERVICO_V34_8434_RUNBOOK_2026-09-03.md`. Pipeline
   MSI (`preflight_target.ps1`, `uninstall.ps1`, `validate_cell.ps1`) fica com
   defaults 8433/V33 — não usado nesta fase. [infra local]
+- **Serviço voltou a escrever `logs/service_std{out,err}.log`** (achado 03/09
+  ao validar a licença do V34; afecta a **V3.3 desde 2026-08-21 18:24**). Com o
+  host `python.exe` (fix de 31/08) o SCM entrega `sys.stdout`/`sys.stderr`
+  válidos para NUL, não `None`; o redirect só testava `is None`, nunca corria,
+  e toda a saída da app (uvicorn, AUTH, reconciliações dos KPIs) era
+  descartada em silêncio — `_rotate_if_big` também não rodava (stdout de
+  18,9 MB sem `.1`). Só o Event Log tinha registos. Novo helper puro
+  `_std_needs_redirect(stdout, stderr, as_service)`: redirige quando algum
+  stream é `None` **ou** `servicemanager.RunningAsService()`; 3 testes.
+  **Portar para V3.3 e V6** (mesmo `watcherdb_service.py`). [infra]
 - **`watcherdb_service.py install/update` regista o `python.exe` do venv como
   host, não o `pythonservice.exe`** (owner 03/09: "aplicar a solução no serviço
   de forma antecipada"). O `_exe_name_`/`_exe_args_` que já existia para o modo

@@ -55,6 +55,24 @@ def test_resolve_port_default_env_and_invalid(monkeypatch):
     assert watcherdb_service._resolve_port() == 8434  # linha V3.4 (03/09)
 
 
+def test_std_redirect_quando_hospedado_pelo_scm_mesmo_com_streams_validos():
+    # 2026-09-03: com python.exe como host o SCM da' streams validos (NUL);
+    # o redirect tem de acontecer na mesma, senao a app escreve para o vazio.
+    fake = object()
+    assert watcherdb_service._std_needs_redirect(stdout=fake, stderr=fake, as_service=True) is True
+
+
+def test_std_redirect_quando_streams_none_sem_scm():
+    # comportamento antigo (pythonservice.exe) preservado
+    assert watcherdb_service._std_needs_redirect(stdout=None, stderr=object(), as_service=False) is True
+    assert watcherdb_service._std_needs_redirect(stdout=object(), stderr=None, as_service=False) is True
+
+
+def test_std_sem_redirect_em_consola():
+    fake = object()
+    assert watcherdb_service._std_needs_redirect(stdout=fake, stderr=fake, as_service=False) is False
+
+
 def _svc_stub(monkeypatch, acquire_results):
     """WatcherDBService sem SCM: ReportServiceStatus gravado, sem uvicorn,
     sem espera no stop_event, acquire_single_instance sequenciado."""

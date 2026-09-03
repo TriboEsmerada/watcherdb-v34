@@ -104,6 +104,36 @@ def release_single_instance() -> None:
         _mutex_handle = None
 
 
+def _running_as_service() -> bool:
+    """True quando o processo esta' hospedado pelo SCM (dispatcher ligado)."""
+    try:
+        return bool(servicemanager.RunningAsService())
+    except Exception:
+        return False
+
+
+_UNSET = object()  # sentinela: None e' um valor legitimo para os streams
+
+
+def _std_needs_redirect(stdout=_UNSET, stderr=_UNSET, as_service=None) -> bool:
+    """Decide se stdout/stderr devem ir para logs/service_std*.log.
+
+    2026-09-03 (achado V34, valido para V33 desde 21/08): com o binPath em
+    python.exe (fix SOLUCOES 2026-08-31) o SCM entrega handles VALIDOS para
+    NUL — sys.stdout/sys.stderr NAO sao None (so' o pythonservice.exe os
+    deixava a None). O teste antigo "is None" nunca era verdadeiro, o redirect
+    nao corria e TODA a saida da app (uvicorn, AUTH, reconciliacoes) era
+    descartada em silencio; logs/service_std*.log ficaram congelados em
+    2026-08-21 18:24 e _rotate_if_big nunca rodou o stdout de 18,9 MB. Agora:
+    redirigir tambem sempre que o processo e' servico (SCM), seja qual for o
+    estado dos streams. Parametros injectaveis = testavel sem SCM.
+    """
+    out = sys.stdout if stdout is _UNSET else stdout
+    err = sys.stderr if stderr is _UNSET else stderr
+    svc = _running_as_service() if as_service is None else as_service
+    return out is None or err is None or bool(svc)
+
+
 def _rotate_if_big(path: Path, max_bytes: int = 10 * 1024 * 1024,
                    backups: int = 3) -> None:
     """Roda `path` se exceder max_bytes: .3 sai, .2->.3, .1->.2, actual->.1.
@@ -191,9 +221,11 @@ class WatcherDBService(win32serviceutil.ServiceFramework):
         self.server = None
         self.server_thread = None
         self._stop_requested = False
-        # Em contexto de servico sys.stdout/stderr sao None -> uvicorn
-        # rebenta em .isatty(). Em modo debug (consola) ficam intactos.
-        if sys.stdout is None or sys.stderr is None:
+        # Em contexto de servico os streams ou sao None (pythonservice.exe) ou
+        # apontam para NUL (python.exe como host) — em ambos os casos a saida
+        # tem de ir para logs/service_std*.log (ver _std_needs_redirect). Em
+        # modo debug (consola) ficam intactos.
+        if _std_needs_redirect():
             logs = _logs_dir()
             try:
                 # Rodar antes de abrir: ficheiros crus de stdout/stderr nao passam
