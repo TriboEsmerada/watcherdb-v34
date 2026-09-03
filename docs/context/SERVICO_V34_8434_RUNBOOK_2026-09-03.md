@@ -79,6 +79,14 @@ Invoke-WebRequest https://localhost:8434/api/version -UseBasicParsing | Select-O
 ```powershell
 cd "C:\Users\ue_e-snetto\Documents\projetosPython\WATCHERDB_V3.4"
 .\.venv-build\Scripts\python.exe watcherdb_service.py --startup auto install
+# Desde 03/09 (commit do PASSO 4) o wrapper define _exe_name_/_exe_args_ tambem em
+# modo venv, logo o install/update regista directamente
+#   "<repo>\.venv-build\Scripts\python.exe" "<repo>\watcherdb_service.py"
+# (antes registava pythonservice.exe — host incompleto que morre antes do handshake
+# SCM sem mensagem; SOLUCOES 2026-08-31 e 2026-09-03). Confirmar sempre:
+sc.exe qc WatcherDBWebServiceV34 | Select-String 'BINARY_PATH_NAME' -Context 0,1
+# Se por alguma razao ainda mostrar pythonservice.exe (codigo antigo), re-registar:
+#   .\.venv-build\Scripts\python.exe watcherdb_service.py update   (preserva LogOnAs)
 # conta: mesma do V33 (password pedida interactivamente, nao fica no historico)
 $cred = Get-Credential -UserName "tapnet.tap.pt\ue_e-snetto" -Message "Conta do servico V34"
 sc.exe config WatcherDBWebServiceV34 obj= $cred.UserName password= $cred.GetNetworkCredential().Password

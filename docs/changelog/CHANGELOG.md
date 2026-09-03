@@ -62,6 +62,15 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   e rollback: `docs/context/SERVICO_V34_8434_RUNBOOK_2026-09-03.md`. Pipeline
   MSI (`preflight_target.ps1`, `uninstall.ps1`, `validate_cell.ps1`) fica com
   defaults 8433/V33 — não usado nesta fase. [infra local]
+- **`watcherdb_service.py install/update` regista o `python.exe` do venv como
+  host, não o `pythonservice.exe`** (owner 03/09: "aplicar a solução no serviço
+  de forma antecipada"). O `_exe_name_`/`_exe_args_` que já existia para o modo
+  frozen passa a existir também em venv (`sys.executable` + caminho absoluto do
+  wrapper). Sem isto o pywin32 copia `pythonservice.exe` para a raiz do venv —
+  host sem `python311.dll` ao lado nem `site-packages` do venv, que morre antes
+  do handshake SCM sem mensagem (SOLUCOES 2026-08-31 no V33; repetiu-se a 03/09
+  na 1.ª instalação do V34 e exigiu `sc.exe config binPath=` manual). Frozen
+  inalterado. [infra]
 - **Council: `watcherdb-v33-specialist` → `watcherdb-v34-specialist`**
   (owner 03/09: "estamos no diretório do V3.4"). Mesmo charter, identidade e
   paths V3.4, secção "Linhagem V3.4" a preservar o histórico V3.3 como

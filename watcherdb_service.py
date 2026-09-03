@@ -174,6 +174,16 @@ class WatcherDBService(win32serviceutil.ServiceFramework):
     if getattr(sys, "frozen", False):
         _exe_name_ = sys.executable
         _exe_args_ = None
+    else:
+        # Venv (2026-09-03, owner: "aplicar a solucao no servico de forma
+        # antecipada"): sem isto o pywin32 regista pythonservice.exe copiado
+        # para a raiz do venv — host INCOMPLETO (sem python311.dll ao lado,
+        # sem site-packages do venv) que morre antes do handshake SCM, sem
+        # mensagem (SOLUCOES 2026-08-31 no V33, repetido 03/09 no V34).
+        # binPath = "<venv>\python.exe" "<repo>\watcherdb_service.py": o
+        # main() sem argumentos ja' hospeda o StartServiceCtrlDispatcher.
+        _exe_name_ = sys.executable
+        _exe_args_ = '"' + str(Path(__file__).resolve()) + '"'
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
