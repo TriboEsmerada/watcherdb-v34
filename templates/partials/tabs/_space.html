@@ -1,0 +1,27 @@
+{# Space tab content #}
+<div class="tab-content" id="tab-space">
+    <h3 style="color: #f1f5f9; margin-bottom: 16px;">
+        <i class="fas fa-hdd"></i> Space — {{ server_id.replace('_', '\\') }}
+    </h3>
+
+    {% if data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ data.error }}
+    </div>
+    {% elif data %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <wdb-kpi-card title="Total Space" value="{{ data.get('total_space_gb', '\u2014') }}" unit="GB" icon="fa-hdd" status="info">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Used Space" value="{{ data.get('used_space_gb', '\u2014') }}" unit="GB" icon="fa-database"
+                      status="{{ 'critical' if (data.get('used_percent', 0)|int) > 90 else 'ok' }}">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Free Space" value="{{ data.get('free_space_gb', '\u2014') }}" unit="GB" icon="fa-folder-open" status="ok">
+        </wdb-kpi-card>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #64748b;">
+        <i class="fas fa-hdd" style="font-size: 24px;"></i>
+        <p>Select a server to view space usage</p>
+    </div>
+    {% endif %}
+</div>

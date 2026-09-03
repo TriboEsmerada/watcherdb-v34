@@ -1,0 +1,19 @@
+# WatcherDB Pro tier dependencies (V5 / V5.5 / V6)
+#
+# This file lists deps that are Pro-only — NOT installed in V3.3 Standard build.
+# V3.3 = zero AI canonical (DBA Lead decision 2026-04-28; see ADR-001 + memory
+# project_v33_zero_ai.md).
+#
+# Usage in Pro tier installers:
+#   pip install -r requirements.txt -r requirements-pro.txt
+#
+# In V3.3 Standard build:
+#   pip install -r requirements.txt    # scikit-learn NAO instalado
+#
+# References:
+# - FIND-20260428-014 (Predictive Alerts ML tier creep cleanup)
+# - findings-inbox.md POST-SCAN UPDATE patches P-013-B + P-014-B
+# - docs/FEATURE_MATRIX.md secao 4.1 (Features removidas do build V3.3)
+
+# Machine Learning & Analytics (Pro-only)
+scikit-learn>=1.3.0

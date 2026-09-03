@@ -1,0 +1,27 @@
+{# Disk tab content #}
+<div class="tab-content" id="tab-disk">
+    <h3 style="color: #f1f5f9; margin-bottom: 16px;">
+        <i class="fas fa-database"></i> Disk — {{ server_id.replace('_', '\\') }}
+    </h3>
+
+    {% if data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ data.error }}
+    </div>
+    {% elif data %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <wdb-kpi-card title="Total Disks" value="{{ data.get('disk_count', '\u2014') }}" icon="fa-hdd" status="info">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Critical Disks" value="{{ data.get('critical_disks', '\u2014') }}" icon="fa-exclamation-triangle"
+                      status="{{ 'critical' if (data.get('critical_disks', 0)|int) > 0 else 'ok' }}">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Unallocated" value="{{ data.get('unallocated_gb', '\u2014') }}" unit="GB" icon="fa-folder-open" status="info">
+        </wdb-kpi-card>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #64748b;">
+        <i class="fas fa-database" style="font-size: 24px;"></i>
+        <p>Select a server to view disk information</p>
+    </div>
+    {% endif %}
+</div>

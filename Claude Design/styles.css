@@ -1,0 +1,99 @@
+// Space Analysis dashboard — the corrected, dark, token-aligned version of
+// the rogue light-theme portal_fix_styles.css filegroups view.
+function SpaceDashboard() {
+  const { StatCard, SeverityBadge } = window.WDBKit;
+  const d = window.WDB_DATA;
+
+  const SEV = {
+    ok: "--sev-ok-border", warning: "--sev-warning-border",
+    critical: "--sev-critical-border", overflow: "--sev-overflow-border",
+  };
+  const SEV_TEXT = {
+    ok: "--sev-ok-text", warning: "--sev-warning-text",
+    critical: "--sev-critical-text", overflow: "--sev-overflow-text",
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
+      {/* Summary strip */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--space-sm)" }}>
+        <StatCard label="Filegroups" value="4" state="info" />
+        <StatCard label="Críticos" value="2" state="critical" />
+        <StatCard label="Breached" value="1" state="overflow" />
+        <StatCard label="Menor folga" value="0" unit="%" state="overflow" />
+      </div>
+
+      {/* Critical alerts table */}
+      <section>
+        <h3 style={{ fontSize: "var(--font-xl)", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, marginBottom: "var(--space-sm)" }}>
+          <i className="fas fa-circle-exclamation" style={{ color: "var(--sev-critical-text)", fontSize: 16 }}></i>
+          Alertas críticos de espaço
+        </h3>
+        <div style={{ border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--font-sm)" }}>
+            <thead>
+              <tr style={{ background: "var(--surface-sunken)" }}>
+                {["Servidor", "Database", "Filegroup", "Livre", "Total GB", "Dias até cheio", "Nível", ""].map((h, i) => (
+                  <th key={i} style={{ textAlign: i >= 3 && i <= 5 ? "right" : "left", padding: "10px 12px", color: "var(--text-tertiary)", fontWeight: 600, fontSize: "var(--font-xs)", textTransform: "uppercase", letterSpacing: ".04em", whiteSpace: "nowrap" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {d.spaceAlerts.map((a, i) => (
+                <tr key={i} style={{ borderTop: "1px solid var(--color-border)" }}>
+                  <td className="wdb-mono" style={{ padding: "10px 12px", color: "var(--text-secondary)" }}>{a.server}</td>
+                  <td className="wdb-mono" style={{ padding: "10px 12px", color: "var(--text-secondary)" }}>{a.db}</td>
+                  <td className="wdb-mono" style={{ padding: "10px 12px", color: "var(--text-secondary)" }}>{a.fg}</td>
+                  <td className="wdb-num" style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: `var(${SEV_TEXT[a.level]})` }}>{a.freePct.toFixed(1)}%</td>
+                  <td className="wdb-num" style={{ padding: "10px 12px", textAlign: "right", color: "var(--text-secondary)" }}>{a.totalGb.toFixed(1)}</td>
+                  <td className="wdb-num" style={{ padding: "10px 12px", textAlign: "right", color: `var(${SEV_TEXT[a.level]})`, fontWeight: 600 }}>{a.days === 0 ? "agora" : a.days + " dias"}</td>
+                  <td style={{ padding: "8px 12px" }}><SeverityBadge level={a.level} size="sm" /></td>
+                  <td style={{ padding: "8px 12px" }}><button title="Copiar SQL de correção" style={{ background: "transparent", border: "1px solid var(--color-border)", color: "var(--text-link)", borderRadius: "var(--radius-sm)", padding: "4px 8px", cursor: "pointer", fontSize: 12 }}><i className="fas fa-copy"></i> SQL</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Filegroup cards */}
+      <section>
+        <h3 style={{ fontSize: "var(--font-xl)", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, marginBottom: "var(--space-sm)" }}>
+          <i className="fas fa-hard-drive" style={{ color: "var(--brand-blue-bright)", fontSize: 16 }}></i>
+          Filegroups — SRV-PRD-01 · FIN_LEDGER
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "var(--space-sm)" }}>
+          {d.filegroups.map((f, i) => (
+            <div key={i} style={{
+              background: "var(--surface-raised)", border: "1px solid var(--color-border)",
+              borderLeft: `4px solid var(${SEV[f.level]})`, borderRadius: "var(--radius-md)",
+              padding: "14px 16px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <i className={"fas " + (f.type === "LOG" ? "fa-file-lines" : "fa-table")} style={{ color: "var(--text-tertiary)", fontSize: 13 }}></i>
+                  <span className="wdb-mono" style={{ fontSize: "var(--font-sm)", fontWeight: 600, color: "var(--text-primary)" }}>{f.name}</span>
+                  <span style={{ fontSize: 10, color: "var(--text-disabled)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", padding: "1px 6px" }}>{f.type}</span>
+                </div>
+                <SeverityBadge level={f.level} size="sm" />
+              </div>
+              {/* progress */}
+              <div style={{ height: 10, background: "var(--surface-sunken)", borderRadius: "var(--radius-full)", overflow: "hidden" }}>
+                <div style={{ width: Math.min(f.usedPct, 100) + "%", height: "100%", background: `var(${SEV[f.level]})`, borderRadius: "var(--radius-full)" }}></div>
+              </div>
+              <div className="wdb-num" style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: "var(--font-xs)", color: "var(--text-tertiary)" }}>
+                <span style={{ color: `var(${SEV_TEXT[f.level]})`, fontWeight: 600 }}>{f.usedPct}% usado</span>
+                <span>{f.freeGb.toFixed(1)} GB livres · {f.totalGb.toFixed(0)} GB total</span>
+              </div>
+              <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--color-border)", fontSize: "var(--font-xs)", color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 6 }}>
+                <i className="fas fa-clock" style={{ fontSize: 11 }}></i>
+                {f.days === 0 ? <span style={{ color: "var(--sev-overflow-text)", fontWeight: 600 }}>Sem capacidade — ação imediata</span> : <span>~{f.days} dias até cheio</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+window.SpaceDashboard = SpaceDashboard;

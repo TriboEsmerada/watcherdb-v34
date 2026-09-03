@@ -1,0 +1,13 @@
+{# Server list sidebar — loaded via htmx #}
+<div class="sidebar" id="sidebar">
+    <h3 hx-get="/htmx/sidebar/toggle" hx-swap="none">
+        <span><span id="sidebarServersLabel">SERVIDORES</span> (<span id="sidebarCount">0</span>)</span>
+        <i class="fas fa-chevron-down collapse-icon"></i>
+    </h3>
+    <div id="serverList"
+         hx-get="/htmx/servers"
+         hx-trigger="load, every 60s"
+         hx-swap="innerHTML">
+        <div class="loading-spinner">Loading...</div>
+    </div>
+</div>

@@ -1,0 +1,30 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Neutral surface ramp" subtitle="Canonical slate ramp — app, cards, panels, borders" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 20px; background: var(--surface-app); }
+  .row { display: flex; gap: 10px; }
+  .sw { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .chip { height: 56px; border-radius: var(--radius-md); border: 1px solid var(--color-border); }
+  .name { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+  .hex  { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--slate-950)"></div><span class="name">950</span><span class="hex">app</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-900)"></div><span class="name">900</span><span class="hex">sunken</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-850)"></div><span class="name">850</span><span class="hex">raised</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-800)"></div><span class="name">800</span><span class="hex">panel</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-700)"></div><span class="name">700</span><span class="hex">border</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-600)"></div><span class="name">600</span><span class="hex">strong</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-500)"></div><span class="name">500</span><span class="hex">disabled</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-400)"></div><span class="name">400</span><span class="hex">tertiary</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-300)"></div><span class="name">300</span><span class="hex">secondary</span></div>
+    <div class="sw"><div class="chip" style="background:var(--slate-100)"></div><span class="name">100</span><span class="hex">primary</span></div>
+  </div>
+</body>
+</html>

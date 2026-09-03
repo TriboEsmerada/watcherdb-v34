@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatcherDB Portal Legacy - CORRIGIDO - Filegroups e Ordenação</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/portal_fix_styles.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0f172a; 
+            color: #e2e8f0; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 { font-size: 20px; color: #60a5fa; font-weight: bold; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        
+        /* Search */
+        .search-container { position: relative; flex: 1; max-width: 500px; margin: 0 32px; }
+        .search-input {
+            width: 100%;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 40px 8px 16px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        .search-input:focus { outline: none; border-color: #60a5fa; }
+        .search-clear {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: none;
+        }
+        .search-clear:hover { color: #f1f5f9; }
+        .search-clear.show { display: block; }
+        
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .sidebar h3 { 
+            font-size: 13px; 
+            color: #94a3b8; 
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-status {
+            font-size: 11px;
+            color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .server-item {
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .server-item:hover { background: #334155; }
+        .server-item.selected {
+            background: #1e40af;
+            color: #f1f5f9;
+        }
+        .server-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .server-info {
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Content Area */
+        .content {
+            flex: 1;
+            background: #0f172a;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .card.overflow { border-left: 4px solid #ef4444; }
+        .card.critical { border-left: 4px solid #f59e0b; }
+        .card.warning { border-left: 4px solid #3b82f6; }
+        .card.ok { border-left: 4px solid #10b981; }
+        .card-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .card-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Filegroups Table */
+        .filegroups-section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #334155;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #94a3b8;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .filegroups-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .filegroups-table th {
+            background: #0f172a;
+            color: #f1f5f9;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #334155;
+        }
+        .filegroups-table td {
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+        .filegroups-table tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .database-name {
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+        .filegroup-name {
+            color: #94a3b8;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .size-info {
+            font-family: 'Courier New', monospace;
+            text-align: right;
+        }
+        
+        .usage-bar {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 4px 0;
+        }
+        .usage-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .usage-fill.excellent { background: #10b981; }
+        .usage-fill.good { background: #3b82f6; }
+        .usage-fill.warning { background: #f59e0b; }
+        .usage-fill.critical { background: #ef4444; }
+        .usage-fill.overflow { background: #dc2626; }
+        
+        .alert-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .alert-badge.ok { background: #10b981; color: white; }
+        .alert-badge.warning { background: #f59e0b; color: white; }
+        .alert-badge.critical { background: #ef4444; color: white; }
+        .alert-badge.overflow { background: #dc2626; color: white; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔮 WatcherDB Portal - CORRIGIDO</h1>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Buscar servidor..." id="searchInput">
+            <button class="search-clear" id="searchClear">×</button>
+        </div>
+        <div class="header-right">
+            <span id="serverCount">0 servidores</span>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>
+                Servidores Disponíveis
+                <span class="search-status" id="searchStatus" style="display: none;">Filtrado</span>
+            </h3>
+            <div id="serversList">
+                <div class="loading">Carregando servidores...</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div id="welcomeMessage" style="text-align: center; padding: 60px; color: #94a3b8;">
+                <i class="fas fa-database" style="font-size: 48px; margin-bottom: 16px; color: #3b82f6;"></i>
+                <h2 style="margin-bottom: 8px;">WatcherDB Portal Corrigido</h2>
+                <p>Selecione um servidor para ver a análise preditiva com filegroups corretos</p>
+                <div style="margin-top: 24px; padding: 16px; background: #1e293b; border-radius: 8px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <h4 style="color: #60a5fa; margin-bottom: 12px;">✅ Correções Implementadas:</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 8px;">• <strong>Filegroups:</strong> Exibe filegroups reais em vez de logical names</li>
+                        <li style="margin-bottom: 8px;">• <strong>Ordenação:</strong> Overflows aparecem por último</li>
+                        <li style="margin-bottom: 8px;">• <strong>Agregação:</strong> Dados consolidados por filegroup</li>
+                        <li style="margin-bottom: 8px;">• <strong>Health Score:</strong> Baseado em métricas reais</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="serverContent" style="display: none;">
+                <!-- Dashboard Cards -->
+                <div class="dashboard-cards" id="dashboardCards">
+                    <!-- Será preenchido dinamicamente -->
+                </div>
+                
+                <!-- Filegroups Section -->
+                <div class="filegroups-section">
+                    <div class="section-header">
+                        <h2 class="section-title">📊 Filegroups Analisados</h2>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">Todos</button>
+                            <button class="filter-btn" data-filter="overflow">Overflow</button>
+                            <button class="filter-btn" data-filter="critical">Críticos</button>
+                            <button class="filter-btn" data-filter="warning">Avisos</button>
+                        </div>
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table class="filegroups-table">
+                            <thead>
+                                <tr>
+                                    <th>Database</th>
+                                    <th>Filegroup</th>
+                                    <th style="text-align: right;">Tamanho (GB)</th>
+                                    <th style="text-align: right;">Usado (GB)</th>
+                                    <th style="text-align: right;">Uso %</th>
+                                    <th style="text-align: center;">Status</th>
+                                    <th style="text-align: right;">Dias Restantes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="filegroupsTbody">
+                                <!-- Será preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado da aplicação
+        let allServers = [];
+        let filteredServers = [];
+        let selectedServer = null;
+        let currentData = null;
+        let currentFilter = 'all';
+        
+        // Elementos DOM
+        const searchInput = document.getElementById('searchInput');
+        const searchClear = document.getElementById('searchClear');
+        const searchStatus = document.getElementById('searchStatus');
+        const serversList = document.getElementById('serversList');
+        const serverCount = document.getElementById('serverCount');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const serverContent = document.getElementById('serverContent');
+        const dashboardCards = document.getElementById('dashboardCards');
+        const filegroupsTbody = document.getElementById('filegroupsTbody');
+        
+        // Inicializar aplicação
+        document.addEventListener('DOMContentLoaded', () => {
+            loadServers();
+            setupEventListeners();
+        });
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Busca
+            searchInput.addEventListener('input', filterServers);
+            searchClear.addEventListener('click', clearSearch);
+            
+            // Filtros de filegroups
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const filter = e.target.dataset.filter;
+                    setFilter(filter);
+                });
+            });
+        }
+        
+        // Carregar servidores
+        async function loadServers() {
+            try {
+                const response = await fetch('/api/servers');
+                const data = await response.json();
+                
+                if (data.success && data.servers) {
+                    allServers = data.servers;
+                    filteredServers = [...allServers];
+                    renderServers();
+                    updateServerCount();
+                } else {
+                    throw new Error('Erro ao carregar servidores');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar servidores:', error);
+                serversList.innerHTML = '<div class="error">Erro ao carregar servidores</div>';
+            }
+        }
+        
+        // Renderizar servidores
+        function renderServers() {
+            if (filteredServers.length === 0) {
+                serversList.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">Nenhum servidor encontrado</div>';
+                return;
+            }
+            
+            const html = filteredServers.map(server => `
+                <div class="server-item" onclick="selectServer('${server.id}')">
+                    <div class="server-name">${server.name}</div>
+                    <div class="server-info">
+                        <span>${server.environment || 'Production'}</span>
+                        <span>${server.status || 'Online'}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            serversList.innerHTML = html;
+        }
+        
+        // Filtrar servidores
+        function filterServers() {
+            const query = searchInput.value.toLowerCase().trim();
+            
+            if (query === '') {
+                filteredServers = [...allServers];
+                searchStatus.style.display = 'none';
+            } else {
+                filteredServers = allServers.filter(server => 
+                    server.name.toLowerCase().includes(query) ||
+                    server.id.toLowerCase().includes(query)
+                );
+                searchStatus.style.display = 'block';
+            }
+            
+            renderServers();
+            updateServerCount();
+        }
+        
+        // Limpar busca
+        function clearSearch() {
+            searchInput.value = '';
+            filterServers();
+        }
+        
+        // Atualizar contador de servidores
+        function updateServerCount() {
+            const count = filteredServers.length;
+            const total = allServers.length;
+            serverCount.textContent = count === total ? `${total} servidores` : `${count} de ${total} servidores`;
+        }
+        
+        // Selecionar servidor
+        async function selectServer(serverId) {
+            // Atualizar seleção visual
+            document.querySelectorAll('.server-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.server-item').classList.add('selected');
+            
+            // Encontrar servidor
+            selectedServer = allServers.find(s => s.id === serverId);
+            if (!selectedServer) return;
+            
+            // Mostrar conteúdo do servidor
+            welcomeMessage.style.display = 'none';
+            serverContent.style.display = 'block';
+            
+            // Carregar dados do servidor
+            await loadServerData(serverId);
+        }
+        
+        // Carregar dados do servidor usando endpoints corrigidos
+        async function loadServerData(serverId) {
+            try {
+                showLoading();
+                
+                // Usar endpoints corrigidos
+                const [dashboardResponse, healthResponse] = await Promise.all([
+                    fetch(`/api/monitoring/space/server/${serverId}/dashboard`),
+                    fetch(`/api/monitoring/space/server/${serverId}/dashboard/health`)
+                ]);
+                
+                const dashboardData = await dashboardResponse.json();
+                const healthData = await healthResponse.json();
+                
+                if (!dashboardData.success) {
+                    throw new Error(dashboardData.error || 'Erro ao carregar dados do dashboard');
+                }
+                
+                if (!healthData.success) {
+                    throw new Error(healthData.error || 'Erro ao carregar health score');
+                }
+                
+                // Combinar dados
+                currentData = {
+                    ...dashboardData.data,
+                    health: healthData
+                };
+                
+                renderDashboardFixed();
+                hideLoading();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do servidor:', error);
+                showError(error.message);
+            }
+        }
+        
+        // Mostrar loading
+        function showLoading() {
+            filegroupsTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 40px;">Carregando dados...</td></tr>';
+            dashboardCards.innerHTML = '<div class="loading">Carregando métricas...</div>';
+        }
+        
+        // Esconder loading
+        function hideLoading() {
+            // Loading será substituído pelos dados reais
+        }
+        
+        // Mostrar erro
+        function showError(message) {
+            filegroupsTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 40px;">Erro: ${message}</td></tr>`;
+            dashboardCards.innerHTML = `<div class="error">Erro: ${message}</div>`;
+        }
+        
+        // Renderizar dashboard
+        function renderDashboard() {
+            if (!currentData) return;
+            
+            renderDashboardCards();
+            renderFilegroupsTable();
+        }
+        
+        // Renderizar cards do dashboard
+        function renderDashboardCards() {
+            const summary = currentData.summary;
+            const health = currentData.health;
+            
+            dashboardCards.innerHTML = `
+                <div class="card overflow">
+                    <div class="card-number">${summary.overflow_count}</div>
+                    <div class="card-label">Overflow</div>
+                </div>
+                <div class="card critical">
+                    <div class="card-number">${summary.critical_count}</div>
+                    <div class="card-label">Críticos</div>
+                </div>
+                <div class="card warning">
+                    <div class="card-number">${summary.warning_count}</div>
+                    <div class="card-label">Avisos</div>
+                </div>
+                <div class="card ok">
+                    <div class="card-number">${summary.ok_count}</div>
+                    <div class="card-label">OK</div>
+                </div>
+                <div class="card ${getHealthCardClass(health.health_score)}">
+                    <div class="card-number">${health.health_score}%</div>
+                    <div class="card-label">Health Score</div>
+                </div>
+            `;
+        }
+        
+        // Renderizar tabela de filegroups
+        function renderFilegroupsTable() {
+            if (!currentData || !currentData.filegroups) {
+                filegroupsTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Nenhum filegroup encontrado</td></tr>';
+                return;
+            }
+            
+            // Filtrar filegroups
+            let filteredFilegroups = currentData.filegroups;
+            
+            if (currentFilter === 'overflow') {
+                filteredFilegroups = currentData.filegroups.filter(fg => fg.is_overflow);
+            } else if (currentFilter === 'critical') {
+                filteredFilegroups = currentData.filegroups.filter(fg => fg.alert_level === 'CRITICAL');
+            } else if (currentFilter === 'warning') {
+                filteredFilegroups = currentData.filegroups.filter(fg => fg.alert_level === 'WARNING');
+            }
+            
+            // Renderizar linhas
+            filegroupsTbody.innerHTML = filteredFilegroups.map(fg => {
+                const usageClass = getUsageClass(fg.usage_percent, fg.is_overflow);
+                const alertClass = fg.alert_level.toLowerCase();
+                
+                return `
+                    <tr>
+                        <td><span class="database-name">${fg.database_name}</span></td>
+                        <td><span class="filegroup-name">${fg.filegroup_name}</span></td>
+                        <td class="size-info">${fg.total_size_gb.toFixed(2)}</td>
+                        <td class="size-info">${fg.used_size_gb.toFixed(2)}</td>
+                        <td>
+                            <div class="usage-bar">
+                                <div class="usage-fill ${usageClass}" style="width: ${Math.min(fg.usage_percent, 100)}%"></div>
+                            </div>
+                            <div style="text-align: center; font-size: 11px; color: #94a3b8;">
+                                ${fg.usage_percent.toFixed(1)}%
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="alert-badge ${alertClass}">${fg.alert_level}</span>
+                        </td>
+                        <td class="size-info">${fg.days_until_full === 999 ? '∞' : fg.days_until_full}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Definir filtro
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Atualizar botões
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            
+            // Re-renderizar tabela
+            renderFilegroupsTable();
+        }
+        
+        // Obter classe de uso
+        function getUsageClass(usagePercent, isOverflow) {
+            if (isOverflow) return 'overflow';
+            if (usagePercent >= 90) return 'critical';
+            if (usagePercent >= 80) return 'warning';
+            if (usagePercent >= 60) return 'good';
+            return 'excellent';
+        }
+        
+        // Obter classe do card de health
+        function getHealthCardClass(score) {
+            if (score >= 90) return 'ok';
+            if (score >= 70) return 'warning';
+            if (score >= 50) return 'critical';
+            return 'overflow';
+        }
+        
+        // Auto-refresh a cada 5 minutos
+        setInterval(() => {
+            if (selectedServer) {
+                loadServerData(selectedServer.id);
+            }
+        }, 5 * 60 * 1000);
+    </script>
+    
+    <!-- FIX PARA EXIBIR FILEGROUPS -->
+    <script src="/static/js/portal_fix_patch.js"></script>
+</body>
+</html>

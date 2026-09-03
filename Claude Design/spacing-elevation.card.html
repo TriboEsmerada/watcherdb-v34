@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Brand & action blue" subtitle="Watcher eye blue — primary action, links, logo cyan" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 20px; background: var(--surface-app); }
+  .row { display: flex; gap: 12px; }
+  .sw { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .chip { height: 64px; border-radius: var(--radius-md); display:flex; align-items:flex-end; padding:8px; }
+  .name { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+  .hex  { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--brand-blue)"></div><span class="name">--brand-blue</span><span class="hex">#2563eb · action</span></div>
+    <div class="sw"><div class="chip" style="background:var(--brand-blue-hover)"></div><span class="name">--brand-blue-hover</span><span class="hex">#3b82f6</span></div>
+    <div class="sw"><div class="chip" style="background:var(--brand-blue-bright)"></div><span class="name">--brand-blue-bright</span><span class="hex">#60a5fa · links</span></div>
+    <div class="sw"><div class="chip" style="background:var(--brand-cyan)"></div><span class="name">--brand-cyan</span><span class="hex">#00bcd4 · logo iris</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WatcherDB{% endblock %}</title>
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="/static/css/watcherdb-design-system.css">
+
+    <!-- Vendor -->
+    <link href="/static/vendor/fontawesome/css/all.min.css" rel="stylesheet">
+
+    <!-- Security -->
+    <script src="/static/vendor/dompurify/purify.min.js"></script>
+    <script src="/static/js/security_utils.js"></script>
+
+    {% block head_extra %}{% endblock %}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=1">
+
+    {% block styles %}{% endblock %}
+</head>
+<body{% block body_attrs %}{% endblock %}>
+    {% block body %}{% endblock %}
+
+    <!-- htmx -->
+    <script src="/static/vendor/htmx/htmx.min.js"></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

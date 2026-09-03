@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x170" name="Text on dark" subtitle="Four text weights with measured AA/AAA contrast on app bg" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 22px; background: var(--surface-app); }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .line { display: flex; align-items: baseline; gap: 14px; }
+  .lbl { width: 130px; font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+  .ratio { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+  .s { font-size: 16px; }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div class="line"><span class="lbl">--text-primary</span><span class="s" style="color:var(--text-primary)">Critical: filegroup PRIMARY breached</span><span class="ratio">15.8:1 AAA</span></div>
+    <div class="line"><span class="lbl">--text-secondary</span><span class="s" style="color:var(--text-secondary)">Last collection 2 min ago · auto-refresh on</span><span class="ratio">11.6:1 AAA</span></div>
+    <div class="line"><span class="lbl">--text-tertiary</span><span class="s" style="color:var(--text-tertiary)">SRV-PRD-01 · SQL Server 2019 · CU27</span><span class="ratio">7.0:1 AA</span></div>
+    <div class="line"><span class="lbl">--text-link</span><span class="s" style="color:var(--text-link)">View query plan &rarr;</span><span class="ratio">7.4:1 AA</span></div>
+  </div>
+</body>
+</html>

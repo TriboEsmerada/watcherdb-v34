@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WiX preprocessor variables for WatcherDB V3.3 Standard Edition MSI.
+
+  ============================================================================
+  !! AUDIT 2026-04-22 / S2-5 — ESTE FICHEIRO E FALLBACK, NAO SOT !!
+  ============================================================================
+  Single Source of Truth para release metadata:  deploy\release_vars.psd1
+
+  Os <?define ?> deste ficheiro servem como fallback durante compilacao
+  isolada (i.e., se candle for invocado sem passar pela pipeline do
+  deploy\build_msi.ps1). Em builds de producao, deploy\build_msi.ps1
+  carrega release_vars.psd1 e passa TODOS os valores como -d overrides
+  ao candle.exe, sobrepondo os defines abaixo.
+
+  Em caso de conflito entre este ficheiro e release_vars.psd1, o .psd1
+  ganha em builds via pipeline. Se editares directamente o .wxi abaixo
+  SEM actualizar o .psd1, e acontecer uma build isolada (sem pipeline),
+  o MSI saira com os valores deste ficheiro — drift potencial. Manter
+  ambos em sync e responsabilidade do release engineer ate que um
+  proximo sprint remova estes <?define ?> por completo (deploy-architect
+  proactive finding — forca erro de compilacao explicito em drift).
+  ============================================================================
+
+  UpgradeCode is the single GUID that identifies the product line across
+  versions. Do NOT change this between 3.3.x releases — it is how Windows
+  Installer recognises an upgrade as "same product, new version" rather
+  than a parallel install. A rotation would require every deployed
+  customer to manually uninstall the old MSI before the new one applies.
+
+  ProductVersion is the four-field version Windows Installer compares
+  for MajorUpgrade decisions. Only Major.Minor.Build are compared —
+  Revision is ignored. Bump according to:
+    Major.Minor  matches the product release line (3.3 here)
+    Build        product build number (incremented each release)
+    Revision     internal hotfix counter (not compared, but recorded)
+
+  BundleSourceDir points at the PyInstaller onedir output from Sem 2.
+  The MSI harvests this directory verbatim; rebuild it (python
+  deploy/build.py) before running build_msi.ps1.
+-->
+<Include>
+  <?define ProductName         = "WatcherDB V3.3 Standard Edition" ?>
+  <?define Manufacturer        = "WatcherDB" ?>
+  <?define ProductVersion      = "3.3.0.0" ?>
+  <?define ProductVersionShort = "3.3" ?>
+
+  <!-- Stable GUID identifying this product line across versions. -->
+  <?define UpgradeCode         = "3A9E4B21-6C1F-4D78-B502-7F3E8C4A5D61" ?>
+
+  <!-- Windows service registration. Matches the pywin32 service name
+       already in use by the dev workstation; keeping it identical means
+       an in-place upgrade from the pywin32 installer to the MSI can
+       reuse the existing Service Control Manager entry once we script
+       a migration path. -->
+  <?define ServiceName         = "WatcherDBWebServiceV33" ?>
+  <?define ServiceDisplayName  = "WatcherDB Web Service V3.3" ?>
+  <?define ServiceDescription  = "WatcherDB V3.3 Standard Edition - SQL Server monitoring web service (port 8433)." ?>
+
+  <!-- Porta do portal. Fallback S2-5: build_msi.ps1 passa -dWebPort do
+       release_vars.psd1 (SOT). Usada na Property WEBPORT (env de maquina +
+       regra de firewall) no Product.wxs. -->
+  <?define WebPort             = "8433" ?>
+
+  <!-- Install layout. INSTALLDIR holds the immutable bundle;
+       DATAFOLDER holds per-machine writable state (license.dat, logs,
+       config overrides). Split mirrors Windows packaging guidelines. -->
+  <?define InstallFolderName   = "WatcherDB\\V3.3" ?>
+  <?define DataFolderName      = "WatcherDB" ?>
+
+  <!-- Source tree consumed by heat.exe harvest in build_msi.ps1. -->
+  <?define BundleSourceDir     = "..\\..\\dist\\watcherdb" ?>
+</Include>

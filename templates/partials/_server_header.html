@@ -1,0 +1,8 @@
+{# Server header with nav tabs — rendered by htmx #}
+<div>
+    <h2>{{ server_id.replace('_', '\\') }}</h2>
+    <div class="server-id"><strong>ID:</strong> <span>{{ server_id }}</span></div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex: 1;">
+    {% include "partials/_nav_tabs.html" %}
+</div>

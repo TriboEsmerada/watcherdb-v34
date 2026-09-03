@@ -1,0 +1,27 @@
+{# Jobs tab content #}
+<div class="tab-content" id="tab-jobs">
+    <h3 style="color: #f1f5f9; margin-bottom: 16px;">
+        <i class="fas fa-tasks"></i> Jobs — {{ server_id.replace('_', '\\') }}
+    </h3>
+
+    {% if data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ data.error }}
+    </div>
+    {% elif data %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <wdb-kpi-card title="Total Jobs" value="{{ data.get('total_jobs', '\u2014') }}" icon="fa-tasks" status="info">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Failed Jobs" value="{{ data.get('failed_jobs', '\u2014') }}" icon="fa-times-circle"
+                      status="{{ 'critical' if (data.get('failed_jobs', 0)|int) > 0 else 'ok' }}">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Running" value="{{ data.get('running_jobs', '\u2014') }}" icon="fa-spinner" status="info">
+        </wdb-kpi-card>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #64748b;">
+        <i class="fas fa-tasks" style="font-size: 24px;"></i>
+        <p>Select a server to view SQL Agent jobs</p>
+    </div>
+    {% endif %}
+</div>

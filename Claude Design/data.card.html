@@ -1,0 +1,16 @@
+import { ReactNode } from "react";
+import { Severity } from "../severity/SeverityBadge";
+
+/**
+ * Compact label+value cell for dense stat strips (CPU %, memory,
+ * counts). Left rail carries severity.
+ */
+export interface StatCardProps {
+  label: ReactNode;
+  value: ReactNode;
+  /** Optional unit suffix shown smaller (e.g. "GB", "%") */
+  unit?: ReactNode;
+  state?: Severity;
+}
+
+export function StatCard(props: StatCardProps): JSX.Element;

@@ -1,0 +1,161 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # SQL Server for Development and Testing
+  # ============================================================================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: watcherdb-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd  # Change in production!
+      - MSSQL_PID=Developer
+      - MSSQL_AGENT_ENABLED=true
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./scripts/sql:/docker-entrypoint-initdb.d  # Init scripts
+    networks:
+      - watcherdb-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourStrong@Passw0rd' -Q 'SELECT 1' || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # ============================================================================
+  # Redis for Caching (Optional)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: watcherdb-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - watcherdb-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================================
+  # WatcherDB Application
+  # ============================================================================
+  watcherdb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: watcherdb-app
+    environment:
+      - WATCHERDB_ENV=development
+      - JWT_SECRET_KEY=dev-secret-key-change-in-production
+      - SQLSERVER_HOST=sqlserver
+      - SQLSERVER_PORT=1433
+      - SQLSERVER_USER=sa
+      - SQLSERVER_PASSWORD=YourStrong@Passw0rd
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app  # Mount source code for hot reload
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+    networks:
+      - watcherdb-network
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn watcherdb_main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================================================
+  # Prometheus for Metrics (Optional)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: watcherdb-prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - watcherdb-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    profiles:
+      - monitoring  # Only start with: docker-compose --profile monitoring up
+
+  # ============================================================================
+  # Grafana for Dashboards (Optional)
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: watcherdb-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # Change in production!
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana:/etc/grafana/provisioning
+    networks:
+      - watcherdb-network
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring  # Only start with: docker-compose --profile monitoring up
+
+  # ============================================================================
+  # Mailhog for Email Testing (Development)
+  # ============================================================================
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: watcherdb-mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - watcherdb-network
+    profiles:
+      - development
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  watcherdb-network:
+    driver: bridge
+    name: watcherdb-network
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  sqlserver_data:
+    name: watcherdb-sqlserver-data
+  redis_data:
+    name: watcherdb-redis-data
+  prometheus_data:
+    name: watcherdb-prometheus-data
+  grafana_data:
+    name: watcherdb-grafana-data

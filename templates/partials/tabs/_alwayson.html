@@ -1,0 +1,28 @@
+{# AlwaysOn tab content #}
+<div class="tab-content" id="tab-alwayson">
+    <h3 style="color: #f1f5f9; margin-bottom: 16px;">
+        <i class="fas fa-sync"></i> AlwaysOn — {{ server_id.replace('_', '\\') }}
+    </h3>
+
+    {% if data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ data.error }}
+    </div>
+    {% elif data %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <wdb-kpi-card title="AG Status" value="{{ data.get('ag_status', 'N/A') }}" icon="fa-sync"
+                      status="{{ 'ok' if data.get('ag_status') == 'HEALTHY' else 'critical' }}">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Replicas" value="{{ data.get('replica_count', '\u2014') }}" icon="fa-clone" status="info">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Sync Health" value="{{ data.get('sync_health', 'N/A') }}" icon="fa-heartbeat"
+                      status="{{ 'ok' if data.get('sync_health') == 'HEALTHY' else 'warning' }}">
+        </wdb-kpi-card>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #64748b;">
+        <i class="fas fa-sync" style="font-size: 24px;"></i>
+        <p>Select a server to view AlwaysOn status</p>
+    </div>
+    {% endif %}
+</div>

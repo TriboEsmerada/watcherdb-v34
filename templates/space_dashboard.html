@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-PT" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatcherDB - Space Analysis Dashboard</title>
+    <!-- T4 DS-Reconcile 2026-06-08: CDNs (Tailwind/Alpine/Chart.js) removidos.
+         Styling via DS local + FontAwesome local + vanilla JS.
+         [WAIVER aplicado 2026-06-08 | regra: edicao ficheiro producao | scope: T4] -->
+    <link rel="stylesheet" href="/static/css/watcherdb-design-system.css">
+    <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
+    <style>
+        body { background: var(--color-bg-primary); color: var(--color-text-primary);
+               font-family: var(--font-sans); margin: 0; }
+        .sd-wrap { min-height: 100vh; padding: var(--space-md); }
+        .sd-header h1 { font-size: var(--font-3xl); font-weight: 700;
+                        color: var(--color-info-hover); margin: 0 0 8px;
+                        display: flex; align-items: center; gap: 10px; }
+        .sd-header p { color: var(--color-text-tertiary); margin: 0; }
+        .sd-grid { display: grid; grid-template-columns: repeat(4, 1fr);
+                   gap: var(--space-sm); margin: var(--space-md) 0; }
+        .sd-card { background: var(--color-bg-secondary); border: 1px solid var(--color-border);
+                   border-left: 4px solid var(--color-border); border-radius: var(--radius-md);
+                   padding: var(--space-md); }
+        .sd-card--info     { border-left-color: var(--sev-info-border); }
+        .sd-card--critical { border-left-color: var(--sev-critical-border); }
+        .sd-card--warning  { border-left-color: var(--sev-warning-border); }
+        .sd-card--ok       { border-left-color: var(--sev-ok-border); }
+        .sd-card-row { display: flex; align-items: center; justify-content: space-between; }
+        .sd-card .label { color: var(--color-text-tertiary); font-size: var(--font-sm); margin: 0; }
+        .sd-card .value { font-size: var(--font-3xl); font-weight: 700; margin: 4px 0 0;
+                          font-variant-numeric: tabular-nums; }
+        .sd-card .value--critical { color: var(--sev-critical-text); }
+        .sd-card .value--warning  { color: var(--sev-warning-text); }
+        .sd-card-icon { font-size: 2.25rem; opacity: .5; }
+        .sd-panel { background: var(--color-bg-secondary); border: 1px solid var(--color-border);
+                    border-radius: var(--radius-md); padding: var(--space-md); margin-top: var(--space-md); }
+        .sd-panel h2 { font-size: var(--font-xl); font-weight: 700; margin: 0 0 var(--space-sm);
+                       display: flex; align-items: center; gap: 8px; }
+        table.sd-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); }
+        .sd-table th { text-align: left; padding: 8px; color: var(--color-text-tertiary);
+                       border-bottom: 1px solid var(--color-border); font-weight: 600; }
+        .sd-table th.r, .sd-table td.r { text-align: right; }
+        .sd-table th.c, .sd-table td.c { text-align: center; }
+        .sd-table td { padding: 8px; border-bottom: 1px solid var(--color-border); }
+        .sd-table tbody tr:hover { background: var(--color-bg-hover); }
+        .sd-mono { font-family: var(--font-mono); }
+        .sd-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+                    border-radius: var(--radius-full); font-size: var(--font-xs); font-weight: 700; }
+        .sd-badge--critical { background: var(--sev-critical-solid); color: var(--sev-critical-on); }
+        .sd-badge--warning  { background: var(--sev-warning-solid); color: var(--sev-warning-on); }
+        .sd-days { padding: 2px 8px; border-radius: var(--radius-sm); font-size: var(--font-xs); }
+        .sd-days--soon  { background: var(--sev-critical-tint); color: var(--sev-critical-text); }
+        .sd-days--later { background: var(--sev-warning-tint);  color: var(--sev-warning-text); }
+        .sd-copy { background: transparent; border: 1px solid var(--color-border);
+                   color: var(--color-text-link); border-radius: var(--radius-sm);
+                   padding: 4px 8px; cursor: pointer; font-size: var(--font-xs); }
+        .sd-copy:hover { background: var(--color-bg-hover); }
+        .sd-empty { color: var(--color-text-tertiary); padding: var(--space-md);
+                    text-align: center; font-style: italic; }
+        @media (max-width: 1024px) { .sd-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px)  { .sd-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="sd-wrap">
+        <div class="sd-header">
+            <h1><i class="fas fa-database"></i> Space Analysis Dashboard</h1>
+            <p>Database Growth + Capacity Planning</p>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="sd-grid">
+            <div class="sd-card sd-card--info">
+                <div class="sd-card-row">
+                    <div><p class="label">Servidores Analisados</p><p class="value" id="sd-total-servers">—</p></div>
+                    <i class="fas fa-server sd-card-icon" style="color: var(--sev-info-border);"></i>
+                </div>
+            </div>
+            <div class="sd-card sd-card--critical">
+                <div class="sd-card-row">
+                    <div><p class="label">Alertas Críticos</p><p class="value value--critical" id="sd-critical-alerts">—</p></div>
+                    <i class="fas fa-triangle-exclamation sd-card-icon" style="color: var(--sev-critical-border);"></i>
+                </div>
+            </div>
+            <div class="sd-card sd-card--warning">
+                <div class="sd-card-row">
+                    <div><p class="label">Total Alertas</p><p class="value value--warning" id="sd-total-alerts">—</p></div>
+                    <i class="fas fa-bell sd-card-icon" style="color: var(--sev-warning-border);"></i>
+                </div>
+            </div>
+            <div class="sd-card sd-card--ok">
+                <div class="sd-card-row">
+                    <div><p class="label">Ação Necessária</p><p class="value" id="sd-action-required" style="font-size: var(--font-2xl);">—</p></div>
+                    <i class="fas fa-list-check sd-card-icon" style="color: var(--sev-ok-border);"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas Críticos -->
+        <div class="sd-panel">
+            <h2><i class="fas fa-circle-exclamation" style="color: var(--sev-critical-text);"></i> Alertas Críticos de Espaço</h2>
+            <div style="overflow-x: auto;">
+                <table class="sd-table">
+                    <thead>
+                        <tr>
+                            <th>Servidor</th><th>Database</th><th>FileGroup</th>
+                            <th class="r">Livre</th><th class="r">Total GB</th>
+                            <th class="c">Dias até Cheio</th><th class="c">Nível</th><th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sd-alerts-tbody">
+                        <tr><td colspan="8" class="sd-empty">A carregar…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Growth Chart: placeholder (nunca foi implementado no original) -->
+        <div class="sd-panel">
+            <h2><i class="fas fa-chart-line" style="color: var(--sev-ok-text);"></i> Previsão de Crescimento</h2>
+            <p class="sd-empty">Gráfico de crescimento ainda não implementado.</p>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+        function escAttr(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+        function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+
+        function renderAlerts(alerts) {
+            var tbody = document.getElementById('sd-alerts-tbody');
+            if (!tbody) return;
+            if (!alerts || !alerts.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="sd-empty">Sem alertas críticos.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = alerts.map(function (a) {
+                var free = Number(a.free_percent) || 0;
+                var freeColor = free < 5 ? 'var(--sev-critical-text)'
+                              : free < 10 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)';
+                var days = Number(a.estimated_days_to_full) || 0;
+                var daysCls = days < 7 ? 'sd-days--soon' : 'sd-days--later';
+                var level = a.alert_level === 'CRITICAL' ? 'critical' : 'warning';
+                return '<tr>' +
+                    '<td class="sd-mono">' + esc(a.server_id) + '</td>' +
+                    '<td class="sd-mono">' + esc(a.database_name) + '</td>' +
+                    '<td class="sd-mono">' + esc(a.filegroup_name) + '</td>' +
+                    '<td class="r" style="color:' + freeColor + ';font-weight:700;">' + free.toFixed(1) + '%</td>' +
+                    '<td class="r">' + (Number(a.current_gb) || 0).toFixed(1) + '</td>' +
+                    '<td class="c"><span class="sd-days ' + daysCls + '">' + days + ' dias</span></td>' +
+                    '<td class="c"><span class="sd-badge sd-badge--' + level + '">' + esc(a.alert_level) + '</span></td>' +
+                    '<td><button class="sd-copy" data-sql="' + escAttr(a.action_sql) + '"><i class="fas fa-copy"></i> SQL</button></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function loadDashboard() {
+            Promise.all([
+                fetch('/api/monitoring/space/dashboard').then(function(r){ return r.json(); }),
+                fetch('/api/monitoring/space/alerts').then(function(r){ return r.json(); })
+            ]).then(function (res) {
+                var dash = res[0], alerts = res[1];
+                if (dash && dash.success) {
+                    var d = dash.dashboard;
+                    setText('sd-total-servers', d.total_servers_analyzed);
+                    setText('sd-critical-alerts', d.critical_servers);
+                    setText('sd-total-alerts', d.total_alerts);
+                    setText('sd-action-required', (d.summary && d.summary.requires_immediate_action) ? 'SIM' : 'NÃO');
+                }
+                if (alerts && alerts.success) renderAlerts(alerts.alerts);
+            }).catch(function (e) {
+                console.error('Space dashboard error:', e);
+                var tbody = document.getElementById('sd-alerts-tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="sd-empty">Erro ao carregar dados.</td></tr>';
+            });
+        }
+
+        // Event delegation p/ copiar SQL — sem onclick inline, imune a quoting do SQL
+        document.addEventListener('click', function (ev) {
+            var btn = ev.target.closest ? ev.target.closest('.sd-copy') : null;
+            if (!btn) return;
+            var sql = btn.getAttribute('data-sql') || '';
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(sql).then(function () {
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                    setTimeout(function () { btn.innerHTML = '<i class="fas fa-copy"></i> SQL'; }, 1500);
+                });
+            }
+        });
+
+        loadDashboard();
+        setInterval(loadDashboard, 60000);
+    })();
+    </script>
+</body>
+</html>

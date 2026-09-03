@@ -1,0 +1,23 @@
+<!-- @dsCard group="Type" viewport="700x230" name="Type scale" subtitle="Major-third scale — 12px floor, KPI numbers tabular" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 20px; background: var(--surface-app); display: flex; flex-direction: column; gap: 9px; }
+  .r { display: flex; align-items: baseline; gap: 16px; }
+  .k { width: 92px; font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+  .v { color: var(--text-primary); }
+</style>
+</head>
+<body>
+  <div class="r"><span class="k">3xl / 30</span><span class="v" style="font-size:var(--font-3xl);font-weight:700;font-variant-numeric:tabular-nums">1,284</span></div>
+  <div class="r"><span class="k">2xl / 24</span><span class="v" style="font-size:var(--font-2xl);font-weight:700">Space Analysis</span></div>
+  <div class="r"><span class="k">xl / 20</span><span class="v" style="font-size:var(--font-xl);font-weight:600">Critical alerts</span></div>
+  <div class="r"><span class="k">lg / 18</span><span class="v" style="font-size:var(--font-lg);font-weight:600">Filegroup detail</span></div>
+  <div class="r"><span class="k">base / 16</span><span class="v" style="font-size:var(--font-base)">Body — alert descriptions and prose.</span></div>
+  <div class="r"><span class="k">sm / 14</span><span class="v" style="font-size:var(--font-sm);color:var(--text-secondary)">Labels, buttons, dense table body</span></div>
+  <div class="r"><span class="k">xs / 12</span><span class="v" style="font-size:var(--font-xs);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em">Metadata · badges</span></div>
+</body>
+</html>

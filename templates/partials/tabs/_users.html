@@ -1,0 +1,27 @@
+{# Users tab content #}
+<div class="tab-content" id="tab-users">
+    <h3 style="color: #f1f5f9; margin-bottom: 16px;">
+        <i class="fas fa-users"></i> Users — {{ server_id.replace('_', '\\') }}
+    </h3>
+
+    {% if data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ data.error }}
+    </div>
+    {% elif data %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <wdb-kpi-card title="Active Sessions" value="{{ data.get('active_sessions', '\u2014') }}" icon="fa-users" status="info">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Blocked" value="{{ data.get('blocked_sessions', '\u2014') }}" icon="fa-ban"
+                      status="{{ 'critical' if (data.get('blocked_sessions', 0)|int) > 0 else 'ok' }}">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Total Logins" value="{{ data.get('total_logins', '\u2014') }}" icon="fa-sign-in-alt" status="info">
+        </wdb-kpi-card>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #64748b;">
+        <i class="fas fa-users" style="font-size: 24px;"></i>
+        <p>Select a server to view user sessions</p>
+    </div>
+    {% endif %}
+</div>

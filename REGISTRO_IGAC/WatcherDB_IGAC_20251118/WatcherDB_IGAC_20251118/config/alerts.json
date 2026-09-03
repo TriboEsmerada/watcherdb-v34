@@ -1,0 +1,177 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-01-14T12:00:00",
+  "alert_rules": {
+    "disk_space": {
+      "enabled": true,
+      "critical_percent": 10,
+      "warning_percent": 20,
+      "forecast_enabled": true,
+      "forecast_days": 30,
+      "forecast_critical_days": 7,
+      "forecast_warning_days": 30,
+      "channels": ["email", "teams"],
+      "throttle_minutes": 60,
+      "description": "Alert when disk space is low or forecasted to be full soon"
+    },
+    "backup_failure": {
+      "enabled": true,
+      "max_age_hours": 24,
+      "check_types": ["FULL", "DIFFERENTIAL", "LOG"],
+      "channels": ["email", "teams", "slack"],
+      "throttle_minutes": 120,
+      "description": "Alert when backup is missing or failed"
+    },
+    "backup_pattern_anomaly": {
+      "enabled": true,
+      "min_pattern_confidence": 0.8,
+      "channels": ["email"],
+      "throttle_minutes": 360,
+      "description": "Alert when backup pattern deviates from normal"
+    },
+    "alwayson_failover": {
+      "enabled": true,
+      "channels": ["teams", "webhook"],
+      "throttle_minutes": 5,
+      "notify_on_recovery": true,
+      "description": "Alert on Always On availability group failover"
+    },
+    "alwayson_sync_issue": {
+      "enabled": true,
+      "max_sync_lag_seconds": 300,
+      "channels": ["teams", "email"],
+      "throttle_minutes": 30,
+      "description": "Alert when replica synchronization is lagging"
+    },
+    "memory_pressure": {
+      "enabled": true,
+      "critical_percent": 90,
+      "warning_percent": 80,
+      "sustained_duration_minutes": 15,
+      "channels": ["email", "teams"],
+      "throttle_minutes": 60,
+      "description": "Alert when SQL Server memory usage is high"
+    },
+    "cpu_pressure": {
+      "enabled": true,
+      "critical_percent": 90,
+      "warning_percent": 80,
+      "sustained_duration_minutes": 15,
+      "channels": ["email"],
+      "throttle_minutes": 60,
+      "description": "Alert when CPU usage is high"
+    },
+    "blocking_queries": {
+      "enabled": true,
+      "duration_threshold_seconds": 60,
+      "blocked_count_threshold": 5,
+      "channels": ["teams"],
+      "throttle_minutes": 15,
+      "description": "Alert when blocking chains are detected"
+    },
+    "slow_queries": {
+      "enabled": true,
+      "duration_threshold_seconds": 30,
+      "execution_count_threshold": 10,
+      "channels": ["email"],
+      "throttle_minutes": 120,
+      "description": "Alert when slow queries are detected"
+    },
+    "index_fragmentation": {
+      "enabled": true,
+      "fragmentation_percent": 80,
+      "index_size_mb_threshold": 100,
+      "channels": ["email"],
+      "throttle_minutes": 1440,
+      "description": "Alert when index fragmentation is high"
+    },
+    "log_space_usage": {
+      "enabled": true,
+      "usage_percent": 80,
+      "channels": ["email", "teams"],
+      "throttle_minutes": 30,
+      "description": "Alert when transaction log space is high"
+    },
+    "tempdb_usage": {
+      "enabled": true,
+      "usage_percent": 80,
+      "channels": ["teams"],
+      "throttle_minutes": 30,
+      "description": "Alert when tempdb usage is high"
+    },
+    "job_failure": {
+      "enabled": true,
+      "job_categories": ["Database Maintenance", "Backup", "Replication"],
+      "channels": ["email", "teams"],
+      "throttle_minutes": 60,
+      "description": "Alert when SQL Agent job fails"
+    },
+    "connection_failure": {
+      "enabled": true,
+      "consecutive_failures": 3,
+      "channels": ["teams", "email"],
+      "throttle_minutes": 15,
+      "description": "Alert when unable to connect to SQL Server"
+    },
+    "deadlock_detected": {
+      "enabled": true,
+      "count_threshold": 10,
+      "time_window_minutes": 60,
+      "channels": ["email"],
+      "throttle_minutes": 120,
+      "description": "Alert when deadlocks are frequently occurring"
+    },
+    "security_tde_expiry": {
+      "enabled": true,
+      "days_before_expiry": 30,
+      "channels": ["email"],
+      "throttle_minutes": 1440,
+      "description": "Alert when TDE certificate is expiring soon"
+    },
+    "predictive_space_full": {
+      "enabled": true,
+      "days_until_full_threshold": 14,
+      "confidence_threshold": 0.9,
+      "channels": ["email", "teams"],
+      "throttle_minutes": 1440,
+      "description": "Predictive alert for disk space running out"
+    },
+    "anomaly_detected": {
+      "enabled": true,
+      "anomaly_types": ["space_growth", "query_performance", "resource_usage"],
+      "sensitivity": 0.95,
+      "channels": ["email"],
+      "throttle_minutes": 360,
+      "description": "Alert when anomalies are detected in metrics"
+    }
+  },
+  "escalation_rules": {
+    "enabled": true,
+    "escalation_after_minutes": 60,
+    "escalation_channels": ["webhook"],
+    "escalation_contacts": [
+      "operations@tapos.com",
+      "manager@tapos.com"
+    ]
+  },
+  "notification_windows": {
+    "enabled": false,
+    "allow_notifications": {
+      "weekdays": {
+        "start_hour": 8,
+        "end_hour": 20
+      },
+      "weekends": {
+        "start_hour": 10,
+        "end_hour": 18
+      }
+    },
+    "critical_alerts_always": true
+  },
+  "grouping": {
+    "enabled": true,
+    "group_similar_alerts": true,
+    "group_time_window_minutes": 15,
+    "max_alerts_in_group": 10
+  }
+}

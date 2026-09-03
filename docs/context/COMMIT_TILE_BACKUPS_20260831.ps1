@@ -1,0 +1,8 @@
+# Tile Backups: split "Em atraso" em (critico)/(aviso) - commit
+# Correr: & "C:\Users\ue_e-snetto\Documents\projetosPython\WATCHERDB_V3.3\docs\context\COMMIT_TILE_BACKUPS_20260831.ps1"
+
+Set-Location "C:\Users\ue_e-snetto\Documents\projetosPython"
+
+git add WATCHERDB_V3.3/templates/watcherdb_portal.html WATCHERDB_V3.3/api/routers/intelligence/helpers.py WATCHERDB_V3.3/api/kpi_thresholds_registry.py WATCHERDB_V3.3/knowledge_base/architecture/kpis/backups_kpis.md WATCHERDB_V3.3/docs/changelog/CHANGELOG.md WATCHERDB_V3.3/findings-inbox.md WATCHERDB_V3.3/docs/context/CONTEXT.md WATCHERDB_V3.3/docs/context/COMMIT_TILE_BACKUPS_20260831.ps1 WATCHERDB_V3.3/docs/context/PROMPT_PROPAGACAO_V6_TILE_BACKUPS_2026-08-31.md
+git commit -m 'fix(v33): tile Backups expoe Em atraso (critico)/(aviso) + filtro de instancias com contagem ordenada' -m 'Tile: painel Por Categoria soma delayed_critical_count aos criticos desde 2026-08-06 (365 no ecra de 31/08) mas o tile so tinha o total amarelo - com filtro CRITICOS sobrava Log falhou 12 e os ~353 de gap RPO nao apareciam em linha nenhuma. Split no mesmo padrao dos tiles de disco; mesma modal nas duas rows; sem mudanca de contagem. GO frontend-specialist sem condicoes; tier checker PASS; registry surfaces + KB no mesmo bloco; FIND-20260831-101 aberto (granularidade sem dedupe por base - sessao propria).' -m 'Combobox dos modais de backup (mesmo lote, pedido owner 31/08): contagem (N DBs) sempre visivel e lista ordenada por ocorrencias DESC com desempate alfabetico (antes: so alfabetico, contagem escondida quando 1).' -m 'Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>'
+git log -1 --format='%h %s'

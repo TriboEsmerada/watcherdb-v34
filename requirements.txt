@@ -1,0 +1,125 @@
+# WatcherDB - SQL Server Monitoring Platform
+# Core Dependencies
+
+# Web Framework
+# Minimums bumped 2026-04-22 (audit FIND #3) para CVE-free baseline:
+#   fastapi>=0.114.0 + starlette transitivo: CVE-2024-47874 (multipart DoS)
+#   python-multipart>=0.0.7: CVE-2024-24762 (ReDoS)
+# Tectos de major adicionados 2026-08-11 (incidente instalacao SQLHDSPRD213):
+# a .venv-build resolveu fastapi 0.136 -> starlette 1.0 (fastapi 0.136
+# REMOVEU o proprio tecto interno starlette<0.51) -> shim TemplateResponse
+# old-style removido -> portal inteiro 500 no bundle. starlette passa a
+# linha DIRECTA: 6+ ficheiros importam starlette.* e o tecto transitivo
+# do fastapi provou nao ser confiavel. Subir tectos = decisao deliberada
+# com re-teste, nunca drift do pip. Lockfile da venv de build e a proteccao
+# primaria (requirements-build.lock); isto e a rede de seguranca.
+fastapi>=0.114.0,<0.130.0
+starlette>=0.40.0,<0.51.0
+uvicorn[standard]>=0.24.0,<0.41.0
+python-multipart>=0.0.7,<0.1.0
+
+# Database Connectivity
+pyodbc>=5.0.0
+aioodbc>=0.5.0
+
+# Data Validation
+pydantic>=2.4.0,<3.0.0
+pydantic-settings>=2.0.0
+
+# Data Processing
+openpyxl>=3.1.0
+pandas>=2.1.0
+numpy>=1.25.0
+
+# Machine Learning & Analytics
+# [V3.3 zero AI policy 2026-05-05 FIND-014-B] scikit-learn moved to requirements-pro.txt.
+# V3.3 = zero AI canonical (DBA Lead 2026-04-28). ML deps Pro-only (V6+).
+# Predictive Alerts ML engine (modules/monitoring/predictive_alerts*.py) source preserved
+# for paridade V6+ Pro but endpoints not registered in V3.3 build.
+# scikit-learn>=1.3.0
+
+# Visualization
+plotly>=5.17.0
+
+# Templating
+# jinja2>=3.1.4 (CVE-2024-22195 SSTI via xmlattr) — audit FIND #3
+jinja2>=3.1.4
+
+# Authentication & Security
+# python-jose>=3.4.0 (CVE-2024-33663 algorithm confusion CVSS 9.8 + CVE-2024-33664 JWT bomb)
+# — audit FIND #3. TODO Sem 5+: avaliar migracao para joserfc (python-jose em manutencao minima).
+python-jose[cryptography]>=3.4.0
+passlib[bcrypt]>=1.7.4
+
+# passlib 1.7.4 incompativel com bcrypt>=4.1 (ValueError 72-byte probe no
+# detect_wrap_bug + __about__ removido). Pin ate migrar de passlib (unmaintained).
+bcrypt>=4.0.1,<4.1
+
+
+# HTTP Clients
+httpx>=0.25.0
+requests>=2.31.0
+
+# System Monitoring
+psutil>=5.9.0
+
+# Async I/O
+aiofiles>=23.2.0
+websockets>=12.0
+
+# Windows Management (OS memory/CPU counters via WMI)
+pywin32>=306; sys_platform == "win32"
+wmi>=1.5.1; sys_platform == "win32"
+
+# Active Directory / LDAP
+ldap3>=2.9.0
+winkerberos>=0.9.0; sys_platform == "win32"
+
+# Configuration
+pyyaml>=6.0.1
+python-dotenv>=1.0.0
+
+# Rate Limiting
+slowapi>=0.1.9
+
+# Retry with exponential backoff
+tenacity>=8.2.0
+
+# Circuit breaker for database connections
+pybreaker>=1.2.0
+
+# Thread-safe caching
+cachetools>=5.3.0
+
+# SQL parsing and validation
+# >=0.6.0 (2026-08-20): fecha 3 CVEs GHSA-f2ff/prg7/pwgv que o CVE gate apanhou
+# em 0.5.5 (ReDoS/parsing). O bump nao tem breaking changes para o uso do
+# produto (formatacao/tokenizacao de SQL para display, sql_validator.py).
+sqlparse>=0.6.0
+
+# Structured Logging & Metrics
+structlog>=24.1.0
+prometheus-client>=0.20.0
+opentelemetry-api>=1.24.0
+opentelemetry-sdk>=1.24.0
+opentelemetry-instrumentation-fastapi>=0.45b0
+
+# Database Migrations
+alembic>=1.13.0
+
+# Task Scheduling
+apscheduler>=3.10.0
+
+# Cache Backend
+redis>=5.0.0
+
+# Optional: Alerting (install with: pip install -r requirements-alerting.txt)
+# aiosmtplib>=3.0.0
+# pymsteams>=0.2.2
+# slack-sdk>=3.23.0
+
+# Optional: Advanced Analytics (install with: pip install -r requirements-analytics.txt)
+# prophet>=1.1.5
+# statsmodels>=0.14.0
+# scipy>=1.11.0
+

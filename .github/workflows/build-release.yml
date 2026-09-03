@@ -1,0 +1,316 @@
+# =============================================================================
+# WatcherDB V3.3 Standard Edition - Production Release Pipeline
+# =============================================================================
+#
+# Triggers on tags v3.3.X.Y to produce signed MSI + SBOM + checksums.
+# Also supports manual workflow_dispatch for pipeline testing.
+#
+# =============================================================================
+# RUNNER REQUIREMENTS (self-hosted Windows)
+# =============================================================================
+# Label: [self-hosted, windows, watcherdb-build]
+#
+# Pre-installed on runner machine:
+#   - Windows Server 2019/2022 OR Windows 11
+#   - Python 3.11 (in PATH)
+#   - PyArmor Pro reg 011618 ACTIVATED (machine-bound license -- CANNOT use
+#     github-hosted runners; PyArmor licence is tied to specific hardware)
+#   - LLVM/Clang in PATH (default: C:\Program Files\LLVM\bin)
+#   - WiX Toolset v3.14 in PATH (default: C:\Program Files (x86)\WiX Toolset v3.14\bin)
+#   - Syft 1.x in PATH (via winget Anchore.Syft --scope user)
+#   - signtool.exe via Windows SDK (default: in PATH after SDK install)
+#   - DigiCert KeyLocker Client Tools (for EV code-signing)
+#   - GitHub Actions runner registered with label "watcherdb-build"
+#   - .venv-build/ already created at WATCHERDB_V3.3/.venv-build/ with
+#     requirements-build.txt installed (Python 3.11 venv)
+#
+# =============================================================================
+# REQUIRED GITHUB SECRETS (Settings -> Secrets and variables -> Actions)
+# =============================================================================
+#   SM_HOST                  e.g. https://clientauth.one.digicert.com
+#   SM_API_KEY               from DigiCert KeyLocker console
+#   SM_CLIENT_CERT_FILE      path on runner to client.p12 (NOT the content)
+#   SM_CLIENT_CERT_PASSWORD  password for client.p12
+#   SM_CERT_ALIAS            alias from DigiCert KeyLocker console
+#
+# =============================================================================
+# OUTPUT ARTEFACTS (uploaded + attached to draft Release)
+# =============================================================================
+#   - dist/msi/WatcherDB_V3.3_Standard.msi              signed MSI installer
+#   - dist/msi/WatcherDB_V3.3_Standard.sbom.cyclonedx.json   CycloneDX SBOM
+#   - dist/msi/checksums.sha256                         SHA-256 manifest
+#
+# =============================================================================
+
+name: Build Release MSI
+
+on:
+  push:
+    tags:
+      - 'v3.3.*'
+  workflow_dispatch:
+    inputs:
+      skip_signing:
+        description: 'Skip MSI signing (test pipeline without DigiCert config)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      skip_sbom:
+        description: 'Skip SBOM generation (faster smoke test)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+# Prevent multiple release builds running simultaneously (PyArmor licence
+# is single-machine, parallel runs would race on dist/ output)
+concurrency:
+  group: build-release-msi
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # for softprops/action-gh-release
+  packages: read
+
+jobs:
+  build-msi:
+    name: Build Signed MSI
+    runs-on: [self-hosted, windows, watcherdb-build]
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        working-directory: WATCHERDB_V3.3
+
+    env:
+      PYTHONIOENCODING: utf-8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for SBOM metadata + tag context
+
+      - name: Verify toolchain
+        shell: pwsh
+        run: |
+          Write-Host "--- Toolchain check ---"
+          $tools = @('clang.exe', 'candle.exe', 'light.exe', 'heat.exe', 'syft.exe', 'signtool.exe')
+          $missing = @()
+          foreach ($t in $tools) {
+            $cmd = Get-Command $t -ErrorAction SilentlyContinue
+            if ($cmd) {
+              Write-Host "[OK] $t -> $($cmd.Source)"
+            } else {
+              $missing += $t
+              Write-Host "[MISSING] $t" -ForegroundColor Red
+            }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Error "Toolchain incomplete on runner. Missing: $($missing -join ', '). See workflow header for setup requirements."
+            exit 1
+          }
+
+      - name: Verify PyArmor Pro licence (machine-bound)
+        shell: pwsh
+        run: |
+          $py = ".\.venv-build\Scripts\python.exe"
+          if (-not (Test-Path $py)) {
+            Write-Error "venv not found at $py - run 'py -3.11 -m venv .venv-build && .venv-build\Scripts\python.exe -m pip install -r requirements-build.txt' on runner first"
+            exit 1
+          }
+          $out = & $py -m pyarmor.cli --version 2>&1 | Out-String
+          if ($out -notmatch "pyarmor-pro") {
+            Write-Error "PyArmor Pro licence not activated (expected 'pyarmor-pro' in output). Activate licence on runner."
+            Write-Host $out
+            exit 1
+          }
+          if ($out -notmatch "BCC Mode\s*:\s*Yes") {
+            Write-Error "PyArmor BCC Mode not enabled (required for 100% IP protection)"
+            exit 1
+          }
+          Write-Host "[OK] PyArmor Pro active with BCC + RFT"
+          $out -split "`n" | Select-Object -First 12 | Write-Host
+
+      - name: Build PyArmor + PyInstaller bundle
+        shell: pwsh
+        timeout-minutes: 30
+        run: |
+          Write-Host "--- Building bundle (PyArmor BCC + RFT, then PyInstaller onedir) ---"
+          .\.venv-build\Scripts\python.exe deploy\build.py 2>&1 | Tee-Object -FilePath build_run.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "build.py failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          # Detect silent fallback (P0 audit hardening — refactor 2026-05-14
+          # eliminated this, but assert defensively)
+          $fb = Select-String -Path build_run.log -Pattern "copying unprotected as fallback"
+          if ($fb) {
+            Write-Error "SILENT FALLBACK DETECTED ($($fb.Count) file(s)). Refactor required:`n$($fb.Line -join "`n")"
+            exit 1
+          }
+          Write-Host "[OK] No silent fallback hits"
+
+      - name: Verify bundle artefacts + count obfuscated files
+        shell: pwsh
+        run: |
+          $exe = "dist\watcherdb\watcherdb.exe"
+          if (-not (Test-Path $exe)) {
+            Write-Error "Bundle missing: $exe"
+            exit 1
+          }
+          $size = [math]::Round((Get-Item $exe).Length / 1MB, 2)
+          Write-Host "[OK] $exe ($size MB)"
+
+          # Coverage assertion: zero PLAIN files in PROTECT_DIRS
+          $plain = 0
+          $obfuscated = 0
+          $dirs = @('api','watcherdb','services','modules','collectors','scripts','tools','alembic')
+          foreach ($d in $dirs) {
+            $base = "dist\WatcherDB_V3.3\$d"
+            if (-not (Test-Path $base)) { continue }
+            Get-ChildItem $base -Recurse -Filter *.py -ErrorAction SilentlyContinue | ForEach-Object {
+              $lines = Get-Content $_.FullName -TotalCount 5 -ErrorAction SilentlyContinue
+              $head = if ($lines) { $lines -join "`n" } else { "" }
+              if ($head -match "pyarmor_runtime|__pyarmor__") { $obfuscated++ }
+              elseif ($head.Length -gt 0) { $plain++ }
+            }
+          }
+          Write-Host "Obfuscated: $obfuscated"
+          Write-Host "Plain:      $plain"
+          if ($plain -gt 0) {
+            Write-Error "IP protection regression: $plain file(s) shipped unobfuscated"
+            exit 1
+          }
+          Write-Host "[OK] 100% IP protection ($obfuscated files obfuscated)"
+
+      - name: Build MSI installer (WiX)
+        shell: pwsh
+        run: |
+          powershell.exe -ExecutionPolicy Bypass -File deploy\build_msi.ps1 -Clean
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "build_msi.ps1 failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          $msi = "dist\msi\WatcherDB_V3.3_Standard.msi"
+          if (-not (Test-Path $msi)) {
+            Write-Error "MSI not produced: $msi"
+            exit 1
+          }
+          $size = [math]::Round((Get-Item $msi).Length / 1MB, 2)
+          Write-Host "[OK] MSI built: $msi ($size MB)"
+
+      - name: Sign MSI (Authenticode via DigiCert KeyLocker)
+        if: ${{ github.event.inputs.skip_signing != 'true' }}
+        shell: pwsh
+        env:
+          SM_HOST: ${{ secrets.SM_HOST }}
+          SM_API_KEY: ${{ secrets.SM_API_KEY }}
+          SM_CLIENT_CERT_FILE: ${{ secrets.SM_CLIENT_CERT_FILE }}
+          SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
+          SM_CERT_ALIAS: ${{ secrets.SM_CERT_ALIAS }}
+        run: |
+          if (-not $env:SM_HOST -or -not $env:SM_API_KEY) {
+            Write-Error "DigiCert KeyLocker secrets not configured. Set SM_HOST, SM_API_KEY, SM_CLIENT_CERT_FILE, SM_CLIENT_CERT_PASSWORD, SM_CERT_ALIAS in repo Settings -> Secrets -> Actions."
+            exit 1
+          }
+          powershell.exe -ExecutionPolicy Bypass -File deploy\sign_msi.ps1
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "sign_msi.ps1 failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+      - name: Verify MSI Authenticode signature
+        if: ${{ github.event.inputs.skip_signing != 'true' }}
+        shell: pwsh
+        run: |
+          $msi = "dist\msi\WatcherDB_V3.3_Standard.msi"
+          $sig = Get-AuthenticodeSignature $msi
+          if ($sig.Status -ne 'Valid') {
+            Write-Error "MSI signature invalid: $($sig.Status) - $($sig.StatusMessage)"
+            exit 1
+          }
+          Write-Host "[OK] MSI Authenticode signature Valid"
+          Write-Host "  Subject:    $($sig.SignerCertificate.Subject)"
+          Write-Host "  Thumbprint: $($sig.SignerCertificate.Thumbprint)"
+          Write-Host "  TimeStamp:  $($sig.TimeStamperCertificate.Subject)"
+
+      - name: Generate SBOM (CycloneDX via Syft)
+        if: ${{ github.event.inputs.skip_sbom != 'true' }}
+        shell: pwsh
+        run: |
+          powershell.exe -ExecutionPolicy Bypass -File deploy\build_sbom.ps1
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "build_sbom.ps1 failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+      - name: Compute SHA-256 checksums
+        shell: pwsh
+        run: |
+          $artefacts = @(
+            "dist\msi\WatcherDB_V3.3_Standard.msi",
+            "dist\msi\WatcherDB_V3.3_Standard.sbom.cyclonedx.json"
+          )
+          $manifest = @()
+          foreach ($a in $artefacts) {
+            if (Test-Path $a) {
+              $h = Get-FileHash $a -Algorithm SHA256
+              $manifest += "$($h.Hash.ToLower())  $(Split-Path $a -Leaf)"
+            }
+          }
+          $checksumsPath = "dist\msi\checksums.sha256"
+          $manifest | Out-File $checksumsPath -Encoding ASCII
+          Write-Host "--- checksums.sha256 ---"
+          Get-Content $checksumsPath
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msi-${{ github.ref_name }}
+          path: |
+            WATCHERDB_V3.3/dist/msi/WatcherDB_V3.3_Standard.msi
+            WATCHERDB_V3.3/dist/msi/WatcherDB_V3.3_Standard.sbom.cyclonedx.json
+            WATCHERDB_V3.3/dist/msi/checksums.sha256
+            WATCHERDB_V3.3/build_run.log
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Create GitHub Release (draft, tag only)
+        if: startsWith(github.ref, 'refs/tags/v3.3.')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            WATCHERDB_V3.3/dist/msi/WatcherDB_V3.3_Standard.msi
+            WATCHERDB_V3.3/dist/msi/WatcherDB_V3.3_Standard.sbom.cyclonedx.json
+            WATCHERDB_V3.3/dist/msi/checksums.sha256
+          draft: true
+          generate_release_notes: true
+          body: |
+            ## WatcherDB V3.3 Standard Edition - ${{ github.ref_name }}
+
+            Signed MSI installer + SBOM + checksums.
+
+            ### Verification
+
+            ```powershell
+            # Authenticode signature
+            Get-AuthenticodeSignature WatcherDB_V3.3_Standard.msi
+
+            # SHA-256 integrity
+            Get-FileHash WatcherDB_V3.3_Standard.msi -Algorithm SHA256
+            # Compare with checksums.sha256
+            ```
+
+            ### Smoke test (in clean VM)
+
+            ```powershell
+            powershell.exe -ExecutionPolicy Bypass -File tests\smoke\test_install_smoke.ps1 -Scenario 1
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

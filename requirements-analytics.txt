@@ -1,0 +1,9 @@
+# Advanced Analytics Dependencies
+-r requirements.txt
+
+# Time Series Forecasting
+prophet>=1.1.5
+
+# Statistical Analysis
+statsmodels>=0.14.0
+scipy>=1.11.0

@@ -1,0 +1,63 @@
+<!-- @dsCard group="Severity" viewport="700x260" name="Severity scale (5 levels)" subtitle="text · tint · border · solid · on — one unified scale" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 18px; background: var(--surface-app); }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; font-weight: var(--weight-semibold); color: var(--text-tertiary);
+       text-transform: uppercase; letter-spacing: .04em; padding: 0 8px 10px; }
+  td { padding: 7px 8px; }
+  .lvl { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+  .dot { width: 26px; height: 26px; border-radius: var(--radius-sm); display: grid; place-items: center;
+         font-size: 13px; }
+  .tint { width: 70px; height: 26px; border-radius: var(--radius-sm); border: 1px solid; }
+  .solid { padding: 3px 10px; border-radius: var(--radius-full); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .mono { font-family: var(--font-mono); font-size: 12px; }
+</style>
+</head>
+<body>
+  <table>
+    <thead><tr><th>Level</th><th>Text</th><th>Tint</th><th>Solid fill</th><th>Icon</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="lvl" style="color:var(--sev-ok-text)"><span class="dot" style="background:var(--sev-ok-tint);color:var(--sev-ok-text)"><i class="dot-i">&#10003;</i></span>OK</span></td>
+        <td class="mono" style="color:var(--sev-ok-text)">#34d399</td>
+        <td><div class="tint" style="background:var(--sev-ok-tint);border-color:var(--sev-ok-border)"></div></td>
+        <td><span class="solid" style="background:var(--sev-ok-solid);color:var(--sev-ok-on)">Healthy</span></td>
+        <td class="mono" style="color:var(--text-tertiary)">circle-check</td>
+      </tr>
+      <tr>
+        <td><span class="lvl" style="color:var(--sev-info-text)"><span class="dot" style="background:var(--sev-info-tint);color:var(--sev-info-text)">i</span>INFO</span></td>
+        <td class="mono" style="color:var(--sev-info-text)">#60a5fa</td>
+        <td><div class="tint" style="background:var(--sev-info-tint);border-color:var(--sev-info-border)"></div></td>
+        <td><span class="solid" style="background:var(--sev-info-solid);color:var(--sev-info-on)">Info</span></td>
+        <td class="mono" style="color:var(--text-tertiary)">circle-info</td>
+      </tr>
+      <tr>
+        <td><span class="lvl" style="color:var(--sev-warning-text)"><span class="dot" style="background:var(--sev-warning-tint);color:var(--sev-warning-text)">&#9650;</span>WARNING</span></td>
+        <td class="mono" style="color:var(--sev-warning-text)">#fbbf24</td>
+        <td><div class="tint" style="background:var(--sev-warning-tint);border-color:var(--sev-warning-border)"></div></td>
+        <td><span class="solid" style="background:var(--sev-warning-solid);color:var(--sev-warning-on)">Warning</span></td>
+        <td class="mono" style="color:var(--text-tertiary)">triangle-excl</td>
+      </tr>
+      <tr>
+        <td><span class="lvl" style="color:var(--sev-critical-text)"><span class="dot" style="background:var(--sev-critical-tint);color:var(--sev-critical-text)">!</span>CRITICAL</span></td>
+        <td class="mono" style="color:var(--sev-critical-text)">#f87171</td>
+        <td><div class="tint" style="background:var(--sev-critical-tint);border-color:var(--sev-critical-border)"></div></td>
+        <td><span class="solid" style="background:var(--sev-critical-solid);color:var(--sev-critical-on)">Critical</span></td>
+        <td class="mono" style="color:var(--text-tertiary)">circle-excl</td>
+      </tr>
+      <tr>
+        <td><span class="lvl" style="color:var(--sev-overflow-text)"><span class="dot" style="background:var(--sev-overflow-tint);color:var(--sev-overflow-text);border:1px solid var(--sev-overflow-border)">&#9760;</span>OVERFLOW</span></td>
+        <td class="mono" style="color:var(--sev-overflow-text)">#fca5a5</td>
+        <td><div class="tint" style="background:var(--sev-overflow-tint);border-color:var(--sev-overflow-border)"></div></td>
+        <td><span class="solid" style="background:var(--sev-overflow-solid);color:var(--sev-overflow-on);border:1px solid var(--sev-overflow-border)">Breached</span></td>
+        <td class="mono" style="color:var(--text-tertiary)">skull</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

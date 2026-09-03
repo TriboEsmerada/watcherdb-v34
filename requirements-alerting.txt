@@ -1,0 +1,11 @@
+# Alerting Dependencies
+-r requirements.txt
+
+# Email Notifications
+aiosmtplib>=3.0.0
+
+# Microsoft Teams
+pymsteams>=0.2.2
+
+# Slack Integration
+slack-sdk>=3.23.0

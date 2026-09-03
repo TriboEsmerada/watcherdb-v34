@@ -1,0 +1,15 @@
+{# Server list items — rendered by htmx #}
+{% for server in servers %}
+<wdb-server-card
+    server-id="{{ server.server_id }}"
+    name="{{ server.name }}"
+    status="{{ server.status }}"
+    environment="{{ server.environment }}">
+</wdb-server-card>
+{% endfor %}
+{% if not servers %}
+<div style="text-align: center; padding: 24px; color: #64748b;">
+    <i class="fas fa-server" style="font-size: 24px; margin-bottom: 8px;"></i>
+    <p>No servers found</p>
+</div>
+{% endif %}

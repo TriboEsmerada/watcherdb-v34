@@ -1,0 +1,189 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "watcherdb"
+version = "3.3.0"
+description = "Comprehensive SQL Server monitoring and diagnostics platform with real-time analytics and predictive capabilities"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "WatcherDB Team", email = "support@watcherdb.io"}
+]
+keywords = ["sql-server", "monitoring", "diagnostics", "database", "performance", "analytics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: System Administrators",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: System :: Monitoring",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Audit 2026-04-22 FIND #3: minimums bumped para CVE-free baseline.
+    # fastapi>=0.114.0 + starlette transitivo = CVE-2024-47874 (multipart DoS)
+    # python-multipart>=0.0.7 = CVE-2024-24762 (ReDoS)
+    # jinja2>=3.1.4 = CVE-2024-22195 (SSTI via xmlattr)
+    # python-jose>=3.4.0 = CVE-2024-33663 (algorithm confusion, CVSS 9.8) + CVE-2024-33664 (JWT bomb)
+    "fastapi>=0.114.0",
+    "uvicorn[standard]>=0.24.0",
+    "pyodbc>=5.0.0",
+    "pydantic>=2.4.0",
+    "pydantic-settings>=2.0.0",
+    "python-multipart>=0.0.7",
+    "openpyxl>=3.1.0",
+    "pandas>=2.1.0",
+    "numpy>=1.25.0",
+    "scikit-learn>=1.3.0",
+    "plotly>=5.17.0",
+    "jinja2>=3.1.4",
+    "python-jose[cryptography]>=3.4.0",
+    "passlib[bcrypt]>=1.7.4",
+    "aiofiles>=23.2.0",
+    "websockets>=12.0",
+    "pyyaml>=6.0.1",
+    "slowapi>=0.1.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "httpx>=0.25.0",
+    "ruff>=0.1.0",
+    "mypy>=1.6.0",
+    "black>=23.10.0",
+    "isort>=5.12.0",
+    "pre-commit>=3.5.0",
+]
+
+alerting = [
+    "aiosmtplib>=3.0.0",
+    "pymsteams>=0.2.2",
+    "slack-sdk>=3.23.0",
+]
+
+analytics = [
+    "prophet>=1.1.5",
+    "statsmodels>=0.14.0",
+    "scipy>=1.11.0",
+]
+
+all = [
+    "watcherdb[dev,alerting,analytics]",
+]
+
+[project.urls]
+Homepage = "https://github.com/watcherdb/watcherdb"
+Documentation = "https://watcherdb.readthedocs.io"
+Repository = "https://github.com/watcherdb/watcherdb"
+Issues = "https://github.com/watcherdb/watcherdb/issues"
+
+[project.scripts]
+watcherdb = "watcherdb.cli:main"
+
+[tool.setuptools]
+packages = ["watcherdb", "watcherdb.core", "watcherdb.models", "watcherdb.services", "watcherdb.api"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+# S3-13 (audit 2026-04-22): coverage target expandido para incluir api/
+# modules/ services/ collectors/ — codigo que corre em producao e que
+# estava fora do cov target anterior (source=watcherdb apenas). O threshold
+# de 10% e locked-floor conservador (baseline empirico: 14% com 101 tests).
+# Ramp plan: 10 -> 20 -> 40 -> 60 em releases subsequentes a medida que
+# coverage dos routers sobe.
+# Run default exclui e2e (-m "not e2e"): specs de browser precisam do servico (8433) e
+# batem noutro processo (coverage ~0 -> bateria no --cov-fail-under). Corre-los com --no-cov:
+#   pytest -m e2e --no-cov
+addopts = '-ra -q --strict-markers -m "not e2e" --cov=watcherdb --cov=api --cov=services --cov=modules --cov=collectors --cov-report=term-missing --cov-report=html --cov-fail-under=10'
+markers = [
+    "e2e: testes de browser Playwright; requerem servico a correr (excluidos do run default)",
+    "e2e_mock: e2e determinista com endpoints mockados via page.route (CI-able)",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+# S3-13: expandido para cobrir codigo de producao real.
+source = ["watcherdb", "api", "services", "modules", "collectors"]
+# Audit 2026-04-22: mover .coverage data_file para fora do root para
+# satisfazer test_no_coverage_at_root sem quebrar coverage calculation.
+data_file = ".pytest_cache/.coverage"
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+# S3-13: threshold coerente com addopts --cov-fail-under. Ramp plan
+# documentado em [tool.pytest.ini_options] addopts. 10% = locked floor.
+fail_under = 10
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "pass",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.black]
+line-length = 120
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 120
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true

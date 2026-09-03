@@ -1,0 +1,58 @@
+{
+  "excel_path": "C:\\\\Server_Inventory\\\\SQL_Server_Inventory.xlsx",
+  "sheet_name": "Servers",
+  "columns": {
+    "server": "ServerName",
+    "instance": "Instance",
+    "server_instance": "ServerInstance",
+    "ag_name": "AGName",
+    "listener": "AGListener"
+  },
+  "cache_ttl_seconds": 300,
+  "analysis_window_days": 30,
+  "ag_servers": [
+    {
+      "server": "SQL214",
+      "instance": "I01",
+      "server_instance": "SQL214\\I01",
+      "ag_name": "SQLAG",
+      "listener": "SQLAG\\I01"
+    }
+  ]
+}
+
+/*
+CONFIGURAÇÃO:
+
+CAMPOS OBRIGATÓRIOS:
+- excel_path: Caminho para o arquivo Excel (usado apenas na inicialização)
+- sheet_name: Nome da planilha no Excel
+- columns: Mapeamento das colunas do Excel
+  - server: Nome da coluna do servidor (opcional, usado como fallback)
+  - instance: Nome da coluna da instância (opcional, usado como fallback)
+  - server_instance: Nome da coluna ServerInstance (formato: SERVER\INSTANCE) - RECOMENDADO
+  - ag_name: Nome da coluna do Availability Group (ex: "AGName" ou "AG_NAME") - OBRIGATÓRIO
+  - listener: Nome da coluna do Listener (ex: "AGListener" ou "Listeners") - OBRIGATÓRIO
+
+IMPORTANTE:
+- Servidores Always On são identificados pela presença de dados nas colunas AG_NAME e Listeners
+- Se ambas as colunas estiverem preenchidas, o servidor é considerado Always On
+
+OPCIONAL (preenchido automaticamente na inicialização):
+- ag_servers: Lista de servidores Always On carregados do Excel
+  - server: Nome do servidor
+  - instance: Nome da instância
+  - server_instance: ServerInstance completo do Excel (formato: SERVER\INSTANCE)
+  - ag_name: Nome do Availability Group
+  - listener: Nome do Listener
+
+MODO DE USO:
+1. Preencha os campos de configuração acima
+2. Execute o script de inicialização para popular ag_servers do Excel
+3. Após inicialização, o sistema usa apenas o JSON (não lê mais o Excel)
+
+OU PREENCHA MANUALMENTE:
+- Adicione entradas em ag_servers com os dados dos seus servidores Always On
+- O campo server_instance deve estar no formato: "SERVER\\INSTANCE" (com barra invertida dupla)
+*/
+

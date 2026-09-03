@@ -1,0 +1,15 @@
+# Mirroring Witness+Queues + lote dashboard 31/08 - PASSO 1: commits
+# SUBSTITUI COMMIT_TILE_BACKUPS_20260831.ps1 (o portal carrega os dois lotes
+# no mesmo ficheiro; bundle deliberado: mesma sessao, mesmo dashboard).
+# Correr: & "C:\Users\ue_e-snetto\Documents\projetosPython\WATCHERDB_V3.3\docs\context\MIRR_PASSO1_commits.ps1"
+
+Set-Location "C:\Users\ue_e-snetto\Documents\projetosPython"
+
+Write-Host ">>> Commit 1: V1 - mirroring collector + migration + canonical + changelog" -ForegroundColor Cyan
+git add "WATCHERDB INTELLIGENCE V1/scripts/collectors/collect_mirroring_status.py" "WATCHERDB INTELLIGENCE V1/database/MIGRATION_MIRRORING_WITNESS_QUEUES.sql" "WATCHERDB INTELLIGENCE V1/database/SECTION16_MIRRORING_STATUS.sql" "WATCHERDB INTELLIGENCE V1/database/CHANGELOG_JOBS_COLETA.md"
+git commit -m 'feat(v1 intel): KPI Mirroring - Witness + Log Send/Redo Queue no collector' -m 'Incidente SharePoint2010_Config_PROD SUSPENDED com ~100 GB de Log Send Queue invisivel no KPI. v1-intel GO-com-condicoes (todas aplicadas): migration standalone com DROP/CREATE das views (NAO sao SELECT *; sp_refreshview nao chega) + re-GRANT; ALTER nas 6 tabelas env + orfa; filas NULL nunca 0; NaN/NaT p/ None no transform (padrao 90901ed); WARNING no log quando LSQ acima de 1 GB. Query validada read-only no principal vivo: 110 rows, suspensa mostra LSQ 105766816 KB. Canonical SECTION16 no mesmo bloco.' -m 'Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>'
+
+Write-Host ">>> Commit 2: V3.3 - modal mirroring + tile Backups split + combobox + docs" -ForegroundColor Cyan
+git add WATCHERDB_V3.3/templates/watcherdb_portal.html WATCHERDB_V3.3/api/routers/intelligence_kpis.py WATCHERDB_V3.3/api/routers/intelligence/helpers.py WATCHERDB_V3.3/api/kpi_thresholds_registry.py WATCHERDB_V3.3/knowledge_base/architecture/kpis/backups_kpis.md WATCHERDB_V3.3/docs/changelog/CHANGELOG.md WATCHERDB_V3.3/findings-inbox.md WATCHERDB_V3.3/docs/context/CONTEXT.md WATCHERDB_V3.3/docs/context/COMMIT_TILE_BACKUPS_20260831.ps1 WATCHERDB_V3.3/docs/context/MIRR_PASSO1_commits.ps1 WATCHERDB_V3.3/docs/context/MIRR_PASSO2_migration.ps1 WATCHERDB_V3.3/docs/context/PROMPT_PROPAGACAO_V6_TILE_BACKUPS_2026-08-31.md WATCHERDB_V3.3/docs/context/PROMPT_PROPAGACAO_V6_MIRRORING_2026-08-31.md
+git commit -m 'feat(v33): lote dashboard 31/08 - modal mirroring (safety/witness/filas) + tile Backups split + combobox ordenado' -m 'Modal mirroring: +Safety_Level (recolhido, era omitido) +Witness +Log por enviar/Redo com unidade humana, vermelho acima de 1 GB, degrada sem payload novo; ORDEM DE DEPLOY: migration -> restart collector -> 1 ciclo -> restart V33. Tile Backups: Em atraso partida em (critico)/(aviso) - painel dizia 365 e tile mostrava so Log falhou 12; GO frontend-specialist, tier PASS, FIND-20260831-101 aberto. Combobox modais backup: contagem (N DBs) sempre visivel, ordenada por ocorrencias DESC. Comentario stale 14d->30d em helpers.' -m 'Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>'
+git log -2 --format='%h %s'

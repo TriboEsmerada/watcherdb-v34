@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0.0",
+  "library_name": "WatcherDB V3.3 Knowledge Base (Local)",
+  "created": "2026-04-28",
+  "updated": "2026-06-02",
+  "owner_specialist": "core-librarian",
+  "curator_micro_agent": "v33-knowledge-base-curator",
+  "central_library_ref": "C:\\Users\\ue_e-snetto\\.nestor-library\\",
+  "namespaces": {
+    "architecture": {
+      "path": "architecture/",
+      "description": "Diagramas, pipeline maps, mapas de auth/KPI flow V3.3. Inclui specs de arquitectura Smart Defaults.",
+      "docs": [
+        {
+          "id": "arch-disk-thresholds-v33",
+          "path": "architecture/disk_thresholds.md",
+          "title": "Disk Drive Thresholds -- Per-Categoria (V3.3 Local)",
+          "tags": [
+            "architecture",
+            "disk",
+            "thresholds",
+            "smart-defaults",
+            "wave-t",
+            "drive-category",
+            "kpi-disk-usage"
+          ],
+          "license": "internal",
+          "doc_type": "architecture-spec",
+          "added": "2026-06-02",
+          "last_validated": "2026-06-02",
+          "wave": "Wave T",
+          "ingested_by": "core-librarian",
+          "owner_specialist": "watcherdb-v33-specialist",
+          "sensitivity": "internal-only",
+          "size_bytes": 6356,
+          "checksum_sha256": "a28fb72dd6a40c1e64ba5bf15814edcdc2f98d9a6d652d7c85394eece999f589",
+          "gates_passed": ["dedup", "license", "quality", "sensitivity", "namespace"],
+          "description": "Spec V3.3 local de thresholds de disk space per-categoria de drive (System 25/15, Log 20/10, Data 20/10, Archive 15/5). Smart Defaults Camada 2 shipped Wave T 2026-06-02. Inclui razao por categoria, implementation paths (V1 view + V3.3 portal Surfaces A+C + V6), edge cases AGG VIEW, anti-pattern per-DB matrix descartado.",
+          "cross_ref": "~/.nestor-library/watcherdb-family/architecture/disk_thresholds.md"
+        }
+      ]
+    },
+    "decisions": {
+      "path": "decisions/",
+      "description": "Espelho de docs/adr/ — ADRs locais V3.3",
+      "docs": []
+    },
+    "operations": {
+      "path": "operations/",
+      "description": "Runbooks operacionais V3.3 (deploy, rollback, AD rotation)",
+      "docs": [
+        {
+          "id": "ops-deploy-runbook-v33-seed",
+          "path": "operations/seed/deploy_runbook_v33.md",
+          "title": "Deploy Runbook V3.3 (seed)",
+          "tags": [
+            "deploy",
+            "windows-service",
+            "pyarmor",
+            "port-8433"
+          ],
+          "license": "internal",
+          "added": "2026-04-28",
+          "checksum_sha256": "676ffbd0adf4b94281a0fa6cdda3b01b365bb6601004d89976a9a57736abdf3c"
+        },
+        {
+          "id": "ops-ad-service-account-rotation-seed",
+          "path": "operations/seed/ad_service_account_rotation.md",
+          "title": "AD Service Account Rotation (seed)",
+          "tags": [
+            "ad",
+            "auth",
+            "service-account",
+            "ldap"
+          ],
+          "license": "internal",
+          "added": "2026-04-28",
+          "checksum_sha256": "b68b1e0934df0e37bfb761826aeabcecff37248bed253550c335dada96cf1f7a"
+        }
+      ]
+    },
+    "domain": {
+      "path": "domain/",
+      "description": "SQL Server domain knowledge V3.3 (KPI definitions, thresholds, collector patterns)",
+      "docs": [
+        {
+          "id": "domain-kpi-catalog-v33-seed",
+          "path": "domain/seed/kpi_catalog_v33.md",
+          "title": "KPI Catalog V3.3 (seed)",
+          "tags": [
+            "kpi",
+            "dashboard",
+            "thresholds",
+            "intelligence"
+          ],
+          "license": "internal",
+          "added": "2026-04-28",
+          "checksum_sha256": "a6aee7b51f423e1c9cc26f036cc006b01742b04946f9338ae250692aa8fedcbb"
+        }
+      ]
+    },
+    "incidents": {
+      "path": "incidents/",
+      "description": "Post-mortems V3.3 (sanitizados — sem nomes de cliente)",
+      "docs": []
+    },
+    "release_notes": {
+      "path": "release_notes/",
+      "description": "Histórico de releases anotado pelo council",
+      "docs": [
+        {
+          "id": "release-latest-anotado-seed",
+          "path": "release_notes/seed/latest_release_anotado.md",
+          "title": "Latest Release V3.3 — annotated by council (seed)",
+          "tags": [
+            "release-notes",
+            "auth",
+            "multi-domain-ldap"
+          ],
+          "license": "internal",
+          "added": "2026-04-28",
+          "checksum_sha256": "277099abf66c9111ff55a0903551011098685f8a5983284decf126f34b669180"
+        }
+      ]
+    }
+  },
+  "stats": {
+    "total_docs": 5,
+    "seed_docs": 4,
+    "promoted_from_docs_dir": 0,
+    "stale_threshold_days": 180
+  },
+  "notes": "Bootstrap inicial — Fase 1. Checksums recalculados em 2026-04-28 via v33-knowledge-base-curator smoke test (Fase 3). Drift check: PASS (manifest = filesystem)."
+}

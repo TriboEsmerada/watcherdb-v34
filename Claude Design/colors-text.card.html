@@ -1,0 +1,11 @@
+**SeverityBadge** — the one canonical way to show alert severity; color + Font Awesome glyph, never hue alone. Use in tables, cards, headers, toasts.
+
+```jsx
+<SeverityBadge level="critical" />
+<SeverityBadge level="warning" variant="soft" size="sm">3 days to full</SeverityBadge>
+<SeverityBadge level="ok">Synchronized</SeverityBadge>
+```
+
+Levels (low→high): `ok` · `info` · `warning` · `critical` · `overflow`.
+Variants: `solid` (default, saturated fill) · `soft` (tinted pill for dense tables).
+Requires Font Awesome 6 loaded for the glyph.

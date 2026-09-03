@@ -1,0 +1,68 @@
+import React from "react";
+
+const LEVELS = {
+  ok:       { text: "--sev-ok-text",       tint: "--sev-ok-tint",       border: "--sev-ok-border",       solid: "--sev-ok-solid",       on: "--sev-ok-on",       icon: "\uf058", label: "Healthy" },
+  info:     { text: "--sev-info-text",     tint: "--sev-info-tint",     border: "--sev-info-border",     solid: "--sev-info-solid",     on: "--sev-info-on",     icon: "\uf05a", label: "Info" },
+  warning:  { text: "--sev-warning-text",  tint: "--sev-warning-tint",  border: "--sev-warning-border",  solid: "--sev-warning-solid",  on: "--sev-warning-on",  icon: "\uf071", label: "Warning" },
+  critical: { text: "--sev-critical-text", tint: "--sev-critical-tint", border: "--sev-critical-border", solid: "--sev-critical-solid", on: "--sev-critical-on", icon: "\uf06a", label: "Critical" },
+  overflow: { text: "--sev-overflow-text", tint: "--sev-overflow-tint", border: "--sev-overflow-border", solid: "--sev-overflow-solid", on: "--sev-overflow-on", icon: "\uf714", label: "Overflow" },
+};
+
+/**
+ * SeverityBadge — the single canonical way to render an alert severity.
+ * Encodes level with BOTH color and a Font Awesome glyph (never hue alone).
+ * Requires Font Awesome 6 to be loaded for the icon.
+ */
+export function SeverityBadge({
+  level = "info",
+  variant = "solid",   // "solid" | "soft"
+  size = "md",         // "sm" | "md"
+  showIcon = true,
+  children,
+}) {
+  const l = LEVELS[level] || LEVELS.info;
+  const pad = size === "sm" ? "2px 8px" : "3px 10px";
+  const fs = size === "sm" ? "10px" : "11px";
+
+  const base = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    borderRadius: "var(--radius-full)",
+    fontSize: fs,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    lineHeight: 1.4,
+    padding: pad,
+    whiteSpace: "nowrap",
+  };
+
+  const skin =
+    variant === "soft"
+      ? {
+          background: `var(${l.tint})`,
+          color: `var(${l.text})`,
+          border: `1px solid var(${l.border})`,
+        }
+      : {
+          background: `var(${l.solid})`,
+          color: `var(${l.on})`,
+          border: level === "overflow" ? `1px solid var(${l.border})` : "1px solid transparent",
+        };
+
+  return (
+    <span style={{ ...base, ...skin }}>
+      {showIcon && (
+        <i
+          className="fas"
+          aria-hidden="true"
+          style={{ fontSize: fs, fontFamily: '"Font Awesome 6 Free"', fontWeight: 900 }}
+        >
+          {l.icon}
+        </i>
+      )}
+      {children || l.label}
+    </span>
+  );
+}

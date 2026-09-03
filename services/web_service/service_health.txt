@@ -1,0 +1,7 @@
+errors_count: 0
+last_heartbeat: '2026-08-21T15:20:19.543665'
+requests_handled: 0
+service_name: WatcherDBWebServiceV33
+start_time: '2026-08-20T10:48:35.624818'
+status: running
+uptime_seconds: 102703

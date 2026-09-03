@@ -1,0 +1,324 @@
+# WatcherDB Configuration File
+# All configuration for WatcherDB platform
+
+# Application Settings
+app:
+  name: "WatcherDB"
+  version: "1.0.0"
+  environment: "production"  # development, staging, production
+  debug: false
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+
+# Database Settings
+database:
+  # Connection Pool
+  connection_pool_size: 20
+  connection_timeout: 60  # Increased to 60s for better stability in high-latency environments
+  connection_retry_attempts: 3
+  connection_retry_delay: 5
+
+  # AlwaysOn Specific Settings
+  alwayson_timeout: 60  # Increased to 60s for AlwaysOn queries (prevents timeout errors)
+
+  # Cache Settings
+  cache_ttl: 60  # seconds
+  cache_max_memory_mb: 200
+  cache_persistence_file: "data/watcherdb_cache.db"
+
+  # SQL Server Settings
+  odbc_driver: "ODBC Driver 17 for SQL Server"
+  trusted_connection: true
+  encrypt: false
+
+# Monitoring Settings
+monitoring:
+  # Collection Intervals (seconds)
+  space_analysis_interval: 300  # 5 minutes
+  memory_analysis_interval: 60  # 1 minute
+  cpu_analysis_interval: 60     # 1 minute
+  backup_analysis_interval: 3600  # 1 hour
+  alwayson_check_interval: 60   # 1 minute
+
+  # Thresholds
+  disk_space_critical_percent: 10
+  disk_space_warning_percent: 20
+  memory_pressure_critical_percent: 90
+  memory_pressure_warning_percent: 80
+  cpu_pressure_critical_percent: 90
+  cpu_pressure_warning_percent: 80
+
+  # Backup Settings
+  backup_max_age_hours: 24
+  backup_pattern_analysis_days: 30
+
+  # Forecasting
+  space_forecast_days: 30
+  confidence_interval: 0.95
+
+# Alerting Settings
+alerts:
+  enabled: true
+  throttle_minutes: 15  # Minimum time between duplicate alerts
+
+  # Alert Channels (enable/disable)
+  channels:
+    email: true
+    teams: true
+    slack: false
+    webhook: false
+
+  # Email Configuration
+  email:
+    smtp_server: "smtp.gmail.com"  # Gmail SMTP server
+    smtp_port: 587  # TLS port (or 465 for SSL)
+    use_tls: true
+    from_address: "watcherdba@gmail.com"
+    to_addresses:
+      - "watcherdba@gmail.com"
+      - "triboesmerada@gmail.com"
+    username: "watcherdb"
+    password: "${SMTP_PASSWORD}"  # REQUIRED: Set in .env file
+    # SMTP_PASSWORD must be set in environment variables or .env file
+    # For Gmail, use App Password (not your regular password)
+    # Generate at: https://myaccount.google.com/apppasswords
+
+  # Microsoft Teams Configuration
+  teams:
+    webhook_url: "${TEAMS_WEBHOOK_URL}"
+    mention_users: []
+
+  # Slack Configuration
+  slack:
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channel: "#database-alerts"
+    username: "WatcherDB"
+    icon_emoji: ":database:"
+
+  # Custom Webhook Configuration
+  webhook:
+    url: "${CUSTOM_WEBHOOK_URL}"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+    timeout: 10
+
+# Logging Settings
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "json"  # json, text
+
+  # File Logging
+  file:
+    enabled: true
+    path: "logs/watcherdb.log"
+    max_size_mb: 10
+    backup_count: 5
+    rotation: "size"  # size, time
+
+  # Console Logging
+  console:
+    enabled: true
+    colorize: true
+
+  # Structured Logging Fields
+  include_fields:
+    - timestamp
+    - level
+    - message
+    - module
+    - function
+    - line_number
+    - server_id
+    - request_id
+
+# Security Settings
+security:
+  # JWT Authentication
+  jwt_secret_key: "${JWT_SECRET_KEY}"  # Use environment variable
+  jwt_algorithm: "HS256"
+  jwt_expiration_minutes: 1440  # 24 hours
+
+  # API Key Authentication (alternative)
+  api_key_enabled: false
+  api_keys: []
+
+  # CORS Settings
+  cors:
+    enabled: true
+    allowed_origins:
+      - "http://localhost:8000"
+      - "http://localhost:3000"
+      - "https://watcherdb.com"
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+    allowed_headers:
+      - "*"
+    allow_credentials: true
+
+  # Rate Limiting
+  rate_limiting:
+    enabled: true
+    default_limit: "100/minute"
+    limits:
+      "/api/queries/*": "30/minute"
+      "/api/monitoring/*": "60/minute"
+      "/api/alwayson/*": "60/minute"
+
+# Performance Settings
+performance:
+  # WebSocket Settings
+  websocket:
+    enabled: true
+    heartbeat_interval: 30
+    max_connections: 100
+
+  # Query Execution
+  query_timeout: 60  # seconds
+  slow_query_threshold: 5  # seconds
+
+  # Background Tasks
+  background_workers: 2
+  task_queue_size: 1000
+
+# Analytics Settings
+analytics:
+  # Predictive Analytics
+  enabled: true
+  model_update_interval_hours: 24
+  min_data_points: 30
+
+  # Machine Learning Models
+  models:
+    space_forecasting:
+      enabled: true
+      algorithm: "prophet"  # prophet, arima, linear
+      seasonality: true
+
+    anomaly_detection:
+      enabled: true
+      sensitivity: 0.95
+      algorithm: "isolation_forest"
+
+    pattern_recognition:
+      enabled: true
+      min_pattern_occurrences: 3
+
+# Data Retention Settings
+retention:
+  # Cache Retention
+  cache_retention_hours: 24
+
+  # Metrics Retention
+  metrics_retention_days: 90
+
+  # Logs Retention
+  logs_retention_days: 30
+
+  # Reports Retention
+  reports_retention_days: 365
+
+# Feature Flags
+features:
+  predictive_alerts: true
+  auto_remediation: false  # Future feature
+  multi_database_support: false  # Future: Oracle, PostgreSQL
+  advanced_analytics_dashboard: true
+  query_profiler: true
+  backup_pattern_analysis: true
+  security_auditing: true
+  custom_queries: true
+
+# Paths Configuration
+paths:
+  # Data Directories
+  data_dir: "data"
+  cache_dir: "data/cache"
+  reports_dir: "reports"
+  logs_dir: "logs"
+
+  # Configuration Files
+  sql_servers_config: "config/sql_servers.json"
+  alwayson_config: "config/alwayson_inventory.json"
+  custom_queries_config: "config/custom_queries.json"
+  alerts_config: "config/alerts.json"
+
+  # Templates
+  templates_dir: "templates"
+  static_dir: "static"
+
+# External Integrations
+integrations:
+  # Oracle Database
+  oracle:
+    enabled: false
+    host: "${ORACLE_HOST}"  # e.g., oracle.example.com
+    port: "${ORACLE_PORT:-1521}"
+    service_name: "${ORACLE_SERVICE_NAME}"  # e.g., ORCL, PROD
+    user: "${ORACLE_USER}"  # Oracle username
+    password: "${ORACLE_PASSWORD}"  # Oracle password (use .env file)
+    connection_timeout: 30
+    # Note: All Oracle credentials must be set in environment variables or .env file
+    # See .env.example for details
+
+  # Excel Inventory Import
+  excel_import:
+    enabled: true
+    file_path: "XPTO_SQL_Server_Inventory.xlsx"
+    sheet_name: "Servers"
+    auto_refresh_hours: 24
+
+  # Grafana Export
+  grafana:
+    enabled: false
+    endpoint: ""
+    api_key: "${GRAFANA_API_KEY}"
+
+  # Prometheus Metrics
+  prometheus:
+    enabled: false
+    port: 9090
+    path: "/metrics"
+
+# Notification Templates
+notification_templates:
+  disk_space_critical: |
+    CRITICAL: Disk space on {server_name}
+    Database: {database_name}
+    Filegroup: {filegroup_name}
+    Current Usage: {usage_percent}%
+    Free Space: {free_space_mb} MB
+    Forecast: Full in {days_until_full} days
+
+  backup_failure: |
+    ALERT: Backup failure detected
+    Server: {server_name}
+    Database: {database_name}
+    Last Backup: {last_backup_time}
+    Backup Type: {backup_type}
+    Age: {backup_age_hours} hours
+
+  alwayson_failover: |
+    WARNING: Always On failover detected
+    Availability Group: {ag_name}
+    Primary Replica: {primary_replica}
+    Failover Time: {failover_time}
+    Reason: {failover_reason}
+
+  memory_pressure: |
+    WARNING: Memory pressure detected
+    Server: {server_name}
+    Memory Usage: {memory_percent}%
+    Available Memory: {available_mb} MB
+    Recommendation: {recommendation}
+
+# Custom Settings (User-defined)
+custom:
+  company_name: "watcherDB"
+  support_email: "watcherdba@gmail.com"
+  escalation_email: "watcherdba@gmail.com"
+  timezone: "Europe/Lisbon"

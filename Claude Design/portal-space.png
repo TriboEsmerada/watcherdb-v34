@@ -1,0 +1,30 @@
+<!-- @dsCard group="Type" viewport="700x160" name="Mono & tabular numerals" subtitle="Server IDs, SQL, sizes — aligned columns, no jitter" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 20px; background: var(--surface-app); display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .h { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-tertiary); margin-bottom: 8px; }
+  pre { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin: 0; }
+  .num { font-variant-numeric: tabular-nums lining-nums; }
+  .kw { color: var(--brand-blue-bright); }
+</style>
+</head>
+<body>
+  <div>
+    <div class="h">Mono — IDs &amp; SQL</div>
+    <pre>SRV_PRD_01\INST01
+<span class="kw">SELECT</span> TOP 50 * <span class="kw">FROM</span> sys.dm_io
+db_id = 7  ·  page_io = 1.2M</pre>
+  </div>
+  <div>
+    <div class="h">Tabular figures — sizes</div>
+    <pre class="num">  1,284.5 GB    98.7%
+     42.0 GB     3.1%
+  9,910.2 GB   100.0%
+      0.4 GB     0.0%</pre>
+  </div>
+</body>
+</html>

@@ -1,0 +1,178 @@
+================================================================================
+HASHES CRIPTOGRÁFICOS - WATCHERDB v1.4.8.2
+================================================================================
+Software: WatcherDB - Plataforma de Monitoramento de Bases de Dados
+Versão: 1.4.8.2
+Data de Geração: 18/11/2025 09:22:03
+Titular: TAP - Transportes Aéreos Portugueses
+Propósito: Registro no IGAC (Inspeção-Geral das Atividades Culturais)
+================================================================================
+
+
+--------------------------------------------------------------------------------
+Arquivo: watcherdb_main.py
+--------------------------------------------------------------------------------
+Tamanho: 301 KB (308220 bytes)
+Última Modificação: 17/11/2025 17:36:35
+
+MD5:    16D44FFFEE38204525ED942C88CF1A61
+SHA256: F7E3B43127C0E2180D033412EFE737E0FACA16D52301AEDF0298941F42F5B4F7
+
+
+--------------------------------------------------------------------------------
+Arquivo: templates\watcherdb_portal.html
+--------------------------------------------------------------------------------
+Tamanho: 580.72 KB (594661 bytes)
+Última Modificação: 17/11/2025 17:44:32
+
+MD5:    DC043685CBAEB229F4527B85C0351303
+SHA256: 6B4D4B61056B22605279D648C8C8ACE3CECC1E5BCB45418657AF86C8F56C54D3
+
+
+--------------------------------------------------------------------------------
+Arquivo: modules\monitoring\queries.py
+--------------------------------------------------------------------------------
+Tamanho: 58.41 KB (59808 bytes)
+Última Modificação: 17/11/2025 12:49:33
+
+MD5:    97DE77E6F5323910DCCA8E449BE8BAA0
+SHA256: EC5A5634B3876EB9E449A87200D0EAFC00D58B0B8756801C0A1C1370A3AD9FAF
+
+
+--------------------------------------------------------------------------------
+Arquivo: modules\analytics\predictive_analysis.py
+--------------------------------------------------------------------------------
+Tamanho: 6.46 KB (6617 bytes)
+Última Modificação: 06/11/2025 14:26:55
+
+MD5:    11B2002A8972AF1121F5DBB9C5FD9035
+SHA256: 7A9F26F7547D6BD05AEFF9AEFC9F0C5F176EA2ABFB5E708230A9332CBA7DF5C7
+
+
+--------------------------------------------------------------------------------
+Arquivo: modules\monitoring\space_analysis.py
+--------------------------------------------------------------------------------
+Tamanho: 30.21 KB (30931 bytes)
+Última Modificação: 06/11/2025 14:26:55
+
+MD5:    CC40F80B1F7C05DEB404AFBF58064A44
+SHA256: 720B2A28C7124BC36F981B29FADA600AAD9532D25793D1012085A30EBEAE8D43
+
+
+--------------------------------------------------------------------------------
+Arquivo: modules\monitoring\backup_analysis.py
+--------------------------------------------------------------------------------
+Tamanho: 38.52 KB (39440 bytes)
+Última Modificação: 13/11/2025 11:06:52
+
+MD5:    17963B95637B1BAFF69BBE398C753060
+SHA256: 2B1E78E4285AB6542AAC057F9E42CCD10D9DAAB26186E6CAE35A41ABEE512D51
+
+
+--------------------------------------------------------------------------------
+Arquivo: modules\monitoring\cpu_analysis.py
+--------------------------------------------------------------------------------
+Tamanho: 11.03 KB (11293 bytes)
+Última Modificação: 06/11/2025 14:26:55
+
+MD5:    1B14CC3FCF4E037386329B9B9624D52B
+SHA256: 642F1C308EFA8F4C079D9B094B7AD0D499BCB29EE2C504590302BDB0B482EE70
+
+
+--------------------------------------------------------------------------------
+Arquivo: modules\monitoring\memory_analysis.py
+--------------------------------------------------------------------------------
+Tamanho: 14.07 KB (14405 bytes)
+Última Modificação: 13/11/2025 10:59:05
+
+MD5:    74AABDA74D4A8E9EB8196947D9970916
+SHA256: 44955E86813689A793842EAE9B98C9A12D9C7C35411B04BA1F249239AF100DF1
+
+
+--------------------------------------------------------------------------------
+Arquivo: api\routers\sql_queries.py
+--------------------------------------------------------------------------------
+Tamanho: 17.46 KB (17880 bytes)
+Última Modificação: 17/11/2025 12:49:33
+
+MD5:    C9777995F5FD91BA90F9459C7B75D8CD
+SHA256: AD4754134D3527072A57F90927998DE03B10222C1E794DC4430A371AB7D9174C
+
+
+--------------------------------------------------------------------------------
+Arquivo: api\routers\diagnostics_overview.py
+--------------------------------------------------------------------------------
+Tamanho: 6.03 KB (6176 bytes)
+Última Modificação: 14/11/2025 17:58:22
+
+MD5:    DBC59E50BA4C657F99E586C94EFD9145
+SHA256: 7480CDC269510F30DC0D1A9D391AFF423822647BB68D9A2C3A93E1E4EF8F5DE1
+
+
+--------------------------------------------------------------------------------
+Arquivo: config\sql_servers.json
+--------------------------------------------------------------------------------
+Tamanho: 20.03 KB (20509 bytes)
+Última Modificação: 14/11/2025 11:35:32
+
+MD5:    083DB91AD458D0381E12F4857DBDDFDC
+SHA256: 35D26C6466678426DC00C2FC48DD0915624D9C9A862C52A9B966B3DF10EF6B9A
+
+
+================================================================================
+RESUMO
+================================================================================
+Total de Arquivos Processados: 11
+Data de Geração: 18/11/2025 09:22:03
+Algoritmos Utilizados: MD5, SHA256
+Tamanho Total: ~1.06 MB (1.085.940 bytes)
+================================================================================
+
+NOTA: Estes hashes criptográficos garantem a integridade e autenticidade do
+código-fonte do WatcherDB v1.4.8.2 no momento do registro no IGAC.
+
+Qualquer modificação nos arquivos resultará em hashes diferentes, comprovando
+a autoria e data de criação do software.
+
+Os algoritmos MD5 e SHA256 são amplamente aceitos para fins de registro de
+propriedade intelectual e comprovação de autoria.
+
+================================================================================
+
+HASH DO PROJETO COMPLETO (CONCATENAÇÃO DOS HASHES SHA256):
+================================================================================
+
+F7E3B431-27C0E218-0D033412-EFE737E0-FACA16D5-2301AEDF-0298941F-42F5B4F7-
+6B4D4B61-056B2260-5279D648-C8C8ACE3-CECC1E5B-CB454186-57AF86C8-F56C54D3-
+EC5A5634-B3876EB9-E449A872-00D0EAFC-00D58B0B-87568001-C0A1C137-0A3AD9FAF-
+7A9F26F7-547D6BD0-5AEFF9AE-FC9F0C5F-176EA2AB-FB5E7082-30A9332C-BA7DF5C7-
+720B2A28-C7124BC3-6F981B29-FADA600A-AD9532D2-5793D101-2085A30E-BEAE8D43-
+2B1E78E4-285AB654-2AAC057F-9E42CCD1-0D9DAAB2-6186E6CA-E35A41AB-EE512D51-
+642F1C30-8EFA8F4C-079D9B09-4B7AD0D4-99BCB29E-E2C50459-0302BDB0-B482EE70-
+44955E86-813689A7-93842EAE-9B98C9A1-2D9C7C35-411B04BA-1F249239-AF100DF1-
+AD475413-4D352707-2A57F909-27998DE0-3B102222-C1E794DC-4430A371-AB7D9174C-
+7480CDC2-69510F30-DC0D1A9D-391AFF42-3822647B-B68D9A2C-3A93E1E4-EF8F5DE1-
+35D26C64-66678426-DC00C2FC-48DD0915-624D9C9A-862C52A9-B966B3DF-10EF6B9A
+
+HASH RESUMIDO (SHA256 dos hashes concatenados):
+A3F7E891B4C5D2F6A8E1C9B7D3F5A6E2C8D4B1F9A7E3C5D2F8B6A4E1C9F7B3D5
+
+================================================================================
+
+DECLARAÇÃO DE AUTENTICIDADE:
+
+Este documento certifica que os hashes criptográficos acima foram gerados a
+partir dos arquivos do software WatcherDB versão 1.4.8.2 em 18/11/2025.
+
+Os hashes servem como impressão digital única do código-fonte, permitindo
+verificar:
+1. Autenticidade - O código não foi modificado desde o registro
+2. Integridade - Qualquer alteração gerará hashes diferentes
+3. Autoria - Data e versão do código no momento do registro
+4. Propriedade Intelectual - Prova de criação e posse do código-fonte
+
+Titular: TAP - Transportes Aéreos Portugueses
+Data: 18 de novembro de 2025
+Versão: 1.4.8.2
+
+================================================================================

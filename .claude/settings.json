@@ -1,0 +1,87 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \":*)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V5/services/web_service/**)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V5.5/services/web_service/**)",
+      "Bash(sc qc *)",
+      "Read(//c/ProgramData/WatcherDB/**)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V5/**)",
+      "PowerShell(python deploy/generate_license_keys.py 2>&1)",
+      "PowerShell($bios = \\(Get-CimInstance Win32_ComputerSystemProduct\\).UUID; $cpu = \\(Get-CimInstance Win32_Processor | Select-Object -First 1\\).ProcessorId; $hn = [System.Net.Dns]::GetHostName\\(\\); Write-Host \"BIOS_UUID=$bios\"; Write-Host \"CPU_ID=$cpu\"; Write-Host \"HOSTNAME=$hn\")",
+      "PowerShell($customerId = [guid]::NewGuid\\(\\).Guid; Write-Host \"CustomerID: $customerId\"; python deploy/license_cli.py issue --customer-id $customerId --customer-name \"DEV-LOCAL-V33\" --edition standard --expires 2027-04-27 --bios-uuid \"49F5E0CC-2D23-11B2-A85C-BA124339A3EC\" --cpu-id \"BFEBFBFF000C0652\" --hostname \"TI-PF5HQWK4\" --out C:\\\\tmp\\\\license.dat 2>&1)",
+      "PowerShell(if \\(-not \\(Test-Path \"C:\\\\ProgramData\\\\WatcherDB\"\\)\\) { New-Item -ItemType Directory -Path \"C:\\\\ProgramData\\\\WatcherDB\" -Force | Out-Null }; Copy-Item \"C:\\\\tmp\\\\license.dat\" \"C:\\\\ProgramData\\\\WatcherDB\\\\license.dat\" -Force; Write-Host \"License installed:\"; Get-Item \"C:\\\\ProgramData\\\\WatcherDB\\\\license.dat\" | Format-List Name, FullName, Length, LastWriteTime)",
+      "PowerShell(Restart-Service WatcherDBWebServiceV33 -Force -Verbose 2>&1)",
+      "PowerShell($status = \\(Get-Service WatcherDBWebServiceV33\\).Status; Write-Host \"Status: $status\"; if \\($status -eq 'Running'\\) { Stop-Service WatcherDBWebServiceV33 -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 2; Start-Service WatcherDBWebServiceV33 -ErrorAction SilentlyContinue; Start-Sleep -Seconds 3; \\(Get-Service WatcherDBWebServiceV33\\).Status 2>&1)",
+      "PowerShell($resp = Invoke-WebRequest -Uri \"http://localhost:8433/api/v1/live/channels\" -UseBasicParsing -ErrorAction SilentlyContinue; if \\($resp\\) { Write-Host \"Status: $\\($resp.StatusCode\\)\"; $json = $resp.Content | ConvertFrom-Json; Write-Host \"Total: $\\($json.total\\)\"; Write-Host \"Environments: $\\($json.environments -join ', '\\)\"; if \\($json.by_environment\\) { $json.by_environment.PSObject.Properties | ForEach-Object { Write-Host \"  $\\($_.Name\\): $\\($_.Value.Count\\) instances\" } } } else { Write-Host \"Request failed\" })",
+      "PowerShell(sqlcmd -S \"SQLHDSTST505\\\\I01\" -d \"WatcherDB_Intelligence\" -E -h -1 -W -Q \"SET NOCOUNT ON; SELECT TOP 3 Env, Instance FROM dbo.KPI_MSSQL_INST_ENVS ORDER BY Env, Instance;\" 2>&1)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V6/watcherdb/licensing/**)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V6/**)",
+      "PowerShell(Write-Host \"=== JWT env vars by scope ===\"; Write-Host \"User-level WATCHERDB_JWT_SECRET: $\\([Environment]::GetEnvironmentVariable\\('WATCHERDB_JWT_SECRET','User'\\)\\)\"; Write-Host \"Machine-level WATCHERDB_JWT_SECRET: $\\([Environment]::GetEnvironmentVariable\\('WATCHERDB_JWT_SECRET','Machine'\\)\\)\"; Write-Host \"User-level JWT_SECRET_KEY: $\\([Environment]::GetEnvironmentVariable\\('JWT_SECRET_KEY','User'\\)\\)\"; Write-Host \"Machine-level JWT_SECRET_KEY: $\\([Environment]::GetEnvironmentVariable\\('JWT_SECRET_KEY','Machine'\\)\\)\"; Write-Host \"\"; Write-Host \"=== Service account ===\"; \\(Get-WmiObject Win32_Service -Filter \"Name='WatcherDBWebServiceV33'\"\\).StartName 2>&1)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB INTELLIGENCE V1/watcherdb_intelligence/collectors/**)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB INTELLIGENCE V1/**)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\ue_e-snetto\\\\Documents\\\\projetosPython\\\\WATCHERDB INTELLIGENCE V1\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt \\(Get-Date\\).AddMinutes\\(-15\\) -and $_.Extension -in '.log','.txt','.json' } | Select-Object FullName, LastWriteTime, Length | Sort-Object LastWriteTime -Descending | Select-Object -First 10 | Format-Table -AutoSize)",
+      "PowerShell(Get-Service WatcherDBWebServiceV33 | Format-Table Name, Status -AutoSize; Write-Host \"---port 8433---\"; \\(netstat -ano | Select-String \":8433 \"\\) -join \"`n\"; Write-Host \"---last 30 lines---\"; Get-Content \"C:\\\\Users\\\\ue_e-snetto\\\\Documents\\\\projetosPython\\\\WATCHERDB_V3.3\\\\services\\\\web_service\\\\logs\\\\service.log\" -Tail 30 -ErrorAction SilentlyContinue)",
+      "PowerShell($startEpoch = Get-Date \"2026-04-27T12:42:50\"; $now = Get-Date; Write-Host \"Service started: $startEpoch\"; Write-Host \"Now: $now\"; Write-Host \"---\"; $token = \\(Invoke-WebRequest -Uri \"http://localhost:8433/api/v1/kpis/metadata\" -UseBasicParsing -Method GET -ErrorAction SilentlyContinue -SkipHttpErrorCheck\\); if \\($token\\) { Write-Host \"Status: $\\($token.StatusCode\\) | Body: $\\($token.Content.Substring\\(0, [Math]::Min\\(150,$token.Content.Length\\)\\)\\)\" } else { Write-Host \"No response\" })",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(mkdir -p \"C:/Users/ue_e-snetto/.claude/hooks\")",
+      "Read(//c/Users/ue_e-snetto/.claude/**)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/watcherdb-council/nestor_library/scripts/**)",
+      "Read(//c/Users/ue_e-snetto/.nestor-vault/**)",
+      "Read(//c/Users/ue_e-snetto/.nestor-vault/bulletin/**)",
+      "Bash(git -C \"/c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V3.3\" log --oneline -5)",
+      "Bash(git -C \"/c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V3.3\" status --short)",
+      "Bash(git -C \"/c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB INTELLIGENCE V1\" log --oneline -5)",
+      "Bash(git -C \"/c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB INTELLIGENCE V1\" status --short)",
+      "Bash(git -C \"/c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V6\" log --oneline -5)",
+      "Bash(git -C \"/c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V6\" status --short)",
+      "Read(//c/c/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V3.3/services/**)",
+      "Bash(date /t)",
+      "Bash(time /t)",
+      "Bash(where python *)",
+      "Bash(git -C \"c:/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V3.3\" rev-parse HEAD)",
+      "Bash(git -C \"c:/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V3.3\" log --oneline -5)",
+      "Bash(git -C \"c:/Users/ue_e-snetto/Documents/projetosPython\" rev-parse HEAD)",
+      "Read(//c/Users/ue_e-snetto/.nestor-library/**)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/watcherdb-council/docs/**)",
+      "Read(//c/Users/ue_e-snetto/Documents/projetosPython/nestor-template/.claude/agents/**)",
+      "Bash(schtasks /Query /FO LIST /V)",
+      "Bash(schtasks /Query /FO LIST)",
+      "Write(docs/context/**)",
+      "Edit(docs/context/**)",
+      "Write(.claude/**)",
+      "Edit(.claude/**)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "PowerShell(git push:*)",
+      "Bash(rm -rf:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB_V6\\watcherdb\\licensing",
+      "c:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB INTELLIGENCE V1\\watcherdb_intelligence\\collectors",
+      "c:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB INTELLIGENCE V1\\services\\collector_service\\collectors",
+      "c:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB INTELLIGENCE V1\\database",
+      "c:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB INTELLIGENCE V1\\docs",
+      "C:\\Users\\ue_e-snetto\\.claude\\hooks",
+      "C:\\Users\\ue_e-snetto\\.claude",
+      "C:\\Users\\ue_e-snetto\\.nestor-vault"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB_V3.3\\.claude\\hooks\\guard_write_paths.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

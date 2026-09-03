@@ -1,0 +1,80 @@
+/* ============================================================
+   WatcherDB — COLOR FOUNDATIONS
+   Corrected baseline (consultant). Source of truth for the
+   dark, on-prem DBA monitoring portal.
+
+   Reconciles the three colliding ramps found in the codebase:
+   - watcherdb-design-system.css  (intended dark tokens)
+   - hardcoded Tailwind "slate" hexes used ad-hoc in that file
+   - portal_fix_styles.css        (rogue LIGHT theme — quarantined)
+   ============================================================ */
+
+:root {
+    /* ---- NEUTRAL SURFACE RAMP (canonical) ----------------
+       The portal in practice mixes two near-identical neutral
+       ramps: the documented "bg" ramp and an undocumented
+       Tailwind slate ramp (#0f172a / #1e293b / #334155 / #475569).
+       We promote BOTH to named tokens and alias surfaces to the
+       slate ramp, which is what the live UI actually renders. */
+    --slate-950: #0a0f1a;   /* app background */
+    --slate-900: #0f172a;   /* deep panels, table headers */
+    --slate-850: #1a2332;   /* documented card/sidebar */
+    --slate-800: #1e293b;   /* de-facto card/panel in live code */
+    --slate-700: #334155;   /* de-facto border (was undefined!) */
+    --slate-600: #475569;   /* strong border, secondary buttons */
+    --slate-500: #64748b;   /* disabled text, faint icons */
+    --slate-400: #94a3b8;   /* tertiary text / metadata */
+    --slate-300: #cbd5e1;   /* secondary text */
+    --slate-100: #f1f5f9;   /* primary text */
+
+    /* ---- SEMANTIC SURFACES ---- */
+    --surface-app: var(--slate-950);       /* body background */
+    --surface-raised: var(--slate-850);    /* cards, sidebar, header */
+    --surface-panel: var(--slate-800);     /* nested panels, inputs */
+    --surface-sunken: var(--slate-900);    /* code blocks, table head */
+    --surface-elevated: #2d3e52;           /* modals, popovers */
+    --surface-hover: #243447;              /* hover state (was undefined!) */
+    --surface-overlay: rgba(10, 15, 26, 0.9);
+
+    /* ---- BORDERS (these two were referenced 20+ times but
+            NEVER defined — borders silently fell back to
+            currentColor in the live portal) ---- */
+    --color-border: var(--slate-700);
+    --color-border-strong: var(--slate-600);
+    --color-border-subtle: rgba(148, 163, 184, 0.12);
+
+    /* ---- TEXT ---- */
+    --text-primary: var(--slate-100);     /* 15.8:1 on app bg */
+    --text-secondary: var(--slate-300);   /* 11.6:1 */
+    --text-tertiary: var(--slate-400);    /*  7.0:1 — meets AA body */
+    --text-disabled: var(--slate-500);    /*  4.0:1 — large/UI only */
+    --text-inverse: var(--slate-950);     /* text on light fills */
+    --text-link: #60a5fa;                 /* the de-facto link blue,
+                                             previously hardcoded
+                                             everywhere, never a token */
+
+    /* ---- BRAND / PRIMARY (the "Watcher" eye blue) ---- */
+    --brand-blue: #2563eb;        /* primary action */
+    --brand-blue-hover: #3b82f6;
+    --brand-blue-bright: #60a5fa; /* links, active accents on dark */
+    --brand-cyan: #00bcd4;        /* logo iris / loading accent */
+}
+
+/* Back-compat aliases — the old token names from
+   watcherdb-design-system.css map onto the canonical ramp so
+   existing markup keeps working while it migrates. */
+:root {
+    --color-bg-primary: var(--surface-app);
+    --color-bg-secondary: var(--surface-raised);
+    --color-bg-tertiary: var(--surface-hover);
+    --color-bg-elevated: var(--surface-elevated);
+    --color-bg-overlay: var(--surface-overlay);
+    --color-bg-hover: var(--surface-hover);
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-tertiary: var(--text-tertiary);
+    --color-text-inverse: var(--text-inverse);
+    --color-text-disabled: var(--text-disabled);
+    --color-info: var(--brand-blue);
+    --color-info-hover: var(--brand-blue-hover);
+}

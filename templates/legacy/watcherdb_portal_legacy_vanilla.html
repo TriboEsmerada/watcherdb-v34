@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatcherDB Portal Legacy - WITH FREE MB COLUMN - v2.1</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0f172a; 
+            color: #e2e8f0; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 { font-size: 20px; color: #60a5fa; font-weight: bold; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        
+        /* Search */
+        .search-container { position: relative; flex: 1; max-width: 500px; margin: 0 32px; }
+        .search-input {
+            width: 100%;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 40px 8px 16px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        .search-input:focus { outline: none; border-color: #60a5fa; }
+        .search-clear {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: none;
+        }
+        .search-clear:hover { color: #f1f5f9; }
+        .search-clear.show { display: block; }
+        
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .sidebar h3 { 
+            font-size: 13px; 
+            color: #94a3b8; 
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-status {
+            font-size: 11px;
+            color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .server-item {
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .server-item:hover { background: #334155; }
+        .server-item.active { 
+            background: #334155; 
+            border-left: 4px solid #60a5fa;
+        }
+        .server-item .name { 
+            font-weight: 500; 
+            font-size: 14px;
+            color: #f1f5f9;
+        }
+        .server-item .env { 
+            font-size: 12px; 
+            color: #94a3b8; 
+            margin-top: 4px;
+        }
+        
+        /* Content Area */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Server Header */
+        .server-header {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 16px 24px;
+            display: none;
+        }
+        .server-header.show { display: flex; justify-content: space-between; align-items: center; }
+        .server-header h2 { font-size: 20px; color: #60a5fa; font-weight: bold; }
+        .server-header .server-id { 
+            font-size: 13px; 
+            color: #94a3b8; 
+            margin-top: 4px;
+        }
+        .server-header .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .server-header .close-btn:hover { color: #f1f5f9; }
+        
+        /* Tabs */
+        .tabs {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 0 24px;
+            display: none;
+        }
+        .tabs.show { display: flex; gap: 8px; }
+        .tab {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: #f1f5f9; }
+        .tab.active { 
+            color: #60a5fa; 
+            border-bottom-color: #60a5fa;
+        }
+        
+        /* Content Scroll */
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #334155;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Cards */
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        .card h4 { 
+            font-size: 16px; 
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .stat-card.green { border-left-color: #10b981; }
+        .stat-card.yellow { border-left-color: #f59e0b; }
+        .stat-card.red { border-left-color: #ef4444; }
+        .stat-card .label { 
+            font-size: 13px; 
+            color: #94a3b8; 
+            margin-bottom: 8px;
+        }
+        .stat-card .value { 
+            font-size: 32px; 
+            font-weight: bold;
+        }
+        .stat-card.green .value { color: #10b981; }
+        .stat-card.yellow .value { color: #f59e0b; }
+        .stat-card.red .value { color: #ef4444; }
+        
+        /* Overflow Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #1e293b;
+            margin: auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #334155;
+        }
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 12px 12px 0 0;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        .close-modal-btn {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .close-modal-btn:hover { background: rgba(255,255,255,0.3); }
+        
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        thead tr {
+            border-bottom: 1px solid #334155;
+        }
+        th {
+            text-align: left;
+            padding: 12px 8px;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        tbody tr {
+            border-bottom: 1px solid #334155;
+            transition: background 0.2s;
+        }
+        tbody tr:hover { background: #334155; }
+        td {
+            padding: 12px 8px;
+        }
+        
+        /* Toggle Button */
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #60a5fa;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 14px;
+        }
+        .toggle-btn:hover { color: #3b82f6; }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge.ok { background: #10b981; color: white; }
+        .badge.medium { background: #f59e0b; color: white; }
+        .badge.high { background: #ef4444; color: white; }
+        .badge.critical { background: #dc2626; color: white; }
+        .badge.overflow { background: #7c2d12; color: #fca5a5; border: 2px solid #dc2626; }
+        
+        /* Debug Log */
+        .debug-log {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.95);
+            color: #0f0;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 12px;
+            border-radius: 6px;
+            max-width: 450px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .debug-log .header {
+            background: transparent;
+            border: none;
+            padding: 0 0 8px 0;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #333;
+            font-weight: bold;
+        }
+        .debug-line { margin-bottom: 3px; }
+        .debug-error { color: #f00; }
+        .debug-success { color: #0f0; }
+        .debug-info { color: #0ff; }
+        
+        /* Nested Table */
+        .nested-table {
+            background: #0f172a;
+            margin: 0;
+        }
+        .nested-table th {
+            background: #0a0e1a;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #1e293b;
+            margin: auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #334155;
+        }
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 12px 12px 0 0;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        .close-modal-btn {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .close-modal-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .report-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        /* Analysis Button */
+        .analysis-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .analysis-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+<body>
+    
+    
+    
+    <!-- Modal para Relatório de Análise Preditiva -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="modalTitle" style="font-size: 20px; margin: 0;">Análise Preditiva</h2>
+                    <p style="font-size: 13px; margin-top: 4px; opacity: 0.9;" id="modalSubtitle">Carregando...</p>
+                </div>
+                <button class="close-modal-btn" onclick="closeReportModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-server"></i> WatcherDB Portal - Vanilla JS</h1>
+        <div class="search-container">
+            <input type="text" 
+                   id="searchInput" 
+                   class="search-input" 
+                   placeholder="Buscar servidor (nome exato tem prioridade)...">
+            <button id="searchClear" class="search-clear" onclick="clearSearch()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="header-right">
+            <span id="serverCount">0 servidores</span>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>
+                <span>SERVIDORES (<span id="sidebarCount">0</span>)</span>
+                <span id="searchStatus" class="search-status" style="display: none;"></span>
+            </h3>
+            <div id="serverList"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            
+            <!-- Server Header -->
+            <div id="serverHeader" class="server-header">
+                <div>
+                    <h2 id="serverName"></h2>
+                    <div class="server-id">
+                        <strong>ID:</strong> <span id="serverId"></span>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeServer()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Tabs -->
+            <div id="tabs" class="tabs">
+                <button class="tab active" onclick="showTab('overview')">Overview</button>
+                <button class="tab" onclick="showTab('space')">Space Analysis</button>
+            </div>
+            
+            <!-- Content Scroll -->
+            <div id="contentScroll" class="content-scroll">
+                <div id="contentArea"></div>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+    <script>
+        // ========================================
+        // GLOBAL STATE
+        // ========================================
+        let allServers = [];
+        let filteredServers = [];
+        let selectedServer = null;
+        let currentTab = 'overview';
+        
+        // ========================================
+        // Minimal debug - no on-screen panel
+        // ========================================
+        function debugLog(message, type = 'info') {
+            // Keep console output only
+            if (type === 'error') console.error(message);
+            else if (type === 'warn') console.warn(message);
+            else console.log(message);
+        }
+        
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        async function init() {
+            debugLog('🚀 Iniciando WatcherDB Portal...', 'info');
+            await loadServers();
+            setupEventListeners();
+        }
+        
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const clearBtn = document.getElementById('searchClear');
+                if (e.target.value) {
+                    clearBtn.classList.add('show');
+                } else {
+                    clearBtn.classList.remove('show');
+                }
+                
+                debounce(handleSearch, 300)(e);
+            });
+        }
+        
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('searchClear');
+            searchInput.value = '';
+            clearBtn.classList.remove('show');
+            filteredServers = allServers;
+            renderServerList();
+            updateServerCount();
+            debugLog('🔄 Busca limpa', 'info');
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+        
+        // ========================================
+        // LOAD SERVERS
+        // ========================================
+        async function loadServers() {
+            try {
+                debugLog('📡 Buscando servidores...', 'info');
+                const response = await fetch('/api/v3/servers');
+                const data = await response.json();
+
+        // Verificar se é erro de "sem dados históricos"
+        if (!data.success) {
+            if (data.error && (data.error.includes('No rows match filters') || data.error.includes('ValueError'))) {
+                showNoDataError(serverId, databaseName, filegroupName);
+                return;
+            }
+        }
+
+        // Verificar se é erro de "sem dados históricos"
+        if (!data.success) {
+            if (data.error && (data.error.includes('No rows match filters') || data.error.includes('ValueError'))) {
+                showNoDataError(serverId, databaseName, filegroupName);
+                return;
+            }
+        }
+                
+                if (data.success) {
+                    allServers = data.servers;
+                    filteredServers = data.servers;
+                    renderServerList();
+                    updateServerCount();
+                    debugLog(`✅ ${data.servers.length} servidores carregados`, 'success');
+                    
+                    if (data.servers.length > 0) {
+                        debugLog(`📋 Primeiro: ${JSON.stringify(data.servers[0]).substring(0, 100)}...`, 'info');
+                    }
+                } else {
+                    debugLog(`❌ Erro: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                debugLog(`❌ Erro de rede: ${error.message}`, 'error');
+            }
+        }
+        
+        // ========================================
+        // RENDER SERVER LIST
+        // ========================================
+        function renderServerList() {
+            const list = document.getElementById('serverList');
+            list.innerHTML = '';
+            
+            filteredServers.slice(0, 50).forEach(server => {
+                const item = document.createElement('div');
+                item.className = 'server-item';
+                if (selectedServer && selectedServer.server_id === server.server_id) {
+                    item.classList.add('active');
+                }
+                
+                item.innerHTML = `
+                    <div class="name">${server.name}</div>
+                    <div class="env">${server.environment}</div>
+                `;
+                
+                item.onclick = () => selectServer(server);
+                list.appendChild(item);
+            });
+        }
+        
+        function updateServerCount() {
+            const searchInput = document.getElementById('searchInput');
+            const searchStatus = document.getElementById('searchStatus');
+            const isSearching = searchInput.value.trim().length >= 2;
+            
+            document.getElementById('serverCount').textContent = `${allServers.length} servidores`;
+            document.getElementById('sidebarCount').textContent = filteredServers.length;
+            
+            if (isSearching) {
+                searchStatus.style.display = 'block';
+                const query = searchInput.value.trim();
+                const hasExactMatch = filteredServers.some(s => 
+                    s.name.toLowerCase() === query.toLowerCase() || 
+                    s.server_id.toLowerCase() === query.toLowerCase()
+                );
+                
+                if (hasExactMatch && filteredServers.length === 1) {
+                    searchStatus.textContent = '✓ Match exato';
+                    searchStatus.style.background = 'rgba(16, 185, 129, 0.2)';
+                    searchStatus.style.color = '#10b981';
+                } else if (filteredServers.length > 0) {
+                    searchStatus.textContent = `${filteredServers.length} resultados`;
+                    searchStatus.style.background = 'rgba(96, 165, 250, 0.2)';
+                    searchStatus.style.color = '#60a5fa';
+                } else {
+                    searchStatus.textContent = 'Sem resultados';
+                    searchStatus.style.background = 'rgba(239, 68, 68, 0.2)';
+                    searchStatus.style.color = '#ef4444';
+                }
+            } else {
+                searchStatus.style.display = 'none';
+            }
+        }
+        
+        // ========================================
+        // SEARCH
+        // ========================================
+        async function handleSearch(event) {
+            const query = event.target.value.trim();
+            
+            if (!query || query.length < 2) {
+                filteredServers = allServers;
+                renderServerList();
+                updateServerCount();
+                return;
+            }
+            
+            debugLog(`🔍 Buscando: ${query}`, 'info');
+            
+            const queryLower = query.toLowerCase();
+            
+            const scored = allServers.map(server => {
+                const nameLower = server.name.toLowerCase();
+                const idLower = server.server_id.toLowerCase();
+                const envLower = server.environment.toLowerCase();
+                
+                let score = 0;
+                
+                if (nameLower === queryLower || idLower === queryLower) {
+                    score = 100;
+                }
+                else if (nameLower.startsWith(queryLower) || idLower.startsWith(queryLower)) {
+                    score = 90;
+                }
+                else if (nameLower.includes(queryLower) || idLower.includes(queryLower)) {
+                    score = 70;
+                }
+                else if (envLower.includes(queryLower)) {
+                    score = 50;
+                }
+                else {
+                    const queryWords = queryLower.split(/[\s\\_-]+/);
+                    const nameWords = nameLower.split(/[\s\\_-]+/);
+                    
+                    queryWords.forEach(qWord => {
+                        nameWords.forEach(nWord => {
+                            if (nWord.includes(qWord) || qWord.includes(nWord)) {
+                                score = Math.max(score, 30);
+                            }
+                        });
+                    });
+                }
+                
+                return { server, score };
+            });
+            
+            filteredServers = scored
+                .filter(s => s.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 20)
+                .map(s => s.server);
+            
+            renderServerList();
+            updateServerCount();
+            
+            debugLog(`✅ ${filteredServers.length} resultados`, 'success');
+            
+            if (filteredServers.length > 0) {
+                debugLog(`📊 Top 3: ${filteredServers.slice(0, 3).map(s => s.name).join(', ')}`, 'info');
+            }
+        }
+        
+        // ========================================
+        // SELECT SERVER
+        // ========================================
+        function selectServer(server) {
+            debugLog(`🎯 Servidor selecionado: ${server.name}`, 'info');
+            debugLog(`🔑 Server ID: ${server.server_id}`, 'info');
+            
+            selectedServer = server;
+            
+            document.getElementById('serverHeader').classList.add('show');
+            document.getElementById('tabs').classList.add('show');
+            document.getElementById('serverName').textContent = server.name;
+            document.getElementById('serverId').textContent = server.server_id;
+            
+            renderServerList();
+            showTab('overview');
+        }
+        
+        function closeServer() {
+            debugLog('❌ Fechando servidor', 'info');
+            selectedServer = null;
+            document.getElementById('serverHeader').classList.remove('show');
+            document.getElementById('tabs').classList.remove('show');
+            document.getElementById('contentArea').innerHTML = '';
+            renderServerList();
+        }
+        
+        // ========================================
+        // TABS
+        // ========================================
+        function showTab(tabName) {
+            debugLog(`📂 Tab: ${tabName}`, 'info');
+            currentTab = tabName;
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (tabName === 'overview') {
+                renderOverview();
+            } else if (tabName === 'space') {
+                loadSpaceAnalysis();
+            }
+        }
+        
+        // ========================================
+        // OVERVIEW TAB
+        // ========================================
+        function renderOverview() {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card green">
+                        <div class="label">Health Score</div>
+                        <div class="value">${selectedServer.health_score ? Math.round(selectedServer.health_score) + '%' : 'N/A'}</div>
+                    </div>
+                    <div class="stat-card yellow">
+                        <div class="label">Alertas</div>
+                        <div class="value">${selectedServer.alerts_count || 0}</div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="label">Server ID</div>
+                        <div class="value" style="font-size: 18px; word-break: break-all;">${selectedServer.server_id}</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4>Informações do Servidor</h4>
+                    <pre style="color: #94a3b8; font-size: 13px; line-height: 1.6;">${JSON.stringify(selectedServer, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        // ========================================
+        // SPACE ANALYSIS TAB
+        // ========================================
+        async function loadSpaceAnalysis() {
+            const content = document.getElementById('contentArea');
+            const serverId = selectedServer.server_id;
+            
+            debugLog(`📦 Carregando Space Analysis...`, 'info');
+            debugLog(`🔑 Server ID: ${serverId}`, 'info');
+            
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 16px; color: #94a3b8;">Carregando análise de espaço...</p>
+                </div>
+            `;
+            
+            try {
+                const apiUrl = `/api/monitoring/space/server/${serverId}`;
+                debugLog(`📡 API: ${apiUrl}`, 'info');
+                
+                const response = await fetch(apiUrl);
+                const json = await response.json();
+                
+                debugLog(`📊 Status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                const data = (json.success && json.data) ? json.data : json;
+                
+                if (!data || data.error) {
+                    throw new Error(data?.error || 'Dados inválidos');
+                }
+                
+                const filegroups = data.filegroups || [];
+                debugLog(`✅ ${filegroups.length} filegroups`, 'success');
+                
+                const dbGroups = {};
+                filegroups.forEach(fg => {
+                    const dbName = fg.database_name;
+                    if (!dbGroups[dbName]) {
+                        dbGroups[dbName] = {
+                            filegroups: [],
+                            total_gb: 0,
+                            has_overflow: false
+                        };
+                    }
+                    dbGroups[dbName].filegroups.push(fg);
+                    dbGroups[dbName].total_gb += (fg.total_mb || 0) / 1024;
+                    if (fg.disk_overflow_risk && fg.filegroup_name === 'DATA') {
+                        dbGroups[dbName].has_overflow = true;
+                    }
+                });
+                
+                debugLog(`📊 ${Object.keys(dbGroups).length} databases`, 'success');
+                
+                renderSpaceAnalysis(dbGroups, serverId);
+                
+            } catch (error) {
+                debugLog(`❌ Erro: ${error.message}`, 'error');
+                content.innerHTML = `
+                    <div class="card" style="background: #7f1d1d; border-color: #991b1b;">
+                        <h4 style="color: #fca5a5;"><i class="fas fa-exclamation-triangle"></i> Erro</h4>
+                        <p style="color: #fecaca;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderSpaceAnalysis(dbGroups, serverId) {
+            const totalDbs = Object.keys(dbGroups).length;
+            // Contar APENAS databases com DATA filegroups em overflow
+            let overflowDbs = 0;
+            Object.values(dbGroups).forEach(db => {
+                const hasDataOverflow = db.filegroups.some(fg => fg.filegroup_name === 'DATA' && fg.disk_overflow_risk === true);
+                if (hasDataOverflow) overflowDbs++;
+            });
+            debugLog(`📊 Total DBs: ${totalDbs}, DATA Overflows: ${overflowDbs}`, 'info');
+
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card green">
+                        <div class="label">Total Databases</div>
+                        <div class="value">${totalDbs}</div>
+                    </div>
+                    <div class="stat-card yellow">
+                        <div class="label">Com Alertas</div>
+                        <div class="value">0</div>
+                    </div>
+                    <div class="stat-card red" 
+                         onclick="showOverflowDetails('${serverId}')" 
+                         style="cursor: pointer; transition: transform 0.2s;"
+                         onmouseover="this.style.transform='translateY(-2px)'"
+                         onmouseout="this.style.transform='translateY(0)'"
+                         title="🔮 Clique para análise preditiva de overflow e riscos futuros">
+                        <div class="label">🔮 Análise Preditiva</div>
+                        <div class="value">${overflowDbs}</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4>Databases (${totalDbs})</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Database</th>
+                                <th style="text-align: right;">Total GB</th>
+                                <th style="text-align: center;">FileGroups</th>
+                                <th style="text-align: center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.keys(dbGroups).forEach(dbName => {
+                const db = dbGroups[dbName];
+                const dbId = dbName.replace(/[^a-zA-Z0-9]/g, '_');
+                const hasDataOverflow = db.filegroups.some(fg => fg.filegroup_name === 'DATA' && fg.disk_overflow_risk === true);
+                const statusClass = hasDataOverflow ? 'overflow' : 'ok';
+                const statusText = hasDataOverflow ? 'OVERFLOW' : 'OK';
+                
+                html += `
+                    <tr>
+                        <td>
+                            <button class="toggle-btn" id="toggle-${dbId}" onclick="toggleDatabase('${dbName}', '${serverId}', '${dbId}')">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <strong>${dbName}</strong>
+                        </td>
+                        <td style="text-align: right; font-family: monospace;">${db.total_gb.toFixed(2)}</td>
+                        <td style="text-align: center;">
+                            <span style="background: #1e40af; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                                ${db.filegroups.length}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge ${statusClass}">${statusText}</span>
+                        </td>
+                    </tr>
+                    <tr id="fg-row-${dbId}" style="display: none;">
+                        <td colspan="4" style="padding: 0; background: #0f172a;">
+                            <div id="fg-content-${dbId}" style="padding: 16px;">
+                                Carregando...
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('contentArea').innerHTML = html;
+        }
+
+        // ============================================================================
+        // MODAL DE ALERTA PREDITIVO - Análise de Risco de Overflow
+        // ============================================================================
+        async function showOverflowDetails(serverId) {
+            debugLog('🔴 Carregando análise preditiva de overflow...', 'info');
+            
+            try {
+                // Buscar dados do servidor
+                const response = await fetch(`/api/monitoring/space/server/${serverId}`);
+                const json = await response.json();
+                const data = (json.success && json.data) ? json.data : json;
+                
+                if (!data || data.error) throw new Error(data?.error || 'Dados inválidos');
+                
+                // Separar filegroups por categoria
+                const analysis = analyzeFilegroups(data.filegroups || []);
+                const volumesOverflow = data.volumes_overflow || [];
+                
+                debugLog(`📊 Análise: ${analysis.currentOverflow.length} overflow, ${analysis.risk30days.length} em risco 30d, ${analysis.risk60days.length} em risco 60d`, 'info');
+                
+                showPredictiveModal(analysis, volumesOverflow, serverId);
+                
+            } catch (e) {
+                debugLog(`❌ Erro ao carregar overflow: ${e.message}`, 'error');
+                alert(`Erro ao carregar detalhes: ${e.message}`);
+            }
+        }
+
+        // ============================================================================
+        // ANÁLISE PREDITIVA DE FILEGROUPS
+        // ============================================================================
+        function analyzeFilegroups(filegroups) {
+            const currentOverflow = [];
+            const risk30days = [];
+            const risk60days = [];
+            const safe = [];
+            
+            filegroups.forEach(fg => {
+                // Só analisa DATA files
+                if (fg.filegroup_name !== 'DATA') return;
+                
+                const totalMB = fg.total_mb || 0;
+                const maxMB = fg.max_mb || 0;
+                const usedMB = fg.used_mb || 0;
+                const diskAvailGB = fg.available_disk_gb || 0;
+                
+                // Ignora UNLIMITED
+                if (maxMB >= 999999) return;
+                
+                const currentGB = totalMB / 1024;
+                const maxGB = maxMB / 1024;
+                const usedPercent = (usedMB / totalMB) * 100;
+                
+                // Calcular taxa de crescimento (estimativa: 1-2% ao mês)
+                // Em produção, isso viria do histórico Oracle
+                const monthlyGrowthRate = estimateGrowthRate(totalMB, usedPercent);
+                const growth30days = currentGB * monthlyGrowthRate;
+                const growth60days = currentGB * monthlyGrowthRate * 2;
+                
+                const projected30days = currentGB + growth30days;
+                const projected60days = currentGB + growth60days;
+                
+                // Verificar limites
+                const maxSizeLimit = maxGB;
+                const diskLimit = diskAvailGB;
+                const effectiveLimit = Math.min(maxSizeLimit, currentGB + diskLimit);
+                
+                const fgAnalysis = {
+                    database_name: fg.database_name,
+                    logical_names: fg.logical_names || [],
+                    current_gb: currentGB,
+                    used_percent: usedPercent,
+                    max_gb: maxGB,
+                    disk_available_gb: diskAvailGB,
+                    effective_limit: effectiveLimit,
+                    growth_rate_monthly: monthlyGrowthRate * 100,
+                    projected_30days: projected30days,
+                    projected_60days: projected60days,
+                    days_to_limit: calculateDaysToLimit(currentGB, effectiveLimit, monthlyGrowthRate),
+                    volume: fg.volume,
+                    limit_type: maxSizeLimit < diskLimit ? 'MAXSIZE' : 'DISK'
+                };
+                
+                // Categorizar por risco
+                if (fg.disk_overflow_risk === true) {
+                    // Já está em overflow
+                    currentOverflow.push(fgAnalysis);
+                } else if (projected30days >= effectiveLimit * 0.95) {
+                    // Vai atingir 95% do limite em 30 dias
+                    risk30days.push(fgAnalysis);
+                } else if (projected60days >= effectiveLimit * 0.90) {
+                    // Vai atingir 90% do limite em 60 dias
+                    risk60days.push(fgAnalysis);
+                } else {
+                    safe.push(fgAnalysis);
+                }
+            });
+            
+            return {
+                currentOverflow: currentOverflow.sort((a, b) => b.current_gb - a.current_gb),
+                risk30days: risk30days.sort((a, b) => a.days_to_limit - b.days_to_limit),
+                risk60days: risk60days.sort((a, b) => a.days_to_limit - b.days_to_limit),
+                safe: safe,
+                totalDataFilegroups: currentOverflow.length + risk30days.length + risk60days.length + safe.length
+            };
+        }
+
+        function estimateGrowthRate(totalMB, usedPercent) {
+            // Estimativa baseada no tamanho e uso atual
+            // Em produção, você usaria dados históricos do Oracle
+            
+            if (totalMB < 10240) { // < 10GB
+                return 0.02; // 2% ao mês (crescimento mais rápido em DBs pequenos)
+            } else if (totalMB < 102400) { // < 100GB
+                return 0.015; // 1.5% ao mês
+            } else if (totalMB < 1048576) { // < 1TB
+                return 0.01; // 1% ao mês
+            } else {
+                return 0.005; // 0.5% ao mês (DBs muito grandes crescem mais devagar percentualmente)
+            }
+        }
+
+        function calculateDaysToLimit(currentGB, limitGB, monthlyGrowthRate) {
+            if (currentGB >= limitGB) return 0;
+            
+            const remainingGB = limitGB - currentGB;
+            const dailyGrowth = (currentGB * monthlyGrowthRate) / 30;
+            
+            if (dailyGrowth <= 0) return 999;
+            
+            return Math.floor(remainingGB / dailyGrowth);
+        }
+
+        // ============================================================================
+        // MODAL PREDITIVO
+        // ============================================================================
+        function showPredictiveModal(analysis, volumesOverflow, serverId) {
+            let modal = document.getElementById('overflowModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'overflowModal';
+                modal.className = 'modal';
+                document.body.appendChild(modal);
+            }
+            
+            // Calcular estatísticas
+            const totalFilegroups = analysis.totalDataFilegroups;
+            const riskCount = analysis.currentOverflow.length + analysis.risk30days.length + analysis.risk60days.length;
+            const healthPercent = Math.round(((totalFilegroups - riskCount) / totalFilegroups) * 100);
+            
+            let html = `
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+                        <div>
+                            <h2 style="font-size: 20px; margin: 0;">🔮 Análise Preditiva de Disk Overflow</h2>
+                            <p style="font-size: 13px; margin-top: 4px; opacity: 0.9;">
+                                Servidor: ${serverId} | ${totalFilegroups} DATA filegroups analisados
+                            </p>
+                        </div>
+                        <button class="close-modal-btn" onclick="closeOverflowModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 24px; max-height: 70vh; overflow-y: auto;">
+            `;
+            
+            // ========================================
+            // SEÇÃO: RESUMO EXECUTIVO
+            // ========================================
+            html += `
+                <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #334155; margin-bottom: 24px;">
+                    <h4 style="color: #60a5fa; margin-bottom: 16px;">
+                        <i class="fas fa-chart-line"></i> Resumo Executivo
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                        <div style="background: rgba(220, 38, 38, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid #dc2626;">
+                            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">🔴 OVERFLOW ATUAL</div>
+                            <div style="font-size: 32px; font-weight: bold; color: #ef4444;">${analysis.currentOverflow.length}</div>
+                            <div style="font-size: 10px; color: #fca5a5; margin-top: 4px;">Ação imediata</div>
+                        </div>
+                        <div style="background: rgba(251, 146, 60, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid #f97316;">
+                            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">🟠 RISCO 30 DIAS</div>
+                            <div style="font-size: 32px; font-weight: bold; color: #fb923c;">${analysis.risk30days.length}</div>
+                            <div style="font-size: 10px; color: #fdba74; margin-top: 4px;">Planejar agora</div>
+                        </div>
+                        <div style="background: rgba(234, 179, 8, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid #eab308;">
+                            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">🟡 RISCO 60 DIAS</div>
+                            <div style="font-size: 32px; font-weight: bold; color: #facc15;">${analysis.risk60days.length}</div>
+                            <div style="font-size: 10px; color: #fde047; margin-top: 4px;">Monitorar</div>
+                        </div>
+                        <div style="background: rgba(34, 197, 94, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid #22c55e;">
+                            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">✅ SAÚDE GERAL</div>
+                            <div style="font-size: 32px; font-weight: bold; color: #22c55e;">${healthPercent}%</div>
+                            <div style="font-size: 10px; color: #86efac; margin-top: 4px;">${analysis.safe.length} seguros</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // ========================================
+            // SEÇÃO 1: OVERFLOW ATUAL (se houver)
+            // ========================================
+            if (analysis.currentOverflow.length > 0) {
+                html += renderOverflowSection(analysis.currentOverflow, '🔴 OVERFLOW ATUAL', 'Filegroups que JÁ ultrapassaram os limites', '#dc2626');
+            }
+            
+            // ========================================
+            // SEÇÃO 2: RISCO 30 DIAS
+            // ========================================
+            if (analysis.risk30days.length > 0) {
+                html += renderRiskSection(analysis.risk30days, '🟠 RISCO ALTO - 30 Dias', 'Filegroups que atingirão 95% do limite em 30 dias', '#f97316');
+            }
+            
+            // ========================================
+            // SEÇÃO 3: RISCO 60 DIAS
+            // ========================================
+            if (analysis.risk60days.length > 0) {
+                html += renderRiskSection(analysis.risk60days, '🟡 RISCO MÉDIO - 60 Dias', 'Filegroups que atingirão 90% do limite em 60 dias', '#eab308');
+            }
+            
+            // ========================================
+            // SEÇÃO 4: VOLUMES COM OVERFLOW AGREGADO
+            // ========================================
+            if (volumesOverflow.length > 0) {
+                html += renderVolumeOverflowSection(volumesOverflow);
+            }
+            
+            // ========================================
+            // SEÇÃO 5: RECOMENDAÇÕES
+            // ========================================
+            html += renderRecommendations(analysis);
+            
+            // Se tudo estiver OK
+            if (riskCount === 0 && volumesOverflow.length === 0) {
+                html += `
+                    <div class="card" style="text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);">
+                        <i class="fas fa-shield-check" style="font-size: 64px; color: #10b981; margin-bottom: 24px;"></i>
+                        <h3 style="color: #10b981; font-size: 24px; margin-bottom: 12px;">✅ Sistema Saudável</h3>
+                        <p style="color: #6ee7b7; font-size: 16px; line-height: 1.6;">
+                            Nenhum filegroup em risco detectado.<br>
+                            Todos os ${totalFilegroups} DATA filegroups estão operando dentro dos limites seguros.<br>
+                            Próxima análise recomendada: 7 dias.
+                        </p>
+                    </div>
+                `;
+            }
+            
+            html += `</div></div>`;
+            modal.innerHTML = html;
+            modal.classList.add('active');
+            debugLog('✅ Modal preditivo exibido', 'success');
+        }
+
+        function closeOverflowModal() {
+            const modal = document.getElementById('overflowModal');
+            if (modal) {
+                modal.classList.remove('active');
+                debugLog('✖️ Modal overflow fechado', 'info');
+            }
+        }
+
+        // ============================================================================
+        // RENDERIZADORES DE SEÇÕES
+        // ============================================================================
+
+        function renderOverflowSection(filegroups, title, description, borderColor) {
+            let html = `
+                <div class="card" style="border-left: 4px solid ${borderColor}; margin-bottom: 24px;">
+                    <h4 style="color: ${borderColor};">
+                        <i class="fas fa-exclamation-circle"></i> ${title} (${filegroups.length})
+                    </h4>
+                    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 16px;">${description}</p>
+                    <div style="overflow-x: auto;">
+                        <table style="font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th>Database</th>
+                                    <th style="min-width: 250px;">Logical Names</th>
+                                    <th style="text-align: right;">Atual</th>
+                                    <th style="text-align: right;">Limite</th>
+                                    <th style="text-align: right;">Excesso</th>
+                                    <th style="text-align: center;">Tipo Limite</th>
+                                    <th>Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            filegroups.forEach(fg => {
+                const excess = fg.current_gb - fg.effective_limit;
+                const logicalNamesFull = fg.logical_names.join(', ');
+                const logicalNamesDisplay = fg.logical_names.length > 2 ? 
+                    fg.logical_names.slice(0, 2).join(', ') + ` ... (+${fg.logical_names.length - 2})` :
+                    fg.logical_names.join(', ');
+                
+                html += `
+                    <tr style="background: rgba(127, 29, 18, 0.2); border-left: 3px solid ${borderColor};">
+                        <td><strong>${fg.database_name}</strong></td>
+                        <td style="font-family: monospace; font-size: 10px; cursor: help;" title="${logicalNamesFull}">
+                            ${logicalNamesDisplay}
+                        </td>
+                        <td style="text-align: right; font-family: monospace; color: #ef4444; font-weight: bold;">
+                            ${fg.current_gb.toFixed(2)} GB
+                        </td>
+                        <td style="text-align: right; font-family: monospace;">
+                            ${fg.effective_limit.toFixed(2)} GB
+                        </td>
+                        <td style="text-align: right; font-weight: bold; color: #fca5a5;">
+                            +${excess.toFixed(2)} GB
+                        </td>
+                        <td style="text-align: center;">
+                            <span style="background: ${fg.limit_type === 'MAXSIZE' ? '#7c2d12' : '#1e3a8a'}; 
+                                         padding: 2px 8px; border-radius: 4px; font-size: 10px; color: white;">
+                                ${fg.limit_type}
+                            </span>
+                        </td>
+                        <td style="text-align: center; font-family: monospace; font-weight: bold;">${fg.volume}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        function renderRiskSection(filegroups, title, description, borderColor) {
+            let html = `
+                <div class="card" style="border-left: 4px solid ${borderColor}; margin-bottom: 24px;">
+                    <h4 style="color: ${borderColor};">
+                        <i class="fas fa-exclamation-triangle"></i> ${title} (${filegroups.length})
+                    </h4>
+                    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 16px;">${description}</p>
+                    <div style="overflow-x: auto;">
+                        <table style="font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th>Database</th>
+                                    <th style="min-width: 250px;">Logical Names</th>
+                                    <th style="text-align: right;">Atual</th>
+                                    <th style="text-align: right;">Projeção</th>
+                                    <th style="text-align: right;">Limite</th>
+                                    <th style="text-align: right;">Dias p/ Limite</th>
+                                    <th style="text-align: right;">Crescimento</th>
+                                    <th style="text-align: center;">Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            filegroups.forEach(fg => {
+                const projection = title.includes('30') ? fg.projected_30days : fg.projected_60days;
+                const utilizationPercent = (projection / fg.effective_limit) * 100;
+                const logicalNamesFull = fg.logical_names.join(', ');
+                const logicalNamesDisplay = fg.logical_names.length > 2 ? 
+                    fg.logical_names.slice(0, 2).join(', ') + ` ... (+${fg.logical_names.length - 2})` :
+                    fg.logical_names.join(', ');
+                
+                html += `
+                    <tr style="background: rgba(234, 179, 8, 0.1);">
+                        <td><strong>${fg.database_name}</strong></td>
+                        <td style="font-family: monospace; font-size: 10px; cursor: help;" title="${logicalNamesFull}">
+                            ${logicalNamesDisplay}
+                        </td>
+                        <td style="text-align: right; font-family: monospace;">
+                            ${fg.current_gb.toFixed(2)} GB
+                        </td>
+                        <td style="text-align: right; font-family: monospace; color: #fb923c; font-weight: bold;">
+                            ${projection.toFixed(2)} GB
+                            <div style="font-size: 10px; color: #94a3b8;">(${utilizationPercent.toFixed(0)}% limite)</div>
+                        </td>
+                        <td style="text-align: right; font-family: monospace;">
+                            ${fg.effective_limit.toFixed(2)} GB
+                        </td>
+                        <td style="text-align: right; font-weight: bold; color: ${fg.days_to_limit < 30 ? '#ef4444' : '#fb923c'};">
+                            ~${fg.days_to_limit} dias
+                        </td>
+                        <td style="text-align: right; font-family: monospace; font-size: 11px;">
+                            ${fg.growth_rate_monthly.toFixed(2)}% /mês
+                        </td>
+                        <td style="text-align: center;">
+                            <span style="background: ${fg.limit_type === 'MAXSIZE' ? '#7c2d12' : '#1e3a8a'}; 
+                                         padding: 2px 8px; border-radius: 4px; font-size: 10px; color: white;">
+                                ${fg.limit_type}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        function renderVolumeOverflowSection(volumesOverflow) {
+            let html = `
+                <div class="card" style="border-left: 4px solid #dc2626; margin-bottom: 24px;">
+                    <h4 style="color: #ef4444;">
+                        <i class="fas fa-hdd"></i> Volumes com Overflow Agregado (${volumesOverflow.length})
+                    </h4>
+                    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 16px;">
+                        Soma dos MAXSIZE de múltiplos filegroups > espaço disponível no volume
+                    </p>
+            `;
+            
+            volumesOverflow.forEach(vol => {
+                html += `
+                    <div style="background: #0f172a; padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #334155;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h5 style="color: #fca5a5; font-size: 16px; margin: 0;">
+                                <i class="fas fa-server"></i> Volume: ${vol.volume}
+                            </h5>
+                            <span class="badge overflow" style="font-size: 12px;">
+                                OVERFLOW ${vol.overflow_gb.toFixed(1)} GB
+                            </span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                            <div style="background: rgba(220, 38, 38, 0.1); padding: 8px; border-radius: 6px;">
+                                <div style="font-size: 11px; color: #94a3b8;">Soma MAXSIZE</div>
+                                <div style="font-size: 16px; font-weight: bold; color: #ef4444;">${vol.total_max_gb.toFixed(1)} GB</div>
+                            </div>
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 8px; border-radius: 6px;">
+                                <div style="font-size: 11px; color: #94a3b8;">Espaço Disponível</div>
+                                <div style="font-size: 16px; font-weight: bold; color: #60a5fa;">${vol.disk_available_gb.toFixed(1)} GB</div>
+                            </div>
+                            <div style="background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px;">
+                                <div style="font-size: 11px; color: #94a3b8;">Excesso</div>
+                                <div style="font-size: 16px; font-weight: bold; color: #f87171;">${vol.overflow_gb.toFixed(1)} GB</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            return html;
+        }
+
+        function renderRecommendations(analysis) {
+            const recommendations = [];
+            
+            if (analysis.currentOverflow.length > 0) {
+                recommendations.push({
+                    priority: 'CRÍTICO',
+                    icon: '🔴',
+                    color: '#dc2626',
+                    title: `${analysis.currentOverflow.length} filegroups em overflow`,
+                    actions: [
+                        'Expandir disco imediatamente OU',
+                        'Reduzir MAXSIZE para valor seguro OU',
+                        'Mover dados para outro volume'
+                    ]
+                });
+            }
+            
+            if (analysis.risk30days.length > 0) {
+                recommendations.push({
+                    priority: 'ALTO',
+                    icon: '🟠',
+                    color: '#f97316',
+                    title: `${analysis.risk30days.length} filegroups atingirão limite em 30 dias`,
+                    actions: [
+                        'Planejar expansão de disco nas próximas 2 semanas',
+                        'Ajustar MAXSIZE se necessário',
+                        'Verificar possibilidade de arquivamento de dados'
+                    ]
+                });
+            }
+            
+            if (analysis.risk60days.length > 0) {
+                recommendations.push({
+                    priority: 'MÉDIO',
+                    icon: '🟡',
+                    color: '#eab308',
+                    title: `${analysis.risk60days.length} filegroups atingirão limite em 60 dias`,
+                    actions: [
+                        'Monitorar crescimento mensalmente',
+                        'Incluir no planejamento de capacidade do próximo trimestre',
+                        'Considerar políticas de retenção de dados'
+                    ]
+                });
+            }
+            
+            if (recommendations.length === 0) return '';
+            
+            let html = `
+                <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #334155;">
+                    <h4 style="color: #60a5fa;">
+                        <i class="fas fa-lightbulb"></i> Recomendações Estratégicas
+                    </h4>
+            `;
+            
+            recommendations.forEach((rec, idx) => {
+                html += `
+                    <div style="background: rgba(${rec.color === '#dc2626' ? '220, 38, 38' : rec.color === '#f97316' ? '249, 115, 22' : '234, 179, 8'}, 0.1); 
+                                padding: 16px; border-radius: 8px; margin-bottom: ${idx < recommendations.length - 1 ? '12px' : '0'}; 
+                                border-left: 4px solid ${rec.color};">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 24px;">${rec.icon}</span>
+                            <div>
+                                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">
+                                    ${rec.priority}
+                                </div>
+                                <div style="font-size: 14px; color: #e2e8f0; font-weight: 600;">
+                                    ${rec.title}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #cbd5e1;">
+                            <strong>Ações recomendadas:</strong>
+                            <ul style="margin: 8px 0 0 20px; padding: 0;">
+                                ${rec.actions.map(action => `<li style="margin: 4px 0;">${action}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            return html;
+        }
+        
+        // ========================================
+        // TOGGLE DATABASE
+        // ========================================
+        async function toggleDatabase(dbName, serverId, dbId) {
+            debugLog(`📽 Toggle: ${dbName}`, 'info');
+            
+            const fgRow = document.getElementById(`fg-row-${dbId}`);
+            const toggleBtn = document.getElementById(`toggle-${dbId}`);
+            const fgContent = document.getElementById(`fg-content-${dbId}`);
+            
+            if (fgRow.style.display === 'table-row') {
+                fgRow.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                debugLog(`✅ ${dbName} colapsado`, 'success');
+                return;
+            }
+            
+            toggleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            fgContent.innerHTML = 'Carregando filegroups...';
+            
+            try {
+                const apiUrl = `/api/monitoring/space/database/${serverId}/${encodeURIComponent(dbName)}/filegroups`;
+                debugLog(`📡 API: ${apiUrl}`, 'info');
+                
+                const response = await fetch(apiUrl);
+                const result = await response.json();
+                
+                if (!result.success || !result.filegroups) {
+                    throw new Error(result.error || 'Sem filegroups');
+                }
+                
+                debugLog(`✅ ${result.filegroups.length} filegroups`, 'success');
+                
+                // DEBUG: Verificar dados recebidos
+                if (result.filegroups && result.filegroups.length > 0) {
+                    const firstFg = result.filegroups[0];
+                    debugLog(`🔍 DEBUG - Primeiro filegroup:`, 'info');
+                    debugLog(`   - filegroup_name: ${firstFg.filegroup_name}`, 'info');
+                    debugLog(`   - total_mb: ${firstFg.total_mb}`, 'info');
+                    debugLog(`   - used_mb: ${firstFg.used_mb}`, 'info');
+                    debugLog(`   - free_percent: ${firstFg.free_percent}`, 'info');
+                    debugLog(`   - free_mb: ${firstFg.free_mb}`, 'info');
+                    console.log('🔍 FREE_MB DEBUG:', firstFg.free_mb);
+                }
+                
+                let html = `
+                    <table class="nested-table">
+                        <thead>
+                            <tr>
+                                <th style="padding-left: 32px;">FileGroup</th>
+                                <th style="text-align: right;">Total MB</th>
+                                <th style="text-align: right;">Max MB</th>
+                                <th style="text-align: right;">Used MB</th>
+                                <th style="text-align: right;">Free MB</th>
+                                <th style="text-align: right;">Free %</th>
+                                <th style="text-align: center;">Files</th>
+                                <th style="text-align: center;">Status</th>
+                                <th style="text-align: center;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                result.filegroups.forEach(fg => {
+                    const isLogFg = (fg.filegroup_name || '').toUpperCase() === 'LOG';
+                    const statusClass = 
+                        (!isLogFg && fg.alert_level === 'DISK_OVERFLOW') ? 'overflow' :
+                        fg.alert_level === 'CRITICAL' ? 'critical' :
+                        fg.alert_level === 'HIGH' ? 'high' :
+                        fg.alert_level === 'MEDIUM' ? 'medium' : 'ok';
+                    
+                    const fgId = `${dbId}-${fg.filegroup_name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                    
+                    const dbNameEscaped = dbName.replace(/'/g, "\\'");
+                    const fgNameEscaped = fg.filegroup_name.replace(/'/g, "\\'");
+                    const serverIdEscaped = serverId.replace(/'/g, "\\'");
+                    
+                    html += `
+                        <tr>
+                            <td style="padding-left: 32px;">
+                                <button class="toggle-btn" id="toggle-fg-${fgId}" 
+                                        onclick="toggleFilegroup('${dbNameEscaped}', '${fgNameEscaped}', '${serverIdEscaped}', '${fgId}')">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <strong>${fg.filegroup_name}</strong>
+                            </td>
+                            <td style="text-align: right; font-family: monospace;">${(fg.total_mb || 0).toFixed(2)}</td>
+                            <td style="text-align: right; font-family: monospace;">${(fg.max_mb || 0).toFixed(2)}</td>
+                            <td style="text-align: right; font-family: monospace;">${(fg.used_mb || 0).toFixed(2)}</td>
+                            <td style="text-align: right; font-family: monospace;">${(fg.free_mb || 0).toFixed(2)}</td>
+                            <td style="text-align: right;">${(fg.free_percent || 0).toFixed(1)}%</td>
+                            <td style="text-align: center;">
+                                <span style="background: #1e40af; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                                    ${fg.file_count || 0}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="badge ${statusClass}">${(isLogFg && fg.alert_level === 'DISK_OVERFLOW') ? 'OK' : (fg.alert_level || 'OK')}</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="analysis-btn" 
+                                        onclick="generateReport('${serverIdEscaped}', '${dbNameEscaped}', '${fgNameEscaped}')"
+                                        title="Gerar análise preditiva completa">
+                                    <i class="fas fa-chart-line"></i> Análise
+                                </button>
+                            </td>
+                        </tr>
+                        <tr id="files-row-${fgId}" style="display: none;">
+                            <td colspan="8" style="padding: 0; background: #000;">
+                                <div id="files-content-${fgId}" style="padding: 16px;">
+                                    Carregando logical names...
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                
+                fgContent.innerHTML = html;
+                fgRow.style.display = 'table-row';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                debugLog(`✅ ${dbName} expandido`, 'success');
+                
+            } catch (error) {
+                debugLog(`❌ Erro: ${error.message}`, 'error');
+                fgContent.innerHTML = `
+                    <div style="color: #fca5a5; padding: 16px; background: #7f1d1d; border-radius: 6px;">
+                        <i class="fas fa-exclamation-triangle"></i> ${error.message}
+                    </div>
+                `;
+                fgRow.style.display = 'table-row';
+                toggleBtn.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>';
+            }
+        }
+        
+        // ========================================
+        // TOGGLE FILEGROUP
+        // ========================================
+        async function toggleFilegroup(dbName, fgName, serverId, fgId) {
+            debugLog(`📂 Toggle Filegroup: ${fgName}`, 'info');
+            
+            const filesRow = document.getElementById(`files-row-${fgId}`);
+            const toggleBtn = document.getElementById(`toggle-fg-${fgId}`);
+            const filesContent = document.getElementById(`files-content-${fgId}`);
+            
+            if (filesRow.style.display === 'table-row') {
+                filesRow.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                debugLog(`✅ ${fgName} colapsado`, 'success');
+                return;
+            }
+            
+            toggleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            filesContent.innerHTML = '<div style="color: #60a5fa;">Carregando datafiles...</div>';
+            
+            try {
+                const apiUrl = `/api/monitoring/space/database/${serverId}/${encodeURIComponent(dbName)}/files`;
+                debugLog(`📡 API Files: ${apiUrl}`, 'info');
+                
+                const response = await fetch(apiUrl);
+                const result = await response.json();
+                
+                if (!result.success || !result.files) {
+                    throw new Error(result.error || 'Sem datafiles');
+                }
+                
+                const filesInFg = result.files.filter(f => f.filegroup_name === fgName);
+                
+                debugLog(`✅ ${filesInFg.length} files no FG "${fgName}"`, 'success');
+                
+                if (filesInFg.length === 0) {
+                    throw new Error(`Nenhum file encontrado no filegroup "${fgName}"`);
+                }
+                
+                let html = `
+                    <div style="background: #000; padding: 12px; border-left: 4px solid #3b82f6;">
+                        <div style="color: #60a5fa; font-weight: bold; margin-bottom: 12px; font-size: 13px;">
+                            📄 DATAFILES (${filesInFg.length} logical names)
+                        </div>
+                        <table class="nested-table" style="font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding-left: 48px; min-width: 250px;">Logical Name</th>
+                                    <th style="text-align: right;">Current MB</th>
+                                    <th style="text-align: right;">Max MB</th>
+                                    <th style="text-align: left;">Growth</th>
+                                    <th style="text-align: center;">Type</th>
+                                    <th style="text-align: center;">Volume</th>
+                                    <th style="text-align: right;">Disk Avail GB</th>
+                                    <th style="text-align: center;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                filesInFg.forEach(file => {
+                    const currentMB = parseFloat(file.current_size_mb) || 0;
+                    const maxMB = parseFloat(file.max_size_mb) || 0;
+                    const diskAvailGB = parseFloat(file.disk_available_gb) || 0;
+                    const maxSizeStr = file.max_size_formatted || 'UNLIMITED';
+                    const fileType = (file.file_type || '').toUpperCase();
+                    // Corrigido: overflow apenas para DATA (ROWS)
+                    const isDataFile = (fileType === 'ROWS');
+                    const hasOverflow = isDataFile && 
+                                       maxSizeStr !== 'UNLIMITED' && 
+                                       (maxMB / 1024) > diskAvailGB && 
+                                       diskAvailGB > 0;
+                    
+                    let statusClass = 'ok';
+                    let statusText = 'OK';
+                    let rowStyle = '';
+                    
+                    if (hasOverflow) {
+                        statusClass = 'overflow';
+                        statusText = 'OVERFLOW';
+                        rowStyle = 'background: rgba(127, 29, 18, 0.3);';
+                    } else if (maxSizeStr === 'UNLIMITED') {
+                        statusText = 'UNLIMITED';
+                    } else if (!isDataFile) {
+                        // LOG files nunca mostram OVERFLOW
+                        statusText = 'LOG FILE';
+                        statusClass = 'ok';
+                    }
+                    
+                    const logicalNameDisplay = file.logical_name.length > 35 
+                        ? file.logical_name.substring(0, 32) + '...'
+                        : file.logical_name;
+                    
+                    html += `
+                        <tr style="${rowStyle}">
+                            <td style="padding-left: 48px;" title="${file.physical_name}">
+                                <i class="fas fa-file-alt" style="color: #60a5fa; margin-right: 6px;"></i>
+                                <span style="font-family: monospace; font-size: 11px;">${logicalNameDisplay}</span>
+                            </td>
+                            <td style="text-align: right; font-family: monospace;">${currentMB.toFixed(2)}</td>
+                            <td style="text-align: right; font-family: monospace; ${hasOverflow ? 'color: #fca5a5; font-weight: bold;' : ''}">${maxMB.toFixed(2)}</td>
+                            <td style="text-align: left; font-size: 11px;">${file.growth_increment || 'N/A'}</td>
+                            <td style="text-align: center;">
+                                <span style="background: ${file.file_type === 'ROWS' ? '#065f46' : '#1e3a8a'}; 
+                                             padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+                                    ${file.file_type || 'N/A'}
+                                </span>
+                            </td>
+                            <td style="text-align: center; font-family: monospace; font-size: 11px; font-weight: bold;">
+                                ${file.volume || 'N/A'}
+                            </td>
+                            <td style="text-align: right; font-family: monospace; ${diskAvailGB < 100 ? 'color: #fbbf24;' : ''}">${diskAvailGB.toFixed(2)}</td>
+                            <td style="text-align: center;">
+                                <span class="badge ${statusClass}" style="font-size: 9px;">${statusText}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                filesContent.innerHTML = html;
+                filesRow.style.display = 'table-row';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                debugLog(`✅ Filegroup "${fgName}" expandido com ${filesInFg.length} files`, 'success');
+                
+            } catch (error) {
+                debugLog(`❌ Erro no Filegroup: ${error.message}`, 'error');
+                filesContent.innerHTML = `
+                    <div style="color: #fca5a5; padding: 16px; background: #7f1d1d; border-radius: 6px; border-left: 4px solid #dc2626;">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Erro:</strong> ${error.message}
+                    </div>
+                `;
+                filesRow.style.display = 'table-row';
+                toggleBtn.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>';
+            }
+        }
+
+        // ============================================================================
+        // MODAL DE RELATÓRIO - INTEGRAÇÃO COM API PREDITIVA
+        // ============================================================================
+
+        /**
+         * Gera relatório preditivo de crescimento de filegroup
+         * Chama a API que executa os scripts Python de Machine Learning
+         */
+        async function generateReport(serverId, databaseName, filegroupName) {
+            debugLog(`📊 Gerando relatório preditivo: ${filegroupName}`, 'info');
+            debugLog(`🔑 Server ID: ${serverId}`, 'info');
+            debugLog(`🗄️ Database: ${databaseName}`, 'info');
+
+            // Abre o modal com loading
+            openReportModal(serverId, databaseName, filegroupName);
+
+            try {
+                const apiUrl = '/api/monitoring/space/filegroup/generate-report';
+                debugLog(`📡 POST ${apiUrl}`, 'info');
+
+                const requestBody = {
+                    server_id: serverId,
+                    database_name: databaseName,
+                    filegroup_name: filegroupName,
+                    forecast_days: 60,     // Previsão de 60 dias
+                    threshold: 0.85        // Alerta em 85% de uso
+                };
+
+                debugLog(`📤 Request: ${JSON.stringify(requestBody)}`, 'info');
+
+                // Chama a API (pode demorar 30-60 segundos - Oracle + ML)
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+            
+                debugLog(`📥 Response status: ${response.status}`, response.ok ? 'success' : 'error');
+            
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+            
+                // A API retorna HTML direto (HTMLResponse)
+                const htmlContent = await response.text();
+
+                debugLog(`✅ Relatório HTML recebido (${htmlContent.length} chars)`, 'success');
+
+                // Headers com metadados do relatório
+                const reportPath = response.headers.get('X-Report-Path');
+                const csvPath = response.headers.get('X-CSV-Path');
+                const generatedAt = response.headers.get('X-Generated-At');
+
+                if (reportPath) debugLog(`💾 Report saved: ${reportPath}`, 'info');
+                if (csvPath) debugLog(`📁 CSV saved: ${csvPath}`, 'info');
+                if (generatedAt) debugLog(`🕐 Generated: ${generatedAt}`, 'info');
+
+                // Exibe o relatório no modal
+                displayReport(htmlContent);
+            
+            } catch (error) {
+                debugLog(`❌ Erro: ${error.message}`, 'error');
+                showReportError(error.message);
+            }
+        }
+
+        /**
+         * Abre o modal e mostra loading
+         */
+        function openReportModal(serverId, databaseName, filegroupName) {
+            const modal = document.getElementById('reportModal');
+            const title = document.getElementById('modalTitle');
+            const subtitle = document.getElementById('modalSubtitle');
+            const body = document.getElementById('modalBody');
+        
+            title.textContent = '🔮 Análise Preditiva de Crescimento';
+            subtitle.textContent = `${serverId} > ${databaseName} > ${filegroupName}`;
+
+            body.innerHTML = `
+                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; gap: 16px;">
+                    <div class="spinner" style="width: 64px; height: 64px;"></div>
+                    <div style="text-align: center;">
+                        <p style="color: #60a5fa; font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                            🤖 Executando Machine Learning...
+                        </p>
+                        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 4px;">
+                            Extraindo dados históricos do Oracle
+                        </p>
+                        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 4px;">
+                            Executando modelo de regressão linear
+                        </p>
+                        <p style="color: #94a3b8; font-size: 14px;">
+                            Gerando gráficos interativos com Plotly
+                        </p>
+                        <p style="color: #64748b; font-size: 12px; margin-top: 16px; font-style: italic;">
+                            ⏱️ Isso pode levar 30-90 segundos...
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            debugLog(`📋 Modal aberto`, 'info');
+        }
+
+        /**
+         * Fecha o modal
+         */
+        
+        /**
+         * Mostra mensagem específica quando não há dados históricos
+         */
+        function showNoDataError(serverId, databaseName, filegroupName) {
+            const body = document.getElementById('modalBody');
+            
+            body.innerHTML = `
+                <div style="padding: 40px; max-width: 800px; margin: auto;">
+                    
+                    <!-- Ícone -->
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <i class="fas fa-database" style="font-size: 72px; color: #f59e0b;"></i>
+                    </div>
+                    
+                    <!-- Título -->
+                    <h2 style="color: #f59e0b; text-align: center; font-size: 24px; margin-bottom: 16px;">
+                        Sem Dados Históricos
+                    </h2>
+                    
+                    <!-- Explicação -->
+                    <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                        <p style="color: #fbbf24; font-size: 16px; line-height: 1.6; margin: 0;">
+                            Não foram encontrados dados históricos no Oracle para este filegroup. 
+                            A análise preditiva requer pelo menos <strong>7 dias de histórico</strong> de uso.
+                        </p>
+                    </div>
+                    
+                    <!-- Detalhes -->
+                    <div style="background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="color: #94a3b8; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">
+                            Detalhes do FileGroup
+                        </h4>
+                        <table style="width: 100%; font-size: 13px; color: #cbd5e1;">
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b;">Servidor:</td>
+                                <td style="padding: 8px 0; font-family: monospace;">${serverId}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b;">Database:</td>
+                                <td style="padding: 8px 0; font-family: monospace;">${databaseName}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b;">FileGroup:</td>
+                                <td style="padding: 8px 0; font-family: monospace;">${filegroupName}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Possíveis Causas -->
+                    <div style="background: #0f172a; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">
+                            Possíveis Causas
+                        </h4>
+                        <ul style="color: #cbd5e1; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
+                            <li>Este filegroup foi criado recentemente</li>
+                            <li>Coleta de dados não está ativa para este servidor</li>
+                            <li>Nome do filegroup diferente na tabela Oracle</li>
+                            <li>Servidor não está sendo monitorado</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Ações Recomendadas -->
+                    <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="color: #60a5fa; font-size: 14px; margin-bottom: 12px;">
+                            O Que Fazer
+                        </h4>
+                        <ol style="color: #93c5fd; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
+                            <li>Verificar se a coleta de dados está ativa</li>
+                            <li>Aguardar acumular pelo menos 7 dias de histórico</li>
+                            <li>Verificar nome do filegroup na tabela Oracle</li>
+                            <li>Tentar com outro filegroup que tenha mais dados</li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button 
+                            onclick="closeReportModal()"
+                            style="flex: 1; max-width: 200px; background: #475569; color: white; padding: 12px 24px; 
+                                   border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+                                   transition: all 0.2s;"
+                            onmouseover="this.style.background='#334155'"
+                            onmouseout="this.style.background='#475569'">
+                            <i class="fas fa-times"></i> Fechar
+                        </button>
+                    </div>
+                    
+                </div>
+            `;
+            
+            debugLog('⚠️ Sem dados históricos para análise preditiva', 'warn');
+        }
+        
+        
+        /**
+         * Mostra mensagem específica quando não há dados históricos
+         */
+        function showNoDataError(serverId, databaseName, filegroupName) {
+            const body = document.getElementById('modalBody');
+            
+            body.innerHTML = `
+                <div style="padding: 40px; max-width: 800px; margin: auto;">
+                    
+                    <!-- Ícone -->
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <i class="fas fa-database" style="font-size: 72px; color: #f59e0b;"></i>
+                    </div>
+                    
+                    <!-- Título -->
+                    <h2 style="color: #f59e0b; text-align: center; font-size: 24px; margin-bottom: 16px;">
+                        Sem Dados Históricos
+                    </h2>
+                    
+                    <!-- Explicação -->
+                    <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                        <p style="color: #fbbf24; font-size: 16px; line-height: 1.6; margin: 0;">
+                            Não foram encontrados dados históricos no Oracle para este filegroup. 
+                            A análise preditiva requer pelo menos <strong>7 dias de histórico</strong> de uso.
+                        </p>
+                    </div>
+                    
+                    <!-- Detalhes -->
+                    <div style="background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="color: #94a3b8; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">
+                            Detalhes do FileGroup
+                        </h4>
+                        <table style="width: 100%; font-size: 13px; color: #cbd5e1;">
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b;">Servidor:</td>
+                                <td style="padding: 8px 0; font-family: monospace;">${serverId}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b;">Database:</td>
+                                <td style="padding: 8px 0; font-family: monospace;">${databaseName}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #64748b;">FileGroup:</td>
+                                <td style="padding: 8px 0; font-family: monospace;">${filegroupName}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Possíveis Causas -->
+                    <div style="background: #0f172a; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">
+                            Possíveis Causas
+                        </h4>
+                        <ul style="color: #cbd5e1; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
+                            <li>Este filegroup foi criado recentemente</li>
+                            <li>Coleta de dados não está ativa para este servidor</li>
+                            <li>Nome do filegroup diferente na tabela Oracle</li>
+                            <li>Servidor não está sendo monitorado</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Ações Recomendadas -->
+                    <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="color: #60a5fa; font-size: 14px; margin-bottom: 12px;">
+                            O Que Fazer
+                        </h4>
+                        <ol style="color: #93c5fd; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
+                            <li>Verificar se a coleta de dados está ativa</li>
+                            <li>Aguardar acumular pelo menos 7 dias de histórico</li>
+                            <li>Verificar nome do filegroup na tabela Oracle</li>
+                            <li>Tentar com outro filegroup que tenha mais dados</li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button 
+                            onclick="closeReportModal()"
+                            style="flex: 1; max-width: 200px; background: #475569; color: white; padding: 12px 24px; 
+                                   border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+                                   transition: all 0.2s;"
+                            onmouseover="this.style.background='#334155'"
+                            onmouseout="this.style.background='#475569'">
+                            <i class="fas fa-times"></i> Fechar
+                        </button>
+                    </div>
+                    
+                </div>
+            `;
+            
+            debugLog('⚠️ Sem dados históricos para análise preditiva', 'warn');
+        }
+        
+        function closeReportModal() {
+            const modal = document.getElementById('reportModal');
+            modal.classList.remove('active');
+            debugLog(`✖️ Modal fechado`, 'info');
+        }
+
+        /**
+         * Exibe mensagem de erro no modal
+         */
+        function showReportError(errorMessage) {
+            const body = document.getElementById('modalBody');
+            body.innerHTML = `
+                <div style="background: rgba(127, 29, 18, 0.3); border: 2px solid #991b1b; border-radius: 12px; padding: 32px; text-align: center; max-width: 600px; margin: auto;">
+                    <i class="fas fa-exclamation-triangle" style="color: #fca5a5; font-size: 64px; margin-bottom: 24px;"></i>
+                    <h3 style="font-size: 24px; font-weight: bold; color: #fca5a5; margin-bottom: 12px;">
+                        Erro ao Gerar Relatório
+                    </h3>
+                    <p style="color: #fecaca; font-size: 16px; margin-bottom: 24px; line-height: 1.6;">
+                        ${errorMessage}
+                    </p>
+                    <div style="background: rgba(0, 0, 0, 0.3); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                        <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 8px;">
+                            <strong>Possíveis causas:</strong>
+                        </p>
+                        <ul style="color: #94a3b8; font-size: 12px; text-align: left; margin-left: 24px;">
+                            <li>Scripts Python não encontrados na raiz do projeto</li>
+                            <li>Credenciais Oracle incorretas em oracle_to_csv.py</li>
+                            <li>Sem dados históricos para este filegroup</li>
+                            <li>Timeout na extração de dados (Oracle lento)</li>
+                        </ul>
+                    </div>
+                    <button 
+                        onclick="closeReportModal()"
+                        style="background: linear-gradient(135deg, #475569 0%, #334155 100%); 
+                               color: white; padding: 12px 32px; border: none; border-radius: 8px; 
+                               cursor: pointer; font-size: 14px; font-weight: 600;
+                               transition: transform 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform='translateY(0)'"
+                    >
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                </div>
+            `;
+        }
+
+        /**
+         * Exibe o relatório HTML no iframe do modal
+         */
+        function displayReport(htmlContent) {
+            // Criar blob do HTML
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Abrir em nova aba
+            const newTab = window.open(blobUrl, '_blank');
+            
+            if (newTab) {
+                debugLog('✅ Relatório aberto em nova aba', 'success');
+                
+                // Fechar modal após abrir
+                setTimeout(() => {
+                    closeReportModal();
+                    URL.revokeObjectURL(blobUrl);
+                }, 500);
+            } else {
+                debugLog('❌ Popup bloqueado pelo navegador', 'error');
+                
+                // Mostrar botão para abrir manualmente
+                const body = document.getElementById('modalBody');
+                body.innerHTML = `
+                    <div style="padding: 40px; text-align: center;">
+                        <i class="fas fa-window-restore" style="font-size: 64px; color: #60a5fa; margin-bottom: 20px;"></i>
+                        <h3 style="color: #f1f5f9; margin-bottom: 16px;">Pop-up Bloqueado</h3>
+                        <p style="color: #94a3b8; margin-bottom: 24px;">
+                            Seu navegador bloqueou a abertura do relatório em nova aba.
+                        </p>
+                        <button 
+                            onclick="window.open('${blobUrl}', '_blank')"
+                            style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                                   color: white; padding: 12px 32px; border: none; border-radius: 8px;
+                                   font-size: 14px; font-weight: 600; cursor: pointer;
+                                   transition: transform 0.2s;"
+                            onmouseover="this.style.transform='translateY(-2px)'"
+                            onmouseout="this.style.transform='translateY(0)'">
+                            <i class="fas fa-external-link-alt"></i> Abrir Relatório
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * Fecha modal ao clicar fora
+         */
+        window.onclick = function(event) {
+            const modal = document.getElementById('reportModal');
+            if (event.target === modal) {
+                closeReportModal();
+            }
+        }
+        
+        function showReportError(errorMessage) {
+            const body = document.getElementById('modalBody');
+            body.innerHTML = `
+                <div style="background: rgba(127, 29, 18, 0.3); border: 1px solid #991b1b; border-radius: 8px; padding: 24px; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="color: #fca5a5; font-size: 48px; margin-bottom: 16px;"></i>
+                    <h3 style="font-size: 20px; font-weight: bold; color: #fca5a5; margin-bottom: 8px;">Erro ao Gerar Relatório</h3>
+                    <p style="color: #fecaca; margin-bottom: 16px;">${errorMessage}</p>
+                    <button 
+                        onclick="closeReportModal()"
+                        style="background: #475569; color: white; padding: 10px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;"
+                    >
+                        Fechar
+                    </button>
+                </div>
+            `;
+        }
+
+        function displayReport(htmlContent) {
+            const body = document.getElementById('modalBody');
+            
+            body.innerHTML = `
+                <iframe 
+                    id="reportFrame"
+                    class="report-iframe"
+                    sandbox="allow-same-origin allow-scripts"
+                ></iframe>
+            `;
+
+            const iframe = document.getElementById('reportFrame');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(htmlContent);
+            iframeDoc.close();
+            
+            debugLog(`📄 Relatório exibido no iframe`, 'success');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('reportModal');
+            if (event.target === modal) {
+                closeReportModal();
+            }
+        }
+        
+        // ========================================
+        // START
+        // ========================================
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+        <script>
+        window.onclick = function(event) {
+            const modal = document.getElementById('overflowModal');
+            if (event.target === modal) {
+                closeOverflowModal();
+            }
+            const reportModal = document.getElementById('reportModal');
+            if (event.target === reportModal) {
+                closeReportModal();
+            }
+        }
+        </script>
+</body>
+</html>

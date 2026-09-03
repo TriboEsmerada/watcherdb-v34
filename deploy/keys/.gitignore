@@ -1,0 +1,8 @@
+# Private keys — NEVER commit.
+ed25519_private*
+*.private.pem
+*.secret.pem
+
+# Trial/signed license files — machine-bound, never commit.
+license.dat
+*.license

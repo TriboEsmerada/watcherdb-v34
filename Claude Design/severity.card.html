@@ -1,0 +1,13 @@
+**AlertRow** — one alert in a stacked triage list; severity shown as left rail + icon + title + badge for instant scanning. Use on dashboards and the alerts feed.
+
+```jsx
+<AlertRow
+  level="overflow"
+  title="PRIMARY filegroup over capacity"
+  meta="SRV-PRD-01 · FIN_LEDGER · 0% free"
+  badgeText="Breached"
+/>
+<AlertRow level="ok" title="Always On synchronized" meta="SRV-PRD-02 → SRV-DR-02 · 0 ms lag" />
+```
+
+Pair with `SeverityBadge` (used internally). Pass `action` for a trailing button, `onClick` to make the row navigable.

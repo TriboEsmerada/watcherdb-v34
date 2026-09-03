@@ -1,0 +1,34 @@
+# ============================================================================
+# DEPRECATED: Este arquivo foi substituído por watcherdb/services/notification.py
+# ============================================================================
+#
+# Este arquivo foi consolidado com a implementação em:
+#   watcherdb/services/notification.py
+#
+# Para migrar seu código:
+#   ANTES: from modules.monitoring.notifications import NotificationService
+#   DEPOIS: from watcherdb.services.notification import NotificationService
+#
+# Motivo da consolidação:
+#   - Eliminar duplicação de código
+#   - Centralizar lógica de notificação
+#   - Melhorar manutenibilidade
+#
+# Data de depreciação: 2025-11-14
+# Será removido em: v2.0.0
+# ============================================================================
+
+import warnings
+from watcherdb.services.notification import NotificationService as _NotificationService
+
+warnings.warn(
+    "modules.monitoring.notifications is deprecated. "
+    "Use watcherdb.services.notification instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
+# Re-export for backward compatibility (temporary)
+NotificationService = _NotificationService
+
+__all__ = ['NotificationService']

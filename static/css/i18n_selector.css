@@ -1,0 +1,146 @@
+/* ========================================
+ * WatcherDB i18n Language Selector
+ * Dropdown with flags — matches dark theme
+ * ======================================== */
+
+.i18n-lang-selector {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    z-index: 1010;
+}
+
+/* Toggle button */
+.i18n-lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--color-bg-secondary, #1a2332);
+    border: 1px solid var(--color-border, rgba(255,255,255,0.1));
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-text-primary, #f1f5f9);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast, all 0.15s ease);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.i18n-lang-btn:hover {
+    background: var(--color-bg-tertiary, #243447);
+    border-color: var(--color-info, #2563eb);
+}
+
+.i18n-lang-btn:focus-visible {
+    outline: 2px solid var(--color-info, #2563eb);
+    outline-offset: 2px;
+}
+
+.i18n-lang-chevron {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+}
+
+.i18n-lang-btn[aria-expanded="true"] .i18n-lang-chevron {
+    transform: rotate(180deg);
+}
+
+/* Dropdown panel */
+.i18n-lang-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 160px;
+    background: var(--color-bg-secondary, #1a2332);
+    border: 1px solid var(--color-border, rgba(255,255,255,0.15));
+    border-radius: var(--radius-md, 8px);
+    box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0,0,0,0.4));
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.i18n-lang-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Individual options */
+.i18n-lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    color: var(--color-text-secondary, #cbd5e1);
+}
+
+.i18n-lang-option:hover {
+    background: var(--color-bg-tertiary, #243447);
+    color: var(--color-text-primary, #f1f5f9);
+}
+
+.i18n-lang-option.active {
+    color: var(--color-info, #2563eb);
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.i18n-lang-flag {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.i18n-lang-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.i18n-lang-check {
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    color: var(--color-info, #2563eb);
+}
+
+.i18n-lang-option.active .i18n-lang-check {
+    opacity: 1;
+}
+
+/* Separator between options */
+.i18n-lang-option + .i18n-lang-option {
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Responsive: on very small screens, hide text */
+@media (max-width: 768px) {
+    .i18n-lang-btn {
+        padding: 6px 8px;
+    }
+    #langFlagDisplay {
+        font-size: 16px;
+    }
+}
+
+/* Text overflow protection for translated content */
+[data-i18n-overflow="ellipsis"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+[data-i18n-overflow="wrap"] {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Smooth text transition when language changes */
+[data-i18n] {
+    transition: opacity 0.15s ease;
+}

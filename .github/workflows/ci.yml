@@ -1,0 +1,174 @@
+# =============================================================================
+# CI Pipeline - WatcherDB V3.3 Standard Edition
+# =============================================================================
+#
+# Lint, test and security scan workflow for V3.3 on every PR / push to main.
+#
+# Runs on github-hosted ubuntu-latest for fast PR validation. Production MSI
+# build moved to build-release.yml (self-hosted Windows runner with PyArmor
+# Pro licence + LLVM + WiX + DigiCert KeyLocker toolchain).
+#
+# Why split? Production build requires:
+#   - Windows runner (MSI is Windows-only)
+#   - PyArmor Pro machine-bound licence (cannot be activated on github-hosted)
+#   - DigiCert KeyLocker EV signing
+# These cannot run on ubuntu-latest. PR validation stays ubuntu-fast.
+# =============================================================================
+
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ==========================================
+  # Code Quality Checks
+  # ==========================================
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WATCHERDB_V3.3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install lint dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black isort mypy
+
+      - name: Run Ruff
+        run: ruff check watcherdb/
+
+      - name: Run Black
+        run: black --check watcherdb/
+
+      - name: Run isort
+        run: isort --check-only watcherdb/
+
+      - name: Run mypy
+        run: mypy watcherdb/ --ignore-missing-imports
+
+  # ==========================================
+  # Unit and Integration Tests
+  # ==========================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    defaults:
+      run:
+        working-directory: WATCHERDB_V3.3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run pytest with coverage
+        # S3-13 (audit 2026-04-22): coverage enforced em pyproject.toml addopts
+        # (--cov-fail-under=10) + source expandido para api/ modules/ services/
+        # collectors/. Threshold sera elevado progressivamente.
+        run: pytest --cov-report=xml
+
+      - name: Run Locust load tests (smoke)
+        continue-on-error: true
+        run: |
+          pip install locust
+          locust -f tests/performance/locustfile_baseline.py \
+            --headless --users 5 --spawn-rate 5 --run-time 30s \
+            --host http://localhost:8000 \
+            --exit-code-on-error 1 \
+            --only-summary || echo "Locust smoke test skipped (server not running)"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        continue-on-error: true
+        with:
+          file: WATCHERDB_V3.3/coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  # ==========================================
+  # Security Scanning
+  # ==========================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WATCHERDB_V3.3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety bandit
+
+      - name: Run Safety (dependency check)
+        run: safety check --json
+
+      - name: Run Bandit (security issues)
+        run: bandit -r watcherdb/ -f json -o bandit-report.json
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: WATCHERDB_V3.3/bandit-report.json
+
+  # ==========================================
+  # Notification
+  # ==========================================
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [lint, test, security]
+    if: always()
+
+    steps:
+      - name: Pipeline summary
+        run: |
+          echo "## CI Pipeline Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Job | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Lint     | ${{ needs.lint.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Test     | ${{ needs.test.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Security | ${{ needs.security.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_MSI build runs in build-release.yml on tag push (v3.3.*)._" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail if any job failed
+        if: ${{ needs.lint.result == 'failure' || needs.test.result == 'failure' || needs.security.result == 'failure' }}
+        run: |
+          echo "::error title=Pipeline Failed::One or more jobs failed. Check job logs for details."
+          exit 1

@@ -1,0 +1,649 @@
+/* ============================================================================
+   WatcherDB PORTAL - CSS PARA DASHBOARD CORRIGIDO
+   ============================================================================
+   Estilos otimizados para exibição de FILEGROUPS
+   ============================================================================ */
+
+/* ============================================================================
+   VARIÁVEIS CSS
+   ============================================================================ */
+:root {
+    /* Cores de alerta */
+    --color-overflow: #dc2626;
+    --color-critical: #ef4444;
+    --color-warning: #f59e0b;
+    --color-ok: #10b981;
+    
+    /* Cores de fundo */
+    --bg-overflow: rgba(220, 38, 38, 0.1);
+    --bg-critical: rgba(239, 68, 68, 0.1);
+    --bg-warning: rgba(245, 158, 11, 0.1);
+    --bg-ok: rgba(16, 185, 129, 0.1);
+    
+    /* Cores neutras */
+    --color-dark: #1f2937;
+    --color-gray: #6b7280;
+    --color-light: #f3f4f6;
+    
+    /* Fontes */
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+    
+    /* Espaçamentos */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    
+    /* Sombras */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   LAYOUT GERAL
+   ============================================================================ */
+
+#dashboard-summary {
+    margin-bottom: var(--spacing-lg);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.summary-card {
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.summary-card.overflow {
+    border-color: var(--color-overflow);
+    background: var(--bg-overflow);
+}
+
+.summary-card.critical {
+    border-color: var(--color-critical);
+    background: var(--bg-critical);
+}
+
+.summary-card.warning {
+    border-color: var(--color-warning);
+    background: var(--bg-warning);
+}
+
+.summary-card.ok {
+    border-color: var(--color-ok);
+    background: var(--bg-ok);
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    color: var(--color-gray);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+}
+
+.summary-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-dark);
+}
+
+/* ============================================================================
+   FILEGROUPS CONTAINER
+   ============================================================================ */
+
+#filegroups-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: var(--spacing-md);
+}
+
+/* ============================================================================
+   FILEGROUP CARD
+   ============================================================================ */
+
+.filegroup-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border-left: 4px solid var(--color-ok);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.filegroup-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+}
+
+/* Cores de borda baseadas no alert level */
+.filegroup-card.alert-overflow {
+    border-left-color: var(--color-overflow);
+    background: var(--bg-overflow);
+}
+
+.filegroup-card.alert-critical {
+    border-left-color: var(--color-critical);
+    background: var(--bg-critical);
+}
+
+.filegroup-card.alert-warning {
+    border-left-color: var(--color-warning);
+    background: var(--bg-warning);
+}
+
+.filegroup-card.alert-ok {
+    border-left-color: var(--color-ok);
+}
+
+/* Banner de overflow */
+.overflow-banner {
+    background: var(--color-overflow);
+    color: white;
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.875rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* ============================================================================
+   FILEGROUP HEADER
+   ============================================================================ */
+
+.filegroup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: white;
+    border-bottom: 1px solid var(--color-light);
+}
+
+.filegroup-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex: 1;
+}
+
+.type-icon {
+    font-size: 1.5rem;
+}
+
+.filegroup-title h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    word-break: break-word;
+}
+
+.filegroup-type-badge {
+    background: var(--color-dark);
+    color: white;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Badges de alert */
+.badge {
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.badge-overflow {
+    background: var(--color-overflow);
+    color: white;
+}
+
+.badge-critical {
+    background: var(--color-critical);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--color-warning);
+    color: white;
+}
+
+.badge-ok {
+    background: var(--color-ok);
+    color: white;
+}
+
+/* ============================================================================
+   FILEGROUP BODY
+   ============================================================================ */
+
+.filegroup-body {
+    padding: var(--spacing-md);
+}
+
+/* ============================================================================
+   PROGRESS BAR
+   ============================================================================ */
+
+.progress-container {
+    margin-bottom: var(--spacing-md);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 24px;
+    background: var(--color-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.5s ease, background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.progress-ok {
+    background: linear-gradient(90deg, var(--color-ok), #059669);
+}
+
+.progress-warning {
+    background: linear-gradient(90deg, var(--color-warning), #d97706);
+}
+
+.progress-critical {
+    background: linear-gradient(90deg, var(--color-critical), #dc2626);
+}
+
+.progress-overflow {
+    background: linear-gradient(90deg, var(--color-overflow), #991b1b);
+    animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--spacing-xs);
+    font-size: 0.875rem;
+    color: var(--color-gray);
+}
+
+/* ============================================================================
+   METRICS GRID
+   ============================================================================ */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.metric {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-light);
+}
+
+.metric-icon {
+    font-size: 1.25rem;
+}
+
+.metric-content {
+    flex: 1;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--color-gray);
+    margin-bottom: 2px;
+}
+
+.metric-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+/* ============================================================================
+   RISK FACTORS
+   ============================================================================ */
+
+.risk-factors {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: #fef3c7;
+    border-left: 3px solid var(--color-warning);
+    border-radius: var(--radius-sm);
+}
+
+.risk-factors-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #92400e;
+    margin-bottom: var(--spacing-xs);
+}
+
+.risk-factors-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.risk-factor-item {
+    font-size: 0.8125rem;
+    color: #78350f;
+    padding-left: var(--spacing-md);
+    position: relative;
+}
+
+.risk-factor-item::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--color-warning);
+}
+
+/* ============================================================================
+   FILEGROUP DETAILS (LOGICAL NAMES)
+   ============================================================================ */
+
+.filegroup-details {
+    border-top: 1px solid var(--color-light);
+    padding-top: var(--spacing-md);
+}
+
+.btn-details {
+    width: 100%;
+    padding: var(--spacing-sm);
+    background: var(--color-light);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--color-dark);
+    transition: all 0.2s ease;
+}
+
+.btn-details:hover {
+    background: #e5e7eb;
+}
+
+.details-content {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: #f9fafb;
+    border-radius: var(--radius-sm);
+}
+
+.logical-names {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.logical-name-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    background: white;
+    border: 1px solid var(--color-light);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--color-dark);
+}
+
+/* ============================================================================
+   HEALTH SCORE
+   ============================================================================ */
+
+#health-score-container {
+    margin-bottom: var(--spacing-lg);
+}
+
+.health-score-card {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 3px solid;
+}
+
+.health-score-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.health-score-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.health-status {
+    padding: 6px 16px;
+    border-radius: var(--radius-md);
+    color: white;
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.health-score-value {
+    font-size: 4rem;
+    font-weight: bold;
+    text-align: center;
+    margin: var(--spacing-md) 0;
+}
+
+.health-recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.recommendation {
+    padding: var(--spacing-sm);
+    background: var(--color-light);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+}
+
+/* ============================================================================
+   LOADING & ERROR STATES
+   ============================================================================ */
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--color-gray);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--color-light);
+    border-top-color: var(--color-ok);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.error-message p {
+    color: var(--color-critical);
+    margin-bottom: var(--spacing-md);
+}
+
+.btn-retry {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-ok);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-retry:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.no-data {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--color-gray);
+    font-style: italic;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    #filegroups-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .health-score-value {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filegroup-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* ============================================================================
+   ANIMAÇÕES
+   ============================================================================ */
+
+.filegroup-card {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================================
+   DARK MODE (OPCIONAL)
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-dark: #f3f4f6;
+        --color-gray: #9ca3af;
+        --color-light: #374151;
+    }
+    
+    body {
+        background: #1f2937;
+        color: #f3f4f6;
+    }
+    
+    .filegroup-card,
+    .summary-card,
+    .metric,
+    .health-score-card {
+        background: #374151;
+    }
+    
+    .filegroup-header {
+        background: #374151;
+        border-bottom-color: #4b5563;
+    }
+}
+

@@ -1,0 +1,17 @@
+{# Login overlay #}
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <div class="login-logo"><i class="fas fa-eye"></i> WatcherDB</div>
+        <div class="login-subtitle">Autenticacao necessaria para aceder ao portal</div>
+        <form id="loginForm" hx-post="/api/auth/login" hx-target="#loginError" hx-swap="innerHTML">
+            <input type="text" name="username" placeholder="Username" autocomplete="username" autofocus>
+            <input type="password" name="password" placeholder="Password" autocomplete="current-password">
+            <div id="loginError" class="login-error"></div>
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Entrar</span>
+            </button>
+        </form>
+        <div class="login-version">WatcherDB V3.2</div>
+    </div>
+</div>

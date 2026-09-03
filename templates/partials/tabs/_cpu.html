@@ -1,0 +1,28 @@
+{# CPU tab content #}
+<div class="tab-content" id="tab-cpu">
+    <h3 style="color: #f1f5f9; margin-bottom: 16px;">
+        <i class="fas fa-microchip"></i> CPU — {{ server_id.replace('_', '\\') }}
+    </h3>
+
+    {% if data.error %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> {{ data.error }}
+    </div>
+    {% elif data %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <wdb-kpi-card title="CPU Usage" value="{{ data.get('cpu_percent', '\u2014') }}" unit="%" icon="fa-microchip"
+                      status="{{ 'critical' if (data.get('cpu_percent', 0)|int) > 80 else 'ok' }}">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="SQL CPU" value="{{ data.get('sql_cpu_percent', '\u2014') }}" unit="%" icon="fa-database"
+                      status="{{ 'critical' if (data.get('sql_cpu_percent', 0)|int) > 80 else 'ok' }}">
+        </wdb-kpi-card>
+        <wdb-kpi-card title="Cores" value="{{ data.get('cpu_cores', '\u2014') }}" icon="fa-server" status="info">
+        </wdb-kpi-card>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #64748b;">
+        <i class="fas fa-microchip" style="font-size: 24px;"></i>
+        <p>Select a server to view CPU metrics</p>
+    </div>
+    {% endif %}
+</div>

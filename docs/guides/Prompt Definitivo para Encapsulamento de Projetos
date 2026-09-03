@@ -1,0 +1,158 @@
+Prompt Definitivo para Encapsulamento de Projetos Python Legados
+
+# Contexto do Projeto
+
+Tenho dois projetos Python legados em produção que precisam ser unificados em um pacote 
+moderno, sem interromper operações existentes.
+
+## Projetos Fonte (AMBOS EM PRODUÇÃO - NÃO ALTERAR)
+
+1. **WATCHERDB INTELLIGENCE V1**
+   - Caminho: C:\...\WATCHERDB INTELLIGENCE V1
+   - Função: Coletas de métricas SQL Server, conexão com banco central, analytics
+   - Arquivos principais: collectors/, database/, config/
+
+2. **WATCHERDB_DEV**
+   - Caminho: C:\...\WATCHERDB_DEV
+   - Função: API REST (FastAPI), frontend, endpoints de monitoramento
+   - Arquivos principais: api/, routers/, templates/
+
+**IMPORTANTE:** Esses projetos continuarão rodando. O novo pacote deve funcionar em 
+paralelo e permitir migração gradual.
+
+---
+
+# Objetivo
+
+Criar um pacote Python encapsulado chamado `watcherdb` que:
+1. Unifique o código dos dois projetos
+2. Seja instalável via pip (`pip install -e .`)
+3. Tenha testes automatizados
+4. Possua documentação para instalação por não-desenvolvedores
+5. Suporte execução como Windows Service
+
+---
+
+# Especificações Técnicas
+
+## Estrutura do Pacote
+
+watcherdb/
+├── src/watcherdb/
+│   ├── init.py          # Exports públicos
+│   ├── main.py          # python -m watcherdb
+│   ├── cli.py               # Comandos CLI
+│   ├── config/              # Pydantic Settings
+│   ├── core/                # DatabaseManager, Cache, CircuitBreaker
+│   ├── collectors/          # BaseCollector, ServerManager, ConnectionPool
+│   ├── api/                 # FastAPI app factory + routers
+│   └── service/             # Windows Service
+├── tests/unit/              # pytest
+├── docs/                    # Documentação
+│   ├── GUIA_RAPIDO.md
+│   ├── MANUAL_INSTALACAO.md
+│   ├── WINDOWS_SERVICE.md
+│   └── tap/                 # Docs específicos do ambiente
+└── pyproject.toml           # hatchling
+
+
+
+## Padrões Obrigatórios
+
+- **Config:** Pydantic Settings com suporte a .env, variáveis de ambiente e YAML
+- **Database:** Singleton thread-safe, connection string via config
+- **Cache:** In-memory com TTL (sem Redis externo)
+- **Circuit Breaker:** Para resiliência em conexões com servidores remotos
+- **API:** FastAPI com factory pattern, dependency injection, CORS
+- **Testes:** pytest com mocks, sem dependência de banco real
+
+## Ambiente de Produção (TAP)
+
+- Banco central: SQLHDSTST212\I01, database WatcherDB_Intelligence
+- Servidores monitorados: ~96 (SQL Server)
+- Autenticação: SQL Auth (usuário sql_monitoring)
+- Portas: 8000 (API DEV), 8001 (API V1)
+- Driver: ODBC Driver 17 for SQL Server
+
+---
+
+# Processo de Execução
+
+## Fase 1: Estrutura Base
+1. Analisar projetos fonte (ler configs, entender estrutura)
+2. Criar pyproject.toml com hatchling
+3. Criar módulo config/ com Pydantic Settings
+4. Criar testes para config
+5. **Checkpoint:** pytest deve passar
+
+## Fase 2: Core
+1. Migrar/criar DatabaseManager (singleton)
+2. Criar RedisLikeCache (in-memory com TTL)
+3. Criar CircuitBreaker
+4. Testes para cada componente
+5. **Checkpoint:** pytest deve passar
+
+## Fase 3: Collectors
+1. Criar BaseCollector (classe abstrata)
+2. Criar ServerManager (ler servers.json)
+3. Criar ConnectionPool
+4. Testes com mocks
+5. **Checkpoint:** pytest deve passar
+
+## Fase 4: API
+1. Criar app factory (create_app)
+2. Criar dependencies.py
+3. Criar routers: health, kpis, diagnostics
+4. Testes de endpoints
+5. **Checkpoint:** pytest deve passar
+
+## Fase 5: Service + Docs
+1. Criar Windows Service (pywin32)
+2. Criar documentação genérica
+3. Criar documentação específica TAP (pré-preenchida)
+4. **Checkpoint:** pytest deve passar, docs completos
+
+---
+
+# Critérios de Aceite
+
+- [ ] `pip install -e .` funciona sem erros
+- [ ] `python -m watcherdb version` retorna versão
+- [ ] `pytest` passa com 100+ testes
+- [ ] API sobe com `uvicorn watcherdb.api:get_app --factory`
+- [ ] Documentação permite instalação por gestor não-técnico
+- [ ] Projetos legados continuam funcionando (sem alterações)
+
+---
+
+# O que NÃO fazer
+
+- NÃO alterar os projetos fonte (V1 e DEV)
+- NÃO criar dependências externas desnecessárias (Redis, RabbitMQ, etc.)
+- NÃO over-engineer (KISS - Keep It Simple)
+- NÃO criar abstrações prematuras
+- NÃO ignorar tratamento de erros
+
+---
+
+# Entregáveis
+
+1. Pacote `watcherdb/` completo e funcional
+2. Testes passando (mostrar output do pytest)
+3. README.md atualizado
+4. Documentação em docs/ (genérica + TAP)
+5. Resumo do que foi feito em cada fase
+Por que este prompt funciona?
+Aspecto	Decisão	Justificativa
+Contexto claro	Descreve os 2 projetos fonte	Evita perguntas de esclarecimento
+Produção protegida	"NÃO alterar projetos fonte"	Reduz risco de downtime
+Checkpoints	pytest após cada fase	Detecta problemas cedo
+Sem overengineering	Cache in-memory, sem Redis	Menos dependências = menos falhas
+Docs para gestor	Manual passo a passo	Reduz dependência de devs para deploy
+Ambiente real	Configs TAP pré-preenchidos	Pronto para produção
+Lista negativa	"O que NÃO fazer"	Evita desvios comuns
+Trade-offs Aceitos
+Cache in-memory vs Redis → Simplicidade sobre escalabilidade (aceitável para este caso)
+Testes com mocks vs integração → Velocidade sobre cobertura real (banco não disponível em CI)
+Documentação manual vs auto-gerada → Clareza para não-devs sobre automação
+Este prompt produziria exatamente o resultado que alcançamos: 107 testes, pacote funcional, documentação completa e zero impacto nos sistemas em produção.

@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WatcherDB V3.3 Standard Edition - MSI product definition (WiX v3).
+
+  Responsibilities:
+    * Install the PyInstaller onedir bundle to %ProgramFiles%\WatcherDB\V3.3\
+    * Create %ProgramData%\WatcherDB\ as the writable state folder
+    * Register the Windows service (native ServiceInstall / ServiceControl)
+    * Handle major upgrades idempotently (same UpgradeCode, bumped version)
+    * Present a minimal UI with EULA acceptance and per-machine install
+
+  Deliberately excluded:
+    * No database schema changes. The MSI never touches WatcherDB_Intelligence
+      or any other SQL Server object. That DB is V1 Intel's territory and is
+      shared between V3.3 and V5; any schema migration for V3.3 is driven by
+      V1 Intel's own deploy flow, not by this installer.
+    * No custom actions running arbitrary Python or PowerShell. The service
+      is registered via the ServiceInstall element (clean, idempotent, auto
+      handled on rollback).
+
+  Harvested content:
+    BundleFiles.wxs is produced by heat.exe in build_msi.ps1 and must be
+    compiled alongside this file. It carries one Component per file in the
+    PyInstaller bundle output.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <?include Variables.wxi ?>
+
+  <Product
+      Id="*"
+      Name="$(var.ProductName)"
+      Language="1033"
+      Version="$(var.ProductVersion)"
+      Manufacturer="$(var.Manufacturer)"
+      UpgradeCode="$(var.UpgradeCode)">
+
+    <Package
+        Description="SQL Server monitoring and diagnostics platform"
+        Comments="WatcherDB Standard Edition installer"
+        Manufacturer="$(var.Manufacturer)"
+        InstallerVersion="500"
+        Compressed="yes"
+        InstallScope="perMachine"
+        Platform="x64" />
+
+    <!-- Admin rights required for ServiceInstall (SCM). Package@InstallScope="perMachine"
+         already implies ALLUSERS=1; declaring it explicitly triggers LGHT0091 duplicate
+         symbol in WiX 3.14. -->
+    <Property Id="MSIINSTALLPERUSER" Value="0" />
+
+    <!-- In-place upgrade. Any previously installed version matching the
+         same UpgradeCode is removed before the new payload is laid down.
+         Schedule=afterInstallInitialize keeps the service stopped during
+         the transition instead of being killed mid-file-copy. -->
+    <MajorUpgrade
+        Schedule="afterInstallInitialize"
+        AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of WatcherDB V3.3 is already installed. Uninstall it first if you need to revert." />
+
+    <!-- Single cab embedded inside the MSI - keeps the deliverable one file. -->
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- ================================================================ -->
+    <!-- Service account properties (audit 2026-04-22 FIND #5 / S2-6)     -->
+    <!-- ================================================================ -->
+    <!-- Permitir que o operador indique a conta Windows sob a qual o
+         servico corre. Default = NT AUTHORITY\NetworkService (sem privilege
+         total LocalSystem, adequado para ambientes nao-AD com SQL local ou
+         quando o SQL remoto aceita MACHINE$ via Windows Auth).
+
+         Cenarios banking/DORA (domain account ou gMSA):
+           msiexec /i WatcherDB_V3.3_Standard.msi /qn ^
+                   SERVICEACCOUNT="DOMAIN\svc_watcherdb_v33" ^
+                   SERVICEPASSWORD="<senha>"
+
+         gMSA (sem password — SCM resolve via AD):
+           msiexec /i ... SERVICEACCOUNT="DOMAIN\svc_watcherdb$"
+
+         Hidden="yes" impede que SERVICEPASSWORD apareca nos logs
+         msiexec /l*v. O operador deve invocar msiexec a partir de script
+         PS com variavel, nao interactivamente (cmd history preserva). -->
+    <Property Id="SERVICEACCOUNT" Value="NT AUTHORITY\NetworkService" Secure="yes" />
+    <!-- Value omitted: WiX 3.14 rejects empty string; msiexec injects at install-time via SERVICEPASSWORD=<secret>. -->
+    <Property Id="SERVICEPASSWORD" Hidden="yes" Secure="yes" />
+
+    <!-- ================================================================ -->
+    <!-- Directory layout                                                 -->
+    <!-- ================================================================ -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER_BASE" Name="WatcherDB">
+          <Directory Id="INSTALLFOLDER" Name="V3.3">
+            <!-- BundleFiles.wxs harvested components land under
+                 INSTALLFOLDER via the -dr INSTALLFOLDER heat flag. -->
+          </Directory>
+        </Directory>
+      </Directory>
+
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="DATAFOLDER" Name="WatcherDB">
+          <Component Id="DataFolderComp"
+                     Guid="B2F6C5A1-8E1D-4C93-9E57-2AD7B0F45E83"
+                     KeyPath="yes">
+            <!-- Create the ProgramData folder so log rotation, licence
+                 placement and config overrides have a predictable home
+                 even before the service first runs. -->
+            <CreateFolder>
+              <!-- Audit 2026-04-22 / deploy-architect proactive finding:
+                   Permission User="Users" GenericRead="yes" removido.
+                   C:\ProgramData\WatcherDB\ pode conter license.dat e
+                   config com credenciais parciais — leitura para todos
+                   os utilizadores locais era misconfig em ambiente
+                   banking/DORA. SYSTEM + Administrators tem acesso
+                   GenericAll; a service account adicionada dinamicamente
+                   pelo ServiceInstall herda ACL via LogOnAsService
+                   (Windows trata automaticamente). -->
+              <Permission User="SYSTEM"         GenericAll="yes" />
+              <Permission User="Administrators" GenericAll="yes" />
+              <!-- 2026-08-12: LockPermissions substitui a DACL e MATA a
+                   heranca, portanto a conta do servico tem de estar aqui
+                   explicitamente. O comentario anterior ("herda ACL via
+                   LogOnAsService") estava errado: "Log on as a service" e um
+                   user right de sessao, nao tem relacao com ACL NTFS. Sem esta
+                   linha o servico arranca mas fica cego: logs, cache, config e
+                   secrets em ProgramData falham em silencio (paths.py apanha
+                   OSError e segue). -->
+              <Permission User="[SERVICEACCOUNT]" GenericAll="yes" />
+            </CreateFolder>
+            <!-- Audit 2026-04-22 FIND #7 / S2-7: NAO remover ProgramData
+                 em nenhuma circunstancia. MajorUpgrade executa uninstall+install,
+                 portanto RemoveFolder On="uninstall" apagava license.dat + logs
+                 + config a meio do upgrade. Omissao do elemento RemoveFolder
+                 mantem a pasta persistente em ambos cenarios (upgrade
+                 transparente + uninstall preserva customer data). Limpeza
+                 total pos-uninstall e procedimento manual documentado
+                 (ver docs/external/standard/INSTALL_GUIDE.md secao Uninstall:
+                 Remove-Item -Recurse -Force "C:\ProgramData\WatcherDB"). -->
+          </Component>
+
+          <!-- Subpasta secrets\ com ACL PROPRIA (Etapa 3b, item ACLs por
+               subpasta). O produto cria-a em runtime (paths.py:secrets_dir
+               via os.makedirs), e nesse caso a ACL dela depende da HERANCA da
+               raiz - fragil: se os ACEs da raiz nao forem herdaveis, a
+               subpasta nasce com a ACL larga do ProgramData avo (Users:read).
+               secrets\ guarda a master key e as passwords cifradas Fernet;
+               nao pode depender de heranca. Pre-cria-la aqui com LockPermissions
+               proprio garante SYSTEM+Admins+conta de servico, sem Users, em
+               qualquer cenario. NAO tem RemoveFolder: preserva-se no uninstall
+               como o resto do ProgramData. -->
+          <Directory Id="SECRETSFOLDER" Name="secrets">
+            <Component Id="SecretsFolderComp"
+                       Guid="F1B7A3E4-5C82-4D16-A9E7-3B6D8F2C4A17"
+                       KeyPath="yes">
+              <CreateFolder>
+                <Permission User="SYSTEM"           GenericAll="yes" />
+                <Permission User="Administrators"   GenericAll="yes" />
+                <Permission User="[SERVICEACCOUNT]" GenericAll="yes" />
+              </CreateFolder>
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+
+    </Directory>
+
+    <!-- ================================================================ -->
+    <!-- Machine environment + Event Log source (Etapa 3b, 2026-08-20)    -->
+    <!-- ================================================================ -->
+    <!-- WEBPORT como variavel de MAQUINA, nao no config.yaml do bundle.
+         O produto le WATCHERDB_PORT do ambiente (watcherdb_service.py:128,
+         default 8433). Poe-la aqui em vez de num ficheiro dentro do
+         INSTALLFOLDER significa que:
+           - o operador pode override por linha de comando
+                 msiexec /i ... WEBPORT=9443
+             sem tocar em nenhum ficheiro empacotado;
+           - um upgrade NAO a apaga (Environment com Action="set" e
+             idempotente e reaplica-se sempre);
+           - nao vive junto do config.yaml harvested, que seria sobrescrito
+             a cada upgrade.
+         Component proprio (nao no ServiceRegistrationComp) para o KeyPath
+         do servico continuar a ser watcherdb.exe - misturar aqui repetiria
+         o incidente do ImagePath de 2026-08-12. -->
+    <Property Id="WEBPORT" Value="$(var.WebPort)" Secure="yes" />
+
+    <!-- Rede permitida na regra de firewall (Etapa 3b, finding do
+         security-auditor 2026-08-20). Profile="all" e' ORTOGONAL a origem:
+         resolve a classificacao de interface (Public/Private/Domain), NAO
+         restringe QUEM alcanca a porta. Um banco avalia segmentacao de rede
+         como controlo independente de TLS+auth (DORA Art.9(4)(c), PCI-DSS 1.3,
+         ISO 27001 A.8.20). Default "any" nao muda o comportamento actual;
+         hardening banking passa a subnet:
+             msiexec /i ... FIREWALLSUBNET=10.0.0.0/8
+         O INSTALL_GUIDE deve recomendar limitar a subnet de gestao. -->
+    <Property Id="FIREWALLSUBNET" Value="any" Secure="yes" />
+
+    <Component Id="MachineEnvComp"
+               Directory="INSTALLFOLDER"
+               Guid="D4A1F8B3-2E6C-4A19-B7D5-8F3E1C9A6B24">
+      <Environment Id="WatcherDBPortEnv"
+                   Name="WATCHERDB_PORT"
+                   Value="[WEBPORT]"
+                   Action="set"
+                   System="yes"
+                   Part="all" />
+      <!-- KeyPath num RegistryValue estavel: Environment nao pode ser KeyPath,
+           e sem KeyPath explicito o WiX escolhe um caminho fragil. -->
+      <RegistryValue Root="HKLM"
+                     Key="SOFTWARE\$(var.Manufacturer)\$(var.ProductVersionShort)"
+                     Name="WebPort"
+                     Type="integer"
+                     Value="[WEBPORT]"
+                     KeyPath="yes" />
+    </Component>
+
+    <!-- Event Log source: o servico escreve no Windows Event Log (o
+         startup_guard emite 1000/1001/1002/1004 e o monitor de 5 camadas
+         conta com eles). Sem a source registada, cada escrita cai no log
+         Application com "The description for Event ID ... cannot be found"
+         - ruido que um DBA de banca le como configuracao meia-feita. -->
+    <Component Id="EventLogSourceComp"
+               Directory="INSTALLFOLDER"
+               Guid="E8C2B5D9-1F4A-4E73-9C68-2A5D7F1E3B94">
+      <util:EventSource xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+                        Name="$(var.ServiceName)"
+                        Log="Application"
+                        EventMessageFile="%SystemRoot%\System32\EventCreate.exe" />
+      <RegistryValue Root="HKLM"
+                     Key="SOFTWARE\$(var.Manufacturer)\$(var.ProductVersionShort)"
+                     Name="EventLogSource"
+                     Type="string"
+                     Value="$(var.ServiceName)"
+                     KeyPath="yes" />
+    </Component>
+
+    <!-- ================================================================ -->
+    <!-- Service registration                                             -->
+    <!-- ================================================================ -->
+    <!-- O standard action InstallServices deriva o ImagePath do servico a
+         partir do KeyPath do Component que contem a linha ServiceInstall.
+         Por isso o watcherdb.exe TEM de ser o KeyPath deste componente e nao
+         pode viver num componente separado gerado pelo heat; e por isso que
+         deploy/msi/exclude-service-exe.xsl o remove do harvest.
+
+         Incidente 2026-08-12: com KeyPath="yes" no proprio <Component>
+         (idioma "directory as keypath"), o servico foi registado a apontar
+         para a pasta INSTALLFOLDER e a instalacao fez rollback silencioso. -->
+    <Component Id="ServiceRegistrationComp"
+               Directory="INSTALLFOLDER"
+               Guid="C7D3E1F2-4B8A-4F62-9D1E-5E8F2C4B6A7D">
+      <File Id="watcherdb.exe"
+            KeyPath="yes"
+            Source="$(var.BundleSourceDir)\watcherdb.exe" />
+
+      <RegistryValue
+          Root="HKLM"
+          Key="SOFTWARE\$(var.Manufacturer)\$(var.ProductVersionShort)"
+          Name="InstalledVersion"
+          Type="string"
+          Value="$(var.ProductVersion)" />
+
+      <ServiceInstall
+          Id="WatcherDBServiceInstall"
+          Name="$(var.ServiceName)"
+          DisplayName="$(var.ServiceDisplayName)"
+          Description="$(var.ServiceDescription)"
+          Type="ownProcess"
+          Start="auto"
+          Account="[SERVICEACCOUNT]"
+          Password="[SERVICEPASSWORD]"
+          ErrorControl="normal"
+          Vital="yes"
+          Interactive="no">
+        <!-- Delayed auto-start (Etapa 3b): elemento ServiceConfig NATIVO do
+             WiX (nao o util:ServiceConfig abaixo - sao homonimos em namespaces
+             diferentes; o candle rejeitou DelayedAutoStart tanto no
+             ServiceInstall como no util, CNDL0004 x2, ate' chegar aqui).
+             O servico depende de rede (SQL remoto), do TLS cert em ProgramData
+             e potencialmente do AD; delayed start deixa o Windows terminar o
+             boot dos servicos criticos primeiro e evita a corrida em que o
+             WatcherDB tenta ligar-se antes da stack de rede e conta uma falha
+             de arranque logo no reboot. OnInstall+OnReinstall = aplica-se na
+             instalacao e no upgrade. -->
+        <ServiceConfig
+            DelayedAutoStart="yes"
+            OnInstall="yes"
+            OnReinstall="yes" />
+        <!-- Restart on failure: 1st=30s, 2nd=60s, then reset counter 24h.
+             Matches the pywin32 install.py defaults already in prod. -->
+        <util:ServiceConfig
+            xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+            FirstFailureActionType="restart"
+            SecondFailureActionType="restart"
+            ThirdFailureActionType="none"
+            RestartServiceDelayInSeconds="30"
+            ResetPeriodInDays="1" />
+      </ServiceInstall>
+
+      <!-- Regra de firewall inbound para a porta do portal (Etapa 3b).
+           REGRESSAO CONHECIDA (2026-08-12): o MSI NAO criava a regra; so o
+           install.ps1 a criava, e uma instalacao so-MSI ficava sem acesso
+           remoto ao portal. O WixFirewallExtension fecha isto e - ao viver
+           no mesmo Component do servico - e removido no uninstall
+           automaticamente.
+
+           Profile="all", e NAO "domain", por decisao apoiada em incidente:
+           o precedente firewall_profile_interface (2026-06-12) provou que uma
+           regra so-Domain FALHA quando a interface do IP esta classificada como
+           Public - foi preciso Domain,Public em producao. O atributo Profile do
+           WiX aceita UM valor de enumeracao (all|domain|private|public), nao
+           uma lista nem uma property, portanto "all" e' a unica opcao que cobre
+           qualquer interface. Uma regra que nao cobre a interface e' o mesmo
+           bug silencioso que esta Etapa fecha - pior que uma regra larga.
+
+           TENSAO ASSUMIDA (decisao do owner): "all" inclui o perfil Public. E'
+           mitigado por a porta ser TLS-only e exigir autenticacao, mas um
+           endurecimento banking pode querer estreitar a rede permitida. A regra
+           NAO leva RemoteAddress: fica aberta a origem, e restringir a subnet do
+           cliente e' o passo de hardening que o INSTALL_GUIDE deve documentar. -->
+      <fire:FirewallException
+          xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
+          Id="WatcherDBPortalInbound"
+          Name="WatcherDB V3.3 Portal (TLS)"
+          Description="Permite acesso inbound ao portal WatcherDB V3.3 na porta configurada (TLS)."
+          Port="[WEBPORT]"
+          Protocol="tcp"
+          Profile="all"
+          IgnoreFailure="no">
+        <!-- RemoteAddress e' ELEMENTO-filho, nao atributo (candle CNDL0004/0287),
+             e exclui Scope. Valor vem da property FIREWALLSUBNET: default "any"
+             (comportamento actual, aberto), overridavel para a subnet de gestao
+             em msiexec /i ... FIREWALLSUBNET=10.0.0.0/8. -->
+        <fire:RemoteAddress xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension">[FIREWALLSUBNET]</fire:RemoteAddress>
+      </fire:FirewallException>
+
+      <!-- Start on install + Stop on uninstall. Graceful stop: the service
+           receives SERVICE_CONTROL_STOP and has the default 30s to shut
+           down before SCM force-terminates. -->
+      <ServiceControl
+          Id="WatcherDBServiceControl"
+          Name="$(var.ServiceName)"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Wait="yes" />
+    </Component>
+
+    <!-- ================================================================ -->
+    <!-- Feature tree                                                     -->
+    <!-- ================================================================ -->
+    <Feature
+        Id="MainFeature"
+        Title="WatcherDB V3.3 Standard"
+        Description="Installs the WatcherDB Standard Edition monitoring platform and registers the Windows service."
+        Level="1"
+        ConfigurableDirectory="INSTALLFOLDER"
+        Absent="disallow"
+        AllowAdvertise="no">
+      <!-- Files harvested from dist/watcherdb/ -->
+      <ComponentGroupRef Id="BundleFiles" />
+      <!-- Data folder (ProgramData) and service registration -->
+      <ComponentRef Id="DataFolderComp" />
+      <ComponentRef Id="SecretsFolderComp" />
+      <ComponentRef Id="ServiceRegistrationComp" />
+      <!-- Etapa 3b: env de maquina (WEBPORT) e Event Log source -->
+      <ComponentRef Id="MachineEnvComp" />
+      <ComponentRef Id="EventLogSourceComp" />
+    </Feature>
+
+    <!-- ================================================================ -->
+    <!-- UI                                                               -->
+    <!-- ================================================================ -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_Minimal" />
+    <!-- WixUI_Minimal sozinho NAO popula a tabela Error: sem esta fragment o
+         pacote nao tem as strings 1920/1923/... e qualquer falha resulta em
+         rollback mudo, sem dizer ao operador o que correu mal (incidente
+         2026-08-12: o log mostrava so "Note: 1: 2205 ... Table: Error"). -->
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+
+  </Product>
+</Wix>

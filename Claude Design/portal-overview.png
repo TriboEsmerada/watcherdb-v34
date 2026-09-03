@@ -1,0 +1,25 @@
+<!-- @dsCard group="Spacing" viewport="700x140" name="Spacing scale (8pt)" subtitle="4 / 8 / 16 / 24 / 32 / 48 / 64 — reconciled from two systems" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { padding: 20px; background: var(--surface-app); display: flex; align-items: flex-end; gap: 18px; }
+  .c { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .bar { background: var(--brand-blue); border-radius: var(--radius-sm); width: 100%; }
+  .box { width: 56px; display: flex; flex-direction: column; align-items: center; }
+  .k { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+  .px { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
+</style>
+</head>
+<body>
+  <div class="c"><div class="box"><div class="bar" style="height:4px"></div></div><span class="k">2xs</span><span class="px">4</span></div>
+  <div class="c"><div class="box"><div class="bar" style="height:8px"></div></div><span class="k">xs</span><span class="px">8</span></div>
+  <div class="c"><div class="box"><div class="bar" style="height:16px"></div></div><span class="k">sm</span><span class="px">16</span></div>
+  <div class="c"><div class="box"><div class="bar" style="height:24px"></div></div><span class="k">md</span><span class="px">24</span></div>
+  <div class="c"><div class="box"><div class="bar" style="height:32px"></div></div><span class="k">lg</span><span class="px">32</span></div>
+  <div class="c"><div class="box"><div class="bar" style="height:48px"></div></div><span class="k">xl</span><span class="px">48</span></div>
+  <div class="c"><div class="box"><div class="bar" style="height:64px"></div></div><span class="k">2xl</span><span class="px">64</span></div>
+</body>
+</html>

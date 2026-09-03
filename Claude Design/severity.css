@@ -1,0 +1,169 @@
+<!-- @dsCard group="Audit" viewport="1280x760" name="Divergence audit — before → after" subtitle="Four colliding systems, reconciled" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WatcherDB — Audit Canvas</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { height: 100%; margin: 0; }
+  /* helpers reused across artboards */
+  .ab { padding: 16px; height: 100%; box-sizing: border-box; font-family: var(--font-sans); }
+  .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; margin-bottom: 12px; }
+  .tag.bad { background: rgba(220,38,38,.16); color: #f87171; border: 1px solid #dc2626; }
+  .tag.good { background: rgba(16,185,129,.14); color: #34d399; border: 1px solid #10b981; }
+  .note { font-size: 11px; line-height: 1.5; margin-top: 12px; font-family: var(--font-mono); }
+  .note.bad { color: #fca5a5; }
+  .note.good { color: var(--text-tertiary); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard } = window;
+
+/* ---- shared bits for AFTER frames (token-driven) ---- */
+const SEV = {
+  ok:{t:"--sev-ok-text",b:"--sev-ok-border",s:"--sev-ok-solid",on:"--sev-ok-on",i:"fa-circle-check"},
+  warning:{t:"--sev-warning-text",b:"--sev-warning-border",s:"--sev-warning-solid",on:"--sev-warning-on",i:"fa-triangle-exclamation"},
+  critical:{t:"--sev-critical-text",b:"--sev-critical-border",s:"--sev-critical-solid",on:"--sev-critical-on",i:"fa-circle-exclamation"},
+  overflow:{t:"--sev-overflow-text",b:"--sev-overflow-border",s:"--sev-overflow-solid",on:"--sev-overflow-on",i:"fa-skull-crossbones"},
+};
+function Badge({level,label}){const l=SEV[level];return <span style={{display:"inline-flex",alignItems:"center",gap:6,background:`var(${l.s})`,color:`var(${l.on})`,border:level==="overflow"?`1px solid var(${l.b})`:"1px solid transparent",borderRadius:999,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:".04em",padding:"3px 9px"}}><i className={"fas "+l.i}></i>{label}</span>;}
+function AfterAlert({level,title,meta,badge}){const l=SEV[level];return (
+  <div style={{display:"grid",gridTemplateColumns:"4px 22px 1fr auto",alignItems:"center",gap:12,background:"var(--surface-raised)",border:"1px solid var(--color-border)",borderRadius:"var(--radius-md)",padding:"10px 14px 10px 0",marginBottom:8}}>
+    <div style={{alignSelf:"stretch",width:4,background:`var(${l.b})`,borderRadius:"8px 0 0 8px"}}/>
+    <i className={"fas "+l.i} style={{textAlign:"center",color:`var(${l.t})`,fontSize:14}}/>
+    <div style={{minWidth:0}}><div style={{fontSize:14,fontWeight:600,color:"var(--text-primary)"}}>{title}</div><div style={{fontSize:12,color:"var(--text-tertiary)",fontFamily:"var(--font-mono)",marginTop:2}}>{meta}</div></div>
+    <div style={{marginRight:14}}><Badge level={level} label={badge}/></div>
+  </div>);}
+
+function App(){
+  return (
+    <DesignCanvas>
+
+      {/* 1 — Severity encoding */}
+      <DCSection id="sev" title="1 · Severity encoding" subtitle="Hue-only left rail (fails WCAG 1.4.1) → redundant rail + icon + label + badge">
+        <DCArtboard id="sev-before" label="BEFORE · hue only" width={420} height={300}>
+          <div className="ab" style={{background:"#0a0f1a"}}>
+            <span className="tag bad"><i className="fas fa-circle-xmark"></i> divergent</span>
+            {/* literal reproduction: 4px colored left border, no icon/label */}
+            {[["#dc2626","SRV-PRD-01 · PRIMARY · 0% free"],["#ef4444","SRV-PRD-04 · log chain broken"],["#10b981","SRV-PRD-02 · synchronized"]].map(([c,txt],i)=>(
+              <div key={i} style={{borderLeft:`4px solid ${c}`,background:"#1e293b",padding:"12px 14px",marginBottom:8,color:"#cbd5e1",fontSize:14}}>{txt}</div>
+            ))}
+            <div className="note bad">Severity = color only. Greyscale or red/green CVD → all three rows read identically.</div>
+          </div>
+        </DCArtboard>
+        <DCArtboard id="sev-after" label="AFTER · redundant" width={520} height={300}>
+          <div className="ab" style={{background:"var(--surface-app)"}}>
+            <span className="tag good"><i className="fas fa-circle-check"></i> corrected</span>
+            <AfterAlert level="overflow" title="PRIMARY filegroup over capacity" meta="SRV-PRD-01 · FIN_LEDGER · 0% free" badge="Breached"/>
+            <AfterAlert level="critical" title="Log backup chain broken" meta="SRV-PRD-04 · 3 days to full" badge="Critical"/>
+            <AfterAlert level="ok" title="Always On synchronized" meta="SRV-PRD-02 → SRV-DR-02 · 0 ms lag" badge="Healthy"/>
+            <div className="note good">Rail + glyph + label + badge — distinguishable in greyscale and for CVD users.</div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      {/* 2 — Filegroup card theme */}
+      <DCSection id="fg" title="2 · Filegroup card" subtitle="portal_fix_styles.css light theme on a dark portal → token-aligned dark card">
+        <DCArtboard id="fg-before" label="BEFORE · rogue light theme" width={360} height={300}>
+          <div className="ab" style={{background:"#0a0f1a"}}>
+            <span className="tag bad"><i className="fas fa-circle-xmark"></i> light-on-dark</span>
+            {/* literal reproduction of .filegroup-card + .risk-factors (#fef3c7 / #92400e) */}
+            <div style={{background:"#ffffff",borderLeft:"4px solid #f59e0b",borderRadius:12,padding:14,boxShadow:"0 4px 6px rgba(0,0,0,.1)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <strong style={{color:"#1f2937",fontSize:14}}>FG_INDEX</strong>
+                <span style={{background:"#f59e0b",color:"#fff",borderRadius:8,padding:"2px 8px",fontSize:11,fontWeight:700}}>WARNING</span>
+              </div>
+              <div style={{background:"#fef3c7",borderLeft:"3px solid #f59e0b",borderRadius:4,padding:8}}>
+                <div style={{color:"#92400e",fontSize:12,fontWeight:600}}>Risco de capacidade</div>
+                <div style={{color:"#78350f",fontSize:12}}>▸ 4 dias até cheio</div>
+              </div>
+            </div>
+            <div className="note bad">White card + brown-on-cream over #0a0f1a. Glare + contrast collapse in context.</div>
+          </div>
+        </DCArtboard>
+        <DCArtboard id="fg-after" label="AFTER · dark tokens" width={360} height={300}>
+          <div className="ab" style={{background:"var(--surface-app)"}}>
+            <span className="tag good"><i className="fas fa-circle-check"></i> corrected</span>
+            <div style={{background:"var(--surface-raised)",border:"1px solid var(--color-border)",borderLeft:"4px solid var(--sev-warning-border)",borderRadius:"var(--radius-md)",padding:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <strong style={{color:"var(--text-primary)",fontSize:14,fontFamily:"var(--font-mono)"}}>FG_INDEX</strong>
+                <Badge level="warning" label="Warning"/>
+              </div>
+              <div style={{height:10,background:"var(--surface-sunken)",borderRadius:999,overflow:"hidden"}}>
+                <div style={{width:"96%",height:"100%",background:"var(--sev-warning-border)"}}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:6,fontSize:12}}>
+                <span style={{color:"var(--sev-warning-text)",fontWeight:600}}>96% usado</span>
+                <span style={{color:"var(--text-tertiary)"}}>~4 dias até cheio</span>
+              </div>
+            </div>
+            <div className="note good">Same data, dark surfaces, AA text, severity rail + badge.</div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      {/* 3 — Undefined border token */}
+      <DCSection id="border" title="3 · Undefined --color-border" subtitle="Referenced 20+× but never defined → silently currentColor. Now a real token.">
+        <DCArtboard id="border-before" label="BEFORE · currentColor" width={360} height={250}>
+          <div className="ab" style={{background:"#0a0f1a"}}>
+            <span className="tag bad"><i className="fas fa-circle-xmark"></i> bug</span>
+            {/* border-color undefined → currentColor = the text color */}
+            <div style={{border:"1px solid",color:"#f1f5f9",background:"#1a2332",borderRadius:8,padding:14,marginBottom:10}}>Primary text card — border glows near-white (inherits text color).</div>
+            <div style={{border:"1px solid",color:"#94a3b8",background:"#1a2332",borderRadius:8,padding:14}}>Tertiary text card — border is grey. Inconsistent by accident.</div>
+            <div className="note bad">border: 1px solid var(--color-border) → undefined → currentColor.</div>
+          </div>
+        </DCArtboard>
+        <DCArtboard id="border-after" label="AFTER · tokened" width={360} height={250}>
+          <div className="ab" style={{background:"var(--surface-app)"}}>
+            <span className="tag good"><i className="fas fa-circle-check"></i> corrected</span>
+            <div style={{border:"1px solid var(--color-border)",color:"var(--text-primary)",background:"var(--surface-raised)",borderRadius:"var(--radius-md)",padding:14,marginBottom:10}}>Primary text card — border is a consistent slate.</div>
+            <div style={{border:"1px solid var(--color-border)",color:"var(--text-tertiary)",background:"var(--surface-raised)",borderRadius:"var(--radius-md)",padding:14}}>Tertiary text card — identical border. Predictable.</div>
+            <div className="note good">--color-border: #334155 — one neutral, decoupled from text.</div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      {/* 4 — KPI ramp */}
+      <DCSection id="kpi" title="4 · KPI tiles" subtitle="Tailwind-CDN ramp (3rd palette) → shared tokens + KpiCard">
+        <DCArtboard id="kpi-before" label="BEFORE · Tailwind ramp" width={460} height={210}>
+          <div className="ab" style={{background:"#111827"}}>
+            <span className="tag bad"><i className="fas fa-circle-xmark"></i> 3rd palette</span>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+              <div style={{background:"#1f2937",borderLeft:"4px solid #ef4444",borderRadius:8,padding:12}}><div style={{color:"#9ca3af",fontSize:11}}>Críticos</div><div style={{color:"#f87171",fontSize:26,fontWeight:700}}>7</div></div>
+              <div style={{background:"#1f2937",borderLeft:"4px solid #eab308",borderRadius:8,padding:12}}><div style={{color:"#9ca3af",fontSize:11}}>Avisos</div><div style={{color:"#facc15",fontSize:26,fontWeight:700}}>18</div></div>
+              <div style={{background:"#1f2937",borderLeft:"4px solid #22c55e",borderRadius:8,padding:12}}><div style={{color:"#9ca3af",fontSize:11}}>OK</div><div style={{color:"#4ade80",fontSize:26,fontWeight:700}}>96%</div></div>
+            </div>
+            <div className="note bad">bg-gray-800 / red-500 / yellow-500 — none match the DS tokens.</div>
+          </div>
+        </DCArtboard>
+        <DCArtboard id="kpi-after" label="AFTER · tokens" width={460} height={210}>
+          <div className="ab" style={{background:"var(--surface-app)"}}>
+            <span className="tag good"><i className="fas fa-circle-check"></i> corrected</span>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+              {[["Críticos","7","critical","fa-triangle-exclamation"],["Avisos","18","warning","fa-circle-exclamation"],["OK","96%","ok","fa-circle-check"]].map(([t,v,st,ic],i)=>{const l=SEV[st];return(
+                <div key={i} style={{background:"var(--surface-raised)",border:"1px solid var(--color-border)",borderLeft:`4px solid var(${l.b})`,borderRadius:"var(--radius-md)",padding:12}}>
+                  <div style={{display:"flex",justifyContent:"space-between",color:"var(--text-tertiary)",fontSize:11,textTransform:"uppercase",letterSpacing:".04em"}}>{t}<i className={"fas "+ic} style={{color:"var(--text-disabled)"}}/></div>
+                  <div style={{color:`var(${l.t})`,fontSize:26,fontWeight:700,fontVariantNumeric:"tabular-nums"}}>{v}</div>
+                </div>);})}
+            </div>
+            <div className="note good">Same severity model as tables, badges and alerts. One source of truth.</div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

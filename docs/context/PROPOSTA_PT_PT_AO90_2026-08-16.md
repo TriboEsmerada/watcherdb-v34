@@ -1,0 +1,879 @@
+# Proposta — norma PT-PT pos-AO90 em `static/i18n/pt.json` (decisao 1 do QA externo)
+
+NAO APLICADO. Diff para revisao do owner antes de tocar no ficheiro (QA pediu explicitamente
+"dev envia diff do pt.json antes de aplicar"). Gerado 2026-08-16 sobre pt.json com 1409 chaves.
+
+Regra seguida: normalizar **valores**, NUNCA renomear **chaves** (renomear chave sem actualizar
+`data-i18n`/`t()` parte a traducao — ressalva do proprio QA).
+
+## Resumo
+
+| Lote | O que faz | Valores | Risco |
+|---|---|---|---|
+| A | grafia pre-AO90 -> pos-AO90 (actualizar->atualizar, activo->ativo, directamente->diretamente, afectad->afetad, seleccion->selecion) | 8 | Baixo — lista fechada, revisivel a olho |
+| B | acentos em falta nos labels (instancias->instâncias, critico->crítico, Utilizacao->Utilização, nao->não, ...) | 257 | **Medio** — ver aviso |
+
+### Aviso sobre o lote B (honestidade sobre a minha propria proposta)
+
+O lote B foi gerado por dicionario de tokens. **39 das 257 strings ficariam meio-acentuadas**
+(ex.: "Não foi possivel realizar a análise:" — "possivel" continua sem acento porque nao esta no
+dicionario). Meio-acentuado le-se pior do que consistentemente sem acento.
+
+Recomendacao: **aplicar A agora** (fechado, seguro) e tratar B como lote proprio, revisto string a
+string (ou com dicionario completo + revisao humana). Alternativa: aplicar B so' aos labels curtos
+dos cards (o que o BUG-013 realmente reporta), deixando as frases longas para depois.
+
+Complemento fora do pt.json (mesma decisao):
+- `static/js/watcherdb_i18n_v2.js:186` e `:642` — `langMap.pt` de `'pt-BR'` para `'pt-PT'`
+  (o `<html lang>` estatico ja e' pt-PT; e' o runtime que o sobrescreve).
+- `templates/watcherdb_portal.html:26935` — `lang="pt-BR"` hardcoded no export HTML de TempDB.
+- Teste de regressao proposto pelo QA (texto visivel sem `data-i18n`) — nota: ~435 strings
+  hardcoded ja mapeadas (BUG-003), o teste nasceria vermelho; ver seccao BUG-003 na triagem.
+
+---
+
+## Lote A — grafia (8 valores)
+
+- `dash.stale_notice`
+  - ANTES: Dados de {time} — a actualizar...
+  - DEPOIS: Dados de {time} — a atualizar...
+- `dash.stale_outdated`
+  - ANTES: Dados podem estar desactualizados — clique em Actualizar
+  - DEPOIS: Dados podem estar desactualizados — clique em Atualizar
+- `jobs.pdf_cause_different_types`
+  - ANTES: Jobs de tipos diferentes estao agendados para o mesmo horario. Embora nao compitam directamente pelos mesmos recursos, a carga combinada pode exceder a capacidade do servidor durante esse periodo.
+  - DEPOIS: Jobs de tipos diferentes estao agendados para o mesmo horario. Embora nao compitam diretamente pelos mesmos recursos, a carga combinada pode exceder a capacidade do servidor durante esse periodo.
+- `jobs.pdf_help_failures`
+  - ANTES: Colisoes reais que resultaram em falha de pelo menos um dos jobs — impacto directo na operacao.
+  - DEPOIS: Colisoes reais que resultaram em falha de pelo menos um dos jobs — impacto direto na operacao.
+- `jobs.pdf_rollback_intro`
+  - ANTES: Todas as alteracoes sao reversiveis. Basta re-executar os comandos SQL com os valores originais ou reactivar os jobs desactivados.
+  - DEPOIS: Todas as alteracoes sao reversiveis. Basta re-executar os comandos SQL com os valores originais ou reactivar os jobs desativados.
+- `sessions.card_active`
+  - ANTES: Com Tarefa Activa
+  - DEPOIS: Com Tarefa Ativa
+- `sessions.last_update`
+  - ANTES: Última actualização
+  - DEPOIS: Última atualização
+- `sessions.loading_active`
+  - ANTES: Sessões activas (DMVs)
+  - DEPOIS: Sessões ativas (DMVs)
+
+---
+
+## Lote B — acentos (257 valores)
+
+- `alwayson.ag_not_healthy_hint`
+  - ANTES: Isso indica um problema recente (replica offline, conectividade, sincronizacao pendente) que ainda nao gerou failover.
+  - DEPOIS: Isso indica um problema recente (replica offline, conectividade, sincronizacao pendente) que ainda não gerou failover.
+- `alwayson.ag_not_healthy_msg`
+  - ANTES: <strong>O AG esta com status NOT_HEALTHY</strong>, mas nao houve eventos de failover nos ultimos 30 dias.
+  - DEPOIS: <strong>O AG esta com status NOT_HEALTHY</strong>, mas não houve eventos de failover nos ultimos 30 dias.
+- `alwayson.ag_not_healthy_no_failover`
+  - ANTES: O AG esta com status NOT_HEALTHY, mas nao houve eventos de failover nos ultimos 30 dias.
+  - DEPOIS: O AG esta com status NOT_HEALTHY, mas não houve eventos de failover nos ultimos 30 dias.
+- `alwayson.analysis_failed`
+  - ANTES: Nao foi possivel realizar a analise:
+  - DEPOIS: Não foi possivel realizar a análise:
+- `alwayson.diagnosis_failed`
+  - ANTES: Nao foi possivel realizar o diagnostico:
+  - DEPOIS: Não foi possivel realizar o diagnostico:
+- `alwayson.last_failover_label`
+  - ANTES: Ultimo failover registado
+  - DEPOIS: Último failover registado
+- `alwayson.no_failover_history`
+  - ANTES: Sem registo de failover no historico do Error Log.
+  - DEPOIS: Sem registo de failover no histórico do Error Log.
+- `alwayson.not_configured`
+  - ANTES: Instancia nao configurada como Always On
+  - DEPOIS: Instancia não configurada como Always On
+- `alwayson.not_configured_desc`
+  - ANTES: Esta instancia nao possui Always On Availability Groups configurado.
+  - DEPOIS: Esta instancia não possui Always On Availability Groups configurado.
+- `alwayson.recent_problem_hint`
+  - ANTES: Isso indica um problema recente (replica offline, conectividade, sincronizacao pendente) que ainda nao gerou failover.
+  - DEPOIS: Isso indica um problema recente (replica offline, conectividade, sincronizacao pendente) que ainda não gerou failover.
+- `analysis.full_db`
+  - ANTES: Analise Completa do Banco de Dados
+  - DEPOIS: Análise Completa do Banco de Dados
+- `analysis.predictive`
+  - ANTES: Analise Preditiva
+  - DEPOIS: Análise Preditiva
+- `backup.conflicts_hint`
+  - ANTES: Para ver todos os conflitos (incluindo manutencao), aceda ao modulo Jobs
+  - DEPOIS: Para ver todos os conflitos (incluindo manutenção), aceda ao modulo Jobs
+- `backup.gaps_analysis`
+  - ANTES: Analise de Gaps
+  - DEPOIS: Análise de Gaps
+- `backup.gaps_root_cause`
+  - ANTES: Analise de Gaps & Causa Raiz
+  - DEPOIS: Análise de Gaps & Causa Raiz
+- `backup.last_diff`
+  - ANTES: Ultimo DIFF
+  - DEPOIS: Último DIFF
+- `backup.last_full`
+  - ANTES: Ultimo FULL
+  - DEPOIS: Último FULL
+- `backup.last_log`
+  - ANTES: Ultimo LOG
+  - DEPOIS: Último LOG
+- `backup.no_significant_gap_period`
+  - ANTES: Nenhum gap significativo detectado neste periodo.
+  - DEPOIS: Nenhum gap significativo detectado neste período.
+- `backup.open_full_jobs_analysis`
+  - ANTES: Abrir Analise Completa de Jobs
+  - DEPOIS: Abrir Análise Completa de Jobs
+- `backup.period_label`
+  - ANTES: Periodo
+  - DEPOIS: Período
+- `backup.severity_critical`
+  - ANTES: Critico
+  - DEPOIS: Crítico
+- `chart.distribution_by_env`
+  - ANTES: Distribuicao por Ambiente
+  - DEPOIS: Distribuição por Ambiente
+- `chart.distribution_by_verdict`
+  - ANTES: Distribuicao por Veredicto
+  - DEPOIS: Distribuição por Veredicto
+- `chart.instances_off_by_env`
+  - ANTES: Instancias Offline por Ambiente
+  - DEPOIS: Instâncias Offline por Ambiente
+- `chart.instances_ok_by_env`
+  - ANTES: Instancias OK por Ambiente
+  - DEPOIS: Instâncias OK por Ambiente
+- `col.avg_logical_reads`
+  - ANTES: Leituras Logicas Media
+  - DEPOIS: Leituras Logicas Média
+- `col.duration_min`
+  - ANTES: Duracao (min)
+  - DEPOIS: Duração (min)
+- `col.last_execution`
+  - ANTES: Ultima Execucao
+  - DEPOIS: Última Execução
+- `col.num_connections`
+  - ANTES: Numero de Conexoes
+  - DEPOIS: Número de Conexoes
+- `confirm.delete_message`
+  - ANTES: Esta acao nao pode ser desfeita.
+  - DEPOIS: Esta acao não pode ser desfeita.
+- `confirm.no_cancel`
+  - ANTES: Nao, Cancelar
+  - DEPOIS: Não, Cancelar
+- `copilot.loading_scores`
+  - ANTES: Carregando scores de manutencao preditiva...
+  - DEPOIS: Carregando scores de manutenção preditiva...
+- `copilot.no_events`
+  - ANTES: Nenhum evento no periodo
+  - DEPOIS: Nenhum evento no período
+- `copilot.no_insights`
+  - ANTES: Nenhum insight disponivel
+  - DEPOIS: Nenhum insight disponível
+- `cpu.loading`
+  - ANTES: Carregando analise de CPU...
+  - DEPOIS: Carregando análise de CPU...
+- `cpu.processes_unavailable`
+  - ANTES: Dados de processos Windows nao disponiveis.
+  - DEPOIS: Dados de processos Windows não disponiveis.
+- `disk.critical_95`
+  - ANTES: Critico >=95%
+  - DEPOIS: Crítico >=95%
+- `disk.db_latency_details`
+  - ANTES: Detalhes de Latencia em Arquivo de Base de Dados
+  - DEPOIS: Detalhes de Latência em Arquivo de Base de Dados
+- `disk.gb_unallocated`
+  - ANTES: GB Nao Alocado
+  - DEPOIS: GB Não Alocado
+- `disk.io_critical_50ms`
+  - ANTES: I/O Critica >=50ms
+  - DEPOIS: I/O Crítica >=50ms
+- `disk.legend_critical`
+  - ANTES: Critico >=95%
+  - DEPOIS: Crítico >=95%
+- `disk.loading`
+  - ANTES: Carregando analise de discos...
+  - DEPOIS: Carregando análise de discos...
+- `disk.no_history_period`
+  - ANTES: Sem dados historicos para o periodo selecionado.
+  - DEPOIS: Sem dados historicos para o período selecionado.
+- `disk.not_allocated`
+  - ANTES: Nao Alocado
+  - DEPOIS: Não Alocado
+- `disk.unallocated_expansion`
+  - ANTES: Espaco Nao Alocado (Potencial de Expansao)
+  - DEPOIS: Espaco Não Alocado (Potencial de Expansao)
+- `disk.unallocated_space`
+  - ANTES: Espaco Nao Alocado
+  - DEPOIS: Espaco Não Alocado
+- `disk.until_unallocated_exhausted`
+  - ANTES: ate esgotar espaco nao alocado
+  - DEPOIS: ate esgotar espaco não alocado
+- `error.not_found`
+  - ANTES: Recurso nao encontrado
+  - DEPOIS: Recurso não encontrado
+- `interp.last_update`
+  - ANTES: Ultima atualizacao: {time}
+  - DEPOIS: Última atualizacao: {time}
+- `jobs.alert_failures_action`
+  - ANTES: Verifique logs de erro, mudancas recentes, e historico de execucao detalhado
+  - DEPOIS: Verifique logs de erro, mudancas recentes, e histórico de execução detalhado
+- `jobs.avg_overlap`
+  - ANTES: Sobreposicao Media
+  - DEPOIS: Sobreposicao Média
+- `jobs.check_error_logs`
+  - ANTES: Verifique logs de erro, mudancas recentes, e historico de execucao detalhado
+  - DEPOIS: Verifique logs de erro, mudancas recentes, e histórico de execução detalhado
+- `jobs.conflicts_title`
+  - ANTES: Analise de Conflitos de Schedule
+  - DEPOIS: Análise de Conflitos de Schedule
+- `jobs.critical_conflicts`
+  - ANTES: Conflitos Criticos
+  - DEPOIS: Conflitos Críticos
+- `jobs.duration`
+  - ANTES: Duracao
+  - DEPOIS: Duração
+- `jobs.execution_time`
+  - ANTES: Tempo Execucao
+  - DEPOIS: Tempo Execução
+- `jobs.in_execution`
+  - ANTES: Em Execucao
+  - DEPOIS: Em Execução
+- `jobs.last_exec_failed`
+  - ANTES: Ultima Exec. Falhou
+  - DEPOIS: Última Exec. Falhou
+- `jobs.last_execution`
+  - ANTES: Ultima Execucao
+  - DEPOIS: Última Execução
+- `jobs.last_status`
+  - ANTES: Ultimo Status
+  - DEPOIS: Último Status
+- `jobs.loading`
+  - ANTES: Carregando analise de Jobs...
+  - DEPOIS: Carregando análise de Jobs...
+- `jobs.maintenance_analysis`
+  - ANTES: Analise de Manutencao
+  - DEPOIS: Análise de Manutenção
+- `jobs.maintenance_help`
+  - ANTES: Clique para ver detalhes e configurar manutencao para estes databases
+  - DEPOIS: Clique para ver detalhes e configurar manutenção para estes databases
+- `jobs.maintenance_jobs`
+  - ANTES: Jobs de Manutencao
+  - DEPOIS: Jobs de Manutenção
+- `jobs.next_execution`
+  - ANTES: Proxima Execucao
+  - DEPOIS: Proxima Execução
+- `jobs.no`
+  - ANTES: Nao
+  - DEPOIS: Não
+- `jobs.no_maintenance`
+  - ANTES: ATENCAO: Nenhum job de manutencao detectado!
+  - DEPOIS: ATENCAO: Nenhum job de manutenção detectado!
+- `jobs.no_running`
+  - ANTES: Nenhum job em execucao no momento.
+  - DEPOIS: Nenhum job em execução no momento.
+- `jobs.pdf_cause_concurrent_maintenance`
+  - ANTES: Jobs de manutencao (Index Rebuild, Statistics Update, DBCC CheckDB, Shrink) estao a executar no mesmo horario. Estas operacoes sao intensivas em I/O e CPU, e quando concorrem, amplificam o impacto mutuamente.
+  - DEPOIS: Jobs de manutenção (Index Rebuild, Statistics Update, DBCC CheckDB, Shrink) estao a executar no mesmo horario. Estas operacoes sao intensivas em I/O e CPU, e quando concorrem, amplificam o impacto mutuamente.
+- `jobs.pdf_cause_different_types`
+  - ANTES: Jobs de tipos diferentes estao agendados para o mesmo horario. Embora nao compitam directamente pelos mesmos recursos, a carga combinada pode exceder a capacidade do servidor durante esse periodo.
+  - DEPOIS: Jobs de tipos diferentes estao agendados para o mesmo horario. Embora não compitam directamente pelos mesmos recursos, a carga combinada pode exceder a capacidade do servidor durante esse período.
+- `jobs.pdf_checklist_rerun_analysis`
+  - ANTES: Re-executar analise de conflitos para validar resolucao
+  - DEPOIS: Re-executar análise de conflitos para validar resolucao
+- `jobs.pdf_help_action_plan`
+  - ANTES: Cada recomendacao inclui: a causa raiz do conflito, o impacto no sistema, a acao recomendada, porque vai melhorar, e os comandos SQL prontos a executar. As recomendacoes estao ordenadas por severidade (critico > warning > info).
+  - DEPOIS: Cada recomendacao inclui: a causa raiz do conflito, o impacto no sistema, a acao recomendada, porque vai melhorar, e os comandos SQL prontos a executar. As recomendacoes estao ordenadas por severidade (crítico > warning > info).
+- `jobs.pdf_help_collision_table`
+  - ANTES: Esta tabela mostra os pares de jobs que realmente executaram em simultaneo. 'Colisoes' indica quantas vezes aconteceu, 'Sobreposicao Media' o tempo medio de execucao simultanea, e 'Falhas' quantas dessas colisoes causaram erro.
+  - DEPOIS: Esta tabela mostra os pares de jobs que realmente executaram em simultaneo. 'Colisoes' indica quantas vezes aconteceu, 'Sobreposicao Média' o tempo medio de execução simultanea, e 'Falhas' quantas dessas colisoes causaram erro.
+- `jobs.pdf_help_collisions`
+  - ANTES: Pares de jobs que efectivamente colidiram (executaram ao mesmo tempo) nos ultimos dias, confirmado pelo historico.
+  - DEPOIS: Pares de jobs que efectivamente colidiram (executaram ao mesmo tempo) nos ultimos dias, confirmado pelo histórico.
+- `jobs.pdf_help_warning`
+  - ANTES: Jobs de manutencao concorrentes que podem causar picos de carga — risco medio.
+  - DEPOIS: Jobs de manutenção concorrentes que podem causar picos de carga — risco medio.
+- `jobs.pdf_impact_concurrent_maintenance`
+  - ANTES: Manutencao concorrente causa picos extremos de utilizacao de CPU e I/O, podendo saturar o servidor. Index Rebuild com DBCC CheckDB simultaneo pode bloquear tabelas inteiras, causar escalacao de locks, e tornar a base de dados temporariamente indisponivel para operacoes normais.
+  - DEPOIS: Manutenção concorrente causa picos extremos de utilização de CPU e I/O, podendo saturar o servidor. Index Rebuild com DBCC CheckDB simultaneo pode bloquear tabelas inteiras, causar escalacao de locks, e tornar a base de dados temporariamente indisponivel para operacoes normais.
+- `jobs.pdf_impact_different_types`
+  - ANTES: A execucao simultanea de jobs de tipos diferentes (ex: Backup + Index Rebuild) pode causar picos temporarios de carga. O impacto e geralmente menor que conflitos do mesmo tipo, mas em servidores com recursos limitados pode causar lentidao perceptivel.
+  - DEPOIS: A execução simultanea de jobs de tipos diferentes (ex: Backup + Index Rebuild) pode causar picos temporarios de carga. O impacto e geralmente menor que conflitos do mesmo tipo, mas em servidores com recursos limitados pode causar lentidao perceptivel.
+- `jobs.pdf_impact_same_type`
+  - ANTES: Jobs do mesmo tipo a executar em paralelo causam contencao severa de recursos: aumento de latencia de disco, locks prolongados, timeouts, e potencial falha de um ou ambos os jobs. Em bases de dados grandes, pode causar degradacao visivel para os utilizadores.
+  - DEPOIS: Jobs do mesmo tipo a executar em paralelo causam contenção severa de recursos: aumento de latência de disco, locks prolongados, timeouts, e potencial falha de um ou ambos os jobs. Em bases de dados grandes, pode causar degradacao visivel para os utilizadores.
+- `jobs.pdf_improvement_concurrent_backups`
+  - ANTES: Escalonar os backups sequencialmente (Full primeiro, depois Differential, depois Log) garante que cada operacao tem acesso otimo ao disco. Isto reduz o tempo total de backup, diminui a janela de impacto na producao, e elimina falhas causadas por contencao de I/O entre backups.
+  - DEPOIS: Escalonar os backups sequencialmente (Full primeiro, depois Differential, depois Log) garante que cada operacao tem acesso otimo ao disco. Isto reduz o tempo total de backup, diminui a janela de impacto na producao, e elimina falhas causadas por contenção de I/O entre backups.
+- `jobs.pdf_improvement_concurrent_maintenance`
+  - ANTES: Distribuir as operacoes de manutencao por horarios diferentes (preferencialmente na madrugada, em sequencia) permite que cada operacao complete sem interferencia. Isto resulta em manutencao mais eficiente, menor impacto no servidor, e melhor janela de disponibilidade para utilizadores.
+  - DEPOIS: Distribuir as operacoes de manutenção por horarios diferentes (preferencialmente na madrugada, em sequencia) permite que cada operacao complete sem interferencia. Isto resulta em manutenção mais eficiente, menor impacto no servidor, e melhor janela de disponibilidade para utilizadores.
+- `jobs.pdf_improvement_same_type`
+  - ANTES: Ao separar os horarios ou encadear os jobs sequencialmente (usando sp_add_jobstep), cada job executa com acesso exclusivo aos recursos necessarios. Isto reduz a contencao de I/O em ate 50%, elimina deadlocks entre jobs do mesmo tipo, e garante que cada job completa mais rapido e com menor probabilidade de falha.
+  - DEPOIS: Ao separar os horarios ou encadear os jobs sequencialmente (usando sp_add_jobstep), cada job executa com acesso exclusivo aos recursos necessarios. Isto reduz a contenção de I/O em ate 50%, elimina deadlocks entre jobs do mesmo tipo, e garante que cada job completa mais rapido e com menor probabilidade de falha.
+- `jobs.pdf_period`
+  - ANTES: Periodo de Analise
+  - DEPOIS: Período de Análise
+- `jobs.pdf_risk_new_conflict_mitigation`
+  - ANTES: Re-executar analise de conflitos apos implementacao
+  - DEPOIS: Re-executar análise de conflitos apos implementacao
+- `jobs.pdf_risk_not_applied`
+  - ANTES: Conflitos nao resolvidos continuam a causar falhas e contencao
+  - DEPOIS: Conflitos não resolvidos continuam a causar falhas e contenção
+- `jobs.pdf_section1_intro`
+  - ANTES: Foram identificados os seguintes problemas nos SQL Server Agent Jobs da instancia {server} atraves de analise de schedules, historico de execucao e detecao de colisoes reais entre jobs.
+  - DEPOIS: Foram identificados os seguintes problemas nos SQL Server Agent Jobs da instancia {server} atraves de análise de schedules, histórico de execução e detecao de colisoes reais entre jobs.
+- `jobs.pdf_section1_title`
+  - ANTES: 1. Situacao Atual - Problemas Identificados
+  - DEPOIS: 1. Situação Atual - Problemas Identificados
+- `jobs.pdf_section2_intro`
+  - ANTES: A tabela seguinte mostra os pares de jobs que efectivamente executaram ao mesmo tempo nos ultimos {days} dias, confirmado pelo historico de execucao do SQL Server Agent.
+  - DEPOIS: A tabela seguinte mostra os pares de jobs que efectivamente executaram ao mesmo tempo nos ultimos {days} dias, confirmado pelo histórico de execução do SQL Server Agent.
+- `jobs.pdf_subtitle`
+  - ANTES: Analise de Conflitos e Recomendacoes de Otimizacao
+  - DEPOIS: Análise de Conflitos e Recomendacoes de Otimizacao
+- `jobs.pdf_summary_text`
+  - ANTES: Foram identificados {total} conflitos potenciais de schedule no servidor {server}: {critical} criticos, {warning} warnings. Nos ultimos dias, {collisions} pares de jobs colidiram de facto, sendo que {failures} dessas colisoes resultaram em falhas. Este documento detalha cada conflito, a sua causa raiz, impacto e a melhoria recomendada.
+  - DEPOIS: Foram identificados {total} conflitos potenciais de schedule no servidor {server}: {critical} críticos, {warning} warnings. Nos ultimos dias, {collisions} pares de jobs colidiram de facto, sendo que {failures} dessas colisoes resultaram em falhas. Este documento detalha cada conflito, a sua causa raiz, impacto e a melhoria recomendada.
+- `jobs.pdf_version`
+  - ANTES: Versao
+  - DEPOIS: Versão
+- `jobs.recent_history`
+  - ANTES: Historico Recente
+  - DEPOIS: Histórico Recente
+- `jobs.recommendations`
+  - ANTES: Recomendacoes de Manutencao
+  - DEPOIS: Recomendacoes de Manutenção
+- `jobs.running`
+  - ANTES: Em Execucao
+  - DEPOIS: Em Execução
+- `jobs.running_jobs`
+  - ANTES: Jobs em Execucao
+  - DEPOIS: Jobs em Execução
+- `jobs.trend_analysis`
+  - ANTES: Analise de Tendencias
+  - DEPOIS: Análise de Tendencias
+- `jobs.trend_duration_compare`
+  - ANTES: Duracao (30d → 7d)
+  - DEPOIS: Duração (30d → 7d)
+- `jobs.trend_title`
+  - ANTES: Analise de Tendencias
+  - DEPOIS: Análise de Tendencias
+- `jobs.without_maintenance`
+  - ANTES: sem manutencao
+  - DEPOIS: sem manutenção
+- `kpi.cpu_critical`
+  - ANTES: CPU Critico
+  - DEPOIS: CPU Crítico
+- `kpi.cpu_critical_modal`
+  - ANTES: CPU Critico - Instancias com CPU Alto
+  - DEPOIS: CPU Crítico - Instâncias com CPU Alto
+- `kpi.cpu_critico`
+  - ANTES: CPU Critico
+  - DEPOIS: CPU Crítico
+- `kpi.jobs_failed_modal`
+  - ANTES: Jobs Falhados - Instancias com Jobs em Falha
+  - DEPOIS: Jobs Falhados - Instâncias com Jobs em Falha
+- `kpi.memoria_critico`
+  - ANTES: Memoria Critico
+  - DEPOIS: Memória Crítico
+- `kpi.memory_critical`
+  - ANTES: Memoria Critico
+  - DEPOIS: Memória Crítico
+- `kpi.memory_critical_modal`
+  - ANTES: Memoria Critico - Instancias com Memoria Alta
+  - DEPOIS: Memória Crítico - Instâncias com Memória Alta
+- `kpi.services_stopped`
+  - ANTES: Servicos Parados
+  - DEPOIS: Serviços Parados
+- `kpi_modal.blocked_sessions`
+  - ANTES: Sessoes Bloqueadas
+  - DEPOIS: Sessões Bloqueadas
+- `kpi_modal.critical_s`
+  - ANTES: critica(s)
+  - DEPOIS: crítica(s)
+- `kpi_modal.data_outdated_desc`
+  - ANTES: Os dados exibidos podem nao refletir o estado atual. Clique em Atualizar para obter dados recentes.
+  - DEPOIS: Os dados exibidos podem não refletir o estado atual. Clique em Atualizar para obter dados recentes.
+- `kpi_modal.err_2571`
+  - ANTES: Versao SQL antiga - requer DBCC (2571)
+  - DEPOIS: Versão SQL antiga - requer DBCC (2571)
+- `kpi_modal.err_2571_detail`
+  - ANTES: Erro 2571: esta versao de SQL (< 2016 SP2) nao tem DATABASEPROPERTYEX(LastGoodCheckDbTime) — a coleta exigiria DBCC, indisponivel sem privilegios elevados.
+  - DEPOIS: Erro 2571: esta versão de SQL (< 2016 SP2) não tem DATABASEPROPERTYEX(LastGoodCheckDbTime) — a coleta exigiria DBCC, indisponivel sem privilegios elevados.
+- `kpi_modal.fix_grant`
+  - ANTES: Instancia antiga (SQL < 2016 SP2): sem DATABASEPROPERTYEX, o coletor depende de DBCC, que a conta de monitorizacao nao pode executar. Resolve-se com upgrade da instancia (SQL 2012/2014 EOL) ou GRANT pontual de excecao.
+  - DEPOIS: Instancia antiga (SQL < 2016 SP2): sem DATABASEPROPERTYEX, o coletor depende de DBCC, que a conta de monitorizacao não pode executar. Resolve-se com upgrade da instancia (SQL 2012/2014 EOL) ou GRANT pontual de excecao.
+- `kpi_modal.last_check`
+  - ANTES: Ultima Verificacao
+  - DEPOIS: Última Verificacao
+- `kpi_modal.n_critical`
+  - ANTES: critica(s)
+  - DEPOIS: crítica(s)
+- `kpi_modal.no_data_desc`
+  - ANTES: Nao foi possivel obter dados para este KPI.
+  - DEPOIS: Não foi possivel obter dados para este KPI.
+- `kpi_modal.verdict_help`
+  - ANTES: O que e: cada base de dados recebe um veredicto do exame de integridade.
+P1 Corrompida: paginas danificadas detectadas - agir ja.
+P3 Nunca validada: nunca correu CHECKDB.
+P4 Validacao velha: ultimo CHECKDB ha mais de 30 dias.
+P5 OK: validada recentemente.
+Porque importa: corrupcao e silenciosa - so aparece quando ja doi. O CHECKDB e o exame de rotina que a apanha cedo.
+O que fazer: clique num veredicto para filtrar a lista; cada card traz o comando pronto. Se a coleta falhou, o card mostra o erro exacto.
+  - DEPOIS: O que e: cada base de dados recebe um veredicto do exame de integridade.
+P1 Corrompida: paginas danificadas detectadas - agir ja.
+P3 Nunca validada: nunca correu CHECKDB.
+P4 Validacao velha: último CHECKDB ha mais de 30 dias.
+P5 OK: validada recentemente.
+Porque importa: corrupção e silenciosa - so aparece quando ja doi. O CHECKDB e o exame de rotina que a apanha cedo.
+O que fazer: clique num veredicto para filtrar a lista; cada card traz o comando pronto. Se a coleta falhou, o card mostra o erro exacto.
+- `loading.backup`
+  - ANTES: Carregando analise de backups...
+  - DEPOIS: Carregando análise de backups...
+- `loading.critical_alerts`
+  - ANTES: Carregando alertas criticos...
+  - DEPOIS: Carregando alertas críticos...
+- `loading.disks_critical`
+  - ANTES: Carregando discos criticos...
+  - DEPOIS: Carregando discos críticos...
+- `loading.filegroups_critical`
+  - ANTES: Carregando FileGroups criticos...
+  - DEPOIS: Carregando FileGroups críticos...
+- `loading.instances`
+  - ANTES: Carregando instancias...
+  - DEPOIS: Carregando instâncias...
+- `loading.logs`
+  - ANTES: Carregando analise de logs...
+  - DEPOIS: Carregando análise de logs...
+- `loading.predictive`
+  - ANTES: Carregando analise preditiva...
+  - DEPOIS: Carregando análise preditiva...
+- `loading.security`
+  - ANTES: Carregando analise de seguranca...
+  - DEPOIS: Carregando análise de seguranca...
+- `log.no_logs_24h`
+  - ANTES: Nao foram encontrados logs nas ultimas 24 horas para este servico.
+  - DEPOIS: Não foram encontrados logs nas ultimas 24 horas para este servico.
+- `log.period_card`
+  - ANTES: Periodo
+  - DEPOIS: Período
+- `log.period_label`
+  - ANTES: Periodo:
+  - DEPOIS: Período:
+- `log.shrink_last_resort`
+  - ANTES: SHRINK (ultima opcao)
+  - DEPOIS: SHRINK (última opcao)
+- `log.well_sized_tip`
+  - ANTES: Bem dimensionado (<30% livre) — nao e candidato a shrink
+  - DEPOIS: Bem dimensionado (<30% livre) — não e candidato a shrink
+- `mem.available`
+  - ANTES: Disponivel
+  - DEPOIS: Disponível
+- `mem.available_os`
+  - ANTES: Disponivel SO
+  - DEPOIS: Disponível SO
+- `mem.available_sql`
+  - ANTES: Disponivel SQL Server
+  - DEPOIS: Disponível SQL Server
+- `mem.config`
+  - ANTES: Configuracao de Memoria
+  - DEPOIS: Configuração de Memória
+- `mem.config_adequate`
+  - ANTES: Configuracao de memoria adequada
+  - DEPOIS: Configuração de memória adequada
+- `mem.distribution`
+  - ANTES: Distribuicao de Memoria
+  - DEPOIS: Distribuição de Memória
+- `mem.help_100_desc`
+  - ANTES: Ver <strong>100%</strong> neste card e <strong>esperado e saudavel</strong>! Significa que o SQL Server esta usando toda a memoria que foi configurada para ele. O SQL Server foi projetado para consumir e manter memoria em cache para melhor performance.
+  - DEPOIS: Ver <strong>100%</strong> neste card e <strong>esperado e saudável</strong>! Significa que o SQL Server esta usando toda a memória que foi configurada para ele. O SQL Server foi projetado para consumir e manter memória em cache para melhor performance.
+- `mem.help_available_desc`
+  - ANTES: <strong>Disponivel:</strong> Memoria que pode ser imediatamente alocada. Quando e 0 GB, o Windows esta a usar tudo como File Cache (Standby) - isto e normal e reclamavel.
+  - DEPOIS: <strong>Disponível:</strong> Memória que pode ser imediatamente alocada. Quando e 0 GB, o Windows esta a usar tudo como File Cache (Standby) - isto e normal e reclamavel.
+- `mem.help_buffer_pool`
+  - ANTES: <strong>Buffer Pool:</strong> Memoria actualmente usada pelo SQL Server para cache de dados e indices.
+  - DEPOIS: <strong>Buffer Pool:</strong> Memória actualmente usada pelo SQL Server para cache de dados e indices.
+- `mem.help_critical_desc`
+  - ANTES: <strong>CRITICO vs Normal:</strong> O status CRITICO aparece quando a memoria disponivel e &lt; 5% da RAM total. Se o OS/Cache for alto, pode nao ser um problema real.
+  - DEPOIS: <strong>CRITICO vs Normal:</strong> O status CRITICO aparece quando a memória disponível e &lt; 5% da RAM total. Se o OS/Cache for alto, pode não ser um problema real.
+- `mem.help_max_not_configured`
+  - ANTES: Se Max Server Memory nao estiver configurado (usando padrao de 2TB)
+  - DEPOIS: Se Max Server Memory não estiver configurado (usando padrao de 2TB)
+- `mem.help_max_server`
+  - ANTES: <strong>Max Server Memory:</strong> Limite maximo configurado. O SQL Server nao usara mais do que este valor.
+  - DEPOIS: <strong>Max Server Memory:</strong> Limite maximo configurado. O SQL Server não usara mais do que este valor.
+- `mem.help_memory_pressure`
+  - ANTES: Se houver Memory Pressure (SQL precisando de mais memoria do que tem)
+  - DEPOIS: Se houver Memory Pressure (SQL precisando de mais memória do que tem)
+- `mem.help_oom_desc`
+  - ANTES: <strong>OOM (Out-of-Memory):</strong> Corresponde ao <strong>Event ID 701</strong>. Indica que queries falharam por falta de memoria no pool.
+  - DEPOIS: <strong>OOM (Out-of-Memory):</strong> Corresponde ao <strong>Event ID 701</strong>. Indica que queries falharam por falta de memória no pool.
+- `mem.help_os_desc`
+  - ANTES: <strong>OS Memory</strong> mostra a memoria fisica total do servidor e como esta distribuida entre o SQL Server, outros processos, e o Windows.
+  - DEPOIS: <strong>OS Memory</strong> mostra a memória fisica total do servidor e como esta distribuida entre o SQL Server, outros processos, e o Windows.
+- `mem.help_oscache_desc`
+  - ANTES: <strong>OS/Cache (Standby):</strong> O Windows usa memoria livre como cache de disco. E reclamavel quando necessario. Nao e um problema.
+  - DEPOIS: <strong>OS/Cache (Standby):</strong> O Windows usa memória livre como cache de disco. E reclamavel quando necessario. Não e um problema.
+- `mem.help_pageiolatch`
+  - ANTES: Se PAGEIOLATCH waits estiverem altos (indica falta de memoria para cache)
+  - DEPOIS: Se PAGEIOLATCH waits estiverem altos (indica falta de memória para cache)
+- `mem.help_rg_desc`
+  - ANTES: O <em>Resource Governor</em> e uma funcionalidade do SQL Server que permite limitar e gerir a alocacao de CPU e memoria entre diferentes workloads.
+  - DEPOIS: O <em>Resource Governor</em> e uma funcionalidade do SQL Server que permite limitar e gerir a alocacao de CPU e memória entre diferentes workloads.
+- `mem.loading`
+  - ANTES: Carregando analise de memoria...
+  - DEPOIS: Carregando análise de memória...
+- `mem.os_memory_title`
+  - ANTES: Sistema Operacional - Memoria
+  - DEPOIS: Sistema Operacional - Memória
+- `mem.pressure_critical_check_win`
+  - ANTES: Verifique o consumo de memoria do Windows (Available MB)
+  - DEPOIS: Verifique o consumo de memória do Windows (Available MB)
+- `mem.pressure_critical_config`
+  - ANTES: Configuracao incorreta de memoria
+  - DEPOIS: Configuração incorreta de memória
+- `mem.pressure_critical_desc`
+  - ANTES: O SQL Server esta usando significativamente menos memoria do que alocou. Isso pode indicar problemas serios:
+  - DEPOIS: O SQL Server esta usando significativamente menos memória do que alocou. Isso pode indicar problemas serios:
+- `mem.pressure_critical_external`
+  - ANTES: Pressao externa de memoria do Windows
+  - DEPOIS: Pressao externa de memória do Windows
+- `mem.pressure_critical_identify`
+  - ANTES: Identifique processos que competem por memoria
+  - DEPOIS: Identifique processos que competem por memória
+- `mem.pressure_critical_increase`
+  - ANTES: Considere aumentar Max Server Memory se houver RAM disponivel
+  - DEPOIS: Considere aumentar Max Server Memory se houver RAM disponível
+- `mem.pressure_efficiency`
+  - ANTES: eficiencia do uso de memoria
+  - DEPOIS: eficiencia do uso de memória
+- `mem.pressure_healthy_nowaste`
+  - ANTES: Nao ha desperdicio de memoria alocada
+  - DEPOIS: Não ha desperdicio de memória alocada
+- `mem.pressure_na_action_queries`
+  - ANTES: Execute algumas queries no servidor para forcar alocacao de memoria
+  - DEPOIS: Execute algumas queries no servidor para forcar alocacao de memória
+- `mem.pressure_na_desc`
+  - ANTES: O SQL Server ainda nao alocou memoria suficiente para calcular o Memory Pressure. Isso pode acontecer em alguns cenarios:
+  - DEPOIS: O SQL Server ainda não alocou memória suficiente para calcular o Memory Pressure. Isso pode acontecer em alguns cenarios:
+- `mem.pressure_na_fresh`
+  - ANTES: <strong>Instancia recem-iniciada:</strong> O SQL Server esta em processo de "warm-up" e ainda nao carregou dados no Buffer Pool
+  - DEPOIS: <strong>Instancia recem-iniciada:</strong> O SQL Server esta em processo de "warm-up" e ainda não carregou dados no Buffer Pool
+- `mem.pressure_na_low_activity`
+  - ANTES: <strong>Pouca atividade:</strong> Nao ha queries ativas que forcem o SQL Server a alocar memoria
+  - DEPOIS: <strong>Pouca atividade:</strong> Não ha queries ativas que forcem o SQL Server a alocar memória
+- `mem.pressure_na_pending`
+  - ANTES: <strong>Coleta de dados pendente:</strong> Os dados podem ainda nao ter sido coletados pelo sistema de monitoramento
+  - DEPOIS: <strong>Coleta de dados pendente:</strong> Os dados podem ainda não ter sido coletados pelo sistema de monitoramento
+- `mem.pressure_na_target_zero`
+  - ANTES: <strong>Target Server Memory = 0:</strong> O contador de performance "Target Server Memory (KB)" ainda nao foi calculado
+  - DEPOIS: <strong>Target Server Memory = 0:</strong> O contador de performance "Target Server Memory (KB)" ainda não foi calculado
+- `mem.pressure_warning_alloc`
+  - ANTES: Possivel problema de alocacao de memoria
+  - DEPOIS: Possivel problema de alocacao de memória
+- `mem.pressure_warning_desc`
+  - ANTES: O SQL Server esta usando menos memoria do que poderia. Isso pode indicar:
+  - DEPOIS: O SQL Server esta usando menos memória do que poderia. Isso pode indicar:
+- `mem.pressure_warning_maxmem`
+  - ANTES: Considere revisar a configuracao de Max Server Memory
+  - DEPOIS: Considere revisar a configuração de Max Server Memory
+- `mem.pressure_warning_warmup`
+  - ANTES: SQL Server ainda nao "aqueceu" completamente
+  - DEPOIS: SQL Server ainda não "aqueceu" completamente
+- `mem.sql_memory_title`
+  - ANTES: SQL Server - Memoria
+  - DEPOIS: SQL Server - Memória
+- `mem.top_processes`
+  - ANTES: Top Processos Windows (Memoria)
+  - DEPOIS: Top Processos Windows (Memória)
+- `modal.alwayson_unhealthy`
+  - ANTES: DB Always On - Nao Saudavel
+  - DEPOIS: DB Always On - Não Saudável
+- `modal.cpu_critical`
+  - ANTES: CPU Critico - Instancias com CPU Alto
+  - DEPOIS: CPU Crítico - Instâncias com CPU Alto
+- `modal.disk_critical`
+  - ANTES: DB Disk File System - Critico
+  - DEPOIS: DB Disk File System - Crítico
+- `modal.disk_latency_critical`
+  - ANTES: Disk Latency Critical - Drives com Alta Latencia
+  - DEPOIS: Disk Latency Critical - Drives com Alta Latência
+- `modal.disk_latency_warning`
+  - ANTES: Disk Latency Warning - Drives com Latencia Elevada
+  - DEPOIS: Disk Latency Warning - Drives com Latência Elevada
+- `modal.memory_critical`
+  - ANTES: Memoria Critico - Instancias com Memoria Alta
+  - DEPOIS: Memória Crítico - Instâncias com Memória Alta
+- `modal.mirroring_unhealthy`
+  - ANTES: DB Mirroring - Nao Saudavel
+  - DEPOIS: DB Mirroring - Não Saudável
+- `modal.tempdb_critical`
+  - ANTES: TempDB - Disco Critico
+  - DEPOIS: TempDB - Disco Crítico
+- `modal.tlog_critical`
+  - ANTES: DB Transaction Logs - Critico
+  - DEPOIS: DB Transaction Logs - Crítico
+- `msg.no_historical_data`
+  - ANTES: Sem dados historicos para o periodo selecionado.
+  - DEPOIS: Sem dados historicos para o período selecionado.
+- `overview.click_detailed_analysis`
+  - ANTES: Clique para analise detalhada
+  - DEPOIS: Clique para análise detalhada
+- `overview.diag_no_event`
+  - ANTES: Sem evento registado pelo colector — pode ser a WatcherDB e nao o servidor
+  - DEPOIS: Sem evento registado pelo colector — pode ser a WatcherDB e não o servidor
+- `overview.diag_sql_mute`
+  - ANTES: SQL nao responde a WatcherDB
+  - DEPOIS: SQL não responde a WatcherDB
+- `overview.instances_with_problem`
+  - ANTES: Instancias com Problema
+  - DEPOIS: Instâncias com Problema
+- `overview.no_critical_events`
+  - ANTES: Nenhum evento critico
+  - DEPOIS: Nenhum evento crítico
+- `overview.no_critical_events_desc`
+  - ANTES: Nenhum evento critico ou erro detectado nas ultimas 24 horas.
+  - DEPOIS: Nenhum evento crítico ou erro detectado nas ultimas 24 horas.
+- `overview.refresh_services`
+  - ANTES: Atualizar Servicos
+  - DEPOIS: Atualizar Serviços
+- `overview.server_offline_message`
+  - ANTES: O servidor {server} ({hostname}) nao responde ao ping ICMP. O servidor pode estar desligado, inacessivel pela rede, ou com firewall bloqueando ICMP.
+  - DEPOIS: O servidor {server} ({hostname}) não responde ao ping ICMP. O servidor pode estar desligado, inacessivel pela rede, ou com firewall bloqueando ICMP.
+- `overview.windows_events_load_error`
+  - ANTES: Nao foi possivel carregar eventos do Windows
+  - DEPOIS: Não foi possivel carregar eventos do Windows
+- `page.backup_analysis`
+  - ANTES: Analise de Backup
+  - DEPOIS: Análise de Backup
+- `page.cpu_analysis`
+  - ANTES: Analise de CPU
+  - DEPOIS: Análise de CPU
+- `page.disk_analysis`
+  - ANTES: Analise de Discos
+  - DEPOIS: Análise de Discos
+- `page.job_analysis`
+  - ANTES: Analise de Jobs
+  - DEPOIS: Análise de Jobs
+- `page.log_analysis`
+  - ANTES: Analise de Logs
+  - DEPOIS: Análise de Logs
+- `page.memory_analysis`
+  - ANTES: Analise de Memoria
+  - DEPOIS: Análise de Memória
+- `page.security_analysis`
+  - ANTES: Analise de Seguranca
+  - DEPOIS: Análise de Seguranca
+- `page.services_analysis`
+  - ANTES: Analise de Servicos
+  - DEPOIS: Análise de Serviços
+- `page.space_analysis`
+  - ANTES: Analise de Espaco
+  - DEPOIS: Análise de Espaco
+- `page.user_analysis`
+  - ANTES: Analise de Usuarios
+  - DEPOIS: Análise de Usuarios
+- `plural.instances`
+  - ANTES: {count} instancia|{count} instancias
+  - DEPOIS: {count} instancia|{count} instâncias
+- `plural.sessions`
+  - ANTES: {count} sessao|{count} sessoes
+  - DEPOIS: {count} sessão|{count} sessões
+- `predict.click_critical`
+  - ANTES: Clique para ver alertas criticos
+  - DEPOIS: Clique para ver alertas críticos
+- `predict.generate_title`
+  - ANTES: Gerar analise preditiva completa
+  - DEPOIS: Gerar análise preditiva completa
+- `predict.min_7_days`
+  - ANTES: 7 dias de historico
+  - DEPOIS: 7 dias de histórico
+- `predict.no_critical`
+  - ANTES: Nenhum alerta critico
+  - DEPOIS: Nenhum alerta crítico
+- `predict.no_data_msg`
+  - ANTES: Coleta de dados nao esta ativa para este servidor
+  - DEPOIS: Coleta de dados não esta ativa para este servidor
+- `predict.not_monitored`
+  - ANTES: Servidor nao esta sendo monitorado
+  - DEPOIS: Servidor não esta sendo monitorado
+- `predict.refresh_title`
+  - ANTES: Atualizar Analise Preditiva
+  - DEPOIS: Atualizar Análise Preditiva
+- `predict.script_not_found`
+  - ANTES: Se nao existir, adicione o script ou desabilite a funcionalidade de analise preditiva
+  - DEPOIS: Se não existir, adicione o script ou desabilite a funcionalidade de análise preditiva
+- `predict.scripts_not_found`
+  - ANTES: Scripts Python nao encontrados na raiz do projeto
+  - DEPOIS: Scripts Python não encontrados na raiz do projeto
+- `predict.use_space_analysis`
+  - ANTES: Use a analise de espaco atual para monitoramento imediato
+  - DEPOIS: Use a análise de espaco atual para monitoramento imediato
+- `predict.wait_7_days`
+  - ANTES: Aguardar acumular pelo menos 7 dias de historico
+  - DEPOIS: Aguardar acumular pelo menos 7 dias de histórico
+- `report.last_status`
+  - ANTES: Ultimo Status
+  - DEPOIS: Último Status
+- `security.about_checks_desc`
+  - ANTES: Esta analise verifica configuracoes de seguranca do SQL Server de forma passiva (apenas consultas, sem testes ativos). As verificacoes sao baseadas nas melhores praticas da Microsoft e nao disparam alertas de seguranca.
+  - DEPOIS: Esta análise verifica configuracoes de seguranca do SQL Server de forma passiva (apenas consultas, sem testes ativos). As verificacoes sao baseadas nas melhores praticas da Microsoft e não disparam alertas de seguranca.
+- `security.config_healthy`
+  - ANTES: saudavel
+  - DEPOIS: saudável
+- `security.error_loading`
+  - ANTES: Erro ao Carregar Analise de Seguranca
+  - DEPOIS: Erro ao Carregar Análise de Seguranca
+- `security.loading`
+  - ANTES: Carregando analise de seguranca...
+  - DEPOIS: Carregando análise de seguranca...
+- `security.severity_critical`
+  - ANTES: Critico
+  - DEPOIS: Crítico
+- `security.version_section`
+  - ANTES: Versao
+  - DEPOIS: Versão
+- `services.auto_expected_desc`
+  - ANTES: Servicos marcados como "Automatic" devem estar em execucao. Servicos parados aparecem em vermelho.
+  - DEPOIS: Serviços marcados como "Automatic" devem estar em execução. Serviços parados aparecem em vermelho.
+- `services.critical`
+  - ANTES: Critico
+  - DEPOIS: Crítico
+- `services.critical_down`
+  - ANTES: Criticos Down
+  - DEPOIS: Críticos Down
+- `services.monitored`
+  - ANTES: Servicos monitorizados
+  - DEPOIS: Serviços monitorizados
+- `services.no`
+  - ANTES: Nao
+  - DEPOIS: Não
+- `services.no_services_data`
+  - ANTES: Sem dados de servicos.
+  - DEPOIS: Sem dados de serviços.
+- `services.possible_causes`
+  - ANTES: <strong>Possiveis causas:</strong> Firewall bloqueando acesso remoto ao SCM, permissoes insuficientes, ou dados ainda nao coletados no WatcherDB Intelligence.
+  - DEPOIS: <strong>Possiveis causas:</strong> Firewall bloqueando acesso remoto ao SCM, permissoes insuficientes, ou dados ainda não coletados no WatcherDB Intelligence.
+- `services.report_title`
+  - ANTES: Relatorio de Servicos
+  - DEPOIS: Relatorio de Serviços
+- `services.running`
+  - ANTES: Servicos Rodando
+  - DEPOIS: Serviços Rodando
+- `services.sql_services`
+  - ANTES: Servicos SQL Server
+  - DEPOIS: Serviços SQL Server
+- `services.stopped`
+  - ANTES: Servicos Parados
+  - DEPOIS: Serviços Parados
+- `space.critical_95`
+  - ANTES: Critico (>=95%)
+  - DEPOIS: Crítico (>=95%)
+- `space.loading`
+  - ANTES: Carregando analise de espaco...
+  - DEPOIS: Carregando análise de espaco...
+- `space.tempdb_details_title`
+  - ANTES: Ver detalhes e sessoes consumidoras do TempDB
+  - DEPOIS: Ver detalhes e sessões consumidoras do TempDB
+- `sql.full_db_analysis_desc`
+  - ANTES: Esta opcao analisa <strong>TODAS</strong> as tabelas do banco selecionado, identificando estatisticas desatualizadas e tabelas HEAP. Ideal para manutencao preventiva e diagnostico geral de performance.
+  - DEPOIS: Esta opcao analisa <strong>TODAS</strong> as tabelas do banco selecionado, identificando estatisticas desatualizadas e tabelas HEAP. Ideal para manutenção preventiva e diagnostico geral de performance.
+- `sqldiag.analysis_queries`
+  - ANTES: Queries de Analise (suportam filtro por database)
+  - DEPOIS: Queries de Análise (suportam filtro por database)
+- `sqldiag.cat_maintenance`
+  - ANTES: Manutencao
+  - DEPOIS: Manutenção
+- `sqldiag.detailed_analysis`
+  - ANTES: Analise detalhada
+  - DEPOIS: Análise detalhada
+- `sqldiag.q_backup_history`
+  - ANTES: Analise Historico Backups
+  - DEPOIS: Análise Histórico Backups
+- `sqldiag.q_fg_history`
+  - ANTES: Historico Crescimento Filegroups
+  - DEPOIS: Histórico Crescimento Filegroups
+- `sqldiag.q_missing_index`
+  - ANTES: Analise Indices Faltantes
+  - DEPOIS: Análise Indices Faltantes
+- `sqldiag.q_sessions`
+  - ANTES: Sessoes Problematicas
+  - DEPOIS: Sessões Problematicas
+- `stats.th_last_update`
+  - ANTES: Ultima Atualizacao
+  - DEPOIS: Última Atualizacao
+- `status.healthy`
+  - ANTES: Saudavel
+  - DEPOIS: Saudável
+- `status.running`
+  - ANTES: Em execucao
+  - DEPOIS: Em execução
+- `status.unhealthy`
+  - ANTES: Nao Saudavel
+  - DEPOIS: Não Saudável
+- `table.last_run`
+  - ANTES: Ultimo Run
+  - DEPOIS: Último Run
+- `tde.tde_not_configured`
+  - ANTES: TDE Nao Configurado
+  - DEPOIS: TDE Não Configurado
+- `tempdb.click_exec_plan`
+  - ANTES: Clique para ver o plano de execucao
+  - DEPOIS: Clique para ver o plano de execução
+- `tempdb.filter_idle_title`
+  - ANTES: Clique para filtrar sessoes com idle =30 min
+  - DEPOIS: Clique para filtrar sessões com idle =30 min
+- `toast.disk_critical`
+  - ANTES: Disco Critico
+  - DEPOIS: Disco Crítico
+- `toast.filegroup_critical`
+  - ANTES: Filegroup Critico
+  - DEPOIS: Filegroup Crítico
+- `toast.instances_offline`
+  - ANTES: Instancias Offline
+  - DEPOIS: Instâncias Offline
+- `toast.tlog_critical`
+  - ANTES: Transaction Log Critico
+  - DEPOIS: Transaction Log Crítico
+- `ui.loading_users`
+  - ANTES: Carregando analise de usuarios...
+  - DEPOIS: Carregando análise de usuarios...
+- `users.last_login`
+  - ANTES: Ultimo Login
+  - DEPOIS: Último Login
+- `users.loading`
+  - ANTES: Carregando analise de usuarios...
+  - DEPOIS: Carregando análise de usuarios...
+- `users.user_not_found_ad`
+  - ANTES: Usuario nao encontrado no AD
+  - DEPOIS: Usuario não encontrado no AD
+
+---
+
+## ESTADO FINAL — APLICADO 2026-08-16 (GO do owner: "siga a recomendacao")
+
+Aplicado em 3 passagens + acerto manual. Nenhuma chave renomeada (1410 chaves iguais em pt/en/es,
+validado por `tests/unit/test_i18n_parity.py`).
+
+| Passagem | Regra | Valores |
+|---|---|---|
+| 1a | lote A (grafia) + lote B so' em labels <=60 chars sem residuo | 196 |
+| 2a | guard de ambiguidade corrigido (`de/da/por/para/a/o/as/os` NAO sao ambiguos — bloqueavam quase tudo) + dicionario alargado | 133 |
+| manual | 9 labels com `esta`/`nos`/HTML que o guard salta por desenho | 9 |
+
+Complemento aplicado:
+- `static/js/watcherdb_i18n_v2.js:186,642` — `langMap.pt` `'pt-BR'` -> `'pt-PT'`.
+- `templates/watcherdb_portal.html` — 3 `<html lang="pt-BR">` nos exports HTML -> `pt-PT`.
+- `tests/unit/test_i18n_parity.py` (novo): paridade de chaves, valores vazios, placeholders
+  `{count}`/`{time}` coerentes, e regressao de grafia pre-AO90 em pt.json. 5 testes verdes.
+
+### O que FICA por fazer (assumido, nao escondido)
+
+86 strings PT mantem palavras sem acento — todas frases longas (nenhum label curto) contendo
+palavras cuja acentuacao depende do contexto (`esta`/`está`, `e`/`é`, `nos`/`nós`, `tem`/`têm`).
+Automatizar essas partiria significado; ficam para revisao humana ou para quem escrever a proxima
+string. O teste de regressao cobre a grafia (lote A), nao os acentos — acentuar mal nao e' detectavel
+por regra simples.
+
+NAO feito (fora desta decisao): as ~435 strings hardcoded no template (BUG-003) continuam sem chave
+i18n — e' wave propria. Por isso o teste "texto visivel sem data-i18n" que o QA sugeriu NAO foi
+criado: nasceria vermelho e seria desligado no dia seguinte.

@@ -1,0 +1,15 @@
+{
+  "master_server": {
+    "server": "SERVERNAME\\INSTANCE",
+    "database": "WatcherDB_Intelligence",
+    "host": "SERVERNAME",
+    "instance": "INSTANCE",
+    "port": 1433,
+    "environment": "production",
+    "use_windows_auth": false,
+    "username": "sql_monitoring",
+    "password": "encrypted:<FERNET_TOKEN>",
+    "driver": "ODBC Driver 17 for SQL Server"
+  },
+  "monitored_servers": []
+}

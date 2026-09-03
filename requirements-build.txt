@@ -1,0 +1,33 @@
+# Build-only dependencies for WatcherDB V3.3 Standard Edition production
+# artefacts (PyArmor-obfuscated source + PyInstaller one-directory bundle).
+#
+# These packages are NOT required at runtime on a customer machine.
+# The runtime needs are covered by requirements.txt + requirements-alerting.txt.
+#
+# Install on the build workstation with:
+#     pip install -r requirements-build.txt
+#
+# See deploy/build.py for the orchestration that consumes these tools.
+
+-r requirements.txt
+
+# Obfuscator — licensed Pro (reg 011618, BCC + RFT modes).
+# Must match the licensed major/minor so BCC bytecode stays compatible.
+pyarmor>=9.2,<10.0
+
+# Bundler — produces dist/WatcherDB_V3.3/watcherdb.exe and friends.
+pyinstaller>=6.4,<7.0
+
+# Signing primitives used by the licence generator and the updater manifest.
+cryptography>=42.0
+
+# SBOM tool is invoked as an external binary (syft); we do not install it
+# through pip. See docs/deployment/SBOM.md (created in Sem 4) for the
+# expected syft version on the build workstation.
+
+# Gate de testes + smoke-boot correm na propria venv de build (2026-08-10):
+# testar no 3.11 que e congelado no bundle, nao num Python do sistema.
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0

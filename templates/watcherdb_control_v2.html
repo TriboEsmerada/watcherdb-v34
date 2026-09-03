@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}WatcherDB Control Panel{% endblock %}
+
+{% block styles %}
+<style nonce="{{ csp_nonce }}">
+    /* Control Panel specific styles */
+    .control-header {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        border-bottom: 1px solid #334155; padding: 16px 24px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .control-header h1 { font-size: 20px; color: #f1f5f9; }
+    .control-header h1 i { color: #3b82f6; margin-right: 8px; }
+    .control-nav { display: flex; gap: 4px; padding: 8px 24px; background: #1e293b; border-bottom: 1px solid #334155; }
+    .control-nav button {
+        padding: 8px 16px; border: none; border-radius: 6px;
+        background: transparent; color: #94a3b8; cursor: pointer;
+        font-size: 13px; transition: all 0.2s;
+    }
+    .control-nav button.active { background: #3b82f6; color: white; }
+    .control-nav button:hover:not(.active) { background: rgba(59,130,246,0.1); color: #e2e8f0; }
+    .control-section { display: none; padding: 24px; }
+    .control-section.active { display: block; }
+    .control-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .control-table th {
+        background: #1e293b; color: #94a3b8; padding: 10px 12px;
+        text-align: left; font-weight: 600; border-bottom: 2px solid #334155;
+    }
+    .control-table td {
+        padding: 8px 12px; color: #e2e8f0; border-bottom: 1px solid rgba(55,65,81,0.5);
+    }
+    .control-table tr:hover td { background: rgba(59,130,246,0.05); }
+    .btn-action {
+        padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer;
+        font-size: 12px; font-weight: 500;
+    }
+    .btn-action.danger { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .btn-action.primary { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .btn-action:hover { filter: brightness(1.2); }
+</style>
+{% endblock %}
+
+{% block body %}
+    <header class="control-header">
+        <h1><i class="fas fa-shield-alt"></i> WatcherDB Control</h1>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <span id="controlUser" style="color: #94a3b8; font-size: 13px;"></span>
+            <a href="/watcherdb/v2" style="color: #3b82f6; text-decoration: none; font-size: 13px;">
+                <i class="fas fa-arrow-left"></i> Back to Portal
+            </a>
+        </div>
+    </header>
+
+    <nav class="control-nav">
+        <button class="active" data-section="users"
+                hx-get="/htmx/control/users" hx-target="#controlContent" hx-swap="innerHTML">
+            <i class="fas fa-users"></i> Users
+        </button>
+        <button data-section="authlog"
+                hx-get="/htmx/control/authlog" hx-target="#controlContent" hx-swap="innerHTML">
+            <i class="fas fa-clipboard-list"></i> Auth Log
+        </button>
+        <button data-section="sessions"
+                hx-get="/htmx/control/sessions" hx-target="#controlContent" hx-swap="innerHTML">
+            <i class="fas fa-signal"></i> Sessions
+        </button>
+        <button data-section="config"
+                hx-get="/htmx/control/config" hx-target="#controlContent" hx-swap="innerHTML">
+            <i class="fas fa-cog"></i> Config
+        </button>
+    </nav>
+
+    <main id="controlContent" hx-get="/htmx/control/users" hx-trigger="load" hx-swap="innerHTML">
+        <div style="text-align: center; padding: 40px; color: #64748b;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+            <p>Loading...</p>
+        </div>
+    </main>
+
+    <!-- Modal for create user -->
+    <wdb-modal id="createUserModal" title="Create User">
+        <form hx-post="/api/auth/users" hx-target="#controlContent" hx-swap="innerHTML"
+              style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="text" name="username" placeholder="Username" required
+                   style="padding: 8px 12px; background: #1e293b; color: #f1f5f9; border: 1px solid #374151; border-radius: 6px;">
+            <input type="password" name="password" placeholder="Password" required
+                   style="padding: 8px 12px; background: #1e293b; color: #f1f5f9; border: 1px solid #374151; border-radius: 6px;">
+            <select name="role" style="padding: 8px 12px; background: #1e293b; color: #f1f5f9; border: 1px solid #374151; border-radius: 6px;">
+                <option value="viewer">Viewer</option>
+                <option value="admin">Admin</option>
+            </select>
+            <input type="email" name="email" placeholder="Email (optional)"
+                   style="padding: 8px 12px; background: #1e293b; color: #f1f5f9; border: 1px solid #374151; border-radius: 6px;">
+            <button type="submit" class="btn-action primary" style="padding: 10px; font-size: 14px;">
+                <i class="fas fa-plus"></i> Create User
+            </button>
+        </form>
+    </wdb-modal>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/components/wdb-modal.js"></script>
+<script nonce="{{ csp_nonce }}">
+    // Tab switching
+    document.querySelectorAll('.control-nav button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.control-nav button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    // Auth token for htmx requests
+    document.body.addEventListener('htmx:configRequest', function(evt) {
+        const token = localStorage.getItem('watcherdb_token') || document.cookie.match(/access_token=([^;]+)/)?.[1];
+        if (token) evt.detail.headers['Authorization'] = 'Bearer ' + token;
+    });
+
+    // Open create user modal
+    function openCreateUser() {
+        document.getElementById('createUserModal').open();
+    }
+</script>
+{% endblock %}

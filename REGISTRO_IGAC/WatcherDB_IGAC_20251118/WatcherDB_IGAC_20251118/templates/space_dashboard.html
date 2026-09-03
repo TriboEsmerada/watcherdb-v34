@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapOS - Space Analysis Dashboard (SEMANA 1)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    
+    <div x-data="spaceDashboard()" x-init="init()" class="min-h-screen p-6">
+        
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-blue-400 mb-2">
+                <i class="fas fa-database mr-2"></i>
+                Space Analysis Dashboard
+            </h1>
+            <p class="text-gray-400">ROADMAP SEMANA 1: Database Growth + Capacity Planning</p>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-gray-800 p-6 rounded-lg border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Servidores Analisados</p>
+                        <p class="text-3xl font-bold" x-text="summary.total_servers"></p>
+                    </div>
+                    <i class="fas fa-server text-4xl text-blue-500 opacity-50"></i>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg border-l-4 border-red-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Alertas Críticos</p>
+                        <p class="text-3xl font-bold text-red-400" x-text="summary.critical_alerts"></p>
+                    </div>
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 opacity-50"></i>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg border-l-4 border-yellow-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Alertas</p>
+                        <p class="text-3xl font-bold text-yellow-400" x-text="summary.total_alerts"></p>
+                    </div>
+                    <i class="fas fa-bell text-4xl text-yellow-500 opacity-50"></i>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Ação Necessária</p>
+                        <p class="text-2xl font-bold" x-text="summary.action_required ? 'SIM' : 'NÃO'"></p>
+                    </div>
+                    <i class="fas fa-tasks text-4xl text-green-500 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alertas Críticos -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                Alertas Críticos de Espaço
+            </h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left p-2">Servidor</th>
+                            <th class="text-left p-2">Database</th>
+                            <th class="text-left p-2">FileGroup</th>
+                            <th class="text-right p-2">Livre</th>
+                            <th class="text-right p-2">Total GB</th>
+                            <th class="text-center p-2">Dias até Cheio</th>
+                            <th class="text-center p-2">Nível</th>
+                            <th class="text-left p-2">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="alert in criticalAlerts" :key="alert.database_name">
+                            <tr class="border-b border-gray-700 hover:bg-gray-700">
+                                <td class="p-2" x-text="alert.server_id"></td>
+                                <td class="p-2" x-text="alert.database_name"></td>
+                                <td class="p-2" x-text="alert.filegroup_name"></td>
+                                <td class="p-2 text-right">
+                                    <span :class="alert.free_percent < 5 ? 'text-red-400' : alert.free_percent < 10 ? 'text-yellow-400' : 'text-green-400'"
+                                          x-text="alert.free_percent.toFixed(1) + '%'"></span>
+                                </td>
+                                <td class="p-2 text-right" x-text="alert.current_gb.toFixed(1)"></td>
+                                <td class="p-2 text-center">
+                                    <span class="px-2 py-1 rounded text-xs"
+                                          :class="alert.estimated_days_to_full < 7 ? 'bg-red-900 text-red-200' : 'bg-yellow-900 text-yellow-200'"
+                                          x-text="alert.estimated_days_to_full + ' dias'"></span>
+                                </td>
+                                <td class="p-2 text-center">
+                                    <span class="px-2 py-1 rounded text-xs font-bold"
+                                          :class="alert.alert_level === 'CRITICAL' ? 'bg-red-600' : 'bg-yellow-600'"
+                                          x-text="alert.alert_level"></span>
+                                </td>
+                                <td class="p-2">
+                                    <button @click="copySQL(alert.action_sql)" 
+                                            class="text-blue-400 hover:text-blue-300">
+                                        <i class="fas fa-copy"></i> SQL
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Growth Chart -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                Previsão de Crescimento
+            </h2>
+            <canvas id="growthChart"></canvas>
+        </div>
+        
+    </div>
+    
+    <script>
+        function spaceDashboard() {
+            return {
+                summary: {
+                    total_servers: 0,
+                    critical_alerts: 0,
+                    total_alerts: 0,
+                    action_required: false
+                },
+                criticalAlerts: [],
+                
+                async init() {
+                    console.log('🚀 Space Dashboard initializing...');
+                    await this.loadDashboard();
+                    setInterval(() => this.loadDashboard(), 60000); // Refresh 1min
+                },
+                
+                async loadDashboard() {
+                    try {
+                        // Load summary
+                        const dashResponse = await fetch('/api/monitoring/space/dashboard');
+                        const dashData = await dashResponse.json();
+                        
+                        if (dashData.success) {
+                            this.summary = {
+                                total_servers: dashData.dashboard.total_servers_analyzed,
+                                critical_alerts: dashData.dashboard.critical_servers,
+                                total_alerts: dashData.dashboard.total_alerts,
+                                action_required: dashData.dashboard.summary.requires_immediate_action
+                            };
+                        }
+                        
+                        // Load critical alerts
+                        const alertsResponse = await fetch('/api/monitoring/space/alerts');
+                        const alertsData = await alertsResponse.json();
+                        
+                        if (alertsData.success) {
+                            this.criticalAlerts = alertsData.alerts;
+                        }
+                        
+                        console.log('✅ Dashboard loaded:', this.summary);
+                        
+                    } catch (error) {
+                        console.error('❌ Error loading dashboard:', error);
+                    }
+                },
+                
+                copySQL(sql) {
+                    navigator.clipboard.writeText(sql);
+                    alert('SQL copiado para clipboard!');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

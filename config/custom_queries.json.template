@@ -1,0 +1,34 @@
+[
+  {
+    "id": "custom-query-1",
+    "name": "Minha Query Customizada",
+    "description": "Descrição da query customizada",
+    "sql": "SELECT TOP 10 * FROM sys.databases WHERE database_id > 4",
+    "endpoint": "custom",
+    "icon": "fa-database",
+    "category": "custom",
+    "requiresDb": false,
+    "parameters": [],
+    "enabled": true
+  },
+  {
+    "id": "custom-query-2",
+    "name": "Query com Parâmetro",
+    "description": "Query que requer seleção de database",
+    "sql": "SELECT * FROM sys.tables WHERE database_id = DB_ID('{database}')",
+    "endpoint": "custom",
+    "icon": "fa-table",
+    "category": "custom",
+    "requiresDb": true,
+    "parameters": [
+      {
+        "name": "database",
+        "label": "Database",
+        "type": "database",
+        "required": true
+      }
+    ],
+    "enabled": true
+  }
+]
+

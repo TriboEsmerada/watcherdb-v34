@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatcherDB Control</title>
+    <link href="/static/vendor/fontawesome/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=1">
+    <style nonce="{{ csp_nonce }}">
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a; color: #e2e8f0; min-height: 100vh;
+        }
+
+        /* Header */
+        .control-header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155; padding: 16px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .control-header h1 {
+            font-size: 20px; font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .control-header h1 i { color: #3b82f6; }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .btn-back {
+            background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; color: #60a5fa;
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px;
+            display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+        }
+        .btn-back:hover { background: rgba(59,130,246,0.25); }
+        .user-info { color: #94a3b8; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+
+        /* Navigation Tabs */
+        .control-nav {
+            background: #1e293b; border-bottom: 1px solid #334155;
+            display: flex; gap: 0; padding: 0 24px;
+        }
+        .nav-tab {
+            padding: 14px 24px; cursor: pointer; border: none; background: none;
+            color: #94a3b8; font-size: 14px; font-weight: 500;
+            border-bottom: 3px solid transparent; transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-tab:hover { color: #e2e8f0; background: rgba(59,130,246,0.05); }
+        .nav-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+
+        /* Content */
+        .control-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Cards */
+        .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155; border-radius: 12px; padding: 20px;
+        }
+        .stat-card .value { font-size: 28px; font-weight: 800; color: #f1f5f9; }
+        .stat-card .label { font-size: 12px; color: #64748b; margin-top: 4px; text-transform: uppercase; }
+        .stat-card.ok .value { color: #22c55e; }
+        .stat-card.warning .value { color: #f59e0b; }
+        .stat-card.critical .value { color: #ef4444; }
+
+        /* Table */
+        .data-table {
+            width: 100%; border-collapse: collapse;
+            background: #1e293b; border-radius: 12px; overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .data-table th {
+            background: #0f172a; padding: 12px 16px; text-align: left;
+            font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;
+            border-bottom: 1px solid #334155;
+        }
+        .data-table td {
+            padding: 12px 16px; border-bottom: 1px solid rgba(51,65,85,0.5);
+            font-size: 13px;
+        }
+        .data-table tr:hover { background: rgba(59,130,246,0.05); }
+
+        /* Badges */
+        .badge {
+            padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+            display: inline-block;
+        }
+        .badge-admin { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .badge-analyst { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .badge-viewer { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .badge-operator { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .badge-success { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .badge-failed { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .badge-ad { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .badge-local { background: rgba(148,163,184,0.15); color: #94a3b8; }
+        .badge-active { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .badge-disabled { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .badge-locked { background: rgba(245,158,11,0.15); color: #f59e0b; }
+
+        /* Action buttons */
+        .btn-sm {
+            padding: 5px 12px; border-radius: 6px; border: 1px solid; font-size: 11px;
+            cursor: pointer; transition: all 0.2s; background: transparent;
+        }
+        .btn-edit { border-color: #3b82f6; color: #60a5fa; }
+        .btn-edit:hover { background: rgba(59,130,246,0.15); }
+        .btn-toggle { border-color: #f59e0b; color: #f59e0b; }
+        .btn-toggle:hover { background: rgba(245,158,11,0.15); }
+        .btn-danger { border-color: #ef4444; color: #ef4444; }
+        .btn-danger:hover { background: rgba(239,68,68,0.15); }
+        .btn-create {
+            background: linear-gradient(135deg, #3b82f6, #2563eb); border: none;
+            color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+            font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-create:hover { opacity: 0.9; }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px;
+        }
+        .toolbar-title { font-size: 16px; font-weight: 600; color: #f1f5f9; }
+        .toolbar input[type="text"] {
+            background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+            padding: 8px 14px; color: #e2e8f0; font-size: 13px; width: 250px;
+        }
+        .toolbar input:focus { outline: none; border-color: #3b82f6; }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+            padding: 32px; max-width: 480px; width: 90%;
+        }
+        .modal-box h3 { font-size: 18px; margin-bottom: 20px; }
+        .modal-box label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; margin-top: 12px; }
+        .modal-box input, .modal-box select {
+            width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155;
+            border-radius: 8px; color: #e2e8f0; font-size: 14px;
+        }
+        .modal-box .modal-actions { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
+
+        /* Config grid */
+        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .config-section {
+            background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px;
+        }
+        .config-section h4 { font-size: 14px; color: #60a5fa; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .config-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(51,65,85,0.3); }
+        .config-row:last-child { border-bottom: none; }
+        .config-label { font-size: 13px; color: #94a3b8; }
+        .config-value { font-size: 13px; color: #f1f5f9; font-weight: 600; }
+
+        /* Section Toolbar */
+        .section-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-toolbar h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: #64748b; }
+        .loading i { font-size: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Refresh indicator */
+        .refresh-time { font-size: 11px; color: #475569; }
+
+        /* Select role dropdown in table */
+        .role-select {
+            background: transparent; border: 1px solid #334155; border-radius: 6px;
+            color: #e2e8f0; padding: 4px 8px; font-size: 12px; cursor: pointer;
+        }
+
+        /* Online/Offline dots */
+        .online-dot {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+            background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5);
+            animation: pulse 2s infinite;
+        }
+        .offline-dot {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+            background: #475569;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* ══════ LIGHT MODE ══════ */
+        body.light-mode { background: #f1f5f9; color: #1e293b; }
+        body.light-mode .control-header { background: linear-gradient(135deg, #e2e8f0, #f1f5f9); border-bottom-color: #cbd5e1; }
+        body.light-mode .control-header h1 { color: #1e293b; }
+        body.light-mode .control-nav { background: #e2e8f0; border-bottom-color: #cbd5e1; }
+        body.light-mode .nav-tab { color: #64748b; }
+        body.light-mode .nav-tab:hover { color: #1e293b; background: rgba(59,130,246,0.08); }
+        body.light-mode .nav-tab.active { color: #2563eb; }
+        body.light-mode .stat-card { background: linear-gradient(145deg, #ffffff, #f8fafc); border-color: #e2e8f0; }
+        body.light-mode .stat-card .value { color: #1e293b; }
+        body.light-mode .stat-card .label { color: #64748b; }
+        body.light-mode .data-table { background: #ffffff; border-color: #e2e8f0; }
+        body.light-mode .data-table th { background: #f8fafc; color: #475569; border-bottom-color: #e2e8f0; }
+        body.light-mode .data-table td { color: #334155; border-bottom-color: #f1f5f9; }
+        body.light-mode .data-table tr:hover { background: rgba(59,130,246,0.04); }
+        body.light-mode .toolbar-title { color: #1e293b; }
+        body.light-mode .toolbar input[type="text"] { background: #ffffff; border-color: #e2e8f0; color: #1e293b; }
+        body.light-mode .config-section { background: #ffffff; border-color: #e2e8f0; }
+        body.light-mode .config-label { color: #475569; }
+        body.light-mode .config-value { color: #1e293b; }
+        body.light-mode .config-row { border-bottom-color: #f1f5f9; }
+        body.light-mode .modal-box { background: #ffffff; border-color: #e2e8f0; }
+        body.light-mode .modal-box input, body.light-mode .modal-box select { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+        body.light-mode .modal-box label { color: #475569; }
+        body.light-mode .user-info { color: #475569; }
+        body.light-mode .role-select { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+        body.light-mode .btn-back { background: rgba(59,130,246,0.08); border-color: #3b82f6; }
+        body.light-mode .refresh-time { color: #94a3b8; }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3);
+            color: #94a3b8; width: 36px; height: 36px; border-radius: 8px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 15px; transition: all 0.2s;
+        }
+        .theme-toggle:hover { background: rgba(148,163,184,0.25); color: #e2e8f0; }
+        body.light-mode .theme-toggle { color: #f59e0b; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+        body.light-mode .theme-toggle:hover { background: rgba(245,158,11,0.15); }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="control-header">
+    <h1><i class="fas fa-shield-alt"></i> WatcherDB Control</h1>
+    <div class="header-actions">
+        <span class="user-info" id="ctrlUserInfo"></span>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn" title="Mudar para Light Mode" style="font-size:18px;line-height:1;">
+            <span id="themeIcon">&#9790;</span>
+        </button>
+        <button class="btn-back" onclick="window.location.href='/watcherdb'">
+            <i class="fas fa-arrow-left"></i> Voltar ao Portal
+        </button>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="control-nav">
+    <button class="nav-tab active" data-section="users" onclick="switchSection('users', this)">
+        <i class="fas fa-users"></i> Utilizadores
+    </button>
+    <button class="nav-tab" data-section="authlog" onclick="switchSection('authlog', this)">
+        <i class="fas fa-scroll"></i> Auth Log
+    </button>
+    <button class="nav-tab" data-section="sessions" onclick="switchSection('sessions', this)">
+        <i class="fas fa-signal"></i> Sessoes Activas
+    </button>
+    <button class="nav-tab" data-section="resources" onclick="switchSection('resources', this)">
+        <i class="fas fa-tachometer-alt"></i> Resources
+    </button>
+    <button class="nav-tab" data-section="config" onclick="switchSection('config', this)">
+        <i class="fas fa-cogs"></i> Configuracoes
+    </button>
+</div>
+
+<!-- Content -->
+<div class="control-content">
+
+    <!-- ======== USERS ======== -->
+    <div id="section-users" class="section active">
+        <div class="stat-cards" id="userStats"></div>
+        <div class="toolbar">
+            <div class="toolbar-title">Gestao de Utilizadores</div>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <input type="text" id="userSearch" placeholder="Filtrar por username..." oninput="filterUsers()">
+                <button class="btn-create" onclick="openCreateUserModal()"><i class="fas fa-user-plus"></i> Novo User</button>
+            </div>
+        </div>
+        <table class="data-table" id="usersTable">
+            <thead>
+                <tr>
+                    <th style="width:40px;">Online</th>
+                    <th>Username</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Auth</th>
+                    <th>Estado</th>
+                    <th>Ultimo Login</th>
+                    <th>Accoes</th>
+                </tr>
+            </thead>
+            <tbody id="usersBody"><tr><td colspan="9" class="loading"><i class="fas fa-spinner"></i></td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- ======== AUTH LOG ======== -->
+    <div id="section-authlog" class="section">
+        <div class="stat-cards" id="authLogStats"></div>
+        <div class="toolbar">
+            <div class="toolbar-title">Log de Autenticacao <span class="refresh-time" id="authLogTime"></span></div>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <input type="text" id="authLogFilter" placeholder="Filtrar por username..." oninput="filterAuthLog()">
+                <select id="authLogAction" onchange="loadAuthLog()" style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px;color:#e2e8f0;font-size:13px;">
+                    <option value="">Todas as accoes</option>
+                    <option value="LOGIN_SUCCESS">Login Success</option>
+                    <option value="LOGIN_FAILED">Login Failed</option>
+                    <option value="PASSWORD_CHANGE">Password Change</option>
+                </select>
+            </div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr><th>Data/Hora</th><th>Username</th><th>Accao</th><th>IP</th><th>Detalhes</th></tr>
+            </thead>
+            <tbody id="authLogBody"><tr><td colspan="5" class="loading"><i class="fas fa-spinner"></i></td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- ======== SESSIONS ======== -->
+    <div id="section-sessions" class="section">
+        <div class="stat-cards" id="sessionStats"></div>
+
+        <!-- Online Now -->
+        <div class="toolbar">
+            <div class="toolbar-title"><i class="fas fa-circle" style="color:#22c55e;font-size:10px;margin-right:6px;animation:pulse 2s infinite;"></i>Online Agora <span class="refresh-time" id="onlineTime"></span></div>
+        </div>
+        <style nonce="{{ csp_nonce }}">@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }</style>
+        <table class="data-table" style="margin-bottom:24px;">
+            <thead>
+                <tr><th style="width:40px;"></th><th>Username</th><th>Nome</th><th>Role</th><th>IP</th><th>Ultima Actividade</th></tr>
+            </thead>
+            <tbody id="onlineBody"><tr><td colspan="6" class="loading"><i class="fas fa-spinner"></i></td></tr></tbody>
+        </table>
+
+        <!-- Recent Sessions (24h) -->
+        <div class="toolbar">
+            <div class="toolbar-title">Sessoes Recentes (24h)</div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr><th>Username</th><th>Nome</th><th>Role</th><th>IP</th><th>Login</th><th>Ha quanto tempo</th></tr>
+            </thead>
+            <tbody id="sessionsBody"><tr><td colspan="6" class="loading"><i class="fas fa-spinner"></i></td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- ======== RESOURCES ======== -->
+    <div class="section" id="section-resources">
+        <div class="section-toolbar">
+            <h3><i class="fas fa-tachometer-alt"></i> Resource Monitor</h3>
+            <button class="btn-sm btn-edit" onclick="loadResources()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div id="resourceCards" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px;"></div>
+        <div id="resourceDetails" class="config-grid"></div>
+        <div style="font-size:11px; color:#475569; margin-top:12px;">Auto-refresh: 10s</div>
+    </div>
+
+    <!-- ======== CONFIG ======== -->
+    <div id="section-config" class="section">
+        <div class="toolbar" style="margin-bottom:20px;">
+            <div class="toolbar-title">Configuracoes do Sistema</div>
+            <span class="refresh-time" id="configTime"></span>
+        </div>
+        <div class="config-grid" id="configGrid"></div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-overlay" id="editUserModal">
+    <div class="modal-box">
+        <h3><i class="fas fa-pen" style="color:#3b82f6;margin-right:8px;"></i>Editar Utilizador</h3>
+        <label>Username</label>
+        <input type="text" id="editUsername" disabled style="opacity:0.6;">
+        <div id="editAdBadge" style="display:none; margin:4px 0 8px; padding:4px 10px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); border-radius:6px; font-size:12px; color:#60a5fa; display:inline-flex; align-items:center; gap:4px;">
+            <i class="fab fa-windows"></i> <span id="editAdDomain"></span>
+        </div>
+        <label>Nome Completo</label>
+        <input type="text" id="editFullName" placeholder="Nome Completo">
+        <label>Email</label>
+        <input type="email" id="editEmail" placeholder="email@domain.com">
+        <label>Role</label>
+        <select id="editRole">
+            <option value="viewer">Viewer</option>
+            <option value="admin">Admin</option>
+        </select>
+        <div id="editError" style="color:#ef4444;font-size:12px;margin-top:8px;display:none;"></div>
+        <div id="editSuccess" style="color:#22c55e;font-size:12px;margin-top:8px;display:none;"></div>
+        <div class="modal-actions">
+            <button class="btn-sm btn-edit" onclick="closeModal('editUserModal')">Cancelar</button>
+            <button class="btn-create" onclick="saveEditUser()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal-overlay" id="createUserModal">
+    <div class="modal-box">
+        <h3><i class="fas fa-user-plus" style="color:#3b82f6;margin-right:8px;"></i>Criar Utilizador</h3>
+
+        <!-- Auth Type Toggle -->
+        <div style="display:flex; gap:4px; margin-bottom:12px; background:#0f172a; border-radius:8px; padding:3px;">
+            <button type="button" id="authTypeLocal" onclick="setAuthType('local')" class="btn-sm" style="flex:1; padding:8px; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; background:#3b82f6; color:white;">
+                <i class="fas fa-database"></i> Local
+            </button>
+            <button type="button" id="authTypeAD" onclick="setAuthType('ad')" class="btn-sm" style="flex:1; padding:8px; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; background:transparent; color:#64748b;">
+                <i class="fab fa-windows"></i> Active Directory
+            </button>
+        </div>
+        <div id="authTypeHint" style="font-size:11px; color:#64748b; margin-bottom:10px;">Utilizador com senha gerida pelo WatcherDB.</div>
+
+        <label>Username</label>
+        <input type="text" id="newUsername" placeholder="username">
+
+        <!-- Local: Password -->
+        <div id="localPasswordSection">
+            <label>Password</label>
+            <div style="display:flex; gap:6px;">
+                <input type="text" id="newPassword" placeholder="Min. 8 chars, A-z, 0-9, simbolo" style="flex:1;">
+                <button type="button" onclick="suggestStrongPassword()" class="btn-sm" style="background:#8b5cf6; color:white; white-space:nowrap; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-size:12px;" title="Gerar senha forte aleatoria"><i class="fas fa-magic"></i> Sugerir</button>
+            </div>
+            <div style="font-size:11px; color:#64748b; margin-top:4px;">Requisitos: 8+ chars, maiuscula, minuscula, numero, simbolo. Ex: F0gueira!</div>
+        </div>
+
+        <!-- AD: Domain -->
+        <div id="adDomainSection" style="display:none;">
+            <label>Dominio AD</label>
+            <select id="newAdDomain" style="width:100%;padding:8px 12px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;font-size:13px;">
+                <option value="">-- Seleccione --</option>
+            </select>
+            <div style="font-size:11px; color:#64748b; margin-top:4px;">Utilizador autenticado pelo Active Directory. A senha e gerida pelo Windows.</div>
+        </div>
+
+        <label>Nome Completo</label>
+        <input type="text" id="newFullName" placeholder="Nome Completo">
+        <label>Email</label>
+        <input type="email" id="newEmail" placeholder="email@domain.com">
+        <label>Role</label>
+        <select id="newRole">
+            <option value="viewer">Viewer — leitura (dashboard, drill-downs, relatorios)</option>
+            <option value="dba">DBA — leitura + LIVE (texto SQL, blocking, tempdb)</option>
+            <option value="admin">Admin — controlo total (utilizadores, roles, config)</option>
+        </select>
+        <div id="createError" style="color:#ef4444;font-size:12px;margin-top:8px;display:none;"></div>
+        <div class="modal-actions">
+            <button class="btn-sm btn-edit" onclick="closeModal('createUserModal')">Cancelar</button>
+            <button class="btn-create" onclick="createUser()">Criar</button>
+        </div>
+    </div>
+</div>
+
+<script nonce="{{ csp_nonce }}">
+    // ========================================
+    // XSS prevention
+    // ========================================
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
+    // ========================================
+    // AUTH — reuse token from portal
+    // ========================================
+    const AUTH_TOKEN_KEY = 'watcherdb_token';
+    const AUTH_USER_KEY = 'watcherdb_user';
+
+    function getToken() { return localStorage.getItem(AUTH_TOKEN_KEY); }
+    function getUser() { try { return JSON.parse(localStorage.getItem(AUTH_USER_KEY)); } catch { return null; } }
+
+    async function apiFetch(url, options = {}) {
+        const token = getToken();
+        if (!token) { window.location.href = '/watcherdb'; return; }
+        if (!options.headers) options.headers = {};
+        options.headers['Authorization'] = 'Bearer ' + token;
+        if (options.body && !options.headers['Content-Type']) options.headers['Content-Type'] = 'application/json';
+        const resp = await fetch(url, options);
+        if (resp.status === 401) { window.location.href = '/watcherdb'; return; }
+        if (resp.status === 403) { alert('Acesso restrito a administradores'); return; }
+        return resp.json();
+    }
+
+    // ========================================
+    // ONLINE USERS tracking
+    // ========================================
+    let onlineUsernames = new Set();
+
+    async function loadOnlineUsers() {
+        try {
+            const data = await apiFetch('/api/auth/admin/online');
+            const list = data?.online || [];
+            onlineUsernames = new Set(list.map(u => u.username));
+            return list;
+        } catch { return []; }
+    }
+
+    // Check auth and init
+    (async function() {
+        const user = getUser();
+        if (!user || user.role !== 'admin') {
+            alert('Acesso restrito a administradores');
+            window.location.href = '/watcherdb';
+            return;
+        }
+        document.getElementById('ctrlUserInfo').innerHTML =
+            `<i class="fas fa-user-shield"></i> ${escapeHtml(user.full_name || user.username)} (${escapeHtml(user.role)})`;
+        await loadOnlineUsers();
+        loadUsers();
+        loadConfig(); // Pre-load config so _adConfigured is set for create user modal
+    })();
+
+    // ========================================
+    // NAV
+    // ========================================
+    function switchSection(id, tab) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('section-' + id).classList.add('active');
+        tab.classList.add('active');
+        if (id === 'users') loadUsers();
+        else if (id === 'authlog') loadAuthLog();
+        else if (id === 'sessions') loadSessions();
+        else if (id === 'resources') loadResources();
+        else if (id === 'config') loadConfig();
+    }
+
+    // ========================================
+    // USERS
+    // ========================================
+    let allUsers = [];
+
+    async function loadUsers() {
+        await loadOnlineUsers();
+        const data = await apiFetch('/api/auth/users');
+        if (!data) return;
+        allUsers = data.data || data.users || [];
+        renderUserStats();
+        renderUsersTable(allUsers);
+        // Auto-refresh users every 10s while tab is active
+        if (document.getElementById('section-users').classList.contains('active')) {
+            setTimeout(loadUsers, 10000);
+        }
+    }
+
+    function renderUserStats() {
+        const total = allUsers.length;
+        const admins = allUsers.filter(u => u.role === 'admin').length;
+        const active = allUsers.filter(u => !u.disabled).length;
+        const disabled = allUsers.filter(u => u.disabled).length;
+        const locked = allUsers.filter(u => u.is_locked && !u.disabled).length;
+        const online = onlineUsernames.size;
+        document.getElementById('userStats').innerHTML = `
+            <div class="stat-card"><div class="value">${total}</div><div class="label">Total Users</div></div>
+            <div class="stat-card ok"><div class="value">${active}</div><div class="label">Activos</div></div>
+            <div class="stat-card ${admins > 3 ? 'warning' : ''}"><div class="value">${admins}</div><div class="label">Admins</div></div>
+            <div class="stat-card ok"><div class="value">${online}</div><div class="label"><i class="fas fa-circle" style="color:#22c55e;font-size:8px;margin-right:4px;"></i>Online</div></div>
+            <div class="stat-card ${disabled > 0 ? 'warning' : ''}"><div class="value">${disabled}</div><div class="label">Desactivados</div></div>
+            <div class="stat-card ${locked > 0 ? 'warning' : ''}"><div class="value">${locked}</div><div class="label">Bloqueados</div></div>
+        `;
+    }
+
+    function renderUsersTable(users) {
+        const currentUser = getUser()?.username;
+        document.getElementById('usersBody').innerHTML = users.map(u => {
+            const isAD = (u.password_hash || '').startsWith('ad_auth:');
+            const isDisabled = u.disabled;
+            const isLocked = u.is_locked && !isDisabled;
+            const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString('pt-PT') : '-';
+            const isSelf = u.username === currentUser;
+            const isOnline = onlineUsernames.has(u.username);
+            return `<tr>
+                <td style="text-align:center;">${isOnline ? '<span class="online-dot"></span>' : '<span class="offline-dot"></span>'}</td>
+                <td style="font-weight:600;">${escapeHtml(u.username)}</td>
+                <td>${escapeHtml(u.full_name || '-')}</td>
+                <td style="color:#64748b;font-size:12px;">${escapeHtml(u.email || '-')}</td>
+                <td>
+                    <select class="role-select" onchange="changeRole('${escapeHtml(u.username)}', this.value)" ${isSelf ? 'disabled' : ''}>
+                        ${['admin','dba','viewer'].map(r =>
+                            `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td><span class="badge ${isAD ? 'badge-ad' : 'badge-local'}">${isAD ? 'AD' : 'Local'}</span></td>
+                <td><span class="badge ${isDisabled ? 'badge-disabled' : (isLocked ? 'badge-locked' : 'badge-active')}">${isDisabled ? 'Desactivado' : (isLocked ? 'Bloqueado' : 'Activo')}</span></td>
+                <td style="font-size:12px;color:#94a3b8;">${lastLogin}</td>
+                <td style="white-space:nowrap;">
+                    <button class="btn-sm" onclick="openEditUserModal('${escapeHtml(u.username)}','${escapeHtml(u.full_name||'')}','${escapeHtml(u.email||'')}','${u.role}',${isAD})" title="Editar" style="background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);"><i class="fas fa-pen"></i></button>
+                    ${!isSelf ? `
+                        ${isLocked ? `<button class="btn-sm btn-toggle" onclick="unlockUser('${escapeHtml(u.username)}')" title="Desbloquear"><i class="fas fa-unlock"></i></button>` : ''}
+                        <button class="btn-sm btn-toggle" onclick="toggleUser('${escapeHtml(u.username)}', ${!isDisabled})" title="${isDisabled ? 'Activar' : 'Desactivar'}">${isDisabled ? '<i class="fas fa-check"></i>' : '<i class="fas fa-ban"></i>'}</button>
+                        <button class="btn-sm" onclick="adminResetPassword('${escapeHtml(u.username)}')" title="Reset Senha" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);"><i class="fas fa-key"></i></button>
+                        <button class="btn-sm" onclick="adminDeleteUser('${escapeHtml(u.username)}')" title="Remover User" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);"><i class="fas fa-trash"></i></button>
+                    ` : ''}
+                </td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="9" style="text-align:center;color:#64748b;">Nenhum utilizador</td></tr>';
+    }
+
+    function filterUsers() {
+        const q = document.getElementById('userSearch').value.toLowerCase();
+        renderUsersTable(q ? allUsers.filter(u => u.username.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)) : allUsers);
+    }
+
+    async function changeRole(username, role) {
+        await apiFetch(`/api/auth/admin/users/${username}/role`, { method: 'POST', body: JSON.stringify({ role }) });
+        loadUsers();
+    }
+
+    async function toggleUser(username, disabled) {
+        await apiFetch(`/api/auth/users/${username}/toggle`, { method: 'POST', body: JSON.stringify({ disabled }) });
+        loadUsers();
+    }
+
+    async function unlockUser(username) {
+        await apiFetch(`/api/auth/users/${username}/unlock`, { method: 'POST' });
+        loadUsers();
+    }
+
+    // ========================================
+    // CREATE USER
+    // ========================================
+    let _createAuthType = 'local';
+    let _adConfigured = false;
+    let _adDomain = '';
+    let _adDomains = [];  // [{domain, server, base_dn, default_role, bind_user, bind_password}, ...]
+
+    function setAuthType(type) {
+        if (type === 'ad' && !_adConfigured) {
+            alert('Active Directory nao esta configurado.\nConfigure primeiro em Configuracoes \u2192 Active Directory.');
+            return;
+        }
+        _createAuthType = type;
+        const localBtn = document.getElementById('authTypeLocal');
+        const adBtn = document.getElementById('authTypeAD');
+        const localSection = document.getElementById('localPasswordSection');
+        const adSection = document.getElementById('adDomainSection');
+        const hint = document.getElementById('authTypeHint');
+        if (type === 'local') {
+            localBtn.style.background = '#3b82f6'; localBtn.style.color = 'white';
+            adBtn.style.background = 'transparent'; adBtn.style.color = '#64748b';
+            localSection.style.display = 'block';
+            adSection.style.display = 'none';
+            hint.textContent = 'Utilizador com senha gerida pelo WatcherDB.';
+        } else {
+            adBtn.style.background = '#3b82f6'; adBtn.style.color = 'white';
+            localBtn.style.background = 'transparent'; localBtn.style.color = '#64748b';
+            localSection.style.display = 'none';
+            adSection.style.display = 'block';
+            hint.textContent = 'Utilizador autenticado pelo Active Directory. A senha e gerida pelo Windows.';
+            // Populate domain dropdown with ALL configured domains
+            const domSelect = document.getElementById('newAdDomain');
+            if (domSelect) {
+                domSelect.innerHTML = _adDomains.map(d =>
+                    '<option value="' + escapeHtml(d.domain) + '">' + escapeHtml(d.domain) + '</option>'
+                ).join('');
+            }
+            // Auto-fill name/email if username already entered — do LDAP lookup
+            const existingUser = document.getElementById('newUsername').value.trim();
+            if (existingUser) {
+                autoFillAdUserFields(existingUser);  // Quick local fallback
+                if (existingUser.length >= 3) adLookupUser(existingUser);  // LDAP lookup
+            }
+        }
+    }
+
+    // AD Lookup — query LDAP for real user info
+    let _adLookupTimer = null;
+
+    function autoFillAdUserFields(username) {
+        // Quick local fallback (used while LDAP lookup is in progress)
+        if (!username || !_adDomain) return;
+        const nameEl = document.getElementById('newFullName');
+        const emailEl = document.getElementById('newEmail');
+        let nameParts = username.replace(/^ue_/i, '').replace(/[_\-.]/g, ' ').split(' ');
+        let fullName = nameParts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+        if (nameEl && (!nameEl.value || nameEl.dataset.auto === 'true')) {
+            nameEl.value = fullName;
+            nameEl.dataset.auto = 'true';
+        }
+        if (emailEl && (!emailEl.value || emailEl.dataset.auto === 'true')) {
+            emailEl.value = username.toLowerCase() + '@' + _adDomain;
+            emailEl.dataset.auto = 'true';
+        }
+    }
+
+    async function adLookupUser(username) {
+        const nameEl = document.getElementById('newFullName');
+        const emailEl = document.getElementById('newEmail');
+        const errEl = document.getElementById('createError');
+
+        // Show searching indicator
+        if (nameEl && (!nameEl.value || nameEl.dataset.auto === 'true')) {
+            nameEl.value = 'A pesquisar no AD...';
+            nameEl.dataset.auto = 'true';
+        }
+
+        try {
+            const selDomain = document.getElementById('newAdDomain')?.value || '';
+            const data = await apiFetch('/api/auth/admin/ad-lookup/' + encodeURIComponent(username) + '?domain=' + encodeURIComponent(selDomain));
+            if (!data) return;
+
+            if (data.found && data.multiple && data.users?.length > 1) {
+                // Multiple results — let admin choose
+                const choices = data.users.map((u, i) => (i+1) + '. ' + u.username + ' \u2014 ' + u.full_name).join('\n');
+                const pick = prompt(data.count + ' utilizadores encontrados:\n\n' + choices + '\n\nEscolha o numero:');
+                if (pick) {
+                    const idx = parseInt(pick) - 1;
+                    if (idx >= 0 && idx < data.users.length) {
+                        const user = data.users[idx];
+                        document.getElementById('newUsername').value = user.username;
+                        if (nameEl) { nameEl.value = user.full_name || ''; nameEl.dataset.auto = 'true'; }
+                        if (emailEl) { emailEl.value = user.email || ''; emailEl.dataset.auto = 'true'; }
+                        if (user.title || user.department) {
+                            errEl.textContent = (user.title || '') + (user.title && user.department ? ' \u2014 ' : '') + (user.department || '');
+                            errEl.style.color = '#60a5fa'; errEl.style.display = 'block';
+                        }
+                    }
+                } else {
+                    errEl.textContent = data.count + ' resultados encontrados. Escreva mais caracteres para refinar.';
+                    errEl.style.color = '#f59e0b'; errEl.style.display = 'block';
+                }
+            } else if (data.found && data.user) {
+                // Single result — auto-fill
+                document.getElementById('newUsername').value = data.user.username || username;
+                if (nameEl && (!nameEl.value || nameEl.value === 'A pesquisar no AD...' || nameEl.dataset.auto === 'true')) {
+                    nameEl.value = data.user.full_name || '';
+                    nameEl.dataset.auto = 'true';
+                }
+                if (emailEl && (!emailEl.value || emailEl.dataset.auto === 'true')) {
+                    emailEl.value = data.user.email || '';
+                    emailEl.dataset.auto = 'true';
+                }
+                if (data.user.title || data.user.department) {
+                    errEl.textContent = (data.user.title || '') + (data.user.title && data.user.department ? ' \u2014 ' : '') + (data.user.department || '');
+                    errEl.style.color = '#60a5fa'; errEl.style.display = 'block';
+                }
+            } else if (data.found === false) {
+                errEl.textContent = data.message || 'Utilizador nao encontrado no AD';
+                errEl.style.color = '#f59e0b'; errEl.style.display = 'block';
+            } else if (data.error) {
+                errEl.textContent = data.error;
+                errEl.style.color = '#ef4444'; errEl.style.display = 'block';
+            }
+        } catch (e) {
+            // Silently keep local fallback
+        }
+    }
+
+    // Trigger on username input in AD mode — debounce 600ms for LDAP lookup
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'newUsername' && _createAuthType === 'ad') {
+            const username = e.target.value.trim();
+            // Immediate local fallback
+            autoFillAdUserFields(username);
+            // Debounced LDAP lookup
+            if (username.length >= 3) {
+                if (_adLookupTimer) clearTimeout(_adLookupTimer);
+                _adLookupTimer = setTimeout(() => adLookupUser(username), 600);
+            }
+        }
+        // Mark as manual edit if user types directly in name/email
+        if (e.target.id === 'newFullName') e.target.dataset.auto = 'false';
+        if (e.target.id === 'newEmail') e.target.dataset.auto = 'false';
+    });
+
+    function openCreateUserModal() {
+        _createAuthType = 'local';
+        setAuthType('local');
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newPassword').value = '';
+        if (document.getElementById('newAdDomain')) document.getElementById('newAdDomain').value = '';
+        const fnEl = document.getElementById('newFullName'); fnEl.value = ''; fnEl.dataset.auto = 'true';
+        const emEl = document.getElementById('newEmail'); emEl.value = ''; emEl.dataset.auto = 'true';
+        document.getElementById('newRole').value = 'viewer';
+        document.getElementById('createError').style.display = 'none';
+        document.getElementById('createUserModal').classList.add('show');
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    // Strong password generator
+    function suggestStrongPassword() {
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const digits = '0123456789';
+        const symbols = '!@#$%&*+-=?';
+        const all = upper + lower + digits + symbols;
+        let pwd = '';
+        pwd += upper[Math.floor(Math.random() * upper.length)];
+        pwd += lower[Math.floor(Math.random() * lower.length)];
+        pwd += digits[Math.floor(Math.random() * digits.length)];
+        pwd += symbols[Math.floor(Math.random() * symbols.length)];
+        for (let i = 4; i < 12; i++) pwd += all[Math.floor(Math.random() * all.length)];
+        pwd = pwd.split('').sort(() => Math.random() - 0.5).join('');
+        document.getElementById('newPassword').value = pwd;
+    }
+
+    // Password validation
+    function validateStrongPassword(pwd) {
+        if (!pwd || pwd.length < 8) return 'Minimo 8 caracteres';
+        if (!/[A-Z]/.test(pwd)) return 'Falta letra maiuscula';
+        if (!/[a-z]/.test(pwd)) return 'Falta letra minuscula';
+        if (!/[0-9]/.test(pwd)) return 'Falta numero';
+        if (!/[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]/.test(pwd)) return 'Falta simbolo (!@#$%...)';
+        return null;
+    }
+
+    async function createUser() {
+        const username = document.getElementById('newUsername').value.trim();
+        const full_name = document.getElementById('newFullName').value.trim();
+        const email = document.getElementById('newEmail').value.trim();
+        const role = document.getElementById('newRole').value;
+        const errEl = document.getElementById('createError');
+        errEl.style.display = 'none';
+
+        let password;
+        if (_createAuthType === 'ad') {
+            const domain = (document.getElementById('newAdDomain')?.value || '').trim();
+            if (!username) { errEl.textContent = 'Username obrigatorio'; errEl.style.display = 'block'; return; }
+            password = 'ad_auth:' + (domain || 'default');
+        } else {
+            password = document.getElementById('newPassword').value;
+            if (!username || !password) { errEl.textContent = 'Username e password obrigatorios'; errEl.style.display = 'block'; return; }
+            const pwdErr = validateStrongPassword(password);
+            if (pwdErr) { errEl.textContent = pwdErr; errEl.style.display = 'block'; return; }
+        }
+
+        try {
+            const data = await apiFetch('/api/auth/users', {
+                method: 'POST',
+                body: JSON.stringify({ username, password, role, email: email || null, full_name: full_name || null })
+            });
+            if (data?.success) { closeModal('createUserModal'); loadUsers(); showToast('User ' + username + ' criado', 'success'); }
+            else { errEl.textContent = data?.detail || data?.error || 'Erro ao criar user'; errEl.style.display = 'block'; }
+        } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+    }
+
+    // ========================================
+    // ADMIN: Reset Password
+    // ========================================
+    async function adminResetPassword(username) {
+        const newPwd = prompt(`Nova senha para "${username}":\n(Min 8 chars, maiuscula, minuscula, numero, simbolo)`);
+        if (!newPwd) return;
+        const pwdErr = validateStrongPassword(newPwd);
+        if (pwdErr) { alert(pwdErr); return; }
+        const data = await apiFetch(`/api/auth/users/${username}/reset-password`, {
+            method: 'POST', body: JSON.stringify({ new_password: newPwd })
+        });
+        if (data?.success) { alert(`Senha de ${username} alterada com sucesso`); }
+        else { alert(data?.detail || data?.error || 'Erro ao alterar senha'); }
+    }
+
+    // ========================================
+    // ADMIN: Delete User
+    // ========================================
+    async function adminDeleteUser(username) {
+        if (!confirm(`Tem a certeza que quer REMOVER permanentemente o utilizador "${username}"?\n\nEsta accao nao pode ser desfeita.`)) return;
+        const data = await apiFetch(`/api/auth/users/${username}`, { method: 'DELETE' });
+        if (data?.success) { alert(`Utilizador ${username} removido`); loadUsers(); }
+        else { alert(data?.detail || data?.error || 'Erro ao remover user'); }
+    }
+
+    // ========================================
+    // AUTH LOG
+    // ========================================
+    let allLogs = [];
+
+    async function loadAuthLog() {
+        const data = await apiFetch('/api/auth/admin/auth-log?limit=200');
+        if (!data) return;
+        allLogs = data.logs || [];
+        const total = allLogs.length;
+        const success = allLogs.filter(l => l.action === 'LOGIN_SUCCESS').length;
+        const failed = allLogs.filter(l => l.action === 'LOGIN_FAILED').length;
+        document.getElementById('authLogStats').innerHTML = `
+            <div class="stat-card"><div class="value">${total}</div><div class="label">Total Eventos</div></div>
+            <div class="stat-card ok"><div class="value">${success}</div><div class="label">Logins OK</div></div>
+            <div class="stat-card ${failed > 10 ? 'critical' : failed > 0 ? 'warning' : ''}"><div class="value">${failed}</div><div class="label">Logins Falhados</div></div>
+        `;
+        renderAuthLog(allLogs);
+        document.getElementById('authLogTime').textContent = `(${new Date().toLocaleTimeString('pt-PT')})`;
+    }
+
+    function renderAuthLog(logs) {
+        const filter = document.getElementById('authLogFilter').value.toLowerCase();
+        const actionFilter = document.getElementById('authLogAction').value;
+        let filtered = logs;
+        if (filter) filtered = filtered.filter(l => l.username.toLowerCase().includes(filter));
+        if (actionFilter) filtered = filtered.filter(l => l.action === actionFilter);
+        document.getElementById('authLogBody').innerHTML = filtered.map(l => {
+            const dt = l.created_at ? new Date(l.created_at).toLocaleString('pt-PT') : '-';
+            const actionBadge = l.action.includes('SUCCESS') ? 'badge-success' : l.action.includes('FAILED') ? 'badge-failed' : 'badge-local';
+            return `<tr>
+                <td style="font-size:12px;color:#94a3b8;">${dt}</td>
+                <td style="font-weight:600;">${escapeHtml(l.username)}</td>
+                <td><span class="badge ${actionBadge}">${escapeHtml(l.action)}</span></td>
+                <td style="font-size:12px;color:#64748b;">${escapeHtml(l.ip_address || '-')}</td>
+                <td style="font-size:12px;color:#94a3b8;max-width:300px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(l.details || '-')}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center;color:#64748b;">Nenhum registo</td></tr>';
+    }
+
+    function filterAuthLog() { renderAuthLog(allLogs); }
+
+    // ========================================
+    // SESSIONS
+    // ========================================
+    async function loadSessions() {
+        const onlineUsers = await loadOnlineUsers();
+        const data = await apiFetch('/api/auth/admin/sessions');
+        const sessions = data?.sessions || [];
+
+        document.getElementById('sessionStats').innerHTML = `
+            <div class="stat-card ok"><div class="value">${onlineUsers.length}</div><div class="label"><i class="fas fa-circle" style="color:#22c55e;font-size:8px;margin-right:4px;"></i>Online Agora</div></div>
+            <div class="stat-card"><div class="value">${sessions.length}</div><div class="label">Sessoes (24h)</div></div>
+        `;
+
+        document.getElementById('onlineTime').textContent = `(${new Date().toLocaleTimeString('pt-PT')})`;
+        document.getElementById('onlineBody').innerHTML = onlineUsers.map(u => {
+            const ago = u.last_seen ? timeAgo(new Date(u.last_seen)) : '-';
+            return `<tr>
+                <td><span class="online-dot"></span></td>
+                <td style="font-weight:600;">${escapeHtml(u.username)}</td>
+                <td>${escapeHtml(u.full_name || '-')}</td>
+                <td><span class="badge badge-${escapeHtml(u.role || 'viewer')}">${escapeHtml(u.role)}</span></td>
+                <td style="font-size:12px;color:#64748b;">${escapeHtml(u.ip || '-')}</td>
+                <td style="font-size:12px;color:#22c55e;">${ago}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="6" style="text-align:center;color:#64748b;">Ninguem online</td></tr>';
+
+        document.getElementById('sessionsBody').innerHTML = sessions.map(s => {
+            const loginTime = s.login_time ? new Date(s.login_time) : null;
+            const dt = loginTime ? loginTime.toLocaleString('pt-PT') : '-';
+            const ago = loginTime ? timeAgo(loginTime) : '-';
+            const isOnline = onlineUsernames.has(s.username);
+            return `<tr>
+                <td style="font-weight:600;">${isOnline ? '<span class="online-dot" style="width:8px;height:8px;margin-right:6px;"></span>' : ''}${escapeHtml(s.username)}</td>
+                <td>${escapeHtml(s.full_name || '-')}</td>
+                <td><span class="badge badge-${escapeHtml(s.role || 'viewer')}">${escapeHtml(s.role)}</span></td>
+                <td style="font-size:12px;color:#64748b;">${escapeHtml(s.ip_address || '-')}</td>
+                <td style="font-size:12px;color:#94a3b8;">${dt}</td>
+                <td style="font-size:12px;color:#60a5fa;">${ago}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="6" style="text-align:center;color:#64748b;">Nenhuma sessao recente</td></tr>';
+
+        // Auto-refresh sessions every 10s while tab is active
+        if (document.getElementById('section-sessions').classList.contains('active')) {
+            setTimeout(loadSessions, 10000);
+        }
+    }
+
+    function timeAgo(date) {
+        const mins = Math.floor((Date.now() - date.getTime()) / 60000);
+        if (mins < 1) return 'agora';
+        if (mins < 60) return `${mins}m`;
+        if (mins < 1440) return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+        return `${Math.floor(mins / 1440)}d`;
+    }
+
+    // ========================================
+    // CONFIG — Editable Session Policy
+    // ========================================
+    async function loadConfig() {
+        const data = await apiFetch('/api/auth/admin/system-config');
+        if (!data) return;
+        const cfg = data.config || {};
+        const jwtMin = cfg.auth?.jwt_expire_minutes || 480;
+        const maxFailed = cfg.auth?.max_failed_attempts || 5;
+        const lockoutMin = cfg.auth?.lockout_minutes || 30;
+        document.getElementById('configTime').textContent = `(${new Date().toLocaleTimeString('pt-PT')})`;
+        const adEnabled = cfg.active_directory?.enabled || false;
+        // Multi-domain support
+        _adDomains = cfg.active_directory?.domains || [];
+        // Backward compat: if no domains array but legacy single domain exists
+        if (!_adDomains.length && cfg.active_directory?.domain) {
+            _adDomains = [{
+                domain: cfg.active_directory.domain,
+                server: cfg.active_directory.server || '',
+                base_dn: cfg.active_directory.base_dn || '',
+                default_role: cfg.active_directory.default_role || 'viewer',
+                bind_user: cfg.active_directory.bind_user || '',
+                bind_password: cfg.active_directory.bind_password || '',
+            }];
+        }
+        _adConfigured = !!(adEnabled && _adDomains.length > 0);
+        _adDomain = _adDomains.length > 0 ? _adDomains[0].domain : '';
+        const selStyle = 'background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 10px;color:#e2e8f0;font-size:13px;';
+        const inputStyle = 'background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 10px;color:#e2e8f0;font-size:13px;width:220px;';
+        document.getElementById('configGrid').innerHTML = `
+            <div class="config-section">
+                <h4><i class="fas fa-key"></i> Politica de Sessoes</h4>
+                <div class="config-row">
+                    <span class="config-label">${_h('JWT Expiracao (minutos)', 'Tempo de vida do token JWT. Apos expirar, o user precisa fazer login novamente.')}</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <select id="cfgJwtExpire" style="${selStyle}">
+                            <option value="60" ${jwtMin==60?'selected':''}>60 min (1h)</option>
+                            <option value="120" ${jwtMin==120?'selected':''}>120 min (2h)</option>
+                            <option value="240" ${jwtMin==240?'selected':''}>240 min (4h)</option>
+                            <option value="480" ${jwtMin==480?'selected':''}>480 min (8h) — default</option>
+                            <option value="720" ${jwtMin==720?'selected':''}>720 min (12h)</option>
+                            <option value="1440" ${jwtMin==1440?'selected':''}>1440 min (24h)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Max Tentativas Falhadas', 'Numero de tentativas falhadas antes de bloquear a conta.')}</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <select id="cfgMaxFailed" style="${selStyle}">
+                            <option value="3" ${maxFailed==3?'selected':''}>3</option>
+                            <option value="5" ${maxFailed==5?'selected':''}>5 — default</option>
+                            <option value="10" ${maxFailed==10?'selected':''}>10</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Tempo de Lockout (minutos)', 'Duracao do bloqueio apos exceder tentativas falhadas.')}</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <select id="cfgLockout" style="${selStyle}">
+                            <option value="5" ${lockoutMin==5?'selected':''}>5 min</option>
+                            <option value="15" ${lockoutMin==15?'selected':''}>15 min</option>
+                            <option value="30" ${lockoutMin==30?'selected':''}>30 min — default</option>
+                            <option value="60" ${lockoutMin==60?'selected':''}>60 min</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top:14px; text-align:right;">
+                    <button class="btn-create" onclick="saveSessionPolicy()" style="padding:8px 16px; font-size:12px;">
+                        <i class="fas fa-save"></i> Guardar Politica
+                    </button>
+                </div>
+                <div id="cfgSaveMsg" style="display:none; margin-top:8px; padding:8px; border-radius:6px; font-size:12px; text-align:center;"></div>
+            </div>
+            <div class="config-section">
+                <h4><i class="fab fa-windows"></i> Active Directory — Multi-Dominio</h4>
+                <div class="config-row">
+                    <span class="config-label">${_h('Activado', 'Activar autenticacao via Active Directory (LDAP). Quando activo, users podem fazer login com credenciais Windows.')}</span>
+                    <span class="config-value">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" id="cfgAdEnabled" ${adEnabled ? 'checked' : ''} onchange="document.getElementById('cfgAdEnabledLabel').textContent = this.checked ? 'Sim' : 'Nao';">
+                            <span id="cfgAdEnabledLabel">${adEnabled ? 'Sim' : 'Nao'}</span>
+                        </label>
+                    </span>
+                </div>
+                <div style="margin-top:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <span style="font-size:13px; color:#94a3b8;">${_adDomains.length} dominio(s) configurado(s)</span>
+                        <button class="btn-sm btn-edit" onclick="addAdDomain()" style="padding:6px 12px; font-size:11px;">
+                            <i class="fas fa-plus"></i> Adicionar Dominio
+                        </button>
+                    </div>
+                    <div id="adDomainCards">${renderAdDomainCards(_adDomains)}</div>
+                </div>
+                <div style="margin-top:14px; display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn-sm btn-edit" onclick="testAdConnection()" style="padding:8px 12px; font-size:12px;">
+                        <i class="fas fa-plug"></i> Testar Conexao
+                    </button>
+                    <button class="btn-create" onclick="saveAdConfig()" style="padding:8px 16px; font-size:12px;">
+                        <i class="fas fa-save"></i> Guardar AD
+                    </button>
+                </div>
+                <div id="adTestResult" style="display:none; margin-top:8px; padding:10px; border-radius:6px; font-size:12px; white-space:pre-wrap;"></div>
+            </div>
+            <div class="config-section">
+                <h4><i class="fas fa-server"></i> Ambiente</h4>
+                ${cfgRow('Intelligence Server', escapeHtml(cfg.environment?.intelligence_server || '-'))}
+                ${cfgRow('Database', escapeHtml(cfg.environment?.intelligence_database || '-'))}
+            </div>
+            <div class="config-section">
+                <h4><i class="fas fa-shield-alt"></i> Politica de Senhas</h4>
+                ${cfgRow(_h('Minimo Caracteres', 'Numero minimo de caracteres que a senha deve ter.'), '8')}
+                ${cfgRow(_h('Maiuscula Obrigatoria', 'A senha deve conter pelo menos uma letra maiuscula (A-Z).'), '<span class="badge badge-active">Sim</span>')}
+                ${cfgRow(_h('Minuscula Obrigatoria', 'A senha deve conter pelo menos uma letra minuscula (a-z).'), '<span class="badge badge-active">Sim</span>')}
+                ${cfgRow(_h('Numero Obrigatorio', 'A senha deve conter pelo menos um digito (0-9).'), '<span class="badge badge-active">Sim</span>')}
+                ${cfgRow(_h('Simbolo Obrigatorio', 'A senha deve conter pelo menos um simbolo especial (!@#$%&*...).'), '<span class="badge badge-active">Sim</span>')}
+                ${cfgRow('Exemplo', '<code style="background:#0f172a;padding:2px 8px;border-radius:4px;font-size:12px;">F0gueira!</code>')}
+            </div>
+        `;
+    }
+
+    async function saveSessionPolicy() {
+        const jwtMin = parseInt(document.getElementById('cfgJwtExpire').value);
+        const maxFailed = parseInt(document.getElementById('cfgMaxFailed').value);
+        const lockoutMin = parseInt(document.getElementById('cfgLockout').value);
+        const msg = document.getElementById('cfgSaveMsg');
+        try {
+            const data = await apiFetch('/api/auth/admin/session-policy', {
+                method: 'POST',
+                body: JSON.stringify({ jwt_expire_minutes: jwtMin, max_failed_attempts: maxFailed, lockout_minutes: lockoutMin })
+            });
+            if (data?.success) {
+                msg.style.display = 'block'; msg.style.background = 'rgba(34,197,94,0.15)'; msg.style.color = '#22c55e';
+                msg.textContent = 'Politica de sessoes guardada. Novas sessoes usarao estes valores.';
+            } else {
+                msg.style.display = 'block'; msg.style.background = 'rgba(239,68,68,0.15)'; msg.style.color = '#ef4444';
+                msg.textContent = data?.error || 'Erro ao guardar';
+            }
+            setTimeout(() => msg.style.display = 'none', 4000);
+        } catch (e) {
+            msg.style.display = 'block'; msg.style.background = 'rgba(239,68,68,0.15)'; msg.style.color = '#ef4444';
+            msg.textContent = 'Erro de conexao'; setTimeout(() => msg.style.display = 'none', 3000);
+        }
+    }
+
+    function cfgRow(label, value) {
+        return `<div class="config-row"><span class="config-label">${label}</span><span class="config-value">${value}</span></div>`;
+    }
+
+    function _h(label, tooltip) {
+        return label + ' <span onclick="alert(\'' + tooltip.replace(/'/g, "\\'") + '\')" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);color:#60a5fa;font-size:10px;cursor:pointer;margin-left:4px;vertical-align:middle;" title="' + tooltip + '">?</span>';
+    }
+
+    // ========================================
+    // AD MULTI-DOMAIN — Render & Manage
+    // ========================================
+    function renderAdDomainCards(domains) {
+        const inputStyle = 'background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 10px;color:#e2e8f0;font-size:13px;';
+        const selStyle = 'background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 10px;color:#e2e8f0;font-size:13px;';
+        if (!domains.length) return '<div style="color:#64748b; font-size:13px; padding:12px 0;">Nenhum dominio configurado. Clique "Adicionar Dominio" para comecar.</div>';
+        return domains.map((d, i) => `
+            <div class="config-section" style="border-left:3px solid #3b82f6; margin-bottom:12px; padding-left:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <h5 style="margin:0; color:#f1f5f9; font-size:14px;">Dominio ${i+1}: ${escapeHtml(d.domain || '(novo)')}</h5>
+                    <button class="btn-sm" style="background:rgba(239,68,68,0.15);color:#ef4444;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;" onclick="removeAdDomain(${i})"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Dominio', 'Nome do dominio AD. Ex: tapnet.tap.pt')}</span>
+                    <span class="config-value"><input type="text" class="ad-domain-input" data-idx="${i}" data-field="domain" value="${escapeHtml(d.domain)}" placeholder="tapnet.tap.pt" style="${inputStyle}width:220px;"></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Server LDAP', 'Hostname do Domain Controller. Descoberto automaticamente via DNS.')}</span>
+                    <span class="config-value"><input type="text" class="ad-domain-input" data-idx="${i}" data-field="server" value="${escapeHtml(d.server)}" placeholder="ldap://dc01.domain" style="${inputStyle}width:260px;" data-auto="true"></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Base DN', 'Gerado automaticamente a partir do dominio.')}</span>
+                    <span class="config-value"><input type="text" class="ad-domain-input" data-idx="${i}" data-field="base_dn" value="${escapeHtml(d.base_dn)}" placeholder="DC=x,DC=y" style="${inputStyle}width:260px;" data-auto="true"></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Role Default', 'Permissao para novos users AD deste dominio.')}</span>
+                    <span class="config-value">
+                        <select class="ad-domain-input" data-idx="${i}" data-field="default_role" style="${selStyle}">
+                            ${['viewer','admin'].map(r => '<option value="'+r+'" '+(d.default_role===r?'selected':'')+'>'+r+'</option>').join('')}
+                        </select>
+                    </span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Bind User', 'Service account. Vazio = Kerberos.')}</span>
+                    <span class="config-value"><input type="text" class="ad-domain-input" data-idx="${i}" data-field="bind_user" value="${escapeHtml(d.bind_user || '')}" placeholder="(vazio=Kerberos)" style="${inputStyle}width:260px;"></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">${_h('Bind Password', 'Password do service account. Vazio = Kerberos.')}</span>
+                    <span class="config-value"><input type="password" class="ad-domain-input" data-idx="${i}" data-field="bind_password" value="${escapeHtml(d.bind_password || '')}" placeholder="(vazio=Kerberos)" style="${inputStyle}width:220px;"></span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function addAdDomain() {
+        _adDomains.push({domain:'', server:'', base_dn:'', default_role:'viewer', bind_user:'', bind_password:''});
+        loadConfig(); // Re-render
+    }
+
+    function removeAdDomain(idx) {
+        if (!confirm('Remover dominio ' + (_adDomains[idx]?.domain || idx) + '?')) return;
+        _adDomains.splice(idx, 1);
+        loadConfig();
+    }
+
+    function collectAdDomains() {
+        const inputs = document.querySelectorAll('.ad-domain-input');
+        const temp = {};
+        inputs.forEach(inp => {
+            const idx = inp.dataset.idx;
+            const field = inp.dataset.field;
+            if (!temp[idx]) temp[idx] = {};
+            temp[idx][field] = inp.type === 'checkbox' ? inp.checked : inp.value;
+        });
+        const domains = [];
+        for (const idx of Object.keys(temp).sort((a,b) => a-b)) {
+            domains.push(temp[idx]);
+        }
+        return domains;
+    }
+
+    async function saveAllAdDomains() {
+        const domains = collectAdDomains();
+        const enabled = document.getElementById('cfgAdEnabled')?.checked || false;
+        try {
+            const data = await apiFetch('/api/auth/admin/ad-domains', {
+                method: 'POST',
+                body: JSON.stringify({ enabled, domains })
+            });
+            const msgEl = document.getElementById('cfgSaveMsg');
+            if (data?.success) {
+                msgEl.style.display = 'block'; msgEl.style.background = 'rgba(34,197,94,0.15)'; msgEl.style.color = '#22c55e';
+                msgEl.textContent = 'Dominios AD guardados';
+                _adDomains = domains;
+                _adConfigured = !!(enabled && domains.length > 0);
+                _adDomain = domains.length > 0 ? domains[0].domain : '';
+            } else {
+                msgEl.style.display = 'block'; msgEl.style.background = 'rgba(239,68,68,0.15)'; msgEl.style.color = '#ef4444';
+                msgEl.textContent = data?.detail || 'Erro';
+            }
+            setTimeout(() => msgEl.style.display = 'none', 4000);
+        } catch(e) {}
+    }
+
+    // Auto-preenchimento AD: Dominio → Server + Base DN (multi-domain per card)
+    let _dnsDiscoverTimers = {};
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('ad-domain-input') && e.target.dataset.field === 'domain') {
+            const idx = e.target.dataset.idx;
+            const domain = e.target.value.trim();
+            // Auto-fill base_dn locally
+            const bnEl = document.querySelector('.ad-domain-input[data-idx="'+idx+'"][data-field="base_dn"]');
+            if (bnEl && (!bnEl.value || bnEl.dataset.auto === 'true')) {
+                bnEl.value = domain.split('.').map(p => 'DC=' + p).join(',');
+                bnEl.dataset.auto = 'true';
+            }
+            // DNS discover for server
+            if (domain.includes('.') && domain.length > 4) {
+                const srvEl = document.querySelector('.ad-domain-input[data-idx="'+idx+'"][data-field="server"]');
+                if (srvEl && (!srvEl.value || srvEl.dataset.auto === 'true')) {
+                    if (_dnsDiscoverTimers[idx]) clearTimeout(_dnsDiscoverTimers[idx]);
+                    _dnsDiscoverTimers[idx] = setTimeout(async () => {
+                        srvEl.value = 'A descobrir DC...';
+                        srvEl.dataset.auto = 'true';
+                        try {
+                            const data = await apiFetch('/api/auth/admin/ad-discover?domain=' + encodeURIComponent(domain));
+                            if (data?.recommended_server) srvEl.value = data.recommended_server;
+                            else srvEl.value = 'ldap://' + domain;
+                        } catch(err) { srvEl.value = 'ldap://' + domain; }
+                    }, 800);
+                }
+            }
+        }
+        // Mark manual edits
+        if (e.target.classList.contains('ad-domain-input') && e.target.dataset.field === 'server') e.target.dataset.auto = 'false';
+        if (e.target.classList.contains('ad-domain-input') && e.target.dataset.field === 'base_dn') e.target.dataset.auto = 'false';
+    });
+
+    async function testAdConnection() {
+        let domain = '';
+        if (_adDomains.length === 0) { alert('Nenhum dominio configurado'); return; }
+        if (_adDomains.length === 1) {
+            domain = _adDomains[0].domain;
+        } else {
+            const opts = _adDomains.map((d,i) => (i+1) + '. ' + d.domain).join('\n');
+            const choice = prompt('Qual dominio testar?\n' + opts + '\n\n(numero):');
+            if (!choice) return;
+            const idx = parseInt(choice) - 1;
+            if (idx >= 0 && idx < _adDomains.length) domain = _adDomains[idx].domain;
+            else { alert('Opcao invalida'); return; }
+        }
+        const username = prompt('Username para testar no AD ' + domain + ':');
+        if (!username) return;
+        // Save config first
+        await saveAllAdDomains();
+        // Then lookup
+        const resultEl = document.getElementById('adTestResult');
+        resultEl.style.display = 'block';
+        resultEl.style.background = 'rgba(59,130,246,0.1)';
+        resultEl.style.color = '#60a5fa';
+        resultEl.textContent = 'A testar conexao ao dominio ' + domain + '...';
+        try {
+            const data = await apiFetch('/api/auth/admin/ad-lookup/' + encodeURIComponent(username) + '?domain=' + encodeURIComponent(domain));
+            if (data?.found) {
+                resultEl.style.background = 'rgba(34,197,94,0.1)';
+                resultEl.style.color = '#22c55e';
+                resultEl.textContent = 'Conexao OK! Encontrado: ' + (data.user?.full_name || username) +
+                    (data.user?.title ? ' (' + data.user.title + ')' : '') +
+                    '\nDominio: ' + domain +
+                    '\nBind: ' + (data.bind_method || 'N/A') +
+                    (data.debug ? '\n\n' + data.debug.join('\n') : '');
+            } else if (data?.found === false) {
+                resultEl.style.background = 'rgba(245,158,11,0.1)';
+                resultEl.style.color = '#f59e0b';
+                resultEl.textContent = 'Bind OK mas user nao encontrado: ' + (data.message || '') +
+                    '\nDominio: ' + domain +
+                    '\nBind: ' + (data.bind_method || 'N/A') +
+                    (data.debug ? '\n\n' + data.debug.join('\n') : '');
+            } else {
+                resultEl.style.background = 'rgba(239,68,68,0.1)';
+                resultEl.style.color = '#ef4444';
+                resultEl.textContent = 'Erro: ' + (data?.error || 'Desconhecido') +
+                    '\nDominio: ' + domain +
+                    (data?.debug ? '\n\n' + data.debug.join('\n') : '');
+            }
+        } catch(e) {
+            resultEl.style.background = 'rgba(239,68,68,0.1)';
+            resultEl.style.color = '#ef4444';
+            resultEl.textContent = 'Erro: ' + e.message;
+        }
+    }
+
+    async function saveAdConfig() {
+        await saveAllAdDomains();
+    }
+
+    // ========================================
+    // DARK/LIGHT MODE
+    // ========================================
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('watcherdb-control-theme', isLight ? 'light' : 'dark');
+        document.getElementById('themeIcon').textContent = isLight ? '\u2600' : '\u263E';
+        document.getElementById('themeToggleBtn').title = isLight ? 'Mudar para Dark Mode' : 'Mudar para Light Mode';
+    }
+    // Restore saved theme
+    (function() {
+        const saved = localStorage.getItem('watcherdb-control-theme');
+        if (saved === 'light') {
+            document.body.classList.add('light-mode');
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.textContent = '\u2600';
+        }
+    })();
+
+    // ========================================
+    // EDIT USER
+    // ========================================
+    function openEditUserModal(username, fullName, email, role, isAD) {
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editFullName').value = fullName;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editRole').value = role;
+        document.getElementById('editError').style.display = 'none';
+        document.getElementById('editSuccess').style.display = 'none';
+        const badge = document.getElementById('editAdBadge');
+        if (isAD && badge) {
+            badge.style.display = 'inline-flex';
+            document.getElementById('editAdDomain').textContent = _adDomain || 'AD';
+        } else if (badge) {
+            badge.style.display = 'none';
+        }
+        document.getElementById('editUserModal').classList.add('show');
+    }
+
+    async function saveEditUser() {
+        const username = document.getElementById('editUsername').value;
+        const full_name = document.getElementById('editFullName').value.trim();
+        const email = document.getElementById('editEmail').value.trim();
+        const role = document.getElementById('editRole').value;
+        const errEl = document.getElementById('editError');
+        const okEl = document.getElementById('editSuccess');
+        errEl.style.display = 'none'; okEl.style.display = 'none';
+        try {
+            const data = await apiFetch('/api/auth/admin/users/' + username + '/update', {
+                method: 'POST',
+                body: JSON.stringify({ full_name, email, role })
+            });
+            if (data?.success) {
+                okEl.textContent = 'Guardado com sucesso';
+                okEl.style.display = 'block';
+                setTimeout(() => { closeModal('editUserModal'); loadUsers(); }, 1000);
+            } else {
+                errEl.textContent = data?.detail || data?.error || 'Erro';
+                errEl.style.display = 'block';
+            }
+        } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+    }
+
+    // ========================================
+    // RESOURCE MONITOR
+    // ========================================
+    let _resourcesInterval = null;
+
+    async function loadResources() {
+        const data = await apiFetch('/api/auth/admin/resources');
+        if (!data?.success) return;
+        const r = data.resources;
+        const p = r.process;
+        const s = r.server;
+        const rt = r.runtime;
+
+        // Stat cards
+        function statCard(label, value, unit, color) {
+            return `<div style="background:${color};border-radius:8px;padding:12px;text-align:center;">
+                <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;font-weight:600;">${label}</div>
+                <div style="font-size:24px;font-weight:700;color:#f1f5f9;margin:4px 0;">${value}</div>
+                <div style="font-size:11px;color:#64748b;">${unit}</div>
+            </div>`;
+        }
+
+        const cpuColor = p.cpu_pct > 80 ? 'rgba(239,68,68,0.15)' : p.cpu_pct > 50 ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)';
+        const ramSColor = s.memory_pct > 90 ? 'rgba(239,68,68,0.15)' : s.memory_pct > 75 ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)';
+        const diskColor = s.disk_pct > 90 ? 'rgba(239,68,68,0.15)' : s.disk_pct > 80 ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)';
+
+        document.getElementById('resourceCards').innerHTML =
+            statCard('CPU (Processo)', p.cpu_pct + '%', 'process', cpuColor) +
+            statCard('RAM (WatcherDB)', p.memory_mb + ' MB', 'RSS', 'rgba(59,130,246,0.1)') +
+            statCard('RAM (Servidor)', s.memory_pct + '%', s.memory_used_gb + '/' + s.memory_total_gb + ' GB', ramSColor) +
+            statCard('Disco', s.disk_pct + '%', s.disk_free_gb + ' GB livre', diskColor) +
+            statCard('Uptime', p.uptime, 'desde ' + p.started_at.split(' ')[0], 'rgba(139,92,246,0.1)') +
+            statCard('Threads', p.threads, 'activas', 'rgba(59,130,246,0.1)');
+
+        // Details
+        function resCfgRow(l, v) { return `<div class="config-row"><span class="config-label">${l}</span><span class="config-value">${escapeHtml(String(v))}</span></div>`; }
+
+        document.getElementById('resourceDetails').innerHTML =
+            '<div class="config-section"><h4><i class="fas fa-cog"></i> Processo WatcherDB</h4>' +
+            resCfgRow('PID', p.pid) + resCfgRow('CPU', p.cpu_pct + '%') + resCfgRow('RAM RSS', p.memory_mb + ' MB') +
+            resCfgRow('RAM VMS', p.memory_vms_mb + ' MB') + resCfgRow('Threads', p.threads) +
+            resCfgRow('Ficheiros Abertos', p.open_files) + resCfgRow('Conexoes Rede', p.connections) +
+            resCfgRow('Uptime', p.uptime) + resCfgRow('Iniciado', p.started_at) + '</div>' +
+
+            '<div class="config-section"><h4><i class="fas fa-server"></i> Servidor</h4>' +
+            resCfgRow('Hostname', s.hostname) + resCfgRow('OS', s.os) + resCfgRow('CPUs', s.cpu_count) +
+            resCfgRow('CPU Total', s.cpu_total_pct + '%') +
+            resCfgRow('RAM Total', s.memory_total_gb + ' GB') + resCfgRow('RAM Usada', s.memory_used_gb + ' GB') +
+            resCfgRow('RAM Disponivel', s.memory_available_gb + ' GB') + '</div>' +
+
+            '<div class="config-section"><h4><i class="fas fa-hdd"></i> Disco</h4>' +
+            resCfgRow('Caminho', s.disk_path) + resCfgRow('Total', s.disk_total_gb + ' GB') +
+            resCfgRow('Usado', s.disk_used_gb + ' GB (' + s.disk_pct + '%)') +
+            resCfgRow('Livre', s.disk_free_gb + ' GB') + '</div>' +
+
+            '<div class="config-section"><h4><i class="fab fa-python"></i> Runtime</h4>' +
+            resCfgRow('Python', rt.python_version) + resCfgRow('Working Dir', rt.working_dir) +
+            resCfgRow('Porta', rt.port) + '</div>';
+
+        // Start auto-refresh if not running
+        if (!_resourcesInterval) {
+            _resourcesInterval = setInterval(() => {
+                const section = document.getElementById('section-resources');
+                if (section && section.classList.contains('active')) loadResources();
+                else { clearInterval(_resourcesInterval); _resourcesInterval = null; }
+            }, 10000);
+        }
+    }
+
+    // Auto-refresh users online status every 30s
+    setInterval(async () => {
+        if (document.getElementById('section-users').classList.contains('active')) {
+            await loadOnlineUsers();
+            renderUsersTable(allUsers);
+        }
+    }, 30000);
+</script>
+</body>
+</html>

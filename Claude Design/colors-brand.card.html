@@ -1,0 +1,24 @@
+import { ReactNode } from "react";
+
+export type Severity = "ok" | "info" | "warning" | "critical" | "overflow";
+
+/**
+ * The single canonical way to render an alert severity in WatcherDB.
+ * Encodes level with color AND a Font Awesome glyph — never hue alone
+ * (WCAG 2.1 §1.4.1). Use everywhere severity appears: tables, cards, toasts.
+ *
+ * @startingPoint section="Severity" subtitle="Canonical severity badge" viewport="700x120"
+ */
+export interface SeverityBadgeProps {
+  /** Severity level, low→high: ok < info < warning < critical < overflow */
+  level?: Severity;
+  /** Solid fill (default) or soft tinted pill */
+  variant?: "solid" | "soft";
+  size?: "sm" | "md";
+  /** Show the leading Font Awesome glyph (default true) */
+  showIcon?: boolean;
+  /** Override label text; defaults to the level's name */
+  children?: ReactNode;
+}
+
+export function SeverityBadge(props: SeverityBadgeProps): JSX.Element;

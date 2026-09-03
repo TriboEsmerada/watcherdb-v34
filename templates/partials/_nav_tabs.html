@@ -1,0 +1,45 @@
+{# Navigation tab buttons for server detail view #}
+<div class="nav-menu" style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        {% set tabs_row1 = [
+            ('overview', 'fa-home', 'Overview'),
+            ('alwayson', 'fa-sync-alt', 'Always On'),
+            ('backup', 'fa-database', 'Backup'),
+            ('space', 'fa-hdd', 'Space'),
+            ('disk', 'fa-server', 'Disk'),
+            ('encrypted', 'fa-lock', 'Encrypted'),
+        ] %}
+        {% for tab_id, icon, label in tabs_row1 %}
+        <button class="nav-btn"
+                data-tab="{{ tab_id }}"
+                hx-get="/htmx/tab/{{ tab_id }}?server_id={{ server_id }}"
+                hx-target="#tabContent"
+                hx-swap="innerHTML"
+                hx-indicator="#tabLoading">
+            <i class="fas {{ icon }}"></i> {{ label }}
+        </button>
+        {% endfor %}
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        {% set tabs_row2 = [
+            ('cpu', 'fa-microchip', 'CPU'),
+            ('memory', 'fa-memory', 'Memory'),
+            ('services', 'fa-cogs', 'Services'),
+            ('log', 'fa-file-alt', 'Log'),
+            ('sql-diagnostics', 'fa-stethoscope', 'SQL Diag'),
+            ('security', 'fa-shield-alt', 'Security'),
+            ('users', 'fa-users', 'Users'),
+            ('jobs', 'fa-clock', 'Jobs'),
+        ] %}
+        {% for tab_id, icon, label in tabs_row2 %}
+        <button class="nav-btn"
+                data-tab="{{ tab_id }}"
+                hx-get="/htmx/tab/{{ tab_id }}?server_id={{ server_id }}"
+                hx-target="#tabContent"
+                hx-swap="innerHTML"
+                hx-indicator="#tabLoading">
+            <i class="fas {{ icon }}"></i> {{ label }}
+        </button>
+        {% endfor %}
+    </div>
+</div>

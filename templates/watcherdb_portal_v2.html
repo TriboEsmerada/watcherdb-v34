@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}WatcherDB V3.2 — SQL Server Monitoring{% endblock %}
+
+{% block head_extra %}
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="/static/vendor/codemirror/css/codemirror.min.css">
+    <link rel="stylesheet" href="/static/vendor/codemirror/css/monokai.min.css">
+    <script src="/static/vendor/codemirror/js/codemirror.min.js"></script>
+    <script src="/static/vendor/codemirror/js/sql.min.js"></script>
+
+    <!-- i18n -->
+    <link rel="stylesheet" href="/static/css/i18n_selector.css">
+    <script src="/static/js/watcherdb_i18n_v2.js"></script>
+
+    <!-- Innovative Features -->
+    <link rel="stylesheet" href="/static/css/innovative_features.css">
+
+    <!-- html2pdf -->
+    <script src="/static/vendor/html2pdf.bundle.min.js"></script>
+{% endblock %}
+
+{% block body_attrs %} class="splash-active"{% endblock %}
+
+{% block body %}
+    {% include "partials/_login.html" %}
+    {% include "partials/_toast.html" %}
+
+    <div class="main-container">
+        {% include "partials/_sidebar.html" %}
+
+        <div class="content">
+            <div id="serverHeader" class="server-header" style="display: none;">
+                <div>
+                    <h2 id="serverName"></h2>
+                    <div class="server-id"><strong>ID:</strong> <span id="serverId"></span></div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex: 1;">
+                    <div id="navTabs"></div>
+                </div>
+            </div>
+
+            <div id="tabsContainer" class="tabs-container">
+                <div id="tabs" class="tabs"></div>
+            </div>
+
+            <div id="contentScroll" class="content-scroll">
+                <div id="tabContent" class="htmx-indicator-parent">
+                    <div id="tabLoading" class="htmx-indicator">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script nonce="{{ csp_nonce }}">
+        // htmx configuration
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            const token = localStorage.getItem('watcherdb_token');
+            if (token) {
+                evt.detail.headers['Authorization'] = 'Bearer ' + token;
+            }
+        });
+
+        // htmx error handling
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            if (evt.detail.xhr.status === 401) {
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        });
+    </script>
+{% endblock %}

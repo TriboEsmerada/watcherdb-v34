@@ -1,0 +1,6 @@
+{# Modal container — content loaded via htmx #}
+<div id="modalContainer">
+    <wdb-modal id="reportModal" title="Predictive Analysis">
+        <div hx-get="/htmx/modal/report" hx-trigger="open" hx-swap="innerHTML"></div>
+    </wdb-modal>
+</div>

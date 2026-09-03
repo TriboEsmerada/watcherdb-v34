@@ -1,0 +1,36 @@
+import React from "react";
+
+/**
+ * NavButton — the server-detail tab button (Overview, Backup, Space…).
+ * Outlined idle; brand-tinted when active. Icon + label.
+ */
+export function NavButton({ icon, label, active = false, onClick }) {
+  const base = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "8px 14px",
+    fontSize: "var(--font-sm)",
+    fontWeight: 600,
+    fontFamily: "inherit",
+    borderRadius: "var(--radius-sm)",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    transition: "all var(--motion-fast)",
+    background: active ? "var(--sev-info-tint)" : "var(--surface-app)",
+    color: active ? "var(--brand-blue-bright)" : "var(--text-tertiary)",
+    borderWidth: 1, borderStyle: "solid",
+    borderColor: active ? "var(--brand-blue)" : "var(--color-border)",
+  };
+  return (
+    <button
+      onClick={onClick}
+      style={base}
+      onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.borderColor = "var(--color-border-strong)"; } }}
+      onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = "var(--text-tertiary)"; e.currentTarget.style.borderColor = "var(--color-border)"; } }}
+    >
+      {icon && <i className="fas" aria-hidden="true" style={{ fontFamily: '"Font Awesome 6 Free"', fontWeight: 900, fontSize: 12 }}>{icon}</i>}
+      {label}
+    </button>
+  );
+}

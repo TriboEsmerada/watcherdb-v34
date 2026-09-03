@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "generated_at": "YYYY-MM-DDTHH:MM:SS",
+    "source_file": "SQL_Server_Inventory.xlsx",
+    "total_servers": 0,
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "id": "SERVERNAME_INSTANCE",
+      "host": "SERVERNAME",
+      "instance": "I01",
+      "port": 1433,
+      "description": "Descrição do servidor",
+      "environment": "production",
+      "priority": 1
+    }
+  ]
+}
+
+/*
+CAMPOS OBRIGATÓRIOS:
+- id: Identificador único do servidor (formato: HOST_INSTANCE ou HOST)
+- host: Nome do host/servidor (sem instância)
+- instance: Nome da instância (ex: I01, I02, ou vazio para DEFAULT)
+- port: Porta do SQL Server (padrão: 1433)
+
+CAMPOS OPCIONAIS:
+- description: Descrição do servidor
+- environment: Ambiente (production, development, quality)
+- priority: Prioridade (1 = alta, 2 = média, 3 = baixa)
+
+EXEMPLOS:
+{
+  "id": "SQLHDSPRD214_I01",
+  "host": "SQLHDSPRD214",
+  "instance": "I01",
+  "port": 1433,
+  "description": "Servidor de produção - Always On",
+  "environment": "production",
+  "priority": 1
+}
+
+{
+  "id": "SQLDEV01",
+  "host": "SQLDEV01",
+  "instance": "",
+  "port": 1433,
+  "description": "Servidor de desenvolvimento",
+  "environment": "development",
+  "priority": 3
+}
+*/
+

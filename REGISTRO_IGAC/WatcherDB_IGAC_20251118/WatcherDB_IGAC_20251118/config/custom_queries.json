@@ -1,0 +1,20 @@
+[
+  {
+    "id": "custom-query-1763055701719",
+    "name": "Sessões Ativas",
+    "description": "Mostra todas as sessões ativas no servidor",
+    "sql": "SELECT \n    session_id, \n    login_name, \n    host_name, \n    program_name, \n    status, \n    last_request_start_time, \n    last_request_end_time \nFROM sys.dm_exec_sessions \nWHERE is_user_process = 1\nand status = 'running';",
+    "icon": "fa-database",
+    "requiresDb": false,
+    "enabled": true
+  },
+  {
+    "id": "custom-query-1763056485742",
+    "name": "Locks",
+    "sql": "SELECT \n    t1.resource_type AS Recurso,\n    DB_NAME(t1.resource_database_id) AS DatabaseName,\n    t1.request_status AS Status_Requisicao,\n    t1.request_session_id AS Sessao_ID,\n    t2.blocking_session_id AS Bloqueando_Sessao_ID,\n    t2.wait_time AS Tempo_Espera_ms,\n    t2.wait_time / 1000.0 AS Tempo_Espera_Segundos, \n    t2.command AS Comando,\n    t2.start_time AS Hora_Inicio_Comando,\n    s.host_name AS Maquina,\n    s.program_name AS Programa,\n    s.login_name AS Usuario,\n    t3.text AS Query_Texto,\n    t2.cpu_time AS Tempo_CPU_ms,  \n    t2.cpu_time / 1000.0 AS Tempo_CPU_Segundos, \n    t2.total_elapsed_time AS Tempo_Total_ms,  \n    t2.total_elapsed_time / 1000.0 AS Tempo_Total_Segundos, \n    t1.resource_database_id AS Database_ID \nFROM \n    sys.dm_tran_locks t1\nJOIN \n    sys.dm_exec_requests t2 ON t1.request_session_id = t2.session_id\nJOIN \n    sys.dm_exec_sessions s ON t1.request_session_id = s.session_id\nOUTER APPLY \n    sys.dm_exec_sql_text(t2.sql_handle) AS t3\nWHERE \n    t2.blocking_session_id <> 0\n    --AND t2.status = 'running'  \nORDER BY \n    t2.wait_time DESC;",
+    "description": "",
+    "icon": "fa-database",
+    "requiresDb": false,
+    "enabled": true
+  }
+]
