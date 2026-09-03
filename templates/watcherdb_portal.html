@@ -4220,7 +4220,7 @@
                  sobreporia o CSS de .profile-menu-item. -->
             <div class="header-user-group" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                 <!-- Language Selector v2 (i18n with flags) -->
-                <div id="headerLangSelector"><button onclick="cycleLangGlobal()" id="globalLangBtn" title="Idioma / Language (PT / PT-BR / EN / ES)" aria-label="Mudar idioma" style="display:flex;align-items:center;gap:6px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;"><i class="fas fa-globe"></i> <span id="globalLangCode">PT</span></button></div>
+                <div id="headerLangSelector"></div><!-- dropdown montado por WatcherI18N.createLanguageSelector (pedido owner 03/09: drill-down em vez de ciclo) -->
                 <!-- User Badge (auth) + Profile Dropdown -->
                 <div style="position: relative;">
                     <div id="userBadge" class="user-badge" style="display: none;"></div>
@@ -4861,9 +4861,8 @@
             console.error('[I18N] Failed to load PT dictionary:', e);
         }
         await WatcherI18N.init();
-        // BR PT substituido pelo nosso seletor 7B PT/EN/ES (#globalLangBtn); sem createLanguageSelector.
-        try { const _gl = document.getElementById('globalLangCode'); if (_gl && WatcherI18N.getLanguage) _gl.textContent = (WatcherI18N.getLanguage() || 'pt').toUpperCase(); } catch (e) {}
-        try { if (WatcherI18N.onLanguageChange) WatcherI18N.onLanguageChange(function (l) { const b = document.getElementById('globalLangCode'); if (b) b.textContent = String(l || '').toUpperCase(); }); } catch (e) {}
+        // Selector de idioma em dropdown (4 opcoes, teclado) no header -- decisao owner 2026-09-03.
+        try { WatcherI18N.createLanguageSelector('#headerLangSelector'); } catch (e) { console.error('[I18N] Language selector failed:', e); }
         window._i18nReady = true;
     })();
     </script>
@@ -34985,24 +34984,8 @@
             });
         }
 
-        // ---- Idioma no cabeçalho dos KPIs (motor i18n nativo: setLanguage/getLanguage) ----
-        function kpiCycleLang() {
-            const seq = (typeof WatcherI18N !== 'undefined' && WatcherI18N.SUPPORTED_LANGS) ? WatcherI18N.SUPPORTED_LANGS : ['pt', 'pt-BR', 'en', 'es'];
-            const cur = (typeof getLanguage === 'function' ? getLanguage() : 'pt');
-            const nxt = seq[(seq.indexOf(cur) + 1) % seq.length];
-            if (typeof setLanguage === 'function') setLanguage(nxt);
-            _kpiSyncLangBtn(nxt);
-        }
-        // Seletor de idioma GLOBAL (no lugar do antigo "BR PT", no topo) — traduz a app toda
-        function cycleLangGlobal() {
-            const seq = (typeof WatcherI18N !== 'undefined' && WatcherI18N.SUPPORTED_LANGS) ? WatcherI18N.SUPPORTED_LANGS : ['pt', 'pt-BR', 'en', 'es'];
-            const W = (typeof WatcherI18N !== 'undefined') ? WatcherI18N : null;
-            const cur = (typeof getLanguage === 'function') ? getLanguage() : (W && W.getLanguage ? W.getLanguage() : 'pt');
-            const nxt = seq[(seq.indexOf(cur) + 1) % seq.length];
-            if (typeof setLanguage === 'function') setLanguage(nxt);
-            else if (W && W.setLanguage) W.setLanguage(nxt);
-            const b = document.getElementById('globalLangCode'); if (b) b.textContent = nxt.toUpperCase();
-        }
+        // ---- Idioma: o header usa WatcherI18N.createLanguageSelector (dropdown) desde 03/09;
+        //      kpiCycleLang (nunca ligado) e cycleLangGlobal (botao de ciclo) removidos. ----
         function _kpiSyncLangBtn(lang) {
             const b = document.getElementById('kpiHeaderLangCode');
             if (b) b.textContent = String(lang || (typeof getLanguage === 'function' ? getLanguage() : 'pt')).toUpperCase();

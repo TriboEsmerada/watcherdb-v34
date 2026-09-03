@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Selector de idioma em drill-down no header** (pedido owner 03/09; parecer
+  frontend-specialist). O botão que rodava PT → PT-BR → EN → ES em ciclo dá lugar ao
+  dropdown do próprio motor (`WatcherI18N.createLanguageSelector`, CSS já ligado), com
+  as 4 opções visíveis, bandeira e nome na própria língua. O componente ganhou o que
+  lhe faltava para WCAG 2.1.1: setas/Home/End para navegar, Enter/Espaço para escolher,
+  Escape fecha e devolve o foco, `aria-selected` e foco visível. Removidos `kpiCycleLang`
+  (nunca esteve ligado a nenhum botão) e `cycleLangGlobal`; o ciclo do Relatório KPI
+  mantém-se por agora. [tier: Std]
 - **Português do Brasil como 4.º idioma do portal (overlay esparso) + micro-agent
   `v33-i18n-linguist`** (decisão owner 03/09; charter pelo core-council-architect).
   `pt.json` fixa-se como **pt-PT pós-AO90** (norma de 16/08) e nasce

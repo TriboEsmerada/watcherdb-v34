@@ -144,3 +144,12 @@
 [data-i18n] {
     transition: opacity 0.15s ease;
 }
+
+/* Teclado: foco visivel nas opcoes (WCAG 2.4.7) -- dropdown no header desde 2026-09-03 */
+.i18n-lang-option:focus-visible {
+    outline: 2px solid var(--color-info, #2563eb);
+    outline-offset: -2px;
+}
+.i18n-lang-option[aria-selected="true"] .i18n-lang-check {
+    opacity: 1;
+}

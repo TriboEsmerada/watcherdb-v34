@@ -489,27 +489,27 @@
         container.setAttribute('aria-label', 'Language selector');
 
         safeHTML(container, [
-            '<button class="i18n-lang-btn" id="langToggleBtn" aria-haspopup="listbox" aria-expanded="false">',
+            '<button type="button" class="i18n-lang-btn" id="langToggleBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="langDropdown" title="Idioma / Language" aria-label="Idioma / Language">',
             '  <span id="langFlagDisplay">🇵🇹 PT</span>',
             '  <i class="fas fa-chevron-down i18n-lang-chevron"></i>',
             '</button>',
             '<div class="i18n-lang-dropdown" id="langDropdown" role="listbox" aria-label="Select language">',
-            '  <div class="i18n-lang-option" data-lang="pt" role="option" lang="pt-PT">',
+            '  <div class="i18n-lang-option" data-lang="pt" role="option" tabindex="-1" lang="pt-PT">',
             '    <span class="i18n-lang-flag">🇵🇹</span>',
             '    <span class="i18n-lang-name">Português (Portugal)</span>',
             '    <i class="fas fa-check i18n-lang-check"></i>',
             '  </div>',
-            '  <div class="i18n-lang-option" data-lang="pt-BR" role="option" lang="pt-BR">',
+            '  <div class="i18n-lang-option" data-lang="pt-BR" role="option" tabindex="-1" lang="pt-BR">',
             '    <span class="i18n-lang-flag">🇧🇷</span>',
             '    <span class="i18n-lang-name">Português (Brasil)</span>',
             '    <i class="fas fa-check i18n-lang-check"></i>',
             '  </div>',
-            '  <div class="i18n-lang-option" data-lang="en" role="option" lang="en">',
+            '  <div class="i18n-lang-option" data-lang="en" role="option" tabindex="-1" lang="en">',
             '    <span class="i18n-lang-flag">🇺🇸</span>',
             '    <span class="i18n-lang-name">English</span>',
             '    <i class="fas fa-check i18n-lang-check"></i>',
             '  </div>',
-            '  <div class="i18n-lang-option" data-lang="es" role="option" lang="es">',
+            '  <div class="i18n-lang-option" data-lang="es" role="option" tabindex="-1" lang="es">',
             '    <span class="i18n-lang-flag">🇪🇸</span>',
             '    <span class="i18n-lang-name">Español</span>',
             '    <i class="fas fa-check i18n-lang-check"></i>',
@@ -519,40 +519,81 @@
 
         target.appendChild(container);
 
-        // Event: toggle dropdown
+        // Event: toggle dropdown (rato + teclado; WCAG 2.1.1 -- parecer frontend-specialist 2026-09-03)
         var btn = container.querySelector('#langToggleBtn');
         var dropdown = container.querySelector('#langDropdown');
+        var options = Array.prototype.slice.call(container.querySelectorAll('.i18n-lang-option'));
+
+        function markActive(lang) {
+            options.forEach(function(opt) {
+                var on = opt.getAttribute('data-lang') === lang;
+                opt.classList.toggle('active', on);
+                opt.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+        }
+        function activeIndex() {
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].getAttribute('data-lang') === _currentLang) return i;
+            }
+            return 0;
+        }
+        function openDropdown(focusOption) {
+            dropdown.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+            if (focusOption) options[activeIndex()].focus();
+        }
+        function closeDropdown(returnFocus) {
+            dropdown.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+            if (returnFocus) btn.focus();
+        }
+        function choose(lang) {
+            setLanguage(lang);
+            markActive(lang);
+            closeDropdown(true);
+        }
 
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            var isOpen = dropdown.classList.toggle('open');
-            btn.setAttribute('aria-expanded', isOpen);
+            if (dropdown.classList.contains('open')) closeDropdown(false);
+            else openDropdown(false);
+        });
+        btn.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                openDropdown(true);
+            } else if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+                e.preventDefault();
+                closeDropdown(true);
+            }
         });
 
-        // Event: select language
-        var options = container.querySelectorAll('.i18n-lang-option');
-        for (var i = 0; i < options.length; i++) {
-            options[i].addEventListener('click', function(e) {
-                var lang = this.getAttribute('data-lang');
-                setLanguage(lang);
-                dropdown.classList.remove('open');
-                btn.setAttribute('aria-expanded', 'false');
-                // Update active state
-                container.querySelectorAll('.i18n-lang-option').forEach(function(opt) {
-                    opt.classList.toggle('active', opt.getAttribute('data-lang') === lang);
-                });
+        options.forEach(function(opt, idx) {
+            opt.addEventListener('click', function(e) {
+                e.stopPropagation();
+                choose(this.getAttribute('data-lang'));
             });
-        }
+            opt.addEventListener('keydown', function(e) {
+                var next = null;
+                if (e.key === 'ArrowDown') next = (idx + 1) % options.length;
+                else if (e.key === 'ArrowUp') next = (idx - 1 + options.length) % options.length;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = options.length - 1;
+                else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(this.getAttribute('data-lang')); return; }
+                else if (e.key === 'Escape') { e.preventDefault(); closeDropdown(true); return; }
+                else if (e.key === 'Tab') { closeDropdown(false); return; }
+                if (next !== null) { e.preventDefault(); options[next].focus(); }
+            });
+        });
 
         // Close on outside click
         document.addEventListener('click', function() {
-            dropdown.classList.remove('open');
-            btn.setAttribute('aria-expanded', 'false');
+            closeDropdown(false);
         });
 
         // Mark current language as active
-        var currentOpt = container.querySelector('[data-lang="' + _currentLang + '"]');
-        if (currentOpt) currentOpt.classList.add('active');
+        markActive(_currentLang);
+        _changeListeners.push(function(lang) { markActive(lang); });
 
         _updateSelector();
     }
