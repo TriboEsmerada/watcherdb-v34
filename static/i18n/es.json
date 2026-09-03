@@ -1958,5 +1958,127 @@
     "showing_n_of_total_filter": "Mostrando {n} de {total} (filtro: {filter})",
     "bases_lines_note": "bases de datos ({n} filas por tipo — una base con FULL+DIFF+LOG retrasados tiene 1 fila por tipo)",
     "distinct_bases_note": "Bases de datos distintas (una base puede tener más de un tipo retrasado)"
+  },
+  "kpi_meta": {
+    "db-availability-abnormal": {
+      "title": "DB No Disponibles",
+      "subtitle": "Cantidad No Disponible",
+      "modal_title": "DB No Disponibles"
+    },
+    "db-availability-total": {
+      "title": "Disponibilidad de DB",
+      "subtitle": "Cantidad Total",
+      "modal_title": "Disponibilidad de DB - Total"
+    },
+    "db-availability-ok": {
+      "title": "Instancias OK",
+      "subtitle": "Cantidad Disponible",
+      "modal_title": "Instancias OK"
+    },
+    "instance-availability-off": {
+      "title": "Instancias Offline",
+      "subtitle": "Cantidad Offline",
+      "modal_title": "Instancias Offline"
+    },
+    "blocked-sessions": {
+      "title": "Sesiones Bloqueadas",
+      "subtitle": "Cantidad de Sesiones",
+      "modal_title": "Sesiones Bloqueadas"
+    },
+    "blocked-users": {
+      "title": "Usuarios Bloqueados",
+      "subtitle": "Cantidad de Usuarios",
+      "modal_title": "Usuarios Bloqueados"
+    },
+    "transaction-logs-critical": {
+      "title": "Transaction Logs",
+      "subtitle": "Crítico",
+      "modal_title": "DB Transaction Logs - Crítico"
+    },
+    "transaction-logs-warning": {
+      "title": "Transaction Logs",
+      "subtitle": "Aviso",
+      "modal_title": "DB Transaction Logs - Aviso"
+    },
+    "disk-file-system-critical": {
+      "title": "Disk File System",
+      "subtitle": "Crítico",
+      "modal_title": "DB Disk File System - Crítico"
+    },
+    "disk-file-system-warning": {
+      "title": "Disk File System",
+      "subtitle": "Aviso",
+      "modal_title": "DB Disk File System - Aviso"
+    },
+    "always-on-unhealthy": {
+      "title": "Always On",
+      "subtitle": "No Saludable",
+      "modal_title": "DB Always On - No Saludable"
+    },
+    "mirroring-unhealthy": {
+      "title": "Mirroring",
+      "subtitle": "No Saludable",
+      "modal_title": "DB Mirroring - No Saludable"
+    },
+    "filegroup-usage-critical": {
+      "title": "Uso de FileGroups",
+      "subtitle": "Crítico",
+      "modal_title": "Uso de FileGroups - Crítico"
+    },
+    "filegroup-usage-warning": {
+      "title": "Uso de FileGroups",
+      "subtitle": "Aviso",
+      "modal_title": "Uso de FileGroups - Aviso"
+    },
+    "tempdb-critical": {
+      "title": "TempDB Disco",
+      "subtitle": "Crítico",
+      "modal_title": "TempDB - Disco Crítico"
+    },
+    "tempdb-warning": {
+      "title": "TempDB Disco",
+      "subtitle": "Atención",
+      "modal_title": "TempDB - Disco Atención"
+    },
+    "processes-alarm": {
+      "title": "Cola de CPU (Runnable)",
+      "subtitle": "Instancias con sesiones RUNNABLE por encima del umbral",
+      "modal_title": "Cola de CPU (sesiones runnable)"
+    },
+    "deadlocks": {
+      "title": "Deadlocks",
+      "subtitle": "Últimas 24h",
+      "modal_title": "Deadlocks (últimas 24h)"
+    },
+    "backup-failed": {
+      "title": "Backup Fallido",
+      "subtitle": "Cantidad Fallidos",
+      "modal_title": "Backup Fallido"
+    },
+    "backup-log-failed": {
+      "title": "Fallo de Backup Log",
+      "subtitle": "Fallas de Log (Sin Resolver)",
+      "modal_title": "Fallo de Backup Log (Sin Resolver)"
+    },
+    "backup-delayed": {
+      "title": "Backup Retrasado",
+      "subtitle": "Cantidad Retrasados",
+      "modal_title": "Backup Retrasado"
+    },
+    "backup-jobs-disabled": {
+      "title": "Jobs de Backup Deshabilitados",
+      "subtitle": "Jobs Deshabilitados",
+      "modal_title": "Jobs de Backup Deshabilitados"
+    },
+    "backup-no-checksum": {
+      "title": "Backup con Checksum",
+      "subtitle": "Brecha de Cobertura",
+      "modal_title": "Backup con Checksum"
+    },
+    "disk-latency-critical": {
+      "title": "Latencia de Disco",
+      "subtitle": "Crítico (>= 50ms)",
+      "modal_title": "Latencia de Disco Crítico - Drives con Alta Latencia"
+    }
   }
 }

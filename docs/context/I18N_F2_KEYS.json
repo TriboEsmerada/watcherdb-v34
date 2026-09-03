@@ -1,0 +1,122 @@
+{
+  "db-availability-abnormal": {
+    "title": {"en": "DB Unavailable", "pt_pt": "DB Indisponíveis", "es": "DB No Disponibles"},
+    "subtitle": {"en": "Unavailable Count", "pt_pt": "Contagem de Indisponíveis", "es": "Cantidad No Disponible"},
+    "modal_title": {"en": "DB Unavailable", "pt_pt": "DB Indisponíveis", "es": "DB No Disponibles"}
+  },
+  "db-availability-total": {
+    "title": {"en": "DB Availability", "pt_pt": "Disponibilidade de DB", "es": "Disponibilidad de DB"},
+    "subtitle": {"en": "Total Count", "pt_pt": "Contagem Total", "es": "Cantidad Total"},
+    "modal_title": {"en": "DB Availability - Total", "pt_pt": "Disponibilidade de DB - Total", "es": "Disponibilidad de DB - Total"}
+  },
+  "db-availability-ok": {
+    "title": {"en": "Instances OK", "pt_pt": "Instâncias OK", "es": "Instancias OK"},
+    "subtitle": {"en": "Available Count", "pt_pt": "Contagem de Disponíveis", "es": "Cantidad Disponible"},
+    "modal_title": {"en": "Instances OK", "pt_pt": "Instâncias OK", "es": "Instancias OK"}
+  },
+  "instance-availability-off": {
+    "title": {"en": "Instances Offline", "pt_pt": "Instâncias Offline", "es": "Instancias Offline"},
+    "subtitle": {"en": "Offline Count", "pt_pt": "Contagem Offline", "es": "Cantidad Offline"},
+    "modal_title": {"en": "Instances Offline", "pt_pt": "Instâncias Offline", "es": "Instancias Offline"}
+  },
+  "blocked-sessions": {
+    "title": {"en": "Blocked Sessions", "pt_pt": "Sessões Bloqueadas", "es": "Sesiones Bloqueadas"},
+    "subtitle": {"en": "Session Count", "pt_pt": "Contagem de Sessões", "es": "Cantidad de Sesiones"},
+    "modal_title": {"en": "Blocked Sessions", "pt_pt": "Sessões Bloqueadas", "es": "Sesiones Bloqueadas"}
+  },
+  "blocked-users": {
+    "title": {"en": "Blocked Users", "pt_pt": "Utilizadores Bloqueados", "pt_br": "Usuários Bloqueados", "es": "Usuarios Bloqueados"},
+    "subtitle": {"en": "User Count", "pt_pt": "Contagem de Utilizadores", "pt_br": "Contagem de Usuários", "es": "Cantidad de Usuarios"},
+    "modal_title": {"en": "Blocked Users", "pt_pt": "Utilizadores Bloqueados", "pt_br": "Usuários Bloqueados", "es": "Usuarios Bloqueados"}
+  },
+  "transaction-logs-critical": {
+    "title": {"en": "Transaction Logs", "pt_pt": "Transaction Logs", "es": "Transaction Logs"},
+    "subtitle": {"en": "Critical", "pt_pt": "Crítico", "es": "Crítico"},
+    "modal_title": {"en": "DB Transaction Logs - Critical", "pt_pt": "DB Transaction Logs - Crítico", "es": "DB Transaction Logs - Crítico"}
+  },
+  "transaction-logs-warning": {
+    "title": {"en": "Transaction Logs", "pt_pt": "Transaction Logs", "es": "Transaction Logs"},
+    "subtitle": {"en": "Warning", "pt_pt": "Aviso", "es": "Aviso"},
+    "modal_title": {"en": "DB Transaction Logs - Warning", "pt_pt": "DB Transaction Logs - Aviso", "es": "DB Transaction Logs - Aviso"}
+  },
+  "disk-file-system-critical": {
+    "title": {"en": "Disk File System", "pt_pt": "Disk File System", "es": "Disk File System"},
+    "subtitle": {"en": "Critical", "pt_pt": "Crítico", "es": "Crítico"},
+    "modal_title": {"en": "DB Disk File System - Critical", "pt_pt": "DB Disk File System - Crítico", "es": "DB Disk File System - Crítico"}
+  },
+  "disk-file-system-warning": {
+    "title": {"en": "Disk File System", "pt_pt": "Disk File System", "es": "Disk File System"},
+    "subtitle": {"en": "Warning", "pt_pt": "Aviso", "es": "Aviso"},
+    "modal_title": {"en": "DB Disk File System - Warning", "pt_pt": "DB Disk File System - Aviso", "es": "DB Disk File System - Aviso"}
+  },
+  "always-on-unhealthy": {
+    "title": {"en": "Always On", "pt_pt": "Always On", "es": "Always On"},
+    "subtitle": {"en": "Unhealthy", "pt_pt": "Não Saudável", "es": "No Saludable"},
+    "modal_title": {"en": "DB Always On - Unhealthy", "pt_pt": "DB Always On - Não Saudável", "es": "DB Always On - No Saludable"}
+  },
+  "mirroring-unhealthy": {
+    "title": {"en": "Mirroring", "pt_pt": "Mirroring", "es": "Mirroring"},
+    "subtitle": {"en": "Unhealthy", "pt_pt": "Não Saudável", "es": "No Saludable"},
+    "modal_title": {"en": "DB Mirroring - Unhealthy", "pt_pt": "DB Mirroring - Não Saudável", "es": "DB Mirroring - No Saludable"}
+  },
+  "filegroup-usage-critical": {
+    "title": {"en": "FileGroups Usage", "pt_pt": "Utilização de FileGroups", "es": "Uso de FileGroups"},
+    "subtitle": {"en": "Critical", "pt_pt": "Crítico", "es": "Crítico"},
+    "modal_title": {"en": "FileGroups Usage - Critical", "pt_pt": "Utilização de FileGroups - Crítico", "es": "Uso de FileGroups - Crítico"}
+  },
+  "filegroup-usage-warning": {
+    "title": {"en": "FileGroups Usage", "pt_pt": "Utilização de FileGroups", "es": "Uso de FileGroups"},
+    "subtitle": {"en": "Warning", "pt_pt": "Aviso", "es": "Aviso"},
+    "modal_title": {"en": "FileGroups Usage - Warning", "pt_pt": "Utilização de FileGroups - Aviso", "es": "Uso de FileGroups - Aviso"}
+  },
+  "tempdb-critical": {
+    "title": {"en": "TempDB Disk", "pt_pt": "TempDB Disco", "es": "TempDB Disco"},
+    "subtitle": {"en": "Critical", "pt_pt": "Crítico", "es": "Crítico"},
+    "modal_title": {"en": "TempDB - Disk Critical", "pt_pt": "TempDB - Disco Crítico", "es": "TempDB - Disco Crítico"}
+  },
+  "tempdb-warning": {
+    "title": {"en": "TempDB Disk", "pt_pt": "TempDB Disco", "es": "TempDB Disco"},
+    "subtitle": {"en": "Warning", "pt_pt": "Atenção", "es": "Atención"},
+    "modal_title": {"en": "TempDB - Disk Warning", "pt_pt": "TempDB - Disco Atenção", "es": "TempDB - Disco Atención"}
+  },
+  "processes-alarm": {
+    "title": {"en": "CPU Queue (Runnable)", "pt_pt": "Fila de CPU (Runnable)", "es": "Cola de CPU (Runnable)"},
+    "subtitle": {"en": "Instances with RUNNABLE sessions above threshold", "pt_pt": "Instâncias com sessões RUNNABLE acima do threshold", "es": "Instancias con sesiones RUNNABLE por encima del umbral"},
+    "modal_title": {"en": "CPU Queue (Runnable Sessions)", "pt_pt": "Fila de CPU (sessões runnable)", "es": "Cola de CPU (sesiones runnable)"}
+  },
+  "deadlocks": {
+    "title": {"en": "Deadlocks", "pt_pt": "Deadlocks", "es": "Deadlocks"},
+    "subtitle": {"en": "Last 24h", "pt_pt": "Últimas 24h", "es": "Últimas 24h"},
+    "modal_title": {"en": "Deadlocks (Last 24h)", "pt_pt": "Deadlocks (últimas 24h)", "es": "Deadlocks (últimas 24h)"}
+  },
+  "backup-failed": {
+    "title": {"en": "Backup Failed", "pt_pt": "Backup Falhado", "es": "Backup Fallido"},
+    "subtitle": {"en": "Failed Count", "pt_pt": "Contagem de Falhas", "es": "Cantidad Fallidos"},
+    "modal_title": {"en": "Backup Failed", "pt_pt": "Backup Falhado", "es": "Backup Fallido"}
+  },
+  "backup-log-failed": {
+    "title": {"en": "Backup Log Failed", "pt_pt": "Falha de Backup Log", "es": "Fallo de Backup Log"},
+    "subtitle": {"en": "Log Failures (Unresolved)", "pt_pt": "Falhas de Log (Não Resolvidas)", "es": "Fallas de Log (Sin Resolver)"},
+    "modal_title": {"en": "Backup Log Failed (Unresolved)", "pt_pt": "Falha de Backup Log (Não Resolvida)", "es": "Fallo de Backup Log (Sin Resolver)"}
+  },
+  "backup-delayed": {
+    "title": {"en": "Backup Delayed", "pt_pt": "Backup Atrasado", "es": "Backup Retrasado"},
+    "subtitle": {"en": "Delayed Count", "pt_pt": "Contagem de Atrasados", "es": "Cantidad Retrasados"},
+    "modal_title": {"en": "Backup Delayed", "pt_pt": "Backup Atrasado", "es": "Backup Retrasado"}
+  },
+  "backup-jobs-disabled": {
+    "title": {"en": "Backup Jobs Disabled", "pt_pt": "Jobs de Backup Desativados", "es": "Jobs de Backup Deshabilitados"},
+    "subtitle": {"en": "Jobs Disabled", "pt_pt": "Jobs Desativados", "es": "Jobs Deshabilitados"},
+    "modal_title": {"en": "Backup Jobs Disabled", "pt_pt": "Jobs de Backup Desativados", "es": "Jobs de Backup Deshabilitados"}
+  },
+  "backup-no-checksum": {
+    "title": {"en": "Backup with Checksum", "pt_pt": "Backup com Checksum", "es": "Backup con Checksum"},
+    "subtitle": {"en": "Coverage Gap", "pt_pt": "Lacuna de Cobertura", "es": "Brecha de Cobertura"},
+    "modal_title": {"en": "Backup with Checksum", "pt_pt": "Backup com Checksum", "es": "Backup con Checksum"}
+  },
+  "disk-latency-critical": {
+    "title": {"en": "Disk Latency", "pt_pt": "Latência de Disco", "es": "Latencia de Disco"},
+    "subtitle": {"en": "Critical (>= 50ms)", "pt_pt": "Crítico (>= 50ms)", "es": "Crítico (>= 50ms)"},
+    "modal_title": {"en": "Disk Latency Critical - High Latency Drives", "pt_pt": "Disk Latency Critical - Drives com Alta Latência", "es": "Latencia de Disco Crítico - Drives con Alta Latencia"}
+  }
+}

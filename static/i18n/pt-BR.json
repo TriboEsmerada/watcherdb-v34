@@ -166,5 +166,12 @@
     "blocked_users_modal_title": "Usuários Bloqueados",
     "integrity_unmeasurable_label": "Não mensurável (coleta falhou)",
     "integrity_unmeasurable_modal_title": "Integridade — Não Mensurável (coleta falhou)"
+  },
+  "kpi_meta": {
+    "blocked-users": {
+      "title": "Usuários Bloqueados",
+      "subtitle": "Contagem de Usuários",
+      "modal_title": "Usuários Bloqueados"
+    }
   }
 }

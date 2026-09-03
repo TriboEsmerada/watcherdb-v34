@@ -1958,5 +1958,127 @@
     "showing_n_of_total_filter": "Showing {n} of {total} (filter: {filter})",
     "bases_lines_note": "databases ({n} rows per type — a database with FULL+DIFF+LOG overdue has 1 row per type)",
     "distinct_bases_note": "Distinct databases (a database may have more than one type overdue)"
+  },
+  "kpi_meta": {
+    "db-availability-abnormal": {
+      "title": "DB Unavailable",
+      "subtitle": "Unavailable Count",
+      "modal_title": "DB Unavailable"
+    },
+    "db-availability-total": {
+      "title": "DB Availability",
+      "subtitle": "Total Count",
+      "modal_title": "DB Availability - Total"
+    },
+    "db-availability-ok": {
+      "title": "Instances OK",
+      "subtitle": "Available Count",
+      "modal_title": "Instances OK"
+    },
+    "instance-availability-off": {
+      "title": "Instances Offline",
+      "subtitle": "Offline Count",
+      "modal_title": "Instances Offline"
+    },
+    "blocked-sessions": {
+      "title": "Blocked Sessions",
+      "subtitle": "Session Count",
+      "modal_title": "Blocked Sessions"
+    },
+    "blocked-users": {
+      "title": "Blocked Users",
+      "subtitle": "User Count",
+      "modal_title": "Blocked Users"
+    },
+    "transaction-logs-critical": {
+      "title": "Transaction Logs",
+      "subtitle": "Critical",
+      "modal_title": "DB Transaction Logs - Critical"
+    },
+    "transaction-logs-warning": {
+      "title": "Transaction Logs",
+      "subtitle": "Warning",
+      "modal_title": "DB Transaction Logs - Warning"
+    },
+    "disk-file-system-critical": {
+      "title": "Disk File System",
+      "subtitle": "Critical",
+      "modal_title": "DB Disk File System - Critical"
+    },
+    "disk-file-system-warning": {
+      "title": "Disk File System",
+      "subtitle": "Warning",
+      "modal_title": "DB Disk File System - Warning"
+    },
+    "always-on-unhealthy": {
+      "title": "Always On",
+      "subtitle": "Unhealthy",
+      "modal_title": "DB Always On - Unhealthy"
+    },
+    "mirroring-unhealthy": {
+      "title": "Mirroring",
+      "subtitle": "Unhealthy",
+      "modal_title": "DB Mirroring - Unhealthy"
+    },
+    "filegroup-usage-critical": {
+      "title": "FileGroups Usage",
+      "subtitle": "Critical",
+      "modal_title": "FileGroups Usage - Critical"
+    },
+    "filegroup-usage-warning": {
+      "title": "FileGroups Usage",
+      "subtitle": "Warning",
+      "modal_title": "FileGroups Usage - Warning"
+    },
+    "tempdb-critical": {
+      "title": "TempDB Disk",
+      "subtitle": "Critical",
+      "modal_title": "TempDB - Disk Critical"
+    },
+    "tempdb-warning": {
+      "title": "TempDB Disk",
+      "subtitle": "Warning",
+      "modal_title": "TempDB - Disk Warning"
+    },
+    "processes-alarm": {
+      "title": "CPU Queue (Runnable)",
+      "subtitle": "Instances with RUNNABLE sessions above threshold",
+      "modal_title": "CPU Queue (Runnable Sessions)"
+    },
+    "deadlocks": {
+      "title": "Deadlocks",
+      "subtitle": "Last 24h",
+      "modal_title": "Deadlocks (Last 24h)"
+    },
+    "backup-failed": {
+      "title": "Backup Failed",
+      "subtitle": "Failed Count",
+      "modal_title": "Backup Failed"
+    },
+    "backup-log-failed": {
+      "title": "Backup Log Failed",
+      "subtitle": "Log Failures (Unresolved)",
+      "modal_title": "Backup Log Failed (Unresolved)"
+    },
+    "backup-delayed": {
+      "title": "Backup Delayed",
+      "subtitle": "Delayed Count",
+      "modal_title": "Backup Delayed"
+    },
+    "backup-jobs-disabled": {
+      "title": "Backup Jobs Disabled",
+      "subtitle": "Jobs Disabled",
+      "modal_title": "Backup Jobs Disabled"
+    },
+    "backup-no-checksum": {
+      "title": "Backup with Checksum",
+      "subtitle": "Coverage Gap",
+      "modal_title": "Backup with Checksum"
+    },
+    "disk-latency-critical": {
+      "title": "Disk Latency",
+      "subtitle": "Critical (>= 50ms)",
+      "modal_title": "Disk Latency Critical - High Latency Drives"
+    }
   }
 }

@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **i18n lote F2 (wave BUG-003): os títulos dos cartões principais do dashboard seguem o idioma
+  escolhido** (decisão owner 03/09). Os 24 cartões de `KPI_METADATA` que ainda tinham título,
+  subtítulo e título de modal como literais (inglês puro misturado com português: "DB Not
+  Availability", "Instances OK" ao lado de "TempDB - Disco Crítico") passam ao padrão de getter
+  que `cpu-critical`, `memory-critical` e os cartões de Jobs já usavam, com chaves `kpi_meta.<id>.*`
+  em 4 idiomas e o literal actual como fallback. Nenhum sítio de render muda. Traduções do
+  v33-i18n-linguist; "UnHealthy" → "Unhealthy", "DB Not Availability" → "DB Unavailable". [tier: Std]
+
 - **Inglês passa a idioma por omissão do portal** (decisão owner 03/09). Aplica-se a quem
   ainda não escolheu idioma; a preferência guardada (`watcherdb_lang`) continua a mandar.
   `pt.json` mantém-se como ground truth de chaves (paridade testada) e o fallback en → pt

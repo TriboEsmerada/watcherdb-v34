@@ -60,6 +60,28 @@ carrega `.claude/agents/` no arranque); nesta sessão correu via agente genéric
 - `log.cat_click_to_fetch` / `log.cat_fetch_error` mantêm registo informal pré-existente ("clica",
   "Tenta") — fora do escopo do lote A; candidato a lote de tom.
 
+## Adenda 03/09 (tarde): wave BUG-003 e inglês por omissão
+
+- Owner, em PT-BR, viu a modal "Backup Delayed - Critico" em pt-PT sem acentos: "se esse tem os outros devem
+  estar assim tbm". Medição (scanner próprio sobre literais JS; o `i18n_scan_hardcoded.py` só vê HTML e
+  reporta 10): ~2035 literais PT, 516 sem acento. Correcções do frontend-specialist: `tDoc` já é multilingue;
+  `KPI_METADATA` (títulos dos cartões principais) está em inglês puro misturado com PT → decisão de produto (F2).
+- Owner: **"a língua default deve ser o inglês"** → `DEFAULT_LANG='en'`, `<html lang="en">`; pt.json continua o
+  ground truth de chaves; fallback en→pt mantido. Aplicar **F1 antes** do default.
+- Padrão fixado: `_kpiT(chave, fallback)` + novo `_kpiTp(chave, fallback, {n})`; namespace `kpi_adv.*`;
+  reutilizar `modal.*` / `kpi_report.*` / `kpi_modal.*` quando já existir (o linguista apanhou 10 duplicados).
+
+| Lote | Superfície | ~Strings | Esforço | Estado |
+|---|---|---|---|---|
+| F1 | Dashboard KPI (`_advRow`/`_advCard`) + cartões das modais de backup/integridade/deadlocks + resumo | 110 | M | script pronto (`I18N_F1_PASSO1_apply.py`), validado em cópia |
+| F2 | `KPI_METADATA` title/subtitle/modalTitle (cartões principais) | 60 | M | decisão: fonte EN ou PT? `display_name` do backend já existe e não é usado (`:34616`) |
+| F3 | `CARD_HELP_TEXTS` + `toggleSqlMemHelp` (ajudas "?") | 270 | L | gerar chaves programaticamente; rever leak de racional interno (bulletin 21/07) |
+| F4 | Acentos nos campos pt de `KPI_DOCUMENTATION` | 150 | S | só texto |
+| F5 | `generate*Report` (exportações) | 174 | L | risco em headers CSV |
+| F6 | Modais de diagnóstico (`renderDiagnoseResults`, `runNetworkDiagnostic`, `PERF_HELP`) | 250 | M/L | bundlar fix CSS `.perf-popover` |
+
+Automatizar: teste que falhe quando o diff do template ganha literal PT sem `t(`/`_kpiT(` (allowlist decrescente por lote).
+
 ## Pendentes (lotes do linguista, GO por lote)
 
 - **B** acentuação: pt 195 / es 313 chaves candidatas (falsos positivos: "esta" demonstrativo, tempdb).
