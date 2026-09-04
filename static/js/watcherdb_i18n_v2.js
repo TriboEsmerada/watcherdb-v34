@@ -425,19 +425,36 @@
     }
 
     /**
-     * Refresh open tabs and dashboard to apply new translations.
+     * Re-render the ACTIVE tab now and mark the others stale (reloaded on activation) to apply new translations.
      */
     function _refreshOpenContent() {
         try {
             if (typeof openTabs !== 'undefined' && openTabs && openTabs.values) {
+                // 2026-09-04 (owner: "demora para traduzir"): o codigo antigo chamava
+                // refreshTab(tab.id) -- a propriedade do objecto de aba e' tabId, logo era
+                // um no-op e as abas so' mudavam de lingua no refresh periodico.
+                // Nao se pode re-renderizar a partir da cache: 11 tipos de aba guardam
+                // em tabCache o HTML ja' renderizado (na lingua antiga). Por isso:
+                //   - aba ACTIVA: refreshTab (limpa cache + recarrega) -- 1 recolha, ja';
+                //   - restantes: cache limpa + flag _i18nStale; activateTab recarrega-as
+                //     quando forem activadas (custo diferido, nunca N recolhas de uma vez).
+                var activeId = (typeof activeTabId !== 'undefined') ? activeTabId : null;
                 for (var tab of openTabs.values()) {
-                    if (typeof refreshTab === 'function') {
-                        refreshTab(tab.id);
+                    var id = tab.tabId || tab.id;
+                    if (!id) continue;
+                    if (id === activeId) {
+                        if (typeof refreshTab === 'function') refreshTab(id);
+                    } else {
+                        tab._i18nStale = true;
+                        if (typeof clearTabCache === 'function' && tab.server) {
+                            clearTabCache(tab.tabType, tab.server.server_id);
+                        }
                     }
                 }
             }
             if (typeof renderDashboardCards === 'function') {
-                var contentArea = document.getElementById('mainContentArea');
+                // id correcto e' tabsContentArea (mainContentArea nunca existiu no portal)
+                var contentArea = document.getElementById('tabsContentArea');
                 if (contentArea && contentArea.querySelector('#kpi-dashboard-container')) {
                     renderDashboardCards();
                 }

@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Troca de idioma passa a traduzir a aba visível na hora** (owner 04/09: "demora para traduzir").
+  Causa: o motor chamava `refreshTab(tab.id)` e a propriedade é `tabId`, logo a chamada nunca fazia
+  nada; só os elementos com `data-i18n` mudavam na hora e o resto esperava pelo refresh periódico.
+  Como 11 tipos de aba guardam na cache o HTML já renderizado (na língua antiga), a aba activa é
+  recarregada de imediato (uma recolha) e as outras ficam marcadas e recarregam ao serem activadas,
+  nunca todas de uma vez. Corrigido também o id do contentor do dashboard no mesmo caminho. [tier: Std]
+
 - **i18n lote F4 (wave BUG-003): acentuação e AO90 na documentação dos KPIs** (o texto que abre em
   cada "?" do dashboard). Os campos portugueses de `KPI_DOCUMENTATION` que ainda tinham acentos em
   falta ou grafia pré-AO90 ("actualizado", "activa", "detectada", "directamente", "afectadas")

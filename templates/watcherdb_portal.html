@@ -6929,7 +6929,10 @@
                               !tab.contentElement.innerHTML.includes('loading') &&
                               !tab.contentElement.innerHTML.includes('Carregando');
             
-            if (!hasContent) {
+            // _i18nStale: marcada pelo motor i18n na troca de idioma (a cache desta aba
+            // guardava HTML na lingua antiga e foi limpa) -- recarrega agora que ficou visivel.
+            if (!hasContent || tab._i18nStale) {
+                tab._i18nStale = false;
                 loadTabContent(tabId);
             } else {
                 debugLog(`[DBG] Conteúdo da aba ${tabId} já carregado, pulando recarregamento`, 'info');
