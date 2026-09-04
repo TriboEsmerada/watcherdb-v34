@@ -13,7 +13,7 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   cada "?" do dashboard). Os campos portugueses de `KPI_DOCUMENTATION` que ainda tinham acentos em
   falta ou grafia pré-AO90 ("actualizado", "activa", "detectada", "directamente", "afectadas")
   foram corrigidos sem reescrever uma frase; os blocos en/es, já correctos, não foram tocados.
-  33 literais. Só texto. [tier: Std]
+  32 literais. Só texto. Hotfix no mesmo dia (27d427e tinha 33): o par "Espaco" → "Espaço" entrou também nas 4 linhas `category:` — é o identificador da categoria (`KPI_CATEGORIES`), não texto, e escondia os 4 KPIs de Espaço do menu de ajuda; reposto e excluído do sidecar. [tier: Std]
 
 - **i18n lote F2c: defeitos nas chaves antigas de `pt.json` e `es.json`** (achados do
   v33-i18n-linguist ao reutilizar chaves no F2). Espanhol: "Critico" → "Crítico" em 11 chaves,
