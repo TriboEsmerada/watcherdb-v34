@@ -9,6 +9,15 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **i18n lote F2c: defeitos nas chaves antigas de `pt.json` e `es.json`** (achados do
+  v33-i18n-linguist ao reutilizar chaves no F2). Espanhol: "Critico" → "Crítico" em 11 chaves,
+  "Memoria Critico" → "Memoria Crítica", "Trabajos" → "Jobs" (glossário), "DB Disco File System" →
+  "DB Disk File System", "Advertencia" → "Aviso" (TempDB mantém "Atención"). Português: "Memória
+  Crítico" → "Memória Crítica", acentos em `processes_alarm_count`, "Warning"/"Critical" nunca
+  traduzidos → "Aviso"/"Crítico", "Backup Jobs Disabled" → "Jobs de Backup Desativados",
+  "FileGroups Usage" → "Utilização de FileGroups". Varrimento completo: zero "Critico"/"Advertencia"
+  restantes em `es.json`. Só texto, 47 chaves. [tier: Std]
+
 - **i18n lote F2 (wave BUG-003): os títulos dos cartões principais do dashboard seguem o idioma
   escolhido** (decisão owner 03/09). Os 24 cartões de `KPI_METADATA` que ainda tinham título,
   subtítulo e título de modal como literais (inglês puro misturado com português: "DB Not
