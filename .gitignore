@@ -259,3 +259,6 @@ scripts/reports/*_forecast.html
 .venv-build/
 secrets/
 .pyarmor/
+
+config/_archive/
+REGISTRO_IGAC/**/config/sql_servers.json
