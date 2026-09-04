@@ -9,6 +9,8 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Lotes B/C do linguista: acentuação em pt.json e es.json** (owner: acentos correctos como P1; o screenshot em espanhol de 04/09 mostrava "Tamano", "diagnostico", "analisis"). 255 chaves em português e 460 em espanhol ganham os acentos, til, cedilha e ñ em falta, sem mudar termos nem frases; confirmados palavra a palavra pelo v33-i18n-linguist a partir de um varrimento mecânico. [tier: Std]
+
 - **Os botões de navegação da instância passam a traduzir** (owner 04/09, em espanhol: "os nomes
   do menu não traduziram"). Overview, Performance, Always On, Backup, Space, Disk, Encrypted, CPU,
   Memory, Services, Log, Sessions, Security, Users, Jobs e SQL Diag estavam hardcoded em inglês;

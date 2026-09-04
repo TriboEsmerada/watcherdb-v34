@@ -1,0 +1,2302 @@
+[
+ {
+  "path": "a11y.collapse_section",
+  "old": "Contraer seccion",
+  "new": "Contraer sección"
+ },
+ {
+  "path": "a11y.expand_section",
+  "old": "Expandir seccion",
+  "new": "Expandir sección"
+ },
+ {
+  "path": "alwayson.about_desc",
+  "old": "Always On Availability Groups es un recurso de alta disponibilidad y recuperacion de desastres de SQL Server. Si esperaba ver informacion de Always On aqui, verifique que:",
+  "new": "Always On Availability Groups es un recurso de alta disponibilidad y recuperación de desastres de SQL Server. Si esperaba ver información de Always On aquí, verifique que:"
+ },
+ {
+  "path": "alwayson.ag_not_healthy_hint",
+  "old": "Esto indica un problema reciente (replica offline, conectividad, sincronizacion pendiente) que aun no ha generado failover.",
+  "new": "Esto indica un problema reciente (replica offline, conectividad, sincronización pendiente) que aún no ha generado failover."
+ },
+ {
+  "path": "alwayson.ag_not_healthy_msg",
+  "old": "<strong>El AG tiene status NOT_HEALTHY</strong>, pero no hubo eventos de failover en los ultimos 30 dias.",
+  "new": "<strong>El AG tiene status NOT_HEALTHY</strong>, pero no hubo eventos de failover en los últimos 30 días."
+ },
+ {
+  "path": "alwayson.ag_not_healthy_no_failover",
+  "old": "El AG tiene estado NOT_HEALTHY, pero no hubo eventos de failover en los ultimos 30 dias.",
+  "new": "El AG tiene estado NOT_HEALTHY, pero no hubo eventos de failover en los últimos 30 días."
+ },
+ {
+  "path": "alwayson.analysis_failed",
+  "old": "No fue posible realizar el analisis:",
+  "new": "No fue posible realizar el análisis:"
+ },
+ {
+  "path": "alwayson.check_accessible",
+  "old": "El servidor esta accesible y respondiendo",
+  "new": "El servidor está accesible y respondiendo"
+ },
+ {
+  "path": "alwayson.check_enabled",
+  "old": "Always On esta habilitado y configurado en SQL Server",
+  "new": "Always On está habilitado y configurado en SQL Server"
+ },
+ {
+  "path": "alwayson.check_inventory",
+  "old": "La instancia esta configurada correctamente en el archivo",
+  "new": "La instancia está configurada correctamente en el archivo"
+ },
+ {
+  "path": "alwayson.diagnosis_ag",
+  "old": "Diagnostico del AG",
+  "new": "Diagnóstico del AG"
+ },
+ {
+  "path": "alwayson.diagnosis_desc",
+  "old": "Haga clic en el boton para ejecutar el diagnostico automatico e identificar la causa raiz del problema.",
+  "new": "Haga clic en el boton para ejecutar el diagnóstico automático e identificar la causa raíz del problema."
+ },
+ {
+  "path": "alwayson.diagnosis_error",
+  "old": "Error al ejecutar diagnostico:",
+  "new": "Error al ejecutar diagnóstico:"
+ },
+ {
+  "path": "alwayson.diagnosis_failed",
+  "old": "No fue posible realizar el diagnostico:",
+  "new": "No fue posible realizar el diagnóstico:"
+ },
+ {
+  "path": "alwayson.diagnosis_problems",
+  "old": "Diagnostico de Problemas",
+  "new": "Diagnóstico de Problemas"
+ },
+ {
+  "path": "alwayson.failover_description",
+  "old": "Descripcion",
+  "new": "Descripción"
+ },
+ {
+  "path": "alwayson.failover_events_title",
+  "old": "Eventos de Failover (30 dias)",
+  "new": "Eventos de Failover (30 días)"
+ },
+ {
+  "path": "alwayson.last_failover_label",
+  "old": "Ultimo failover registrado",
+  "new": "Último failover registrado"
+ },
+ {
+  "path": "alwayson.network_slow",
+  "old": "La red esta lenta o inestable",
+  "new": "La red está lenta o inestable"
+ },
+ {
+  "path": "alwayson.no_failover_30d",
+  "old": "Ningun evento de failover en los ultimos 30 dias - el AG esta operando normalmente.",
+  "new": "Ningún evento de failover en los últimos 30 días - el AG está operando normalmente."
+ },
+ {
+  "path": "alwayson.recent_problem_hint",
+  "old": "Esto indica un problema reciente (replica offline, conectividad, sincronizacion pendiente) que aun no genero failover.",
+  "new": "Esto indica un problema reciente (replica offline, conectividad, sincronización pendiente) que aún no generó failover."
+ },
+ {
+  "path": "alwayson.run_diagnosis",
+  "old": "Ejecutar Diagnostico",
+  "new": "Ejecutar Diagnóstico"
+ },
+ {
+  "path": "alwayson.running_diagnosis",
+  "old": "Ejecutando diagnostico... Analizando endpoint, replicas y logs...",
+  "new": "Ejecutando diagnóstico... Analizando endpoint, replicas y logs..."
+ },
+ {
+  "path": "alwayson.server_overloaded",
+  "old": "El servidor esta sobrecargado",
+  "new": "El servidor está sobrecargado"
+ },
+ {
+  "path": "alwayson.sync_label",
+  "old": "Sincronizacion:",
+  "new": "Sincronización:"
+ },
+ {
+  "path": "alwayson.table_connection",
+  "old": "Conexion",
+  "new": "Conexión"
+ },
+ {
+  "path": "alwayson.th_connection",
+  "old": "Conexion",
+  "new": "Conexión"
+ },
+ {
+  "path": "alwayson.th_description",
+  "old": "Descripcion",
+  "new": "Descripción"
+ },
+ {
+  "path": "alwayson.too_many_queries",
+  "old": "El servidor esta procesando muchas consultas",
+  "new": "El servidor está procesando muchas consultas"
+ },
+ {
+  "path": "analysis.full_db",
+  "old": "Analisis Completo de la Base de Datos",
+  "new": "Análisis Completo de la Base de Datos"
+ },
+ {
+  "path": "analysis.predictive",
+  "old": "Analisis Predictivo",
+  "new": "Análisis Predictivo"
+ },
+ {
+  "path": "backup.days_label",
+  "old": "dia(s)",
+  "new": "día(s)"
+ },
+ {
+  "path": "backup.gaps_analysis",
+  "old": "Analisis de Gaps",
+  "new": "Análisis de Gaps"
+ },
+ {
+  "path": "backup.gaps_root_cause",
+  "old": "Analisis de Gaps & Causa Raiz",
+  "new": "Análisis de Gaps & Causa Raíz"
+ },
+ {
+  "path": "backup.last_14_days",
+  "old": "Ultimos 14 dias",
+  "new": "Últimos 14 días"
+ },
+ {
+  "path": "backup.last_21_days",
+  "old": "Ultimos 21 dias",
+  "new": "Últimos 21 días"
+ },
+ {
+  "path": "backup.last_30_days",
+  "old": "Ultimos 30 dias",
+  "new": "Últimos 30 días"
+ },
+ {
+  "path": "backup.last_backups_section",
+  "old": "Ultimos Backups por Base de Datos",
+  "new": "Últimos Backups por Base de Datos"
+ },
+ {
+  "path": "backup.last_diff",
+  "old": "Ultimo DIFF",
+  "new": "Último DIFF"
+ },
+ {
+  "path": "backup.last_full",
+  "old": "Ultimo FULL",
+  "new": "Último FULL"
+ },
+ {
+  "path": "backup.last_log",
+  "old": "Ultimo LOG",
+  "new": "Último LOG"
+ },
+ {
+  "path": "backup.network_diagnostic",
+  "old": "Diagnostico de Red",
+  "new": "Diagnóstico de Red"
+ },
+ {
+  "path": "backup.no_failed_jobs_24h",
+  "old": "Ningun job de backup fallo en las ultimas 24 horas",
+  "new": "Ningún job de backup falló en las últimas 24 horas"
+ },
+ {
+  "path": "backup.no_justification",
+  "old": "SIN Justificacion",
+  "new": "SIN Justificación"
+ },
+ {
+  "path": "backup.no_significant_gap_period",
+  "old": "Ningun gap significativo detectado en este periodo.",
+  "new": "Ningún gap significativo detectado en este período."
+ },
+ {
+  "path": "backup.period_label",
+  "old": "Periodo",
+  "new": "Período"
+ },
+ {
+  "path": "backup.request_cancelled_desc",
+  "old": "La consulta de backups tardo demasiado o fue cancelada. Haga clic en Reintentar para recargar.",
+  "new": "La consulta de backups tardó demasiado o fue cancelada. Haga clic en Reintentar para recargar."
+ },
+ {
+  "path": "backup.root_cause",
+  "old": "Causa Raiz",
+  "new": "Causa Raíz"
+ },
+ {
+  "path": "backup.window_last",
+  "old": "Ventana: ultimos",
+  "new": "Ventana: últimos"
+ },
+ {
+  "path": "backup.open_full_jobs_analysis",
+  "old": "Abrir Analisis Completo de Jobs",
+  "new": "Abrir Análisis Completo de Jobs"
+ },
+ {
+  "path": "backup.conflicts_hint",
+  "old": "Para ver todos los conflictos (incluida mantencion), acceda al modulo Jobs",
+  "new": "Para ver todos los conflictos (incluida mantención), acceda al modulo Jobs"
+ },
+ {
+  "path": "backup.summary_window_hint",
+  "old": "(los gaps se mantienen en 30 dias — sostienen la deteccion de cadencia)",
+  "new": "(los gaps se mantienen en 30 días — sostienen la detección de cadencia)"
+ },
+ {
+  "path": "backup.jobs_section_intro",
+  "old": "Jobs de backup del SQL Agent (FULL/DIFF/LOG por nombre), con programacion, ultima y proxima ejecucion. Fallido = ultima ejecucion fallo.",
+  "new": "Jobs de backup del SQL Agent (FULL/DIFF/LOG por nombre), con programación, última y próxima ejecución. Fallido = última ejecución falló."
+ },
+ {
+  "path": "backup.jobs_unavailable",
+  "old": "Informacion de jobs no disponible para esta instancia (el modulo Jobs no respondio).",
+  "new": "Información de jobs no disponible para esta instancia (el módulo Jobs no respondió)."
+ },
+ {
+  "path": "backup.no_agent_schedule",
+  "old": "Sin programacion en Agent",
+  "new": "Sin programación en Agent"
+ },
+ {
+  "path": "backup.next_none",
+  "old": "sin proxima",
+  "new": "sin próxima"
+ },
+ {
+  "path": "backup.external_panel_text",
+  "old": "{n} base(s) cuyo ultimo backup se escribio por virtual device (herramienta externa). La programacion vive en esa herramienta; el \"proximo esperado\" viene del patron historico (tabla por base). Fallos: gaps + log de la herramienta (si configurado) + errorlog.",
+  "new": "{n} base(s) cuyo último backup se escribio por virtual device (herramienta externa). La programación vive en esa herramienta; el \"próximo esperado\" viene del patron histórico (tabla por base). Fallos: gaps + log de la herramienta (si configurado) + errorlog."
+ },
+ {
+  "path": "backup.failed_24h_sub",
+  "old": "Fallos de jobs de backup en las ultimas 24h ({n})",
+  "new": "Fallos de jobs de backup en las últimas 24h ({n})"
+ },
+ {
+  "path": "backup.next_expected",
+  "old": "Proximo esperado",
+  "new": "Próximo esperado"
+ },
+ {
+  "path": "backup.next_expected_title",
+  "old": "Estimado por el patron historico del backupset (no es la programacion del Agent)",
+  "new": "Estimado por el patron histórico del backupset (no es la programación del Agent)"
+ },
+ {
+  "path": "backup.source_title",
+  "old": "Origen del ultimo backup por tipo, detectado en msdb: herramienta externa (virtual device; nombre solo cuando se reconoce en el dispositivo) o nativo (disco/cinta/URL).",
+  "new": "Origen del último backup por tipo, detectado en msdb: herramienta externa (virtual device; nombre solo cuando se reconoce en el dispositivo) o nativo (disco/cinta/URL)."
+ },
+ {
+  "path": "chart.distribution_by_env",
+  "old": "Distribucion por Ambiente",
+  "new": "Distribución por Ambiente"
+ },
+ {
+  "path": "chart.distribution_by_verdict",
+  "old": "Distribucion por Veredicto",
+  "new": "Distribución por Veredicto"
+ },
+ {
+  "path": "col.avg_logical_reads",
+  "old": "Lecturas Logicas Media",
+  "new": "Lecturas Lógicas Media"
+ },
+ {
+  "path": "col.creation_time",
+  "old": "Creacion",
+  "new": "Creación"
+ },
+ {
+  "path": "col.duration_min",
+  "old": "Duracion (min)",
+  "new": "Duración (min)"
+ },
+ {
+  "path": "col.last_execution",
+  "old": "Ultima Ejecucion",
+  "new": "Última Ejecución"
+ },
+ {
+  "path": "col.logical_reads",
+  "old": "Lecturas Logicas",
+  "new": "Lecturas Lógicas"
+ },
+ {
+  "path": "col.num_connections",
+  "old": "Numero de Conexiones",
+  "new": "Número de Conexiones"
+ },
+ {
+  "path": "col.physical_reads",
+  "old": "Lecturas Fisicas",
+  "new": "Lecturas Físicas"
+ },
+ {
+  "path": "confirm.delete_message",
+  "old": "Esta accion no se puede deshacer.",
+  "new": "Esta acción no se puede deshacer."
+ },
+ {
+  "path": "confirm.delete_title",
+  "old": "Confirmar Eliminacion",
+  "new": "Confirmar Eliminación"
+ },
+ {
+  "path": "copilot.most_affected",
+  "old": "Instancia Mas Afectada",
+  "new": "Instancia Más Afectada"
+ },
+ {
+  "path": "copilot.no_events",
+  "old": "Ningun evento en el periodo",
+  "new": "Ningún evento en el período"
+ },
+ {
+  "path": "cpu.check_winrm",
+  "old": "Verifique si WinRM esta habilitado.",
+  "new": "Verifique si WinRM está habilitado."
+ },
+ {
+  "path": "cpu.loading",
+  "old": "Cargando analisis de CPU...",
+  "new": "Cargando análisis de CPU..."
+ },
+ {
+  "path": "cpu.logical_cores",
+  "old": "Cores Logicos",
+  "new": "Cores Lógicos"
+ },
+ {
+  "path": "cpu.physical_cores",
+  "old": "Cores Fisicos",
+  "new": "Cores Físicos"
+ },
+ {
+  "path": "disk.io_critical_50ms",
+  "old": "I/O Critica >=50ms",
+  "new": "I/O Crítica >=50ms"
+ },
+ {
+  "path": "disk.loading",
+  "old": "Cargando analisis de discos...",
+  "new": "Cargando análisis de discos..."
+ },
+ {
+  "path": "disk.loading_filters",
+  "old": "Cargando indice de bases de datos y filegroups para filtros avanzados...",
+  "new": "Cargando índice de bases de datos y filegroups para filtros avanzados..."
+ },
+ {
+  "path": "disk.no_history",
+  "old": "Sin datos historicos disponibles. La recoleccion de KPIs de disco debe estar activa para ver tendencias.",
+  "new": "Sin datos históricos disponibles. La recolección de KPIs de disco debe estar activa para ver tendencias."
+ },
+ {
+  "path": "disk.no_history_period",
+  "old": "Sin datos historicos para el periodo seleccionado.",
+  "new": "Sin datos históricos para el período seleccionado."
+ },
+ {
+  "path": "disk.size_mb",
+  "old": "Tamano (MB)",
+  "new": "Tamaño (MB)"
+ },
+ {
+  "path": "disk.unallocated_expansion",
+  "old": "Espacio No Asignado (Potencial de Expansion)",
+  "new": "Espacio No Asignado (Potencial de Expansión)"
+ },
+ {
+  "path": "error.connection",
+  "old": "Error de conexion con el servidor",
+  "new": "Error de conexión con el servidor"
+ },
+ {
+  "path": "error.generic",
+  "old": "Ocurrio un error inesperado",
+  "new": "Ocurrió un error inesperado"
+ },
+ {
+  "path": "error.permission",
+  "old": "Sin permiso para esta accion",
+  "new": "Sin permiso para esta acción"
+ },
+ {
+  "path": "error.timeout_detail",
+  "old": "La solicitud supero el tiempo limite de {seconds}s",
+  "new": "La solicitud superó el tiempo límite de {seconds}s"
+ },
+ {
+  "path": "error.validation",
+  "old": "Datos invalidos. Verifique los campos.",
+  "new": "Datos inválidos. Verifique los campos."
+ },
+ {
+  "path": "header.reload_title",
+  "old": "Recargar pagina sin cache",
+  "new": "Recargar página sin cache"
+ },
+ {
+  "path": "header.search_placeholder",
+  "old": "Buscar servidor (nombre, descripcion o ambiente)...",
+  "new": "Buscar servidor (nombre, descripción o ambiente)..."
+ },
+ {
+  "path": "interp.confirm_delete",
+  "old": "Esta seguro de que desea eliminar \"{name}\"?",
+  "new": "¿Está seguro de que desea eliminar \"{name}\"?"
+ },
+ {
+  "path": "interp.last_update",
+  "old": "Ultima actualizacion: {time}",
+  "new": "Última actualización: {time}"
+ },
+ {
+  "path": "interp.page_of",
+  "old": "Pagina {page} de {total}",
+  "new": "Página {page} de {total}"
+ },
+ {
+  "path": "jobs.category",
+  "old": "Categoria",
+  "new": "Categoría"
+ },
+ {
+  "path": "jobs.check_error_logs",
+  "old": "Verifique logs de error, cambios recientes e historial de ejecucion detallado",
+  "new": "Verifique logs de error, cambios recientes e historial de ejecución detallado"
+ },
+ {
+  "path": "jobs.compare_7vs30",
+  "old": "Comparando Ultimos 7 dias vs Ultimos 30 dias",
+  "new": "Comparando Últimos 7 días vs Últimos 30 días"
+ },
+ {
+  "path": "jobs.duration",
+  "old": "Duracion",
+  "new": "Duración"
+ },
+ {
+  "path": "jobs.execution_time",
+  "old": "Tiempo Ejecucion",
+  "new": "Tiempo Ejecución"
+ },
+ {
+  "path": "jobs.failed_jobs_24h",
+  "old": "Jobs con Fallo en Ultimas 24h",
+  "new": "Jobs con Fallo en Últimas 24h"
+ },
+ {
+  "path": "jobs.failure_rate_increased",
+  "old": "Tasa de fallos aumento en los ultimos 7 dias",
+  "new": "Tasa de fallos aumentó en los últimos 7 días"
+ },
+ {
+  "path": "jobs.in_execution",
+  "old": "En Ejecucion",
+  "new": "En Ejecución"
+ },
+ {
+  "path": "jobs.jobs_running_faster",
+  "old": "Los jobs se estan ejecutando mas rapido en los ultimos 7 dias",
+  "new": "Los jobs se están ejecutando más rápido en los últimos 7 días"
+ },
+ {
+  "path": "jobs.last_exec_failed",
+  "old": "Ultima Ejec. Fallo",
+  "new": "Última Ejec. Fallo"
+ },
+ {
+  "path": "jobs.last_execution",
+  "old": "Ultima Ejecucion",
+  "new": "Última Ejecución"
+ },
+ {
+  "path": "jobs.last_status",
+  "old": "Ultimo Estado",
+  "new": "Último Estado"
+ },
+ {
+  "path": "jobs.loading",
+  "old": "Cargando analisis de Jobs...",
+  "new": "Cargando análisis de Jobs..."
+ },
+ {
+  "path": "jobs.maintenance_analysis",
+  "old": "Analisis de Mantenimiento",
+  "new": "Análisis de Mantenimiento"
+ },
+ {
+  "path": "jobs.next_execution",
+  "old": "Proxima Ejecucion",
+  "new": "Próxima Ejecución"
+ },
+ {
+  "path": "jobs.no_failures_24h",
+  "old": "Ningun fallo en las ultimas 24 horas.",
+  "new": "Ningún fallo en las últimas 24 horas."
+ },
+ {
+  "path": "jobs.no_maintenance",
+  "old": "ATENCION: Ningun job de mantenimiento detectado!",
+  "new": "ATENCIÓN: Ningún job de mantenimiento detectado!"
+ },
+ {
+  "path": "jobs.no_running",
+  "old": "Ningun job en ejecucion actualmente.",
+  "new": "Ningún job en ejecución actualmente."
+ },
+ {
+  "path": "jobs.page_of",
+  "old": "Pagina",
+  "new": "Página"
+ },
+ {
+  "path": "jobs.recommended_action",
+  "old": "Accion Recomendada",
+  "new": "Acción Recomendada"
+ },
+ {
+  "path": "jobs.running",
+  "old": "En Ejecucion",
+  "new": "En Ejecución"
+ },
+ {
+  "path": "jobs.running_jobs",
+  "old": "Jobs en Ejecucion",
+  "new": "Jobs en Ejecución"
+ },
+ {
+  "path": "jobs.success",
+  "old": "Exito",
+  "new": "Éxito"
+ },
+ {
+  "path": "jobs.trend_analysis",
+  "old": "Analisis de Tendencias",
+  "new": "Análisis de Tendencias"
+ },
+ {
+  "path": "jobs.trend_title",
+  "old": "Analisis de Tendencias",
+  "new": "Análisis de Tendencias"
+ },
+ {
+  "path": "jobs.trend_reduction",
+  "old": "Reduccion",
+  "new": "Reducción"
+ },
+ {
+  "path": "jobs.trend_duration_compare",
+  "old": "Duracion (30d → 7d)",
+  "new": "Duración (30d → 7d)"
+ },
+ {
+  "path": "jobs.trend_success_rate",
+  "old": "Tasa de Exito",
+  "new": "Tasa de Éxito"
+ },
+ {
+  "path": "jobs.compare_7vs30_dynamic",
+  "old": "Comparando Ultimos {short} dias vs Ultimos {long} dias",
+  "new": "Comparando Últimos {short} días vs Últimos {long} días"
+ },
+ {
+  "path": "jobs.view_degraded_jobs",
+  "old": "Ver {count} job(s) con degradacion de performance",
+  "new": "Ver {count} job(s) con degradación de performance"
+ },
+ {
+  "path": "jobs.alert_degradation_title",
+  "old": "⚠️ {count} job(s) con DEGRADACION de performance",
+  "new": "⚠️ {count} job(s) con DEGRADACIÓN de performance"
+ },
+ {
+  "path": "jobs.alert_degradation_message",
+  "old": "Jobs estan tardando significativamente mas en ejecutar en los ultimos {days} dias",
+  "new": "Jobs están tardando significativamente más en ejecutar en los últimos {days} días"
+ },
+ {
+  "path": "jobs.alert_degradation_action",
+  "old": "Investigue indices fragmentados, crecimiento de tablas, o cambios recientes en el codigo",
+  "new": "Investigue índices fragmentados, crecimiento de tablas, o cambios recientes en el código"
+ },
+ {
+  "path": "jobs.alert_failures_message",
+  "old": "Tasa de fallos aumento en los ultimos {days} dias",
+  "new": "Tasa de fallos aumentó en los últimos {days} días"
+ },
+ {
+  "path": "jobs.alert_failures_action",
+  "old": "Verifique logs de error, cambios recientes, e historial de ejecucion detallado",
+  "new": "Verifique logs de error, cambios recientes, e historial de ejecución detallado"
+ },
+ {
+  "path": "jobs.alert_improvements_message",
+  "old": "Jobs estan ejecutando mas rapido en los ultimos {days} dias",
+  "new": "Jobs están ejecutando más rápido en los últimos {days} días"
+ },
+ {
+  "path": "jobs.conflicts_title",
+  "old": "Analisis de Conflictos de Schedule",
+  "new": "Análisis de Conflictos de Schedule"
+ },
+ {
+  "path": "jobs.no_conflicts_found",
+  "old": "Ningun conflicto de schedule detectado. Todos los jobs estan bien programados.",
+  "new": "Ningún conflicto de schedule detectado. Todos los jobs están bien programados."
+ },
+ {
+  "path": "jobs.action_plan",
+  "old": "Plan de Accion",
+  "new": "Plan de Acción"
+ },
+ {
+  "path": "jobs.collision_pairs",
+  "old": "Pares de Colision",
+  "new": "Pares de Colisión"
+ },
+ {
+  "path": "jobs.last_n_days",
+  "old": "ultimos {count} dias",
+  "new": "últimos {count} días"
+ },
+ {
+  "path": "jobs.and_n_more",
+  "old": "... y {count} recomendaciones mas. Haga clic en el titulo para ver todas.",
+  "new": "... y {count} recomendaciones más. Haga clic en el titulo para ver todas."
+ },
+ {
+  "path": "jobs.pdf_title",
+  "old": "Propuesta de Mejora - Programacion de Jobs",
+  "new": "Propuesta de Mejora - Programación de Jobs"
+ },
+ {
+  "path": "jobs.pdf_subtitle",
+  "old": "Analisis de Conflictos y Recomendaciones de Optimizacion",
+  "new": "Análisis de Conflictos y Recomendaciones de Optimización"
+ },
+ {
+  "path": "jobs.pdf_period",
+  "old": "Periodo de Analisis",
+  "new": "Período de Análisis"
+ },
+ {
+  "path": "jobs.pdf_days",
+  "old": "dias",
+  "new": "días"
+ },
+ {
+  "path": "jobs.pdf_summary_text",
+  "old": "Se identificaron {total} conflictos potenciales de schedule en el servidor {server}: {critical} criticos, {warning} warnings. En el periodo analizado, {collisions} pares de jobs colisionaron de hecho, siendo que {failures} de esas colisiones resultaron en fallos. Este documento detalla cada conflicto, su causa raiz, impacto y la mejora recomendada.",
+  "new": "Se identificaron {total} conflictos potenciales de schedule en el servidor {server}: {critical} críticos, {warning} warnings. En el período analizado, {collisions} pares de jobs colisionaron de hecho, siendo que {failures} de esas colisiones resultaron en fallos. Este documento detalla cada conflicto, su causa raíz, impacto y la mejora recomendada."
+ },
+ {
+  "path": "jobs.pdf_detailed_action_plan",
+  "old": "Plan de Accion Detallado",
+  "new": "Plan de Acción Detallado"
+ },
+ {
+  "path": "jobs.pdf_recommendation_label",
+  "old": "Accion Recomendada",
+  "new": "Acción Recomendada"
+ },
+ {
+  "path": "jobs.pdf_in_last_days",
+  "old": "en los ultimos {days} dias",
+  "new": "en los últimos {days} días"
+ },
+ {
+  "path": "jobs.pdf_cause_same_type",
+  "old": "Dos o mas jobs del mismo tipo (DBCC, Backup, Index Rebuild, etc.) estan programados para el mismo horario. Cuando se ejecutan simultaneamente, compiten por los mismos recursos de I/O, CPU y locks del sistema.",
+  "new": "Dos o más jobs del mismo tipo (DBCC, Backup, Index Rebuild, etc.) están programados para el mismo horario. Cuando se ejecutan simultaneamente, compiten por los mismos recursos de I/O, CPU y locks del sistema."
+ },
+ {
+  "path": "jobs.pdf_impact_same_type",
+  "old": "Jobs del mismo tipo ejecutandose en paralelo causan contension severa de recursos: aumento de latencia de disco, locks prolongados, timeouts y potencial fallo de uno o ambos jobs. En bases de datos grandes, puede causar degradacion visible para los usuarios.",
+  "new": "Jobs del mismo tipo ejecutandose en paralelo causan contención severa de recursos: aumento de latencia de disco, locks prolongados, timeouts y potencial fallo de uno o ambos jobs. En bases de datos grandes, puede causar degradación visible para los usuarios."
+ },
+ {
+  "path": "jobs.pdf_improvement_same_type",
+  "old": "Al separar los horarios o encadenar los jobs secuencialmente (usando sp_add_jobstep), cada job ejecuta con acceso exclusivo a los recursos necesarios. Esto reduce la contension de I/O hasta un 50%, elimina deadlocks entre jobs del mismo tipo, y garantiza que cada job complete mas rapido y con menor probabilidad de fallo.",
+  "new": "Al separar los horarios o encadenar los jobs secuencialmente (usando sp_add_jobstep), cada job ejecuta con acceso exclusivo a los recursos necesarios. Esto reduce la contención de I/O hasta un 50%, elimina deadlocks entre jobs del mismo tipo, y garantiza que cada job complete más rápido y con menor probabilidad de fallo."
+ },
+ {
+  "path": "jobs.pdf_cause_concurrent_backups",
+  "old": "Multiples backups (Full, Differential, Log) estan programados para horarios superpuestos. Backups concurrentes generan carga masiva de I/O secuencial en disco, ya que cada uno necesita leer toda la base de datos o transaction log.",
+  "new": "Múltiples backups (Full, Differential, Log) están programados para horarios superpuestos. Backups concurrentes generan carga masiva de I/O secuencial en disco, ya que cada uno necesita leer toda la base de datos o transaction log."
+ },
+ {
+  "path": "jobs.pdf_impact_concurrent_backups",
+  "old": "Backups concurrentes pueden duplicar o triplicar la carga de I/O en el servidor. Esto resulta en: tiempos de backup 2-3x mas largos, degradacion de rendimiento para queries de produccion, posible fallo de backup por timeout, y riesgo de ventana de backup insuficiente.",
+  "new": "Backups concurrentes pueden duplicar o triplicar la carga de I/O en el servidor. Esto resulta en: tiempos de backup 2-3x más largos, degradación de rendimiento para queries de producción, posible fallo de backup por timeout, y riesgo de ventana de backup insuficiente."
+ },
+ {
+  "path": "jobs.pdf_improvement_concurrent_backups",
+  "old": "Escalonar los backups secuencialmente (Full primero, luego Differential, luego Log) garantiza que cada operacion tiene acceso optimo al disco. Esto reduce el tiempo total de backup, minimiza la ventana de impacto en produccion, y elimina fallos causados por contension de I/O entre backups.",
+  "new": "Escalonar los backups secuencialmente (Full primero, luego Differential, luego Log) garantiza que cada operación tiene acceso optimo al disco. Esto reduce el tiempo total de backup, minimiza la ventana de impacto en producción, y elimina fallos causados por contención de I/O entre backups."
+ },
+ {
+  "path": "jobs.pdf_cause_concurrent_maintenance",
+  "old": "Jobs de mantenimiento (Index Rebuild, Statistics Update, DBCC CheckDB, Shrink) estan ejecutandose al mismo horario. Estas operaciones son intensivas en I/O y CPU, y cuando son concurrentes, amplifican el impacto mutuamente.",
+  "new": "Jobs de mantenimiento (Index Rebuild, Statistics Update, DBCC CheckDB, Shrink) están ejecutandose al mismo horario. Estas operaciones son intensivas en I/O y CPU, y cuando son concurrentes, amplifican el impacto mutuamente."
+ },
+ {
+  "path": "jobs.pdf_impact_concurrent_maintenance",
+  "old": "Mantenimiento concurrente causa picos extremos de utilizacion de CPU e I/O, pudiendo saturar el servidor. Index Rebuild con DBCC CheckDB simultaneo puede bloquear tablas enteras, causar escalacion de locks, y hacer la base de datos temporalmente indisponible para operaciones normales.",
+  "new": "Mantenimiento concurrente causa picos extremos de utilización de CPU e I/O, pudiendo saturar el servidor. Index Rebuild con DBCC CheckDB simultaneo puede bloquear tablas enteras, causar escalación de locks, y hacer la base de datos temporalmente indisponible para operaciones normales."
+ },
+ {
+  "path": "jobs.pdf_improvement_concurrent_maintenance",
+  "old": "Distribuir las operaciones de mantenimiento por horarios diferentes (preferentemente en la madrugada, en secuencia) permite que cada operacion complete sin interferencia. Esto resulta en mantenimiento mas eficiente, menor impacto en el servidor, y mejor ventana de disponibilidad para usuarios.",
+  "new": "Distribuir las operaciones de mantenimiento por horarios diferentes (preferentemente en la madrugada, en secuencia) permite que cada operación complete sin interferencia. Esto resulta en mantenimiento más eficiente, menor impacto en el servidor, y mejor ventana de disponibilidad para usuarios."
+ },
+ {
+  "path": "jobs.pdf_cause_different_types",
+  "old": "Jobs de tipos diferentes estan programados para el mismo horario. Aunque no compiten directamente por los mismos recursos, la carga combinada puede exceder la capacidad del servidor durante ese periodo.",
+  "new": "Jobs de tipos diferentes están programados para el mismo horario. Aunque no compiten directamente por los mismos recursos, la carga combinada puede exceder la capacidad del servidor durante ese período."
+ },
+ {
+  "path": "jobs.pdf_impact_different_types",
+  "old": "La ejecucion simultanea de jobs de tipos diferentes (ej: Backup + Index Rebuild) puede causar picos temporales de carga. El impacto es generalmente menor que conflictos del mismo tipo, pero en servidores con recursos limitados puede causar lentitud perceptible.",
+  "new": "La ejecución simultanea de jobs de tipos diferentes (ej: Backup + Index Rebuild) puede causar picos temporales de carga. El impacto es generalmente menor que conflictos del mismo tipo, pero en servidores con recursos limitados puede causar lentitud perceptible."
+ },
+ {
+  "path": "jobs.pdf_improvement_different_types",
+  "old": "Redistribuir los horarios para evitar superposicion reduce los picos de carga y distribuye el trabajo mas uniformemente a lo largo del dia. En servidores con recursos limitados, este simple cambio puede mejorar significativamente la estabilidad.",
+  "new": "Redistribuir los horarios para evitar superposición reduce los picos de carga y distribuye el trabajo más uniformemente a lo largo del día. En servidores con recursos limitados, este simple cambio puede mejorar significativamente la estabilidad."
+ },
+ {
+  "path": "jobs.pdf_help_title",
+  "old": "Que significan estos indicadores?",
+  "new": "¿Qué significan estos indicadores?"
+ },
+ {
+  "path": "jobs.pdf_help_collisions",
+  "old": "Pares de jobs que efectivamente colisionaron (ejecutaron al mismo tiempo) en los ultimos dias, confirmado por el historico.",
+  "new": "Pares de jobs que efectivamente colisionaron (ejecutaron al mismo tiempo) en los últimos días, confirmado por el histórico."
+ },
+ {
+  "path": "jobs.pdf_help_failures",
+  "old": "Colisiones reales que resultaron en fallo de al menos uno de los jobs — impacto directo en la operacion.",
+  "new": "Colisiones reales que resultaron en fallo de al menos uno de los jobs — impacto directo en la operación."
+ },
+ {
+  "path": "jobs.pdf_help_collision_table",
+  "old": "Esta tabla muestra los pares de jobs que realmente ejecutaron simultaneamente. 'Colisiones' indica cuantas veces ocurrio, 'Solapamiento Medio' el tiempo medio de ejecucion simultanea, y 'Fallos' cuantas de esas colisiones causaron error.",
+  "new": "Esta tabla muestra los pares de jobs que realmente ejecutaron simultaneamente. 'Colisiones' indica cuántas veces ocurrió, 'Solapamiento Medio' el tiempo medio de ejecución simultanea, y 'Fallos' cuantas de esas colisiones causaron error."
+ },
+ {
+  "path": "jobs.pdf_help_action_plan",
+  "old": "Cada recomendacion incluye: causa raiz del conflicto, impacto en el sistema, accion recomendada, por que va a mejorar, y los comandos SQL listos para ejecutar. Las recomendaciones estan ordenadas por severidad (critico > warning > info).",
+  "new": "Cada recomendación incluye: causa raíz del conflicto, impacto en el sistema, acción recomendada, por que va a mejorar, y los comandos SQL listos para ejecutar. Las recomendaciones están ordenadas por severidad (crítico > warning > info)."
+ },
+ {
+  "path": "jobs.pdf_version",
+  "old": "Version",
+  "new": "Versión"
+ },
+ {
+  "path": "jobs.pdf_status_pending",
+  "old": "Pendiente Aprobacion",
+  "new": "Pendiente Aprobación"
+ },
+ {
+  "path": "jobs.pdf_section1_title",
+  "old": "1. Situacion Actual - Problemas Identificados",
+  "new": "1. Situación Actual - Problemas Identificados"
+ },
+ {
+  "path": "jobs.pdf_section1_intro",
+  "old": "Se identificaron los siguientes problemas en los SQL Server Agent Jobs de la instancia {server} a traves de analisis de schedules, historico de ejecucion y deteccion de colisiones reales entre jobs.",
+  "new": "Se identificaron los siguientes problemas en los SQL Server Agent Jobs de la instancia {server} a traves de análisis de schedules, histórico de ejecución y detección de colisiones reales entre jobs."
+ },
+ {
+  "path": "jobs.pdf_section2_intro",
+  "old": "La siguiente tabla muestra los pares de jobs que efectivamente ejecutaron al mismo tiempo en los ultimos {days} dias, confirmado por el historico de ejecucion del SQL Server Agent.",
+  "new": "La siguiente tabla muestra los pares de jobs que efectivamente ejecutaron al mismo tiempo en los últimos {days} días, confirmado por el histórico de ejecución del SQL Server Agent."
+ },
+ {
+  "path": "jobs.pdf_section3_intro",
+  "old": "Para cada conflicto identificado, se detalla la causa, impacto, accion recomendada, justificacion tecnica y los comandos SQL listos para ejecutar.",
+  "new": "Para cada conflicto identificado, se detalla la causa, impacto, acción recomendada, justificación técnica y los comandos SQL listos para ejecutar."
+ },
+ {
+  "path": "jobs.pdf_risk_mitigation",
+  "old": "Mitigacion",
+  "new": "Mitigación"
+ },
+ {
+  "path": "jobs.pdf_risk_not_applied",
+  "old": "Conflictos no resueltos continuan causando fallos y contencion",
+  "new": "Conflictos no resueltos continuan causando fallos y contención"
+ },
+ {
+  "path": "jobs.pdf_risk_not_applied_impact",
+  "old": "CRITICO",
+  "new": "CRÍTICO"
+ },
+ {
+  "path": "jobs.pdf_risk_job_longer",
+  "old": "Job demora mas de lo esperado tras el cambio",
+  "new": "Job demora más de lo esperado tras el cambio"
+ },
+ {
+  "path": "jobs.pdf_risk_new_conflict",
+  "old": "Nueva colision entre jobs tras reprogramacion",
+  "new": "Nueva colisión entre jobs tras reprogramación"
+ },
+ {
+  "path": "jobs.pdf_risk_new_conflict_mitigation",
+  "old": "Re-ejecutar analisis de conflictos tras implementacion",
+  "new": "Re-ejecutar análisis de conflictos tras implementación"
+ },
+ {
+  "path": "jobs.pdf_section5_title",
+  "old": "5. Checklist de Implementacion",
+  "new": "5. Checklist de Implementación"
+ },
+ {
+  "path": "jobs.pdf_checklist_action",
+  "old": "Accion",
+  "new": "Acción"
+ },
+ {
+  "path": "jobs.pdf_checklist_monitor",
+  "old": "Monitorizar {days} dias tras implementacion (incluyendo fin de semana)",
+  "new": "Monitorizar {days} días tras implementación (incluyendo fin de semana)"
+ },
+ {
+  "path": "jobs.pdf_checklist_rerun_analysis",
+  "old": "Re-ejecutar analisis de conflictos para validar resolucion",
+  "new": "Re-ejecutar análisis de conflictos para validar resolución"
+ },
+ {
+  "path": "jobs.schedules_intro",
+  "old": "Una fila por job x programacion (msdb.dbo.sysschedules). \"Proxima\" es la proxima ejecucion calculada por SQL Agent; en el pasado = el job debia haber corrido y no corrio.",
+  "new": "Una fila por job x programación (msdb.dbo.sysschedules). \"Próxima\" es la próxima ejecución calculada por SQL Agent; en el pasado = el job debia haber corrido y no corrio."
+ },
+ {
+  "path": "jobs.schedule_name",
+  "old": "Programacion",
+  "new": "Programación"
+ },
+ {
+  "path": "jobs.freq_every_n_days",
+  "old": "Cada {n} dias",
+  "new": "Cada {n} días"
+ },
+ {
+  "path": "jobs.freq_monthly_day",
+  "old": "Mensual, dia {n}",
+  "new": "Mensual, día {n}"
+ },
+ {
+  "path": "jobs.day_day",
+  "old": "dia",
+  "new": "día"
+ },
+ {
+  "path": "jobs.day_weekday",
+  "old": "dia laborable",
+  "new": "día laborable"
+ },
+ {
+  "path": "jobs.day_weekend_day",
+  "old": "dia de fin de semana",
+  "new": "día de fin de semana"
+ },
+ {
+  "path": "jobs.rel_last",
+  "old": "ultimo",
+  "new": "último"
+ },
+ {
+  "path": "jobs.overdue_label",
+  "old": "Sin Proxima Ejec. Valida",
+  "new": "Sin Próxima Ejec. Válida"
+ },
+ {
+  "path": "jobs.no_schedule_label",
+  "old": "Sin Programacion en Agent",
+  "new": "Sin Programación en Agent"
+ },
+ {
+  "path": "jobs.no_schedule_tooltip",
+  "old": "Jobs habilitados sin programacion activa en SQL Agent. No es alarma por si: una herramienta externa de backup o un programador externo puede disparar el job via sp_start_job.",
+  "new": "Jobs habilitados sin programación activa en SQL Agent. No es alarma por si: una herramienta externa de backup o un programador externo puede disparar el job via sp_start_job."
+ },
+ {
+  "path": "jobs.no_schedule_count",
+  "old": "{n} sin programacion",
+  "new": "{n} sin programación"
+ },
+ {
+  "path": "jobs.no_schedule_section",
+  "old": "Jobs activos sin programacion en Agent ({n})",
+  "new": "Jobs activos sin programación en Agent ({n})"
+ },
+ {
+  "path": "jobs.no_schedules_at_all",
+  "old": "Ninguna programacion configurada en el SQL Agent de esta instancia.",
+  "new": "Ninguna programación configurada en el SQL Agent de esta instancia."
+ },
+ {
+  "path": "jobs.sched_disabled",
+  "old": "Programacion desactivada",
+  "new": "Programación desactivada"
+ },
+ {
+  "path": "jobs.sched_all_disabled",
+  "old": "{n} programacion(es), todas desactivadas",
+  "new": "{n} programación(es), todas desactivadas"
+ },
+ {
+  "path": "jobs.sched_none",
+  "old": "Sin programacion",
+  "new": "Sin programación"
+ },
+ {
+  "path": "jobs.next_24h_label",
+  "old": "Proximas 24h",
+  "new": "Próximas 24h"
+ },
+ {
+  "path": "jobs.zero_jobs_hint",
+  "old": "O no hay jobs en SQL Agent, o la cuenta del servicio no ve msdb.dbo.sysjobs, o la conexion llego a otra instancia (puerto/destino). Confirmar en SSMS: SELECT COUNT(*) FROM msdb.dbo.sysjobs.",
+  "new": "O no hay jobs en SQL Agent, o la cuenta del servicio no ve msdb.dbo.sysjobs, o la conexión llego a otra instancia (puerto/destino). Confirmar en SSMS: SELECT COUNT(*) FROM msdb.dbo.sysjobs."
+ },
+ {
+  "path": "kpi.help_select_kpi",
+  "old": "Seleccione un KPI del menu para ver la documentacion",
+  "new": "Seleccione un KPI del menu para ver la documentación"
+ },
+ {
+  "path": "kpi.jobs_failed_subtitle",
+  "old": "Jobs con falla en las ultimas 24h",
+  "new": "Jobs con falla en las últimas 24h"
+ },
+ {
+  "path": "kpi.jobs_collisions_subtitle",
+  "old": "Jobs con superposicion de horario",
+  "new": "Jobs con superposición de horario"
+ },
+ {
+  "path": "kpi.jobs_collisions_modal",
+  "old": "Colisiones de Schedule - Jobs con Superposicion",
+  "new": "Colisiones de Schedule - Jobs con Superposición"
+ },
+ {
+  "path": "kpi_modal.all_normal",
+  "old": "Todos los items estan dentro de los parametros normales.",
+  "new": "Todos los items están dentro de los parámetros normales."
+ },
+ {
+  "path": "kpi_modal.err_2571",
+  "old": "Version SQL antigua - requiere DBCC (2571)",
+  "new": "Versión SQL antigua - requiere DBCC (2571)"
+ },
+ {
+  "path": "kpi_modal.err_2571_detail",
+  "old": "Error 2571: esta version de SQL (< 2016 SP2) no tiene DATABASEPROPERTYEX(LastGoodCheckDbTime) — la recoleccion exigiria DBCC, no disponible sin privilegios elevados.",
+  "new": "Error 2571: esta versión de SQL (< 2016 SP2) no tiene DATABASEPROPERTYEX(LastGoodCheckDbTime) — la recolección exigiria DBCC, no disponible sin privilegios elevados."
+ },
+ {
+  "path": "kpi_modal.err_unknown",
+  "old": "Sin codigo de error",
+  "new": "Sin código de error"
+ },
+ {
+  "path": "kpi_modal.verdict_p4",
+  "old": "P4 Validacion antigua",
+  "new": "P4 Validación antigua"
+ },
+ {
+  "path": "kpi_modal.why_failed",
+  "old": "Por que fallo la recoleccion",
+  "new": "Por qué falló la recolección"
+ },
+ {
+  "path": "kpi_modal.fix_grant",
+  "old": "Instancia antigua (SQL < 2016 SP2): sin DATABASEPROPERTYEX el colector depende de DBCC, que la cuenta de monitoreo no puede ejecutar. Se resuelve con upgrade de la instancia (SQL 2012/2014 EOL) o un GRANT puntual de excepcion.",
+  "new": "Instancia antigua (SQL < 2016 SP2): sin DATABASEPROPERTYEX el colector depende de DBCC, que la cuenta de monitoreo no puede ejecutar. Se resuelve con upgrade de la instancia (SQL 2012/2014 EOL) o un GRANT puntual de excepción."
+ },
+ {
+  "path": "kpi_modal.verdict_help",
+  "old": "Que es: cada base de datos recibe un veredicto del examen de integridad.\nP1 Corrupta: paginas danadas detectadas - actuar ya.\nP3 Nunca validada: CHECKDB nunca se ejecuto.\nP4 Validacion antigua: ultimo CHECKDB hace mas de 30 dias.\nP5 OK: validada recientemente.\nPor que importa: la corrupcion es silenciosa - solo aparece cuando ya duele. CHECKDB es el examen de rutina que la detecta temprano.\nQue hacer: haga clic en un veredicto para filtrar la lista; cada tarjeta trae el comando listo. Si la recoleccion fallo, la tarjeta muestra el error exacto.",
+  "new": "Qué es: cada base de datos recibe un veredicto del examen de integridad.\nP1 Corrupta: páginas dañadas detectadas - actuar ya.\nP3 Nunca validada: CHECKDB nunca se ejecutó.\nP4 Validación antigua: último CHECKDB hace más de 30 días.\nP5 OK: validada recientemente.\nPor qué importa: la corrupción es silenciosa - solo aparece cuando ya duele. CHECKDB es el examen de rutina que la detecta temprano.\nQué hacer: haga clic en un veredicto para filtrar la lista; cada tarjeta trae el comando listo. Si la recolección falló, la tarjeta muestra el error exacto."
+ },
+ {
+  "path": "kpi_modal.critical_s",
+  "old": "critica(s)",
+  "new": "crítica(s)"
+ },
+ {
+  "path": "kpi_modal.last_check",
+  "old": "Ultima Verificacion",
+  "new": "Última Verificación"
+ },
+ {
+  "path": "kpi_modal.total_size",
+  "old": "Tamano Total",
+  "new": "Tamaño Total"
+ },
+ {
+  "path": "kpi_modal.n_critical",
+  "old": "critica(s)",
+  "new": "crítica(s)"
+ },
+ {
+  "path": "kpi_modal.disk_category",
+  "old": "Categoria",
+  "new": "Categoría"
+ },
+ {
+  "path": "kpi_modal.disk_category_multi",
+  "old": "Multi-categoria",
+  "new": "Multi-categoría"
+ },
+ {
+  "path": "kpi_modal.disk_threshold_table_caption",
+  "old": "Umbrales por categoria de drive (Wave T)",
+  "new": "Umbrales por categoría de drive (Wave T)"
+ },
+ {
+  "path": "kpi_modal.disk_threshold_col_category",
+  "old": "Categoria",
+  "new": "Categoría"
+ },
+ {
+  "path": "kpi_modal.next_job_run",
+  "old": "Proxima ejecucion del job",
+  "new": "Próxima ejecución del job"
+ },
+ {
+  "path": "kpi_modal.no_active_schedule",
+  "old": "Sin programacion en Agent",
+  "new": "Sin programación en Agent"
+ },
+ {
+  "path": "kpi_modal.external_hint",
+  "old": "Puede ser disparado por herramienta externa de backup o programador externo. Ver la pestana Backup de la instancia para el origen detectado y el proximo esperado.",
+  "new": "Puede ser disparado por herramienta externa de backup o programador externo. Ver la pestana Backup de la instancia para el origen detectado y el próximo esperado."
+ },
+ {
+  "path": "kpi_modal.no_schedule_info",
+  "old": "Sin informacion de programacion (snapshot)",
+  "new": "Sin información de programación (snapshot)"
+ },
+ {
+  "path": "kpi_modal.recovered_at",
+  "old": "Recuperado - exito a las {when}",
+  "new": "Recuperado - éxito a las {when}"
+ },
+ {
+  "path": "kpi_modal.delayed_warning_limit",
+  "old": "Limite de aviso",
+  "new": "Límite de aviso"
+ },
+ {
+  "path": "kpi_modal.stale_no_verdict",
+  "old": "snapshot de jobs desactualizado - sin veredicto de recuperacion",
+  "new": "snapshot de jobs desactualizado - sin veredicto de recuperación"
+ },
+ {
+  "path": "loading.backup",
+  "old": "Cargando analisis de backups...",
+  "new": "Cargando análisis de backups..."
+ },
+ {
+  "path": "loading.critical_alerts",
+  "old": "Cargando alertas criticos...",
+  "new": "Cargando alertas críticos..."
+ },
+ {
+  "path": "loading.disks_critical",
+  "old": "Cargando discos criticos...",
+  "new": "Cargando discos críticos..."
+ },
+ {
+  "path": "loading.filegroups_critical",
+  "old": "Cargando FileGroups criticos...",
+  "new": "Cargando FileGroups críticos..."
+ },
+ {
+  "path": "loading.logs",
+  "old": "Cargando analisis de logs...",
+  "new": "Cargando análisis de logs..."
+ },
+ {
+  "path": "loading.predictive",
+  "old": "Cargando analisis predictivo...",
+  "new": "Cargando análisis predictivo..."
+ },
+ {
+  "path": "loading.security",
+  "old": "Cargando analisis de seguridad...",
+  "new": "Cargando análisis de seguridad..."
+ },
+ {
+  "path": "log.days_7",
+  "old": "7 dias",
+  "new": "7 días"
+ },
+ {
+  "path": "log.last_24h",
+  "old": "Ultimas 24h",
+  "new": "Últimas 24h"
+ },
+ {
+  "path": "log.last_7_days",
+  "old": "Ultimos 7 dias",
+  "new": "Últimos 7 días"
+ },
+ {
+  "path": "log.logs_zero_risk",
+  "old": "shrink de log: riesgo ~cero — empieza aqui",
+  "new": "shrink de log: riesgo ~cero — empieza aquí"
+ },
+ {
+  "path": "log.no_logs_24h",
+  "old": "No se encontraron logs en las ultimas 24 horas para este servicio.",
+  "new": "No se encontraron logs en las últimas 24 horas para este servicio."
+ },
+ {
+  "path": "log.period_card",
+  "old": "Periodo",
+  "new": "Período"
+ },
+ {
+  "path": "log.period_label",
+  "old": "Periodo:",
+  "new": "Período:"
+ },
+ {
+  "path": "log.shrink_last_resort",
+  "old": "SHRINK (ultimo recurso)",
+  "new": "SHRINK (último recurso)"
+ },
+ {
+  "path": "log.size",
+  "old": "Tamano",
+  "new": "Tamaño"
+ },
+ {
+  "path": "mem.config",
+  "old": "Configuracion de Memoria",
+  "new": "Configuración de Memoria"
+ },
+ {
+  "path": "mem.config_adequate",
+  "old": "Configuracion de memoria adecuada",
+  "new": "Configuración de memoria adecuada"
+ },
+ {
+  "path": "mem.distribution",
+  "old": "Distribucion de Memoria",
+  "new": "Distribución de Memoria"
+ },
+ {
+  "path": "mem.help_100_desc",
+  "old": "Ver <strong>100%</strong> en esta tarjeta es <strong>esperado y saludable</strong>! Significa que SQL Server esta usando toda la memoria configurada. SQL Server esta disenado para consumir y mantener memoria en cache para mejor rendimiento.",
+  "new": "Ver <strong>100%</strong> en esta tarjeta es <strong>esperado y saludable</strong>! Significa que SQL Server está usando toda la memoria configurada. SQL Server está diseñado para consumir y mantener memoria en cache para mejor rendimiento."
+ },
+ {
+  "path": "mem.help_available_desc",
+  "old": "<strong>Disponible:</strong> Memoria que puede ser inmediatamente asignada. Cuando es 0 GB, Windows esta usando todo como File Cache (Standby) - esto es normal y reclamable.",
+  "new": "<strong>Disponible:</strong> Memoria que puede ser inmediatamente asignada. Cuando es 0 GB, Windows está usando todo como File Cache (Standby) - esto es normal y reclamable."
+ },
+ {
+  "path": "mem.help_buffer_pool",
+  "old": "<strong>Buffer Pool:</strong> Memoria actualmente usada por SQL Server para cache de datos e indices.",
+  "new": "<strong>Buffer Pool:</strong> Memoria actualmente usada por SQL Server para cache de datos e índices."
+ },
+ {
+  "path": "mem.help_critical_desc",
+  "old": "<strong>CRITICO vs Normal:</strong> El status CRITICO aparece cuando la memoria disponible es &lt; 5% de la RAM total. Si el OS/Cache es alto, puede no ser un problema real.",
+  "new": "<strong>CRÍTICO vs Normal:</strong> El status CRÍTICO aparece cuando la memoria disponible es &lt; 5% de la RAM total. Si el OS/Cache es alto, puede no ser un problema real."
+ },
+ {
+  "path": "mem.help_max_not_configured",
+  "old": "Si Max Server Memory no esta configurado (usando defecto de 2TB)",
+  "new": "Si Max Server Memory no está configurado (usando defecto de 2TB)"
+ },
+ {
+  "path": "mem.help_max_server",
+  "old": "<strong>Max Server Memory:</strong> Limite maximo configurado. SQL Server no usara mas de este valor.",
+  "new": "<strong>Max Server Memory:</strong> Límite máximo configurado. SQL Server no usara más de este valor."
+ },
+ {
+  "path": "mem.help_memory_pressure",
+  "old": "Si hay Memory Pressure (SQL necesitando mas memoria de la disponible)",
+  "new": "Si hay Memory Pressure (SQL necesitando más memoria de la disponible)"
+ },
+ {
+  "path": "mem.help_os_desc",
+  "old": "<strong>OS Memory</strong> muestra la memoria fisica total del servidor y como esta distribuida entre SQL Server, otros procesos y Windows.",
+  "new": "<strong>OS Memory</strong> muestra la memoria física total del servidor y cómo está distribuida entre SQL Server, otros procesos y Windows."
+ },
+ {
+  "path": "mem.help_pageiolatch",
+  "old": "Si PAGEIOLATCH waits estan altos (indica falta de memoria para cache)",
+  "new": "Si PAGEIOLATCH waits están altos (indica falta de memoria para cache)"
+ },
+ {
+  "path": "mem.help_rg_desc",
+  "old": "El <em>Resource Governor</em> es una funcionalidad de SQL Server que permite limitar y gestionar la asignacion de CPU y memoria entre diferentes workloads.",
+  "new": "El <em>Resource Governor</em> es una funcionalidad de SQL Server que permite limitar y gestionar la asignación de CPU y memoria entre diferentes workloads."
+ },
+ {
+  "path": "mem.loading",
+  "old": "Cargando analisis de memoria...",
+  "new": "Cargando análisis de memoria..."
+ },
+ {
+  "path": "mem.pressure_closer_100",
+  "old": "Cuanto mas cerca del 100%, mejor!",
+  "new": "Cuanto más cerca del 100%, mejor!"
+ },
+ {
+  "path": "mem.pressure_critical_config",
+  "old": "Configuracion incorrecta de memoria",
+  "new": "Configuración incorrecta de memoria"
+ },
+ {
+  "path": "mem.pressure_critical_desc",
+  "old": "SQL Server esta usando significativamente menos memoria de la asignada. Esto puede indicar problemas serios:",
+  "new": "SQL Server está usando significativamente menos memoria de la asignada. Esto puede indicar problemas serios:"
+ },
+ {
+  "path": "mem.pressure_critical_external",
+  "old": "Presion externa de memoria del Windows",
+  "new": "Presión externa de memoria del Windows"
+ },
+ {
+  "path": "mem.pressure_critical_perf",
+  "old": "Problema de rendimiento que impide asignacion",
+  "new": "Problema de rendimiento que impide asignación"
+ },
+ {
+  "path": "mem.pressure_healthy_action",
+  "old": "<strong>Ninguna accion necesaria</strong>",
+  "new": "<strong>Ninguna acción necesaria</strong>"
+ },
+ {
+  "path": "mem.pressure_healthy_buffer",
+  "old": "El Buffer Pool esta bien utilizado",
+  "new": "El Buffer Pool está bien utilizado"
+ },
+ {
+  "path": "mem.pressure_healthy_cache",
+  "old": "Los datos estan siendo cacheados eficientemente",
+  "new": "Los datos están siendo cacheados eficientemente"
+ },
+ {
+  "path": "mem.pressure_healthy_title",
+  "old": "Excelente! Memory Pressure esta SALUDABLE",
+  "new": "Excelente! Memory Pressure está SALUDABLE"
+ },
+ {
+  "path": "mem.pressure_na_action_check",
+  "old": "Verifique si SQL Server esta en linea y funcionando",
+  "new": "Verifique si SQL Server está en línea y funcionando"
+ },
+ {
+  "path": "mem.pressure_na_action_queries",
+  "old": "Ejecute algunas queries en el servidor para forzar asignacion de memoria",
+  "new": "Ejecute algunas queries en el servidor para forzar asignación de memoria"
+ },
+ {
+  "path": "mem.pressure_na_desc",
+  "old": "SQL Server aun no ha asignado suficiente memoria para calcular el Memory Pressure. Esto puede suceder en algunos escenarios:",
+  "new": "SQL Server aún no ha asignado suficiente memoria para calcular el Memory Pressure. Esto puede suceder en algunos escenarios:"
+ },
+ {
+  "path": "mem.pressure_na_fresh",
+  "old": "<strong>Instancia recien iniciada:</strong> SQL Server esta en proceso de \"warm-up\" y aun no ha cargado datos en el Buffer Pool",
+  "new": "<strong>Instancia recien iniciada:</strong> SQL Server está en proceso de \"warm-up\" y aún no ha cargado datos en el Buffer Pool"
+ },
+ {
+  "path": "mem.pressure_na_pending",
+  "old": "<strong>Recoleccion de datos pendiente:</strong> Los datos pueden no haber sido recolectados aun por el sistema de monitoreo",
+  "new": "<strong>Recolección de datos pendiente:</strong> Los datos pueden no haber sido recolectados aún por el sistema de monitoreo"
+ },
+ {
+  "path": "mem.pressure_na_target_zero",
+  "old": "<strong>Target Server Memory = 0:</strong> El contador de rendimiento \"Target Server Memory (KB)\" aun no ha sido calculado",
+  "new": "<strong>Target Server Memory = 0:</strong> El contador de rendimiento \"Target Server Memory (KB)\" aún no ha sido calculado"
+ },
+ {
+  "path": "mem.pressure_na_title",
+  "old": "Que significa \"N/A - NO CONFIGURADO\"?",
+  "new": "¿Qué significa \"N/A - NO CONFIGURADO\"?"
+ },
+ {
+  "path": "mem.pressure_warning_alloc",
+  "old": "Posible problema de asignacion de memoria",
+  "new": "Posible problema de asignación de memoria"
+ },
+ {
+  "path": "mem.pressure_warning_desc",
+  "old": "SQL Server esta usando menos memoria de la que podria. Esto puede indicar:",
+  "new": "SQL Server está usando menos memoria de la que podria. Esto puede indicar:"
+ },
+ {
+  "path": "mem.pressure_warning_maxmem",
+  "old": "Considere revisar la configuracion de Max Server Memory",
+  "new": "Considere revisar la configuración de Max Server Memory"
+ },
+ {
+  "path": "mem.pressure_warning_slow",
+  "old": "Verifique si hay queries lentas que podrian beneficiarse de mas cache",
+  "new": "Verifique si hay queries lentas que podrian beneficiarse de más cache"
+ },
+ {
+  "path": "mem.pressure_warning_warmup",
+  "old": "SQL Server aun no ha \"calentado\" completamente",
+  "new": "SQL Server aún no ha \"calentado\" completamente"
+ },
+ {
+  "path": "mem.recommendation",
+  "old": "Recomendacion Microsoft",
+  "new": "Recomendación Microsoft"
+ },
+ {
+  "path": "msg.no_historical_data",
+  "old": "Sin datos historicos para el periodo seleccionado.",
+  "new": "Sin datos históricos para el período seleccionado."
+ },
+ {
+  "path": "overview.click_detailed_analysis",
+  "old": "Clic para analisis detallado",
+  "new": "Clic para análisis detallado"
+ },
+ {
+  "path": "overview.no_critical_events",
+  "old": "Ningun evento critico",
+  "new": "Ningún evento crítico"
+ },
+ {
+  "path": "overview.no_critical_events_desc",
+  "old": "Ningun evento critico o error detectado en las ultimas 24 horas.",
+  "new": "Ningún evento crítico o error detectado en las últimas 24 horas."
+ },
+ {
+  "path": "overview.no_immediate_attention",
+  "old": "Sin atencion inmediata necesaria.",
+  "new": "Sin atención inmediata necesaria."
+ },
+ {
+  "path": "overview.physical_logical",
+  "old": "{0} fisicos / {1} logicos",
+  "new": "{0} físicos / {1} lógicos"
+ },
+ {
+  "path": "overview.size",
+  "old": "Tamano",
+  "new": "Tamaño"
+ },
+ {
+  "path": "overview.windows_events",
+  "old": "Windows Events (ultimas 24h)",
+  "new": "Windows Events (últimas 24h)"
+ },
+ {
+  "path": "overview.server_offline_hint",
+  "old": "Verifique que el servidor este encendido y accesible en la red. Si ICMP esta bloqueado por firewall, use el diagnostico de red para pruebas adicionales.",
+  "new": "Verifique que el servidor esté encendido y accesible en la red. Si ICMP está bloqueado por firewall, use el diagnóstico de red para pruebas adicionales."
+ },
+ {
+  "path": "overview.run_diagnostics",
+  "old": "Diagnostico de Red",
+  "new": "Diagnóstico de Red"
+ },
+ {
+  "path": "overview.diag_perspective",
+  "old": "diagnostico desde la perspectiva del colector — el servidor puede responder a otros clientes",
+  "new": "diagnóstico desde la perspectiva del colector — el servidor puede responder a otros clientes"
+ },
+ {
+  "path": "page.backup_analysis",
+  "old": "Analisis de Backup",
+  "new": "Análisis de Backup"
+ },
+ {
+  "path": "page.cpu_analysis",
+  "old": "Analisis de CPU",
+  "new": "Análisis de CPU"
+ },
+ {
+  "path": "page.disk_analysis",
+  "old": "Analisis de Discos",
+  "new": "Análisis de Discos"
+ },
+ {
+  "path": "page.job_analysis",
+  "old": "Analisis de Jobs",
+  "new": "Análisis de Jobs"
+ },
+ {
+  "path": "page.log_analysis",
+  "old": "Analisis de Logs",
+  "new": "Análisis de Logs"
+ },
+ {
+  "path": "page.memory_analysis",
+  "old": "Analisis de Memoria",
+  "new": "Análisis de Memoria"
+ },
+ {
+  "path": "page.security_analysis",
+  "old": "Analisis de Seguridad",
+  "new": "Análisis de Seguridad"
+ },
+ {
+  "path": "page.services_analysis",
+  "old": "Analisis de Servicios",
+  "new": "Análisis de Servicios"
+ },
+ {
+  "path": "page.space_analysis",
+  "old": "Analisis de Espacio",
+  "new": "Análisis de Espacio"
+ },
+ {
+  "path": "page.user_analysis",
+  "old": "Analisis de Usuarios",
+  "new": "Análisis de Usuarios"
+ },
+ {
+  "path": "pagination.page_of",
+  "old": "Pagina {current} de {total}",
+  "new": "Página {current} de {total}"
+ },
+ {
+  "path": "plural.checks",
+  "old": "{count} verificacion|{count} verificaciones",
+  "new": "{count} verificación|{count} verificaciones"
+ },
+ {
+  "path": "plural.days",
+  "old": "{count} dia|{count} dias",
+  "new": "{count} día|{count} días"
+ },
+ {
+  "path": "plural.sessions",
+  "old": "{count} sesion|{count} sesiones",
+  "new": "{count} sesión|{count} sesiones"
+ },
+ {
+  "path": "predict.check_collection",
+  "old": "Verificar si la recoleccion de datos esta activa",
+  "new": "Verificar si la recolección de datos está activa"
+ },
+ {
+  "path": "predict.click_critical",
+  "old": "Clic para ver alertas criticos",
+  "new": "Clic para ver alertas críticos"
+ },
+ {
+  "path": "predict.generate_title",
+  "old": "Generar analisis predictivo completo",
+  "new": "Generar análisis predictivo completo"
+ },
+ {
+  "path": "predict.min_7_days",
+  "old": "7 dias de historico",
+  "new": "7 días de histórico"
+ },
+ {
+  "path": "predict.no_critical",
+  "old": "Ningun alerta critico",
+  "new": "Ningún alerta crítico"
+ },
+ {
+  "path": "predict.no_data_msg",
+  "old": "La recoleccion de datos no esta activa para este servidor",
+  "new": "La recolección de datos no está activa para este servidor"
+ },
+ {
+  "path": "predict.not_monitored",
+  "old": "El servidor no esta siendo monitorado",
+  "new": "El servidor no está siendo monitorado"
+ },
+ {
+  "path": "predict.oracle_timeout",
+  "old": "Timeout en la extraccion de datos (Oracle lento)",
+  "new": "Timeout en la extracción de datos (Oracle lento)"
+ },
+ {
+  "path": "predict.recommendation",
+  "old": "Recomendacion",
+  "new": "Recomendación"
+ },
+ {
+  "path": "predict.refresh_title",
+  "old": "Actualizar Analisis Predictivo",
+  "new": "Actualizar Análisis Predictivo"
+ },
+ {
+  "path": "predict.script_not_found",
+  "old": "Si no existe, agregue el script o deshabilite la funcionalidad de analisis predictivo",
+  "new": "Si no existe, agregue el script o deshabilite la funcionalidad de análisis predictivo"
+ },
+ {
+  "path": "predict.scripts_not_found",
+  "old": "Scripts Python no encontrados en la raiz del proyecto",
+  "new": "Scripts Python no encontrados en la raíz del proyecto"
+ },
+ {
+  "path": "predict.try_another_fg",
+  "old": "Intentar con otro filegroup que tenga mas datos",
+  "new": "Intentar con otro filegroup que tenga más datos"
+ },
+ {
+  "path": "predict.use_space_analysis",
+  "old": "Use el analisis de espacio actual para monitoreo inmediato",
+  "new": "Use el análisis de espacio actual para monitoreo inmediato"
+ },
+ {
+  "path": "predict.wait_7_days",
+  "old": "Esperar a acumular al menos 7 dias de historico",
+  "new": "Esperar a acumular al menos 7 días de histórico"
+ },
+ {
+  "path": "report.last_status",
+  "old": "Ultimo Status",
+  "new": "Último Status"
+ },
+ {
+  "path": "security.about_checks_desc",
+  "old": "Este analisis verifica configuraciones de seguridad de SQL Server de forma pasiva (solo consultas, sin pruebas activas). Las verificaciones se basan en las mejores practicas de Microsoft y no activan alertas de seguridad.",
+  "new": "Este análisis verifica configuraciones de seguridad de SQL Server de forma pasiva (solo consultas, sin pruebas activas). Las verificaciones se basan en las mejores prácticas de Microsoft y no activan alertas de seguridad."
+ },
+ {
+  "path": "security.authentication",
+  "old": "Autenticacion",
+  "new": "Autenticación"
+ },
+ {
+  "path": "security.check_label",
+  "old": "verificacion",
+  "new": "verificación"
+ },
+ {
+  "path": "security.documentation",
+  "old": "Documentacion Microsoft",
+  "new": "Documentación Microsoft"
+ },
+ {
+  "path": "security.error_loading",
+  "old": "Error al Cargar Analisis de Seguridad",
+  "new": "Error al Cargar Análisis de Seguridad"
+ },
+ {
+  "path": "security.loading",
+  "old": "Cargando analisis de seguridad...",
+  "new": "Cargando análisis de seguridad..."
+ },
+ {
+  "path": "security.recommendation",
+  "old": "Recomendacion:",
+  "new": "Recomendación:"
+ },
+ {
+  "path": "security.sql_config",
+  "old": "Configuracion SQL Server",
+  "new": "Configuración SQL Server"
+ },
+ {
+  "path": "security.verification",
+  "old": "verificacion",
+  "new": "verificación"
+ },
+ {
+  "path": "security.verification_error",
+  "old": "Error en Verificacion",
+  "new": "Error en Verificación"
+ },
+ {
+  "path": "security.version_section",
+  "old": "Version",
+  "new": "Versión"
+ },
+ {
+  "path": "services.display_name",
+  "old": "Nombre de Visualizacion",
+  "new": "Nombre de Visualización"
+ },
+ {
+  "path": "services.possible_causes",
+  "old": "<strong>Posibles causas:</strong> Firewall bloqueando acceso remoto al SCM, permisos insuficientes, o datos aun no recolectados en WatcherDB Intelligence.",
+  "new": "<strong>Posibles causas:</strong> Firewall bloqueando acceso remoto al SCM, permisos insuficientes, o datos aún no recolectados en WatcherDB Intelligence."
+ },
+ {
+  "path": "settings.sort_category",
+  "old": "Por categoria/topico",
+  "new": "Por categoría/topico"
+ },
+ {
+  "path": "space.fg_restore",
+  "old": "Volver al tamano normal (Esc)",
+  "new": "Volver al tamaño normal (Esc)"
+ },
+ {
+  "path": "space.fg_critical_title",
+  "old": "CRITICO: FileGroups con menos de 2% libre - Accion inmediata necesaria",
+  "new": "CRÍTICO: FileGroups con menos de 2% libre - Acción inmediata necesaria"
+ },
+ {
+  "path": "space.filter_placeholder",
+  "old": "Filtrar por database, filegroup o nombre logico...",
+  "new": "Filtrar por database, filegroup o nombre lógico..."
+ },
+ {
+  "path": "space.load_all_fg_title",
+  "old": "Cargar TODOS los FileGroups del servidor (consulta completa - puede demorar mas)",
+  "new": "Cargar TODOS los FileGroups del servidor (consulta completa - puede demorar más)"
+ },
+ {
+  "path": "space.loading",
+  "old": "Cargando analisis de espacio...",
+  "new": "Cargando análisis de espacio..."
+ },
+ {
+  "path": "sql.full_db_analysis_desc",
+  "old": "Esta opcion analiza <strong>TODAS</strong> las tablas de la base seleccionada, identificando estadisticas desactualizadas y tablas HEAP. Ideal para mantenimiento preventivo y diagnostico general de rendimiento.",
+  "new": "Esta opción analiza <strong>TODAS</strong> las tablas de la base seleccionada, identificando estadísticas desactualizadas y tablas HEAP. Ideal para mantenimiento preventivo y diagnóstico general de rendimiento."
+ },
+ {
+  "path": "sqldiag.analysis_queries",
+  "old": "Queries de Analisis (soportan filtro por database)",
+  "new": "Queries de Análisis (soportan filtro por database)"
+ },
+ {
+  "path": "sqldiag.detailed_analysis",
+  "old": "Analisis detallado",
+  "new": "Análisis detallado"
+ },
+ {
+  "path": "sqldiag.q_backup_history",
+  "old": "Analisis Historial Backups",
+  "new": "Análisis Historial Backups"
+ },
+ {
+  "path": "sqldiag.q_diagnose",
+  "old": "Diagnostico Query Lenta",
+  "new": "Diagnóstico Query Lenta"
+ },
+ {
+  "path": "sqldiag.q_fg_forecast",
+  "old": "Proyeccion Crecimiento FileGroups",
+  "new": "Proyección Crecimiento FileGroups"
+ },
+ {
+  "path": "sqldiag.q_index_frag",
+  "old": "Fragmentacion de Indices",
+  "new": "Fragmentación de Índices"
+ },
+ {
+  "path": "sqldiag.q_missing_index",
+  "old": "Analisis Indices Faltantes",
+  "new": "Análisis Índices Faltantes"
+ },
+ {
+  "path": "sqldiag.q_statistics",
+  "old": "Estadisticas Desactualizadas",
+  "new": "Estadísticas Desactualizadas"
+ },
+ {
+  "path": "sqlmodal.tab_info",
+  "old": "Informacion",
+  "new": "Información"
+ },
+ {
+  "path": "sqlquery.desc_placeholder",
+  "old": "Descripcion de la query",
+  "new": "Descripción de la query"
+ },
+ {
+  "path": "sqlquery.diag_slow_title",
+  "old": "Diagnostico de Query Lenta",
+  "new": "Diagnóstico de Query Lenta"
+ },
+ {
+  "path": "sqlquery.diag_title",
+  "old": "Diagnostico de Query - WatcherDB",
+  "new": "Diagnóstico de Query - WatcherDB"
+ },
+ {
+  "path": "stats.analyzing_stats",
+  "old": "Analizando estadisticas de cada tabla base",
+  "new": "Analizando estadísticas de cada tabla base"
+ },
+ {
+  "path": "stats.checking_missing",
+  "old": "Verificando indices faltantes sugeridos por SQL Server",
+  "new": "Verificando índices faltantes sugeridos por SQL Server"
+ },
+ {
+  "path": "stats.decision_factors",
+  "old": "Factores de decision:",
+  "new": "Factores de decisión:"
+ },
+ {
+  "path": "stats.existing_indexes",
+  "old": "indices ya existentes",
+  "new": "índices ya existentes"
+ },
+ {
+  "path": "stats.heap_tooltip",
+  "old": "HEAP: Tabla sin indice clustered. Datos almacenados sin orden, lo que puede impactar el rendimiento en busquedas. Considere crear un indice clustered en la clave primaria o columna mas consultada.",
+  "new": "HEAP: Tabla sin índice clustered. Datos almacenados sin orden, lo que puede impactar el rendimiento en busquedas. Considere crear un índice clustered en la clave primaria o columna más consultada."
+ },
+ {
+  "path": "stats.th_index_stats",
+  "old": "Indice/Stats",
+  "new": "Índice/Stats"
+ },
+ {
+  "path": "stats.th_last_update",
+  "old": "Ultima Actualizacion",
+  "new": "Última Actualización"
+ },
+ {
+  "path": "stats.th_recommendation",
+  "old": "Recomendacion",
+  "new": "Recomendación"
+ },
+ {
+  "path": "status.critical",
+  "old": "CRITICO",
+  "new": "CRÍTICO"
+ },
+ {
+  "path": "success.connected",
+  "old": "Conexion establecida con exito",
+  "new": "Conexión establecida con éxito"
+ },
+ {
+  "path": "success.exported",
+  "old": "Exportacion completada con exito",
+  "new": "Exportación completada con éxito"
+ },
+ {
+  "path": "success.refreshed",
+  "old": "Datos actualizados con exito",
+  "new": "Datos actualizados con éxito"
+ },
+ {
+  "path": "success.saved",
+  "old": "Configuracion guardada con exito",
+  "new": "Configuración guardada con éxito"
+ },
+ {
+  "path": "table.last_run",
+  "old": "Ultima Ejecucion",
+  "new": "Última Ejecución"
+ },
+ {
+  "path": "tde.days_remaining",
+  "old": "dias restantes",
+  "new": "días restantes"
+ },
+ {
+  "path": "tde.expired_ago",
+  "old": "Expiro hace {days} dias",
+  "new": "Expiro hace {days} días"
+ },
+ {
+  "path": "tde.expires_30days",
+  "old": "Expira en menos de 30 dias!",
+  "new": "Expira en menos de 30 días!"
+ },
+ {
+  "path": "tde.expires_90days",
+  "old": "Expira en menos de 90 dias",
+  "new": "Expira en menos de 90 días"
+ },
+ {
+  "path": "tde.valid_status",
+  "old": "Valido",
+  "new": "Válido"
+ },
+ {
+  "path": "tempdb.analyze_patterns",
+  "old": "Analizar patrones y correlacionar con diagnosticos",
+  "new": "Analizar patrones y correlacionar con diagnósticos"
+ },
+ {
+  "path": "tempdb.click_details",
+  "old": "Clic para ver mas detalles",
+  "new": "Clic para ver más detalles"
+ },
+ {
+  "path": "tempdb.click_exec_plan",
+  "old": "Clic para ver el plan de ejecucion",
+  "new": "Clic para ver el plan de ejecución"
+ },
+ {
+  "path": "toast.critical",
+  "old": "CRITICO",
+  "new": "CRÍTICO"
+ },
+ {
+  "path": "ui.loading_users",
+  "old": "Cargando analisis de usuarios...",
+  "new": "Cargando análisis de usuarios..."
+ },
+ {
+  "path": "ui.production",
+  "old": "Produccion",
+  "new": "Producción"
+ },
+ {
+  "path": "ui.timeout_msg",
+  "old": "Timeout: El servidor tardo mas de 2 minutos en responder. Intente de nuevo o verifique la conectividad con el servidor.",
+  "new": "Timeout: El servidor tardó más de 2 minutos en responder. Intente de nuevo o verifique la conectividad con el servidor."
+ },
+ {
+  "path": "users.creation_date",
+  "old": "Fecha Creacion",
+  "new": "Fecha Creación"
+ },
+ {
+  "path": "users.days_inactive",
+  "old": "Dias Inactivo",
+  "new": "Días Inactivo"
+ },
+ {
+  "path": "users.last_login",
+  "old": "Ultimo Inicio Sesion",
+  "new": "Último Inicio Sesión"
+ },
+ {
+  "path": "users.loading",
+  "old": "Cargando analisis de usuarios...",
+  "new": "Cargando análisis de usuarios..."
+ },
+ {
+  "path": "users.user_info",
+  "old": "Informacion del Usuario",
+  "new": "Información del Usuario"
+ },
+ {
+  "path": "users.weak_passwords",
+  "old": "Contrasenas Debiles",
+  "new": "Contraseñas Débiles"
+ },
+ {
+  "path": "diag.what_title",
+  "old": "Que esta pasando",
+  "new": "Qué está pasando"
+ },
+ {
+  "path": "diag.why_title",
+  "old": "Por que",
+  "new": "Por qué"
+ },
+ {
+  "path": "diag.do_title",
+  "old": "Que hacer (orden sugerido)",
+  "new": "Qué hacer (orden sugerido)"
+ },
+ {
+  "path": "diag.technical_title",
+  "old": "Evidencia tecnica",
+  "new": "Evidencia técnica"
+ },
+ {
+  "path": "diag.next_step_title",
+  "old": "Proximo paso recomendado",
+  "new": "Próximo paso recomendado"
+ },
+ {
+  "path": "diag.order_legend",
+  "old": "Ordenado por impacto; a igual impacto, el mas rapido primero. Impacto y esfuerzo son clases por regla (sin IA).",
+  "new": "Ordenado por impacto; a igual impacto, el más rápido primero. Impacto y esfuerzo son clases por regla (sin IA)."
+ },
+ {
+  "path": "diag.show_more",
+  "old": "Ver {n} mas",
+  "new": "Ver {n} más"
+ },
+ {
+  "path": "diag.copy_sql_title",
+  "old": "Copiar comandos de verificacion (solo lectura; DDL comentado)",
+  "new": "Copiar comandos de verificación (solo lectura; DDL comentado)"
+ },
+ {
+  "path": "diag.n_recs",
+  "old": "{n} recomendacion(es)",
+  "new": "{n} recomendación(es)"
+ },
+ {
+  "path": "diag.heuristic_title",
+  "old": "Senal por regla heuristica — no confirmada por medicion",
+  "new": "Senal por regla heuristica — no confirmada por medición"
+ },
+ {
+  "path": "diag.verdict.critical",
+  "old": "CRITICO",
+  "new": "CRÍTICO"
+ },
+ {
+  "path": "diag.verdict.detail",
+  "old": "{c} critico(s) · {w} aviso(s)",
+  "new": "{c} crítico(s) · {w} aviso(s)"
+ },
+ {
+  "path": "diag.source.history",
+  "old": "historico",
+  "new": "histórico"
+ },
+ {
+  "path": "diag.perf.title",
+  "old": "Investigacion",
+  "new": "Investigación"
+ },
+ {
+  "path": "diag.perf.confidence_sub",
+  "old": "de la causa raiz (reglas)",
+  "new": "de la causa raíz (reglas)"
+ },
+ {
+  "path": "diag.perf.root_cause",
+  "old": "Causa raiz identificada",
+  "new": "Causa raíz identificada"
+ },
+ {
+  "path": "diag.perf.regression_title",
+  "old": "Regresion vs baseline: {metric}",
+  "new": "Regresión vs baseline: {metric}"
+ },
+ {
+  "path": "diag.perf.side_title",
+  "old": "Contexto de la investigacion",
+  "new": "Contexto de la investigación"
+ },
+ {
+  "path": "diag.perf.duration",
+  "old": "Duracion",
+  "new": "Duración"
+ },
+ {
+  "path": "diag.plan.action_title",
+  "old": "Analizar el plan de ejecucion de esta query y comparar con otros planes del mismo query_hash",
+  "new": "Analizar el plan de ejecución de esta query y comparar con otros planes del mismo query_hash"
+ },
+ {
+  "path": "diag.plan.unavailable",
+  "old": "analisis del plan no disponible",
+  "new": "análisis del plan no disponible"
+ },
+ {
+  "path": "diag.plan.paste_label",
+  "old": "Plan de ejecucion (XML, opcional) — analizar si el plan es el mejor",
+  "new": "Plan de ejecución (XML, opcional) — analizar si el plan es el mejor"
+ },
+ {
+  "path": "diag.plan.paste_hint",
+  "old": "Sin XML: si se abre desde una query de Heavy/Slow Queries, el plan en cache se analiza automaticamente y se compara con los otros planes del mismo query_hash (y Query Store, si esta activo).",
+  "new": "Sin XML: si se abre desde una query de Heavy/Slow Queries, el plan en cache se analiza automáticamente y se compara con los otros planes del mismo query_hash (y Query Store, si está activo)."
+ },
+ {
+  "path": "diag.sqldiag.title",
+  "old": "Diagnostico de Query Lenta",
+  "new": "Diagnóstico de Query Lenta"
+ },
+ {
+  "path": "diag.sqldiag.subtitle_query",
+  "old": "Analisis por reglas: estadisticas, indices faltantes, HEAPs y plan de ejecucion (cuando disponible)",
+  "new": "Análisis por reglas: estadísticas, índices faltantes, HEAPs y plan de ejecución (cuando disponible)"
+ },
+ {
+  "path": "diag.sqldiag.subtitle_full",
+  "old": "Analisis completo de la base {db}",
+  "new": "Análisis completo de la base {db}"
+ },
+ {
+  "path": "diag.sqldiag.s_stats",
+  "old": "Estadisticas desactualizadas",
+  "new": "Estadísticas desactualizadas"
+ },
+ {
+  "path": "diag.sqldiag.s_indexes",
+  "old": "Indices sugeridos",
+  "new": "Índices sugeridos"
+ },
+ {
+  "path": "diag.sqldiag.s_heaps_sub",
+  "old": "sin indice clustered",
+  "new": "sin índice clustered"
+ },
+ {
+  "path": "diag.sqldiag.p_stats_title",
+  "old": "{n} estadistica(s) desactualizada(s)",
+  "new": "{n} estadística(s) desactualizada(s)"
+ },
+ {
+  "path": "diag.sqldiag.p_mi_title",
+  "old": "Indice faltante en {table}",
+  "new": "Índice faltante en {table}"
+ },
+ {
+  "path": "diag.sqldiag.p_heap_impact",
+  "old": "Sin indice clustered: scans y forwarded records",
+  "new": "Sin índice clustered: scans y forwarded records"
+ },
+ {
+  "path": "diag.sqldiag.act_update_stats",
+  "old": "Actualizar estadisticas",
+  "new": "Actualizar estadísticas"
+ },
+ {
+  "path": "diag.sqldiag.act_create_index",
+  "old": "Evaluar indices sugeridos",
+  "new": "Evaluar índices sugeridos"
+ },
+ {
+  "path": "diag.sqldiag.act_clustered",
+  "old": "Evaluar indice clustered en HEAPs",
+  "new": "Evaluar índice clustered en HEAPs"
+ },
+ {
+  "path": "diag.sqldiag.act_redundant",
+  "old": "Revisar indices redundantes",
+  "new": "Revisar índices redundantes"
+ },
+ {
+  "path": "diag.sqldiag.act_merge",
+  "old": "Considerar fusion de indices",
+  "new": "Considerar fusión de índices"
+ },
+ {
+  "path": "diag.sqldiag.act_consolidation",
+  "old": "Alerta de consolidacion de indices",
+  "new": "Alerta de consolidación de índices"
+ },
+ {
+  "path": "diag.sqldiag.r_stats_desc",
+  "old": "{n} estadistica(s) fuera del umbral; comandos UPDATE STATISTICS comentados para revisar.",
+  "new": "{n} estadística(s) fuera del umbral; comandos UPDATE STATISTICS comentados para revisar."
+ },
+ {
+  "path": "diag.sqldiag.r_index_desc",
+  "old": "{n} sugerencia(s) de la DMV; validar selectividad, costo de escritura e indices existentes antes de crear.",
+  "new": "{n} sugerencia(s) de la DMV; validar selectividad, costo de escritura e índices existentes antes de crear."
+ },
+ {
+  "path": "diag.sqldiag.r_heap_desc",
+  "old": "Definir clave clustered o indice que sirva al predicado.",
+  "new": "Definir clave clustered o índice que sirva al predicado."
+ },
+ {
+  "path": "diag.sqldiag.side_title",
+  "old": "Contexto del analisis",
+  "new": "Contexto del análisis"
+ },
+ {
+  "path": "diag.sqldiag.next_step_sql_hint",
+  "old": "ejecutar la query a continuacion y, en SSMS, activar Include Actual Execution Plan (Ctrl+M) para obtener el XML",
+  "new": "ejecutar la query a continuación y, en SSMS, activar Include Actual Execution Plan (Ctrl+M) para obtener el XML"
+ },
+ {
+  "path": "diag.jobs.next_step",
+  "old": "Empezar por las bases sin ningun mantenimiento; luego cobertura de backup, integridad y estadisticas.",
+  "new": "Empezar por las bases sin ningún mantenimiento; luego cobertura de backup, integridad y estadísticas."
+ },
+ {
+  "path": "diag.tlog.title",
+  "old": "Diagnostico de Transaction Log",
+  "new": "Diagnóstico de Transaction Log"
+ },
+ {
+  "path": "diag.tlog.open_link",
+  "old": "Diagnosticar el log de esta base (por que no trunca, quien lo retiene, que hacer)",
+  "new": "Diagnosticar el log de esta base (por qué no trunca, quién lo retiene, qué hacer)"
+ },
+ {
+  "path": "diag.tlog.error",
+  "old": "No fue posible obtener el diagnostico del transaction log",
+  "new": "No fue posible obtener el diagnóstico del transaction log"
+ },
+ {
+  "path": "diag.tlog.not_collected",
+  "old": "No recogido (sin permiso/version/alcance)",
+  "new": "No recogido (sin permiso/versión/alcance)"
+ },
+ {
+  "path": "diag.tlog.open_tran",
+  "old": "Transacciones abiertas en esta base (10 mas antiguas)",
+  "new": "Transacciones abiertas en esta base (10 más antiguas)"
+ },
+ {
+  "path": "diag.tlog.backups_3d",
+  "old": "Backups de los ultimos 3 dias (msdb de esta instancia)",
+  "new": "Backups de los últimos 3 días (msdb de esta instancia)"
+ },
+ {
+  "path": "diag.tlog.log_per_day",
+  "old": "Log generado por dia (backups de log, 7 dias)",
+  "new": "Log generado por día (backups de log, 7 días)"
+ },
+ {
+  "path": "diag.tlog.errorlog",
+  "old": "Errorlog con esta base (7 dias)",
+  "new": "Errorlog con esta base (7 días)"
+ },
+ {
+  "path": "diag.tlog.col_batch",
+  "old": "Ultimo batch",
+  "new": "Último batch"
+ },
+ {
+  "path": "diag.tlog.col_day",
+  "old": "Dia",
+  "new": "Día"
+ },
+ {
+  "path": "diag.mirror.title",
+  "old": "Diagnostico de Mirroring",
+  "new": "Diagnóstico de Mirroring"
+ },
+ {
+  "path": "diag.mirror.open_link",
+  "old": "Diagnosticar este mirroring (log del principal, causa en el mirror, como reanudar)",
+  "new": "Diagnosticar este mirroring (log del principal, causa en el mirror, cómo reanudar)"
+ },
+ {
+  "path": "diag.mirror.error",
+  "old": "No fue posible obtener el diagnostico de mirroring",
+  "new": "No fue posible obtener el diagnóstico de mirroring"
+ },
+ {
+  "path": "diag.mirror.errorlog_mirror",
+  "old": "Errorlog del mirror (mirror/suspend, 7 dias)",
+  "new": "Errorlog del mirror (mirror/suspend, 7 días)"
+ },
+ {
+  "path": "diag.mirror.errorlog_principal",
+  "old": "Errorlog del principal (mirror/suspend, 7 dias)",
+  "new": "Errorlog del principal (mirror/suspend, 7 días)"
+ },
+ {
+  "path": "alwayson.no_failover_events",
+  "old": "Ningun evento de failover registrado.",
+  "new": "Ningún evento de failover registrado."
+ },
+ {
+  "path": "backup.no_records_found",
+  "old": "Ningun registro encontrado con los filtros aplicados.",
+  "new": "Ningún registro encontrado con los filtros aplicados."
+ },
+ {
+  "path": "backup.no_significant_gap_found",
+  "old": "Ningun gap significativo encontrado",
+  "new": "Ningún gap significativo encontrado"
+ },
+ {
+  "path": "backup.no_backup_jobs",
+  "old": "Ningun job de backup en el SQL Agent de esta instancia y ninguna origen externa detectada en el historial.",
+  "new": "Ningún job de backup en el SQL Agent de esta instancia y ninguna origen externa detectada en el historial."
+ },
+ {
+  "path": "copilot.no_insights",
+  "old": "Ningun insight disponible",
+  "new": "Ningún insight disponible"
+ },
+ {
+  "path": "copilot.no_urgent_alerts",
+  "old": "Ningun alerta urgente en este momento",
+  "new": "Ningún alerta urgente en este momento"
+ },
+ {
+  "path": "jobs.no_disabled",
+  "old": "Ningun job deshabilitado.",
+  "new": "Ningún job deshabilitado."
+ },
+ {
+  "path": "kpi_modal.filter_empty",
+  "old": "Ningun elemento coincide con el filtro actual.",
+  "new": "Ningún elemento coincide con el filtro actual."
+ },
+ {
+  "path": "kpi_modal.no_problems_found",
+  "old": "Ningun problema encontrado",
+  "new": "Ningún problema encontrado"
+ },
+ {
+  "path": "log.no_logs_title",
+  "old": "Ningun log encontrado",
+  "new": "Ningún log encontrado"
+ },
+ {
+  "path": "log.no_sql_errors",
+  "old": "Ningun error de SQL Server encontrado",
+  "new": "Ningún error de SQL Server encontrado"
+ },
+ {
+  "path": "predict.no_high",
+  "old": "Ningun alerta de riesgo alto",
+  "new": "Ningún alerta de riesgo alto"
+ },
+ {
+  "path": "predict.no_medium",
+  "old": "Ningun alerta de riesgo medio",
+  "new": "Ningún alerta de riesgo medio"
+ },
+ {
+  "path": "sqlmodal.no_results",
+  "old": "Ningun resultado encontrado",
+  "new": "Ningún resultado encontrado"
+ },
+ {
+  "path": "sqlmodal.note_no_results",
+  "old": "Nota: Ningun resultado encontrado para esta consulta en este momento.",
+  "new": "Nota: Ningún resultado encontrado para esta consulta en este momento."
+ },
+ {
+  "path": "ui.no_server_selected",
+  "old": "Ningun servidor seleccionado.",
+  "new": "Ningún servidor seleccionado."
+ },
+ {
+  "path": "users.no_excessive",
+  "old": "Ningun permiso excesivo detectado.",
+  "new": "Ningún permiso excesivo detectado."
+ },
+ {
+  "path": "users.no_inactive",
+  "old": "Ningun usuario inactivo detectado.",
+  "new": "Ningún usuario inactivo detectado."
+ },
+ {
+  "path": "users.no_orphan",
+  "old": "Ningun usuario huerfano detectado.",
+  "new": "Ningún usuario huerfano detectado."
+ },
+ {
+  "path": "diag.jobs.s_coverage_sub",
+  "old": "bases con algun job de mantenimiento",
+  "new": "bases con algún job de mantenimiento"
+ }
+]
