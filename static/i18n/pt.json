@@ -1422,22 +1422,23 @@
     "saved": "Definições guardadas com sucesso"
   },
   "tab": {
+    "performance": "Performance",
     "alwayson": "Always On",
     "backup": "Backup",
     "cpu": "CPU",
     "dashboard_kpis": "KPIs",
-    "disk": "Disk",
-    "encrypted": "Encrypted",
+    "disk": "Disco",
+    "encrypted": "Encriptação",
     "jobs": "Jobs",
     "log": "Log",
-    "memory": "Memory",
-    "overview": "Overview",
-    "security": "Security",
-    "services": "Services",
-    "space": "Space",
+    "memory": "Memória",
+    "overview": "Visão Geral",
+    "security": "Segurança",
+    "services": "Serviços",
+    "space": "Espaço",
     "sql_diagnostics": "SQL Diag",
-    "users": "Users",
-    "sessions": "Sessions"
+    "users": "Utilizadores",
+    "sessions": "Sessões"
   },
   "table": {
     "blocked": "Bloqueado",

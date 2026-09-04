@@ -1422,6 +1422,7 @@
     "saved": "Configuracion guardada con exito"
   },
   "tab": {
+    "performance": "Performance",
     "alwayson": "Always On",
     "backup": "Backup",
     "cpu": "CPU",
@@ -1437,7 +1438,7 @@
     "space": "Espacio",
     "sql_diagnostics": "SQL Diag",
     "users": "Usuarios",
-    "sessions": "Sessions"
+    "sessions": "Sesiones"
   },
   "table": {
     "blocked": "Bloqueado",

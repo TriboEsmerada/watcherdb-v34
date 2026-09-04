@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Os botões de navegação da instância passam a traduzir** (owner 04/09, em espanhol: "os nomes
+  do menu não traduziram"). Overview, Performance, Always On, Backup, Space, Disk, Encrypted, CPU,
+  Memory, Services, Log, Sessions, Security, Users, Jobs e SQL Diag estavam hardcoded em inglês;
+  ganham `data-i18n="tab.*"` (namespace que já existia mas só servia o separador do dashboard).
+  Em português o bloco `tab.*` estava em inglês e passa a pt-PT (Visão Geral, Espaço, Disco,
+  Memória, Serviços, Sessões, Segurança, Utilizadores, Encriptação); espanhol ganha "Sesiones";
+  chave nova `tab.performance`. [tier: Std]
+
 - **Troca de idioma passa a traduzir a aba visível na hora** (owner 04/09: "demora para traduzir").
   Causa: o motor chamava `refreshTab(tab.id)` e a propriedade é `tabId`, logo a chamada nunca fazia
   nada; só os elementos com `data-i18n` mudavam na hora e o resto esperava pelo refresh periódico.

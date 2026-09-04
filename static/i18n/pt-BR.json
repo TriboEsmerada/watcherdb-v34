@@ -173,5 +173,8 @@
       "subtitle": "Contagem de Usuários",
       "modal_title": "Usuários Bloqueados"
     }
+  },
+  "tab": {
+    "users": "Usuários"
   }
 }

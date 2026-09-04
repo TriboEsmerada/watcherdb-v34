@@ -1422,6 +1422,7 @@
     "saved": "Settings saved successfully"
   },
   "tab": {
+    "performance": "Performance",
     "alwayson": "Always On",
     "backup": "Backup",
     "cpu": "CPU",
