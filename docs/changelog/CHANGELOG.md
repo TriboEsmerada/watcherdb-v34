@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **i18n lote F4 (wave BUG-003): acentuação e AO90 na documentação dos KPIs** (o texto que abre em
+  cada "?" do dashboard). Os campos portugueses de `KPI_DOCUMENTATION` que ainda tinham acentos em
+  falta ou grafia pré-AO90 ("actualizado", "activa", "detectada", "directamente", "afectadas")
+  foram corrigidos sem reescrever uma frase; os blocos en/es, já correctos, não foram tocados.
+  33 literais. Só texto. [tier: Std]
+
 - **i18n lote F2c: defeitos nas chaves antigas de `pt.json` e `es.json`** (achados do
   v33-i18n-linguist ao reutilizar chaves no F2). Espanhol: "Critico" → "Crítico" em 11 chaves,
   "Memoria Critico" → "Memoria Crítica", "Trabajos" → "Jobs" (glossário), "DB Disco File System" →

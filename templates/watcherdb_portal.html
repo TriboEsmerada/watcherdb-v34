@@ -40049,7 +40049,7 @@ Tempo de Resposta: ${responseTime}
                     'Exclui databases em RESTORING (normal em mirroring/AlwaysOn secundário)',
                     'Aplica filtro de frescor de 24 horas (dados coletados nas últimas 24h)',
                     'Agrupa por ambiente (PRD, QLT, TST) com código de cores',
-                    'Toast de alerta abre directamente o modal com as databases afectadas'
+                    'Toast de alerta abre diretamente o modal com as databases afetadas'
                 ],
                 thresholds: [
                     { level: 'CRITICAL', condition: 'Qualquer database fora do estado ONLINE', color: '#ef4444' },
@@ -40179,7 +40179,7 @@ Tempo de Resposta: ${responseTime}
                     'Identifica instâncias que falharam na conexão',
                     'Aplica filtro de frescor de 15 minutos',
                     'Cor do card muda conforme ambiente: vermelho=PRD, amarelo=QLT, azul=TST',
-                    'Toast de alerta abre directamente o modal com as instâncias afectadas'
+                    'Toast de alerta abre diretamente o modal com as instâncias afetadas'
                 ],
                 thresholds: [
                     { level: 'CRITICAL', condition: 'Instância não respondendo (Is_Available = 0)', color: '#ef4444' }
@@ -40226,10 +40226,10 @@ Tempo de Resposta: ${responseTime}
                     'Mostra cadeia de bloqueios (blocker → blocked) com tempo de espera em segundos',
                     'Aplica filtro de frescor de 5 minutos (dados em tempo real)',
                     'KPI rápido (is_fast=true) - coletado com maior frequência',
-                    'Modal faz verificação em TEMPO REAL directamente no SQL Server',
-                    'Se o bloqueio já foi resolvido, card é automaticamente actualizado para 0',
+                    'Modal faz verificação em TEMPO REAL diretamente no SQL Server',
+                    'Se o bloqueio já foi resolvido, card é automaticamente atualizado para 0',
                     'Badge de severidade: HIGH (laranja, 45s-2min) ou CRITICAL (vermelho, >= 2min)',
-                    'Clique no toast de alerta abre directamente o modal de Blocked Sessions'
+                    'Clique no toast de alerta abre diretamente o modal de Blocked Sessions'
                 ],
                 thresholds: [
                     { level: 'CRITICAL', condition: 'Lock com duração >= 2 minutos (120 segundos)', color: '#ef4444' },
@@ -40327,19 +40327,19 @@ Tempo de Resposta: ${responseTime}
             },
             'processes-alarm': {
                 category: 'Performance',
-                title: 'Fila de CPU (sessoes runnable)',
+                title: 'Fila de CPU (sessões runnable)',
                 icon: 'fa-exclamation-triangle',
-                description: 'Instancias com sessoes em estado RUNNABLE (com trabalho mas a espera de CPU/scheduler) acima do threshold configuravel. E o sinal directo de pressao de CPU, diferente da % de CPU e das sessoes SUSPENDED (a espera de I/O/locks).',
+                description: 'Instâncias com sessões em estado RUNNABLE (com trabalho mas a espera de CPU/scheduler) acima do threshold configurável. É o sinal direto de pressão de CPU, diferente da % de CPU e das sessões SUSPENDED (a espera de I/O/locks).',
                 howItWorks: [
-                    'Consulta a view KPI_MSSQL_PROCESSES_AGG_VIEW (Runnable_Count por instancia, do collector de processos, ~5-7 min)',
-                    'Conta INSTANCIAS com Runnable_Count acima do threshold WARNING (processes_runnable, editavel em Settings > Thresholds)',
+                    'Consulta a view KPI_MSSQL_PROCESSES_AGG_VIEW (Runnable_Count por instância, do collector de processos, ~5-7 min)',
+                    'Conta INSTÂNCIAS com Runnable_Count acima do threshold WARNING (processes_runnable, editável em Settings > Thresholds)',
                     'CRITICAL quando Runnable_Count > threshold CRITICAL',
-                    'O drill-down lista as instancias com Runnable/Suspended/Sleeping e a hora do ultimo snapshot'
+                    'O drill-down lista as instâncias com Runnable/Suspended/Sleeping e a hora do último snapshot'
                 ],
                 thresholds: [
                     { level: 'CRITICAL', condition: 'Runnable_Count > critical (default 50)', color: '#ef4444' },
                     { level: 'WARNING', condition: 'Runnable_Count > warning (default 20)', color: '#f59e0b' },
-                    { level: 'OK', condition: 'Nenhuma instancia acima do threshold', color: '#22c55e' }
+                    { level: 'OK', condition: 'Nenhuma instância acima do threshold', color: '#22c55e' }
                 ],
                 tables: ['KPI_MSSQL_PROCESSES_AGG_VIEW'],
                 i18n: {
@@ -40468,7 +40468,7 @@ Tempo de Resposta: ${responseTime}
                 category: 'Performance',
                 title: 'Deadlocks (24h)',
                 icon: 'fa-bolt',
-                description: 'Monitoriza ocorrências de deadlocks nas ultimas 24h, lidas da sessão system_health (Extended Events, activa por defeito no SQL Server).',
+                description: 'Monitoriza ocorrências de deadlocks nas últimas 24h, lidas da sessão system_health (Extended Events, ativa por defeito no SQL Server).',
                 howItWorks: [
                     'Recolha periódica lê os eventos de deadlock já capturados pela sessão system_health (o SQL Server regista-os automaticamente; o collector só os lê)',
                     'Agrega ocorrências por instância numa janela de 24h em KPI_MSSQL_DEADLOCKS_AGG_VIEW',
@@ -40523,7 +40523,7 @@ Tempo de Resposta: ${responseTime}
                 category: 'Disponibilidade',
                 title: 'Integridade',
                 icon: 'fa-file-shield',
-                description: 'Detecta corrupção de databases: páginas suspeitas registadas pelo SQL Server (msdb.dbo.suspect_pages), databases nunca validadas por DBCC CHECKDB ou com validação antiga, e higiene de PAGE_VERIFY. O número do card é o total de databases com corrupção REGISTADA (P1).',
+                description: 'Deteta corrupção de databases: páginas suspeitas registadas pelo SQL Server (msdb.dbo.suspect_pages), databases nunca validadas por DBCC CHECKDB ou com validação antiga, e higiene de PAGE_VERIFY. O número do card é o total de databases com corrupção REGISTADA (P1).',
                 howItWorks: [
                     'Veredicto por database na KPI_MSSQL_INTEGRITY_VERDICT_VIEW, cruzando suspect_pages + histórico DBCC + settings',
                     'P1 = páginas suspeitas registadas (corrupção confirmada pelo motor) — CHECKDB e plano de correcção imediatos',
@@ -40588,7 +40588,7 @@ Tempo de Resposta: ${responseTime}
 
             // === ESPACO ===
             'transaction-logs-critical': {
-                category: 'Espaco',
+                category: 'Espaço',
                 title: 'Transaction Logs — Crítico',
                 icon: 'fa-file-alt',
                 description: 'Monitora bases de dados com o transaction log em nível crítico. Card mostra número de instâncias; modal lista as BASES pelo nome, com % usado, tamanho e último backup de log.',
@@ -40598,7 +40598,7 @@ Tempo de Resposta: ${responseTime}
                     'Modal lista as BASES críticas: nome, % usado, usado/tamanho, último backup de log (AG-aware) e recovery model',
                     'Charts por ambiente e por idade do último backup de log, com cross-filter e combobox de instâncias',
                     'Aplica filtro de frescor de 24 horas (card e modal)',
-                    'Toast de alerta abre directamente o modal com as instâncias afectadas'
+                    'Toast de alerta abre diretamente o modal com as instâncias afetadas'
                 ],
                 thresholds: [
                     { level: 'CRITICAL', condition: 'Log > 95% usado', color: '#ef4444' },
@@ -40634,7 +40634,7 @@ Tempo de Resposta: ${responseTime}
                 }
             },
             'transaction-logs-warning': {
-                category: 'Espaco',
+                category: 'Espaço',
                 title: 'Transaction Logs — Aviso',
                 icon: 'fa-file-alt',
                 description: 'Monitora bases de dados com o transaction log em nível de aviso. Card mostra número de instâncias; modal lista as BASES pelo nome, com % usado, tamanho e último backup de log.',
@@ -40676,7 +40676,7 @@ Tempo de Resposta: ${responseTime}
                 }
             },
             'filegroup-usage-critical': {
-                category: 'Espaco',
+                category: 'Espaço',
                 title: 'FileGroups — Crítico',
                 icon: 'fa-folder',
                 description: 'Monitora FileGroups com uso crítico de espaço (>= 98%).',
@@ -40685,7 +40685,7 @@ Tempo de Resposta: ${responseTime}
                     'Filtra filegroups onde Percent_Used >= 98%',
                     'Identifica filegroups próximos de encher',
                     'Mostra Total_MB, Used_MB, Free_MB',
-                    'Toast de alerta abre directamente o modal com os filegroups afectados'
+                    'Toast de alerta abre diretamente o modal com os filegroups afetados'
                 ],
                 thresholds: [
                     { level: 'CRITICAL', condition: 'Percent_Used >= 98%', color: '#ef4444' },
@@ -40720,7 +40720,7 @@ Tempo de Resposta: ${responseTime}
                 }
             },
             'filegroup-usage-warning': {
-                category: 'Espaco',
+                category: 'Espaço',
                 title: 'FileGroups — Aviso',
                 icon: 'fa-folder',
                 description: 'Monitora FileGroups com uso elevado de espaço (95-98%).',
@@ -40771,8 +40771,8 @@ Tempo de Resposta: ${responseTime}
                     'Card mostra número de INSTÂNCIAS com drives críticos',
                     'Modal mostra drill-down: X instância(s) com Y drive(s) crítico(s)',
                     'Aplica filtro de frescor de 24 horas',
-                    'Toast de alerta abre directamente o modal com as instâncias afectadas',
-                    'Drive_Category detectada automaticamente por mount point'
+                    'Toast de alerta abre diretamente o modal com as instâncias afetadas',
+                    'Drive_Category detetada automaticamente por mount point'
                 ],
                 thresholds: [
                     { level: 'CRITICAL System',  condition: 'C:\\ -- Espaço livre < 15%', color: '#ef4444' },
@@ -40876,7 +40876,7 @@ Tempo de Resposta: ${responseTime}
                     'Card mostra número de INSTÂNCIAS com drives em warning',
                     'Modal mostra drill-down: X instância(s) com Y drive(s) em warning',
                     'Aplica filtro de frescor de 24 horas',
-                    'Drive_Category detectada automaticamente por mount point'
+                    'Drive_Category detetada automaticamente por mount point'
                 ],
                 thresholds: [
                     { level: 'WARNING System',  condition: 'C:\\ -- Espaço livre 15% a 25%', color: '#f59e0b' },
@@ -41170,15 +41170,15 @@ Tempo de Resposta: ${responseTime}
                 category: 'Backup',
                 title: 'Backups em Atraso',
                 icon: 'fa-database',
-                description: 'Monitora gaps RPO (tempo desde ultimo backup) com severidade WARNING/CRITICAL, janela 48h.',
+                description: 'Monitora gaps RPO (tempo desde último backup) com severidade WARNING/CRITICAL, janela 48h.',
                 howItWorks: [
                     'Consulta a tabela KPI_MSSQL_BACKUPS_STG (Hours_Since_Backup)',
-                    'NAO e falha de execucao -- e gap RPO (ex: job disabled, backup ainda nao corrido)',
+                    'NÃO é falha de execução -- é gap RPO (ex: job disabled, backup ainda não corrido)',
                     'WARNING: FULL 120-168h, DIFF 24-30h, LOG 1-2h',
                     'CRITICAL: FULL > 168h, DIFF > 30h, LOG > 2h',
-                    'Janela de classificacao: ultimas 48h',
-                    'Na modal, "Limite de aviso" = ultimo backup + threshold de aviso (o instante em que passou a contar); nao e o proximo backup previsto',
-                    'Banda "Cadeia DIFF parada (FULL a cobrir)": DIFF parado ha mais de 7 dias mas com FULL fresco a cobrir. So existe para DIFF porque FULL/LOG parados JA contam em atraso; agendamento parado por job esta em "Sem Proxima Execucao Valida" / "Sem Agendamento no Agent"',
+                    'Janela de classificação: últimas 48h',
+                    'Na modal, "Limite de aviso" = último backup + threshold de aviso (o instante em que passou a contar); não é o próximo backup previsto',
+                    'Banda "Cadeia DIFF parada (FULL a cobrir)": DIFF parado há mais de 7 dias mas com FULL fresco a cobrir. Só existe para DIFF porque FULL/LOG parados JÁ contam em atraso; agendamento parado por job está em "Sem Próxima Execução Válida" / "Sem Agendamento no Agent"',
                     'Cor do card muda conforme ambiente: vermelho=PRD, amarelo=QLT, azul=TST'
                 ],
                 thresholds: [
@@ -41225,20 +41225,20 @@ Tempo de Resposta: ${responseTime}
                 category: 'Backup',
                 title: 'Jobs de Backup Desativados',
                 icon: 'fa-pause-circle',
-                description: 'Monitora SQL Agent backup jobs que nao vao correr: com enabled=0, ou activos mas com todos os agendamentos desligados (sysschedules.enabled=0). Ambos os casos sao causa raiz comum de gap RPO.',
+                description: 'Monitora SQL Agent backup jobs que não vão correr: com enabled=0, ou ativos mas com todos os agendamentos desligados (sysschedules.enabled=0). Ambos os casos são causa raiz comum de gap RPO.',
                 howItWorks: [
                     'Consulta a tabela KPI_MSSQL_BACKUP_JOBS_DISABLED_STG',
-                    'Filtra msdb.dbo.sysjobs onde enabled = 0 OU sem nenhum agendamento activo (sysschedules.enabled = 1), e categoria/nome indicia backup',
-                    '2026-07-29: passou a incluir jobs activos sem agendamento ligado. Caso real: DBA_FULL_BACKUP em SQLMDMQLT03_I01 esteve 5 semanas sem correr com enabled=1 e o agendamento desligado, invisivel a este KPI',
+                    'Filtra msdb.dbo.sysjobs onde enabled = 0 OU sem nenhum agendamento ativo (sysschedules.enabled = 1), e categoria/nome indicia backup',
+                    '2026-07-29: passou a incluir jobs ativos sem agendamento ligado. Caso real: DBA_FULL_BACKUP em SQLMDMQLT03_I01 esteve 5 semanas sem correr com enabled=1 e o agendamento desligado, invisível a este KPI',
                     'Snapshot (substitui tabela inactiva por ciclo)',
-                    'Frequencia: 15 min (PRD), 30 min (QA-TST)',
+                    'Frequência: 15 min (PRD), 30 min (QA-TST)',
                     'Cor do card muda conforme ambiente: vermelho=PRD, amarelo=QLT, azul=TST',
-                    'Job disabled e diferente de falha (sem registo em sysjobhistory) e diferente de gap (que pode ter outra causa)'
+                    'Job disabled é diferente de falha (sem registo em sysjobhistory) e diferente de gap (que pode ter outra causa)'
                 ],
                 thresholds: [
-                    { level: 'CRITICAL', condition: 'Qualquer job de backup em PRD que nao vai correr (enabled=0 ou sem agendamento activo)', color: '#ef4444' },
-                    { level: 'WARNING', condition: 'Jobs nessas condicoes em QLT/TST', color: '#f59e0b' },
-                    { level: 'OK', condition: 'Nenhum backup job desactivado nem sem agendamento activo', color: '#22c55e' }
+                    { level: 'CRITICAL', condition: 'Qualquer job de backup em PRD que não vai correr (enabled=0 ou sem agendamento ativo)', color: '#ef4444' },
+                    { level: 'WARNING', condition: 'Jobs nessas condições em QLT/TST', color: '#f59e0b' },
+                    { level: 'OK', condition: 'Nenhum backup job desativado nem sem agendamento ativo', color: '#22c55e' }
                 ],
                 tables: ['KPI_MSSQL_BACKUP_JOBS_DISABLED_STG'],
                 i18n: {
@@ -41375,16 +41375,16 @@ Tempo de Resposta: ${responseTime}
                 category: 'Jobs',
                 title: 'Colisões de Schedule',
                 icon: 'fa-clock',
-                description: 'Detecta SQL Agent Jobs com sobreposição de horário de execução, identificando potenciais conflitos de recursos.',
+                description: 'Deteta SQL Agent Jobs com sobreposição de horário de execução, identificando potenciais conflitos de recursos.',
                 howItWorks: [
                     'Analisa schedules dos SQL Agent Jobs configurados',
-                    'Detecta jobs que executam no mesmo horário e podem competir por recursos',
+                    'Deteta jobs que executam no mesmo horário e podem competir por recursos',
                     'Agrupa colisões por instância e ambiente',
                     'Prioriza alertas para ambientes de produção (PRD)',
                     'Clique abre modal com detalhes das colisões de schedule'
                 ],
                 thresholds: [
-                    { level: 'WARNING', condition: 'Jobs com sobreposição de schedule detectada', color: '#f59e0b' },
+                    { level: 'WARNING', condition: 'Jobs com sobreposição de schedule detetada', color: '#f59e0b' },
                     { level: 'OK', condition: 'Nenhuma sobreposição de schedule', color: '#22c55e' }
                 ],
                 tables: ['KPI_MSSQL_JOB_FAILURES_STG', 'msdb.dbo.sysjobs', 'msdb.dbo.sysjobschedules'],
@@ -41432,7 +41432,7 @@ Tempo de Resposta: ${responseTime}
                     'Verifica Pri_Synch_State e Sec_Synch_State != SYNCHRONIZED',
                     'Verifica se alguma réplica está suspensa (Is_Suspended = 1)',
                     'Aplica filtro de frescor de 5 minutos',
-                    'Toast de alerta abre directamente o modal com os Availability Groups afectados'
+                    'Toast de alerta abre diretamente o modal com os Availability Groups afetados'
                 ],
                 thresholds: [
                     { level: 'CRITICAL', condition: 'Health != HEALTHY ou State != SYNCHRONIZED', color: '#ef4444' },
