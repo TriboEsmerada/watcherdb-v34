@@ -50358,7 +50358,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     <span title="Sessoes bloqueadas">Blk: <b id="lg-blk-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span id="live-status-${tabId}" style="margin-left:auto;color:var(--color-text-disabled);font-size:12px;">--</span>
                 </div>
-                <div id="live-screen-${tabId}" style="flex:1;overflow:auto;padding:12px;font-family:var(--font-mono);font-size:13px;color:var(--color-text-bright);">
+                <div id="live-screen-${tabId}" style="flex:1;overflow:auto;padding:12px;font-family:var(--font-mono);font-size:var(--font-sm);color:var(--color-text-bright);">
                     <div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
                         <i class="fas fa-satellite-dish" style="font-size:48px;margin-bottom:16px;color:var(--color-border);"></i>
                         <div style="font-size:16px;margin-bottom:8px;">Selecione um canal ou clique em Fleet</div>
@@ -50666,7 +50666,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     screen.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-text-disabled);">
                         <i class="fas fa-tv" style="font-size:36px;margin-bottom:12px;color:var(--color-border);display:block;"></i>
                         <div style="font-size:14px;margin-bottom:6px;color:var(--color-text-tertiary);">${errMsg}</div>
-                        <div style="font-size:11px;">Programa: ${_liveProgram} | Erro: ${errCode}</div>
+                        <div style="font-size:12px;">Programa: ${_liveProgram} | Erro: ${errCode}</div>
                     </div>`;
                 }
             } catch (e) {
