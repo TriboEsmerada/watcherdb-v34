@@ -327,7 +327,10 @@ async def login(request: Request, login_req: LoginRequest):
         pass  # Column may not exist yet — graceful degradation
 
     response = JSONResponse(content=result)
-    if result.get("token"):
+    # Cookie so' e' emitido se houver token. Chave e' access_token (auth_service devolve
+    # access_token em todos os caminhos); ate' 2026-09-05 testava-se "token" e o cookie
+    # nunca saia -- ver tests/unit/test_login_sets_cookie.py.
+    if result.get("access_token"):
         # Bug-fix 2026-04-23: secure=True incondicional quebra acesso via HTTP
         # em ambientes internos (banking-grade on-premise frequentemente HTTP
         # atras de reverse-proxy). Se request for HTTP, setar secure=False
@@ -337,7 +340,7 @@ async def login(request: Request, login_req: LoginRequest):
         is_https = request.url.scheme == "https"
         response.set_cookie(
             key="access_token",
-            value=result["token"],
+            value=result["access_token"],
             httponly=True,
             secure=is_https,   # True se HTTPS, False se HTTP (dev/internal)
             samesite="lax",
