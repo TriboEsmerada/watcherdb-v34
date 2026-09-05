@@ -262,3 +262,5 @@ secrets/
 
 config/_archive/
 REGISTRO_IGAC/**/config/sql_servers.json
+
+docs/qa/externo/

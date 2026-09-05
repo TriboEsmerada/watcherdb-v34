@@ -53,7 +53,34 @@
       "Write(docs/context/**)",
       "Edit(docs/context/**)",
       "Write(.claude/**)",
-      "Edit(.claude/**)"
+      "Edit(.claude/**)",
+      "Bash(sed -n '140,230p' tests/unit/test_security_audit.py)",
+      "Bash(grep -rn \"\\\\\"/docs\\\\\"\\\\|'/docs'\\\\|openapi.json\\\\|docs_url\\\\|redoc_url\" tests/ api/*.py watcherdb_main.py)",
+      "Bash(sed -n 126,160p templates/watcherdb_portal.html)",
+      "Bash(grep -c \"var\\(--font-\" templates/watcherdb_portal.html)",
+      "Bash(grep -o \"var\\(--font-[a-z0-9]*\\)\" templates/watcherdb_portal.html)",
+      "Bash(sed -n 55,66p docs/FEATURE_MATRIX.md)",
+      "Bash(grep -n -i \"capacity\\\\|forecast\\\\|previs\" docs/FEATURE_MATRIX.md)",
+      "Bash(sed -n 180,232p docs/FEATURE_MATRIX.md)",
+      "Bash(grep -c \"onmouseover=\\\\\"this.style.transform='scale\\(1.02\\)'\" templates/watcherdb_portal.html)",
+      "Bash(grep -c \"confirm\\(\\\\|alert\\(\" templates/watcherdb_portal.html)",
+      "Bash(sed -n '1,5p' templates/watcherdb_portal.html)",
+      "Bash(sed -n '27695,27715p' templates/watcherdb_portal.html)",
+      "Bash(grep -n \"<h1\" templates/watcherdb_portal.html)",
+      "Bash(find static/css -iname \"*live*\")",
+      "Bash(grep -n \"LIVE MODE\\\\|liveModal\\\\|watcherdb-live\\\\|#liveContainer\\\\|class=\\\\\"live-\" templates/watcherdb_portal.html)",
+      "Bash(sed -E 's/font-size:\\\\s*//')",
+      "Bash(cd \"c:/Users/ue_e-snetto/Documents/projetosPython/WATCHERDB_V3.4\"; echo ---TESTS-WINONLY; grep -rnE \"^\\\\s*\\(import|from\\) \\(win32|wmi|winreg|pythoncom|pywintypes|winkerberos|msvcrt|servicemanager\\)\" tests/ | head -15; echo ---TESTS-WINDLL; grep -rln \"ctypes.windll\\\\|WinDLL\" tests/ | head; echo ---SRC-TOPLEVEL-WINONLY; grep -rnE \"^\\(import|from\\) \\(win32|wmi|winreg|pythoncom|pywintypes|winkerberos|servicemanager\\)\" --include=*.py watcherdb api services modules collectors watcherdb_main.py watcherdb_service.py 2>/dev/null | head -20; echo ---NOTIFY; sed -n '/notify:/,$p' .github/workflows/ci.yml | grep -n \"result\\\\|needs\\\\|exit\\\\|if:\" | head -12; echo ---PYTEST-PIN; grep -in \"^pytest\" requirements-dev.txt; echo ---CONFTEST; grep -nE \"^\\(import|from\\)\" tests/conftest.py | head -15)",
+      "Bash(ls .claude/agents/)",
+      "Bash(ls -d scripts/qa scripts/qa/runtime docs/qa docs/qa/externo)",
+      "Bash(grep -n -A8 \"\\\\[tool.pytest\" pyproject.toml)",
+      "Bash(grep -rn \"qa_viewer\" --include=*.py --include=*.md --include=*.sql --include=*.json --include=*.ps1 .)",
+      "Bash(cat watcherdb/core/same_origin.py)",
+      "Bash(grep -n \"require_same_origin\" api/routers/*.py)",
+      "Bash(grep -c -E \"@router\\\\.\\(post|put|patch|delete\\)\\\\\\(\" api/routers/*.py)",
+      "Bash(sed -n 25,31p .claude/hooks/guard_write_paths.py)",
+      "Bash(sed -n 75,84p .claude/hooks/guard_write_paths.py)",
+      "Bash(git diff *)"
     ],
     "deny": [
       "Bash(git push:*)",
@@ -68,7 +95,8 @@
       "c:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB INTELLIGENCE V1\\docs",
       "C:\\Users\\ue_e-snetto\\.claude\\hooks",
       "C:\\Users\\ue_e-snetto\\.claude",
-      "C:\\Users\\ue_e-snetto\\.nestor-vault"
+      "C:\\Users\\ue_e-snetto\\.nestor-vault",
+      "C:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB_V3.4\\.github\\workflows"
     ]
   },
   "hooks": {
@@ -78,7 +106,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"C:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB_V3.3\\.claude\\hooks\\guard_write_paths.py\""
+            "command": "python \"C:\\Users\\ue_e-snetto\\Documents\\projetosPython\\WATCHERDB_V3.4\\.claude\\hooks\\guard_write_paths.py\""
           }
         ]
       }

@@ -28,6 +28,9 @@ ALLOWED_PREFIXES = [
     PROJECT / "docs" / "context",
     PROJECT / ".claude",
     Path.home() / ".claude",
+    # 2026-09-05: zonas de escrita do agente qa-externo (.claude/agents/qa-externo.md)
+    PROJECT / "docs" / "qa" / "externo",
+    PROJECT / "scripts" / "qa" / "runtime",
 ]
 
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
