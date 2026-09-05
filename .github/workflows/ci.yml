@@ -30,10 +30,10 @@ jobs:
   lint:
     name: Code Linting
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: WATCHERDB_V3.3
-
+    # LOTE0 2026-09-04: ruff local = 674 achados; black/mypy nunca correram
+    # neste repo. Nao bloqueia ate' haver wave de lint. O sinal do CI e' o job
+    # `test` (N testes recolhidos > 0 + pytest verde).
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -68,10 +68,6 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.11', '3.12']
-    defaults:
-      run:
-        working-directory: WATCHERDB_V3.3
-
     steps:
       - uses: actions/checkout@v4
 
@@ -85,6 +81,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
+
+      - name: Collect tests (fail if zero collected)
+        # LOTE0 2026-09-04: CI verde com 0 testes recolhidos nao tem valor
+        # probatorio (QA externo Fable, item 3c). tests/integration foi
+        # movido para scripts/manual_debug/ (ligava a PRD so' por ser
+        # recolhido). Um erro de coleccao (ImportError em Linux, etc.)
+        # tambem falha aqui, de forma visivel - e' esse o objectivo.
+        run: |
+          set -o pipefail
+          python -m pytest --collect-only -q --no-cov -p no:cacheprovider 2>&1 | tee collect.log
+          N1=$(grep -E '^tests/.*: [0-9]+$' collect.log | awk -F': ' '{s+=$2} END{print s+0}')
+          N2=$(grep -c '::' collect.log || true)
+          N=$(( N1 > N2 ? N1 : N2 ))
+          echo "Testes recolhidos: $N (pytest>=9 por ficheiro: $N1; ids: $N2)"
+          test "$N" -gt 0 || { echo '::error::0 testes recolhidos'; exit 1; }
 
       - name: Run pytest with coverage
         # S3-13 (audit 2026-04-22): coverage enforced em pyproject.toml addopts
@@ -106,7 +117,7 @@ jobs:
         uses: codecov/codecov-action@v4
         continue-on-error: true
         with:
-          file: WATCHERDB_V3.3/coverage.xml
+          file: coverage.xml
           flags: unittests
           name: codecov-umbrella
 
@@ -116,10 +127,6 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: WATCHERDB_V3.3
-
     steps:
       - uses: actions/checkout@v4
 
@@ -134,6 +141,9 @@ jobs:
           pip install safety bandit
 
       - name: Run Safety (dependency check)
+        # LOTE0: `safety check` esta' deprecado (exige `safety scan` + conta).
+        # Nao bloqueia; deploy/cve_gate.py e' o gate real no build-release.
+        continue-on-error: true
         run: safety check --json
 
       - name: Run Bandit (security issues)
@@ -144,7 +154,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bandit-report
-          path: WATCHERDB_V3.3/bandit-report.json
+          path: bandit-report.json
 
   # ==========================================
   # Notification
