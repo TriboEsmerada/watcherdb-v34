@@ -36,6 +36,8 @@ import logging
 from typing import Set
 
 from fastapi import HTTPException, Request
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -85,3 +87,30 @@ async def require_same_origin(request: Request) -> None:
         origem,
     )
     raise HTTPException(status_code=403, detail="Origem nao permitida")
+
+
+class SameOriginMiddleware(BaseHTTPMiddleware):
+    """Aplica a politica de `require_same_origin` a TODO pedido com efeito (global).
+
+    Porque middleware e nao Depends em cada endpoint: em 2026-09-05 havia 48 endpoints de
+    escrita e so' 3 com o Depends -- um controlo que depende de cada autor se lembrar
+    apodrece no primeiro router novo. O middleware e' um unico ponto de verdade (e de
+    auditoria) e cobre endpoints futuros. Os Depends existentes ficam; sao redundantes e
+    inofensivos.
+
+    So' ve scope "http" (BaseHTTPMiddleware): WebSockets nao passam aqui. Metodos seguros e
+    pedidos sem `Origin` passam -- ver docstring do modulo para a justificacao.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        if request.method.upper() in _METODOS_COM_EFEITO:
+            origem = _normalizar(request.headers.get("origin", ""))
+            if origem and origem not in origens_aceites(request):
+                logger.warning(
+                    "Escrita recusada por origem cruzada (middleware): %s %s (Origin=%s)",
+                    request.method,
+                    request.url.path,
+                    origem,
+                )
+                return JSONResponse({"detail": "Origem nao permitida"}, status_code=403)
+        return await call_next(request)

@@ -716,6 +716,13 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(AuthEnforcementMiddleware)
 
+# CSRF same-site (lote 2026-09-05): Origin presente e fora de {scheme://host} U CORS
+# allow_origins => 403 em POST/PUT/PATCH/DELETE. Registado DEPOIS do AuthEnforcement =>
+# corre ANTES dele (ultimo add_middleware e' o mais exterior). Politica e justificacao
+# em watcherdb/core/same_origin.py.
+from watcherdb.core.same_origin import SameOriginMiddleware
+app.add_middleware(SameOriginMiddleware)
+
 # === WEBSOCKET ENDPOINTS ===
 
 websocket_manager = WebSocketManager()
