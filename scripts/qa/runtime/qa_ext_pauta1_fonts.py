@@ -78,6 +78,38 @@ JS_ENV = """
 """
 
 
+JS_TOKEN_FAMILIES = """
+() => {
+  const mk = (v) => { const e = document.createElement('span'); e.style.fontFamily = v; e.textContent = 'x'; document.body.appendChild(e); const f = getComputedStyle(e).fontFamily; e.remove(); return f; };
+  return {sans: mk('var(--font-sans)'), mono: mk('var(--font-mono)')};
+}
+"""
+
+
+def live_gate(leaves: list, tok: dict) -> dict:
+    """Gate A-2 (charter): fontSize >= 12px; familia computada == computed(--font-sans) ou
+    computed(--font-mono); nada de Arial / Courier New. Devolve PASS/FAIL + motivos."""
+    fails = []
+    for l in leaves:
+        fs = float(l["fs"].replace("px", ""))
+        ff = l["ff"]
+        why = []
+        if fs < 12:
+            why.append(f"fs<12 ({l['fs']})")
+        if ff not in (tok["sans"], tok["mono"]):
+            why.append("ff fora dos tokens")
+        if "Arial" in ff or "Courier New" in ff:
+            why.append("Arial/Courier New")
+        if why:
+            fails.append(f"{l['tag']}{('#'+l['id']) if l['id'] else ''} {l['fs']} {ff[:40]}: {', '.join(why)}")
+    return {"result": "PASS" if not fails else "FAIL", "n_leaves": len(leaves), "n_fail": len(fails), "fails": fails[:40]}
+
+
+def a3_gate(off_sets: dict) -> dict:
+    fails = {k: v for k, v in off_sets.items() if v}
+    return {"result": "PASS" if not fails else "FAIL", "off": fails}
+
+
 def classify(sizes: dict) -> tuple[dict, dict]:
     on, off = {}, {}
     for k, n in sizes.items():
@@ -152,6 +184,9 @@ def main():
                     r["live_leaves"] = [{k: l[k] for k in ("tag", "id", "fs", "ff")} | {"txt": l["txt"][:20]} for l in leaves][:60]
                     r["live_screen"] = page.evaluate("() => { const e=document.querySelector('[id^=live-screen-]'); if(!e) return null; const cs=getComputedStyle(e); const ch=e.querySelector('div'); return {ff: cs.fontFamily, fs: cs.fontSize, inlineFF: e.style.fontFamily, child: ch ? {ff:getComputedStyle(ch).fontFamily, fs:getComputedStyle(ch).fontSize, inlineFF: ch.style.fontFamily||'-'} : null}; }")
                     r["live_form_controls"] = page.evaluate("() => { const out={}; for (const e of document.querySelectorAll('#live-tv-modal button, #live-tv-modal input, #live-tv-modal select')) { const ff=getComputedStyle(e).fontFamily; out[ff]=(out[ff]||0)+1; } return out; }")
+                    r["token_families"] = page.evaluate(JS_TOKEN_FAMILIES)
+                    r["live_has_data_table"] = page.evaluate("() => !!document.querySelector('[id^=live-screen-] table')")
+                    r["live_gate"] = live_gate(leaves, r["token_families"])
 
             if a.login:
                 page.fill("#loginUsername", os.environ["WATCHERDB_QA_USER"])
@@ -203,8 +238,10 @@ def main():
                     sizes = page.evaluate(JS_ALL_SIZES)
                     r["overview_sizes"] = sizes
                     r["overview_on"], r["overview_off"] = classify(sizes)
+                    r["overview_off_samples"] = page.evaluate(JS_OFF_SAMPLES, SCALE)
                 except Exception as e:
                     r["overview_error"] = type(e).__name__
+                r["a3_gate"] = a3_gate({"kpi": r.get("kpi_off", {}), "overview": r.get("overview_off", {})})
 
                 if a.live:
                     r["live_before"] = page.evaluate(JS_ENV)["liveModal"]
@@ -214,9 +251,19 @@ def main():
                     else:
                         btn.click()
                         page.wait_for_selector("#live-tv-modal", timeout=10000)
+                        # carregamento completo COM DADOS: tabela de _liveRenderQueries (portal:50764)
+                        try:
+                            page.wait_for_selector("[id^=live-screen-] table", state="attached", timeout=15000)
+                        except Exception:
+                            pass
                         page.wait_for_timeout(10000)
                         r["live_after"] = page.evaluate(JS_ENV)["liveModal"]
+                        r["live_has_data_table"] = page.evaluate("() => !!document.querySelector('[id^=live-screen-] table')")
+                        r["live_screen_text_len"] = page.evaluate("() => (document.querySelector('[id^=live-screen-]')||{textContent:''}).textContent.length")
                         leaves = page.evaluate(JS_FONT_SET, "#live-tv-modal") or []
+                        r["token_families"] = page.evaluate(JS_TOKEN_FAMILIES)
+                        r["live_gate"] = live_gate(leaves, r["token_families"])
+                        r["live_leaves"] = [{k: l[k] for k in ("tag", "id", "fs", "ff")} for l in leaves][:80]  # sem txt: pode conter nomes de instancia
                         r["live_family_count"] = Counter(l["ff"] for l in leaves).most_common()
                         r["live_size_count"] = Counter(l["fs"] for l in leaves).most_common()
                         r["live_leaf_count"] = len(leaves)
@@ -231,10 +278,10 @@ def main():
     if a.out:
         with open(a.out, "w", encoding="utf-8") as f:
             f.write(txt)
-    try:
-        print(txt)
-    except UnicodeEncodeError:  # consola cp1252 no Windows
-        print(json.dumps(results, indent=1, ensure_ascii=True))
+    # stdout: so' agregados (sem excertos de DOM / txt de folhas)
+    SKIP = {"live_leaves", "login_page_off_samples", "kpi_off_samples", "overview_off_samples", "login_page_sizes", "kpi_page_sizes", "overview_sizes"}
+    summary = [{k: v for k, v in r.items() if k not in SKIP} for r in results]
+    print(json.dumps(summary, indent=1, ensure_ascii=True))
 
 
 if __name__ == "__main__":
