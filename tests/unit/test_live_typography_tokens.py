@@ -70,3 +70,30 @@ def test_live_screen_na_escala_de_tokens(portal):
     assert "font-family:var(--font-mono);font-size:var(--font-sm);" in blk
     # so' o contentor de dados; o rotulo "LIVE" do cabecalho continua a 13px de proposito
     assert "font-family:var(--font-mono);font-size:13px" not in blk
+
+
+def _live_render_block(portal: str) -> str:
+    # Todo o intervalo das funcoes _liveRender* (ChannelOptions .. Schedulers), excluindo _liveArrow
+    # (icones de ordenacao <i aria-hidden>, decoracao). Localizado por texto.
+    i = portal.index("function _liveRenderChannelOptions(")
+    j = portal.index("function _liveRenderSchedulers(")
+    k = re.search(r"\n\s+(?:async )?function \w+\(", portal[j + 40:])
+    end = j + 40 + k.start() if k else len(portal)
+    blk = portal[i:end]
+    a = blk.find("function _liveArrow(")
+    if a != -1:
+        b = re.search(r"\n\s+(?:async )?function \w+\(", blk[a + 20:])
+        blk = blk[:a] + (blk[a + 20 + b.start():] if b else "")
+    return blk
+
+
+def test_programas_do_live_sem_texto_abaixo_de_12px(portal):
+    blk = _live_render_block(portal)
+    pequenos = re.findall(r"font-size:\s*(?:[0-9]|1[01])(?:\.\d+)?px", blk)
+    assert pequenos == [], f"tamanhos < 12px nos programas do LIVE: {len(pequenos)} ({sorted(set(pequenos))})"
+
+
+def test_programas_do_live_sem_monospace_cru(portal):
+    blk = _live_render_block(portal)
+    assert not re.search(r"font-family:\s*monospace\b", blk)
+    assert "'Cascadia Code',Consolas,monospace" not in blk

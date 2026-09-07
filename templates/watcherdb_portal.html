@@ -50830,7 +50830,7 @@ window.showDiskDrilldown = async function(drive, label) {
             h += `<div style="width:${pct(sp.version_store_mb)}%;background:#f59e0b;" title="Version: ${formatSizeMB(sp.version_store_mb)}"></div>`;
             h += `<div style="width:${pct(sp.free_mb)}%;background:#10b981;" title="Free: ${formatSizeMB(sp.free_mb)}"></div>`;
             h += '</div>';
-            h += '<div style="display:flex;gap:16px;font-size:11px;color:var(--color-text-tertiary);">';
+            h += '<div style="display:flex;gap:16px;font-size:12px;color:var(--color-text-tertiary);">';
             h += `<span><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:2px;margin-right:4px;"></span>User: ${formatSizeMB(sp.user_objects_mb)}</span>`;
             h += `<span><span style="display:inline-block;width:8px;height:8px;background:#8b5cf6;border-radius:2px;margin-right:4px;"></span>Internal: ${formatSizeMB(sp.internal_objects_mb)}</span>`;
             h += `<span><span style="display:inline-block;width:8px;height:8px;background:#f59e0b;border-radius:2px;margin-right:4px;"></span>Version Store: ${formatSizeMB(sp.version_store_mb)}</span>`;
@@ -50838,7 +50838,7 @@ window.showDiskDrilldown = async function(drive, label) {
             h += '</div></div>';
             if (files.length) {
                 h += '<div style="font-weight:600;margin-bottom:6px;color:var(--color-text-tertiary);">Files</div>';
-                h += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;text-align:left;">Name</th><th>Type</th><th>Size</th><th>Used</th><th>%</th><th>Max</th></tr></thead><tbody>';
+                h += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;text-align:left;">Name</th><th>Type</th><th>Size</th><th>Used</th><th>%</th><th>Max</th></tr></thead><tbody>';
                 files.forEach(f => {
                     const usedPct = f.size_mb > 0 ? (f.used_mb / f.size_mb * 100).toFixed(0) : 0;
                     const pctColor = usedPct > 90 ? getSevTokens('CRITICAL').fill : usedPct > 70 ? getSevTokens('WARNING').fill : getSevTokens('OK').fill;
@@ -50848,10 +50848,10 @@ window.showDiskDrilldown = async function(drive, label) {
             }
             if (consumers.length) {
                 h += '<div style="font-weight:600;margin-bottom:6px;color:var(--color-text-tertiary);">Top Consumers</div>';
-                h += '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;text-align:left;">SPID</th><th>Net Usage</th><th>Internal</th><th>User</th><th>Program</th><th>Wait</th><th style="min-width:150px;">SQL</th></tr></thead><tbody>';
+                h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;text-align:left;">SPID</th><th>Net Usage</th><th>Internal</th><th>User</th><th>Program</th><th>Wait</th><th style="min-width:150px;">SQL</th></tr></thead><tbody>';
                 consumers.forEach(c => {
                     const sql = (c.current_statement || '').replace(/</g,'&lt;').substring(0, 150);
-                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:4px 8px;color:var(--color-text-link);font-weight:600;">${c.spid}</td><td style="padding:4px 8px;color:#f59e0b;font-weight:600;">${formatSizeMB(c.net_usage_mb)}</td><td style="padding:4px 8px;">${formatSizeMB(c.internal_alloc_mb)}</td><td style="padding:4px 8px;">${formatSizeMB(c.user_alloc_mb)}</td><td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:10px;">${c.program_name || ''}</td><td style="padding:4px 8px;color:#f59e0b;">${c.wait_type || '-'}</td><td style="padding:4px 8px;color:var(--color-text-secondary);font-size:10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sql}">${sql}</td></tr>`;
+                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:4px 8px;color:var(--color-text-link);font-weight:600;">${c.spid}</td><td style="padding:4px 8px;color:#f59e0b;font-weight:600;">${formatSizeMB(c.net_usage_mb)}</td><td style="padding:4px 8px;">${formatSizeMB(c.internal_alloc_mb)}</td><td style="padding:4px 8px;">${formatSizeMB(c.user_alloc_mb)}</td><td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:12px;">${c.program_name || ''}</td><td style="padding:4px 8px;color:#f59e0b;">${c.wait_type || '-'}</td><td style="padding:4px 8px;color:var(--color-text-secondary);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sql}">${sql}</td></tr>`;
                 });
                 h += '</tbody></table>';
             } else {
@@ -50860,7 +50860,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const activeUsage = data.active_usage || [];
             if (activeUsage.length) {
                 h += '<div style="font-weight:600;margin:16px 0 6px;color:#f59e0b;"><i class="fas fa-bolt" style="margin-right:6px;"></i>Utilizacao Activa de TempDB (' + activeUsage.length + ' queries)</div>';
-                h += '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">SPID</th><th>TempDB</th><th>Status</th><th>Command</th><th>DB</th><th>Wait</th><th>CPU ms</th><th>Elapsed</th><th>Login</th><th style="min-width:180px;">SQL</th></tr></thead><tbody>';
+                h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">SPID</th><th>TempDB</th><th>Status</th><th>Command</th><th>DB</th><th>Wait</th><th>CPU ms</th><th>Elapsed</th><th>Login</th><th style="min-width:180px;">SQL</th></tr></thead><tbody>';
                 activeUsage.forEach(au => {
                     const mb = parseFloat(au.tempdb_usage_mb) || 0;
                     const mbColor = mb > 1024 ? getSevTokens('CRITICAL').fill : mb > 100 ? getSevTokens('WARNING').fill : getSevTokens('OK').fill;
@@ -50876,8 +50876,8 @@ window.showDiskDrilldown = async function(drive, label) {
                     h += `<td style="padding:4px 8px;color:#f59e0b;">${au.wait_type || '-'}</td>`;
                     h += `<td style="padding:4px 8px;text-align:right;">${(au.cpu_ms||0).toLocaleString()}</td>`;
                     h += `<td style="padding:4px 8px;text-align:right;color:${elColor};">${elapsed}s</td>`;
-                    h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:10px;">${au.login_name || ''}</td>`;
-                    h += `<td style="padding:4px 8px;color:var(--color-text-secondary);font-size:10px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sql}">${sql}</td></tr>`;
+                    h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:12px;">${au.login_name || ''}</td>`;
+                    h += `<td style="padding:4px 8px;color:var(--color-text-secondary);font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sql}">${sql}</td></tr>`;
                 });
                 h += '</tbody></table>';
             }
@@ -50918,7 +50918,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 const cc = catColors[w.category] || 'var(--color-text-disabled)';
                 h += '<tr style="border-bottom:1px solid var(--color-bg-panel);">';
                 h += `<td style="padding:5px 8px;color:var(--color-text-bright);font-weight:500;">${w.wait_type}</td>`;
-                h += `<td style="padding:5px 8px;"><span style="background:${cc}33;color:${cc};padding:2px 8px;border-radius:10px;font-size:10px;">${w.category}</span></td>`;
+                h += `<td style="padding:5px 8px;"><span style="background:${cc}33;color:${cc};padding:2px 8px;border-radius:10px;font-size:12px;">${w.category}</span></td>`;
                 if (hasDelta) {
                     const dt = w.delta_tasks || 0;
                     const dm = w.delta_ms || 0;
@@ -50930,7 +50930,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:5px 8px;text-align:right;color:var(--color-text-tertiary);">${(w.signal_wait_time_ms||0).toLocaleString()}</td></tr>`;
             });
             h += '</tbody></table>';
-            if (hasDelta) h = '<div style="margin-bottom:8px;color:var(--color-text-disabled);font-size:11px;">Delta desde ultimo refresh (' + (_liveRefreshRate/1000) + 's)</div>' + h;
+            if (hasDelta) h = '<div style="margin-bottom:8px;color:var(--color-text-disabled);font-size:12px;">Delta desde ultimo refresh (' + (_liveRefreshRate/1000) + 's)</div>' + h;
             return h;
         }
 
@@ -50942,7 +50942,7 @@ window.showDiskDrilldown = async function(drive, label) {
             // esperado e tem de ser legivel (QA externo 2026-08-16 BUG-007).
             const _inst = String(data.instance || '').replace(/</g,'&lt;');
             const _ts = data.timestamp ? new Date(data.timestamp * 1000).toLocaleTimeString() : '';
-            const scope = '<div style="margin-bottom:6px;color:var(--color-text-disabled);font-size:11px;">'
+            const scope = '<div style="margin-bottom:6px;color:var(--color-text-disabled);font-size:12px;">'
                 + (_inst ? 'Instancia: <b style="color:var(--color-text-tertiary);">' + _inst + '</b>' : 'Sem canal seleccionado')
                 + (_ts ? ' &middot; amostra ' + _ts : '') + ' &middot; so esta instancia (o Fleet agrega varias)</div>';
             if (!chains.length) return scope + '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>Nenhum bloqueio activo' + (_inst ? ' em ' + _inst : '') + (_ts ? ' as ' + _ts : '') + '</div>';
@@ -50958,8 +50958,8 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${c.database_name||''}</td>`;
                 h += `<td style="padding:5px 8px;color:#f59e0b;">${c.wait_type||''}</td>`;
                 h += `<td style="padding:5px 8px;text-align:right;color:#ef4444;">${c.wait_sec||0}s</td>`;
-                h += `<td style="padding:5px 8px;color:var(--color-text-secondary);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${bsql}">${bsql}</td>`;
-                h += `<td style="padding:5px 8px;color:#fbbf24;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${rsql}">${rsql}</td></tr>`;
+                h += `<td style="padding:5px 8px;color:var(--color-text-secondary);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${bsql}">${bsql}</td>`;
+                h += `<td style="padding:5px 8px;color:#fbbf24;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${rsql}">${rsql}</td></tr>`;
             });
             h += '</tbody></table>';
             return h;
@@ -51013,7 +51013,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
             h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-            h += '<div style="color:var(--color-text-tertiary);font-size:11px;font-weight:600;margin-bottom:8px;"><i class="fas fa-bolt" style="margin-right:6px;color:#f59e0b;"></i>QUERIES PESADAS AGORA</div>';
+            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-bolt" style="margin-right:6px;color:#f59e0b;"></i>QUERIES PESADAS AGORA</div>';
             if (liveQueries.length) {
                 liveQueries.slice(0,5).forEach(q => {
                     const name = (q.instance||'').split('_')[0];
@@ -51032,17 +51032,17 @@ window.showDiskDrilldown = async function(drive, label) {
                     const fCpuH = (function(sec){ sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec/86400), hh = Math.floor((sec%86400)/3600), mm = Math.floor((sec%3600)/60);
                         if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm'; return sec + 's'; })(cpuMs/1000);
                     const fElC = fIdle ? 'var(--color-text-disabled)' : fEl > 300 ? '#ef4444' : fEl > 60 ? '#f59e0b' : 'var(--color-text-tertiary)';
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:75px;color:var(--color-text-link);font-size:10px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:9px;">${q.spid}</div><div style="flex:1;color:var(--color-text-secondary);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;">${sql}</div><div style="width:55px;text-align:right;color:${cc};font-size:10px;font-weight:600;" title="CPU acumulado (soma das threads em plano paralelo) — nao e tempo decorrido">CPU ${fCpuH}</div><div style="width:58px;text-align:right;color:${fElC};font-size:10px;font-weight:600;" title="Tempo decorrido desde start_time${fIdle ? ' — sessao idle/a espera, nao e tempo de execucao' : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:75px;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><div style="width:55px;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="CPU acumulado (soma das threads em plano paralelo) — nao e tempo decorrido">CPU ${fCpuH}</div><div style="width:58px;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="Tempo decorrido desde start_time${fIdle ? ' — sessao idle/a espera, nao e tempo de execucao' : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:10px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem queries pesadas</div>';
+                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem queries pesadas</div>';
             }
             h += '</div></div>';
 
             if (liveBlocking.length) {
                 h += '<div style="background:#7f1d1d22;border:1px solid #7f1d1d;border-radius:8px;padding:12px;margin-bottom:12px;">';
-                h += '<div style="color:#fca5a5;font-size:11px;font-weight:600;margin-bottom:8px;"><i class="fas fa-lock" style="margin-right:6px;"></i>BLOCKING ACTIVO (' + liveBlocking.length + ')<span style="font-weight:400;color:var(--color-text-disabled);margin-left:8px;">sessoes bloqueadas nas instancias em drill (top 8) &middot; Blocked/Blocker = SPID &middot; clica na linha para abrir o canal</span></div>';
-                h += '<table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="color:var(--color-text-tertiary);"><th style="padding:3px 6px;text-align:left;">Instance</th><th>Blocked</th><th>Blocker</th><th>DB</th><th>Wait</th><th>Sec</th></tr></thead><tbody>';
+                h += '<div style="color:#fca5a5;font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-lock" style="margin-right:6px;"></i>BLOCKING ACTIVO (' + liveBlocking.length + ')<span style="font-weight:400;color:var(--color-text-disabled);margin-left:8px;">sessoes bloqueadas nas instancias em drill (top 8) &middot; Blocked/Blocker = SPID &middot; clica na linha para abrir o canal</span></div>';
+                h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--color-text-tertiary);"><th style="padding:3px 6px;text-align:left;">Instance</th><th>Blocked</th><th>Blocker</th><th>DB</th><th>Wait</th><th>Sec</th></tr></thead><tbody>';
                 liveBlocking.slice(0,8).forEach(b => {
                     const name = (b.instance||'').split('_')[0];
                     h += `<tr style="border-bottom:1px solid var(--color-bg-panel);cursor:pointer;" onclick="_fleetSwitchTo('${b.instance}','blocking')"><td style="padding:3px 6px;color:var(--color-text-link);">${name}</td><td style="padding:3px 6px;color:#fca5a5;font-weight:600;">${b.blocked_spid}</td><td style="padding:3px 6px;color:#ef4444;font-weight:600;">${b.blocker_spid}</td><td style="padding:3px 6px;color:var(--color-text-tertiary);">${b.db||''}</td><td style="padding:3px 6px;color:#f59e0b;">${b.wait_type||''}</td><td style="padding:3px 6px;color:#ef4444;">${b.wait_sec||0}s</td></tr>`;
@@ -51054,20 +51054,20 @@ window.showDiskDrilldown = async function(drive, label) {
             const liveWaits = data.live_waits || [];
             h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-            h += '<div style="color:var(--color-text-tertiary);font-size:11px;font-weight:600;margin-bottom:8px;"><i class="fas fa-fire" style="margin-right:6px;color:#8b5cf6;"></i>TEMPDB CONSUMERS AGORA</div>';
+            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-fire" style="margin-right:6px;color:#8b5cf6;"></i>TEMPDB CONSUMERS AGORA</div>';
             if (liveTempdb.length) {
                 liveTempdb.slice(0,5).forEach(t => {
                     const name = (t.instance||'').split('_')[0];
                     const mb = parseInt(t.tempdb_mb || 0);
                     const c = mb > 1024 ? '#ef4444' : mb > 100 ? '#f59e0b' : '#10b981';
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${t.instance} SPID ${t.spid}: ${mb} MB"><div style="width:75px;color:var(--color-text-link);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:9px;">${t.spid}</div><div style="width:50px;color:${c};font-size:10px;font-weight:600;">${formatSizeMB(mb)}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${t.instance} SPID ${t.spid}: ${mb} MB"><div style="width:75px;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${t.spid}</div><div style="width:50px;color:${c};font-size:12px;font-weight:600;">${formatSizeMB(mb)}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:10px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem consumers activos</div>';
+                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem consumers activos</div>';
             }
             h += '</div>';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-            h += '<div style="color:var(--color-text-tertiary);font-size:11px;font-weight:600;margin-bottom:8px;"><i class="fas fa-hourglass-half" style="margin-right:6px;color:#f59e0b;"></i>TOP WAITS (cross-fleet)</div>';
+            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-hourglass-half" style="margin-right:6px;color:#f59e0b;"></i>TOP WAITS (cross-fleet)</div>';
             if (liveWaits.length) {
                 const waitMap = {};
                 liveWaits.forEach(w => {
@@ -51080,10 +51080,10 @@ window.showDiskDrilldown = async function(drive, label) {
                 const topWaits = Object.values(waitMap).sort((a,b) => b.total_ms - a.total_ms).slice(0,5);
                 const maxMs = Math.max(...topWaits.map(w => w.total_ms), 1);
                 topWaits.forEach(w => {
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} instancias"><div style="width:110px;color:var(--color-text-bright);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:#f59e0b;height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:#f59e0b;font-size:9px;">${w.instances.size} inst</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} instancias"><div style="width:110px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:#f59e0b;height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:#f59e0b;font-size:12px;">${w.instances.size} inst</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:10px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem waits significativos</div>';
+                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem waits significativos</div>';
             }
             h += '</div></div>';
 
@@ -51092,31 +51092,31 @@ window.showDiskDrilldown = async function(drive, label) {
             if (liveAgQueues.length || liveIdle.length) {
                 h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-                h += '<div style="color:var(--color-text-tertiary);font-size:11px;font-weight:600;margin-bottom:8px;"><i class="fas fa-sync-alt" style="margin-right:6px;color:#06b6d4;"></i>ALWAYSON QUEUES</div>';
+                h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-sync-alt" style="margin-right:6px;color:#06b6d4;"></i>ALWAYSON QUEUES</div>';
                 if (liveAgQueues.length) {
                     liveAgQueues.slice(0,5).forEach(a => {
                         const name = (a.instance||'').split('_')[0];
                         const sendMB = ((a.send_queue_kb||0)/1024).toFixed(1);
                         const redoMB = ((a.redo_queue_kb||0)/1024).toFixed(1);
                         const c = (parseFloat(sendMB) > 50 || parseFloat(redoMB) > 50) ? '#ef4444' : '#f59e0b';
-                        h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${a.instance}','alwayson')" title="${a.instance} AG: ${a.ag_name}, DB: ${a.database_name}"><div style="width:70px;color:var(--color-text-link);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.database_name||''}</div><div style="color:${c};font-size:10px;font-weight:600;">S:${sendMB}MB R:${redoMB}MB</div></div>`;
+                        h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${a.instance}','alwayson')" title="${a.instance} AG: ${a.ag_name}, DB: ${a.database_name}"><div style="width:70px;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.database_name||''}</div><div style="color:${c};font-size:12px;font-weight:600;">S:${sendMB}MB R:${redoMB}MB</div></div>`;
                     });
                 } else {
-                    h += '<div style="color:#10b981;font-size:10px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>AGs saudaveis</div>';
+                    h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>AGs saudaveis</div>';
                 }
                 h += '</div>';
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-                h += '<div style="color:var(--color-text-tertiary);font-size:11px;font-weight:600;margin-bottom:8px;"><i class="fas fa-user-clock" style="margin-right:6px;color:var(--color-text-tertiary);"></i>SESSOES IDLE >1h</div>';
+                h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-user-clock" style="margin-right:6px;color:var(--color-text-tertiary);"></i>SESSOES IDLE >1h</div>';
                 if (liveIdle.length) {
                     liveIdle.slice(0,5).forEach(s => {
                         const name = (s.instance||'').split('_')[0];
                         const mins = s.idle_minutes || 0;
                         const hours = (mins/60).toFixed(1);
                         const c = mins > 480 ? '#ef4444' : mins > 120 ? '#f59e0b' : 'var(--color-text-tertiary)';
-                        h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${s.instance}','connections')" title="${s.instance} SPID ${s.spid}: ${s.login_name} idle ${hours}h"><div style="width:70px;color:var(--color-text-link);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:9px;">${s.spid}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.login_name||''} / ${s.program_name||''}</div><div style="color:${c};font-size:10px;font-weight:600;">${hours}h</div></div>`;
+                        h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${s.instance}','connections')" title="${s.instance} SPID ${s.spid}: ${s.login_name} idle ${hours}h"><div style="width:70px;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${s.spid}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.login_name||''} / ${s.program_name||''}</div><div style="color:${c};font-size:12px;font-weight:600;">${hours}h</div></div>`;
                     });
                 } else {
-                    h += '<div style="color:#10b981;font-size:10px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem sessoes idle</div>';
+                    h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem sessoes idle</div>';
                 }
                 h += '</div></div>';
             }
@@ -51124,14 +51124,14 @@ window.showDiskDrilldown = async function(drive, label) {
             const liveLongTran = data.live_long_tran || [];
             if (liveLongTran.length) {
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;margin-bottom:12px;">';
-                h += '<div style="color:var(--color-text-tertiary);font-size:11px;font-weight:600;margin-bottom:8px;"><i class="fas fa-exchange-alt" style="margin-right:6px;color:#fb7185;"></i>TRANSACOES LONGAS (>5 min)</div>';
+                h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-exchange-alt" style="margin-right:6px;color:#fb7185;"></i>TRANSACOES LONGAS (>5 min)</div>';
                 h += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
                 liveLongTran.slice(0,5).forEach(t => {
                     const name = (t.instance||'').split('_')[0];
                     const mins = t.tran_minutes || 0;
                     const logMb = t.log_used_mb || 0;
                     const c = mins > 60 ? '#ef4444' : mins > 15 ? '#f59e0b' : 'var(--color-text-tertiary)';
-                    h += `<div style="background:var(--color-bg-sunken);border:1px solid ${c}44;border-radius:6px;padding:6px 10px;cursor:pointer;min-width:120px;" onclick="_fleetSwitchTo('${t.instance}','connections')" title="${t.instance} SPID ${t.spid}: ${t.login_name}"><div style="color:var(--color-text-bright);font-weight:600;font-size:10px;">${name} <span style="color:var(--color-text-disabled);">SPID ${t.spid}</span></div><div style="color:${c};font-size:11px;font-weight:600;">${mins} min</div><div style="color:var(--color-text-tertiary);font-size:9px;">${t.login_name||''} | Log: ${logMb} MB | ${t.db||''}</div></div>`;
+                    h += `<div style="background:var(--color-bg-sunken);border:1px solid ${c}44;border-radius:6px;padding:6px 10px;cursor:pointer;min-width:120px;" onclick="_fleetSwitchTo('${t.instance}','connections')" title="${t.instance} SPID ${t.spid}: ${t.login_name}"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;">${name} <span style="color:var(--color-text-disabled);">SPID ${t.spid}</span></div><div style="color:${c};font-size:12px;font-weight:600;">${mins} min</div><div style="color:var(--color-text-tertiary);font-size:12px;">${t.login_name||''} | Log: ${logMb} MB | ${t.db||''}</div></div>`;
                 });
                 h += '</div></div>';
             }
@@ -51142,7 +51142,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 return scoreB - scoreA;
             }).slice(0, 8);
             if (worst.length > 0) {
-                h += '<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;color:#ef4444;"></i>PIORES CANAIS (clica para investigar)</div>';
+                h += '<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;color:#ef4444;"></i>PIORES CANAIS (clica para investigar)</div>';
                 h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
                 worst.forEach(i => {
                     const cpu = i.cpu_pct || 0;
@@ -51152,7 +51152,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     const name = i.instance.split('_')[0];
                     let borderC = blk > 0 ? '#ef4444' : cpu > 90 ? '#ef4444' : cpu > 70 ? '#f59e0b' : 'var(--color-border)';
                     let reason = blk > 0 ? `🔒 ${blk} blocked` : cpu > 70 ? `CPU ${cpu}%` : ple < 300 ? `PLE ${ple}s` : `MEM ${mem}%`;
-                    h += `<div onclick="_fleetSwitchTo('${i.instance}','queries')" title="${i.instance}" style="background:var(--color-bg-panel);border:1px solid ${borderC};border-radius:8px;padding:8px 12px;cursor:pointer;min-width:100px;"><div style="color:var(--color-text-bright);font-weight:600;font-size:11px;margin-bottom:4px;">${name}</div><div style="color:${borderC};font-size:10px;font-weight:600;">${reason}</div><div style="color:var(--color-text-disabled);font-size:9px;margin-top:2px;">${i.env}</div></div>`;
+                    h += `<div onclick="_fleetSwitchTo('${i.instance}','queries')" title="${i.instance}" style="background:var(--color-bg-panel);border:1px solid ${borderC};border-radius:8px;padding:8px 12px;cursor:pointer;min-width:100px;"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;margin-bottom:4px;">${name}</div><div style="color:${borderC};font-size:12px;font-weight:600;">${reason}</div><div style="color:var(--color-text-disabled);font-size:12px;margin-top:2px;">${i.env}</div></div>`;
                 });
                 h += '</div>';
             }
@@ -51160,7 +51160,7 @@ window.showDiskDrilldown = async function(drive, label) {
         }
 
         function _fleetCard(label, value, color, icon) {
-            return `<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;"><div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:10px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
+            return `<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;"><div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
         }
 
         function _fleetSwitchTo(instance, program) {
@@ -51176,7 +51176,7 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveRenderIO(data) {
             const files = data.files || [];
             if (!files.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem dados de I/O</div>';
-            let h = '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">Database</th><th>Type</th><th>Reads</th><th>Writes</th><th>Read Lat ms</th><th>Write Lat ms</th><th>Read MB</th><th>Write MB</th><th>File Size</th></tr></thead><tbody>';
+            let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">Database</th><th>Type</th><th>Reads</th><th>Writes</th><th>Read Lat ms</th><th>Write Lat ms</th><th>Read MB</th><th>Write MB</th><th>File Size</th></tr></thead><tbody>';
             // Fix 2026-08-05: literais 20/50 substituidos pelo threshold
             // efectivo (registry + override do cliente). Hoisted para fora do
             // forEach -- 1 leitura por render, nao por linha.
@@ -51207,8 +51207,8 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${j.current_step||''} (${j.current_step_id||0}/${j.total_steps||0})</td>`;
                 h += `<td style="padding:5px 8px;"><div style="background:var(--color-bg-sunken);border-radius:4px;height:8px;width:80px;display:inline-block;vertical-align:middle;overflow:hidden;"><div style="background:#3b82f6;height:100%;width:${pct}%;"></div></div> ${pct}%</td>`;
                 h += `<td style="padding:5px 8px;color:${mc};font-weight:600;">${mins} min</td>`;
-                h += `<td style="padding:5px 8px;color:var(--color-text-disabled);font-size:11px;">${j.category_name||''}</td>`;
-                h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:11px;">${j.start_execution_date||''}</td></tr>`;
+                h += `<td style="padding:5px 8px;color:var(--color-text-disabled);font-size:12px;">${j.category_name||''}</td>`;
+                h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;">${j.start_execution_date||''}</td></tr>`;
             });
             return h + '</tbody></table>';
         }
@@ -51226,21 +51226,21 @@ window.showDiskDrilldown = async function(drive, label) {
                     h += `<div style="display:flex;align-items:center;gap:8px;"><div style="width:140px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.database_name}">${b.database_name}</div>`;
                     h += `<div style="flex:1;background:var(--color-bg-sunken);border-radius:4px;height:16px;overflow:hidden;position:relative;"><div style="background:#3b82f6;height:100%;width:${pct}%;"></div><div style="position:absolute;top:0;left:0;background:#ef4444;height:100%;width:${dirtyPct}%;opacity:0.5;"></div></div>`;
                     h += `<div style="width:70px;text-align:right;color:var(--color-text-bright);font-size:12px;">${formatSizeMB(b.buffer_mb)}</div>`;
-                    h += `<div style="width:60px;text-align:right;color:#ef4444;font-size:11px;">${formatSizeMB(b.dirty_mb)} dirty</div></div>`;
+                    h += `<div style="width:60px;text-align:right;color:#ef4444;font-size:12px;">${formatSizeMB(b.dirty_mb)} dirty</div></div>`;
                 });
                 h += '</div>';
             }
             const clerks = data.clerks || [];
             if (clerks.length) {
                 h += '<div style="font-weight:600;margin-bottom:6px;color:var(--color-text-tertiary);">Memory Clerks (>1 MB)</div>';
-                h += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;text-align:left;">Clerk</th><th>Size</th></tr></thead><tbody>';
+                h += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;text-align:left;">Clerk</th><th>Size</th></tr></thead><tbody>';
                 clerks.forEach(c => { h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-bright);">${c.clerk_type}</td><td style="padding:3px 8px;">${formatSizeMB(c.size_mb)}</td></tr>`; });
                 h += '</tbody></table>';
             }
             const grants = data.grants || [];
             if (grants.length) {
                 h += '<div style="font-weight:600;margin-bottom:6px;color:#f59e0b;">Memory Grants (' + grants.length + ')</div>';
-                h += '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">SPID</th><th>Granted</th><th>Used</th><th>Ideal</th><th>Wait ms</th></tr></thead><tbody>';
+                h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">SPID</th><th>Granted</th><th>Used</th><th>Ideal</th><th>Wait ms</th></tr></thead><tbody>';
                 grants.forEach(g => {
                     h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-link);">${g.spid}</td><td style="padding:3px 8px;">${formatSizeMB(g.granted_mb)}</td><td style="padding:3px 8px;">${formatSizeMB(g.used_mb)}</td><td style="padding:3px 8px;color:var(--color-text-tertiary);">${formatSizeMB(g.ideal_mb)}</td><td style="padding:3px 8px;color:${g.wait_time_ms>0?'#ef4444':'var(--color-text-disabled)'};">${g.wait_time_ms||0}</td></tr>`;
                 });
@@ -51252,18 +51252,18 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveRenderConnections(data) {
             const conns = data.connections || [];
             if (!conns.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem conexoes activas</div>';
-            let h = `<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:11px;">${conns.length} conexoes</div>`;
-            h += '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">SPID</th><th>Login</th><th>Host</th><th>Program</th><th>DB</th><th>Status</th><th>CPU ms</th><th>Connected</th><th>Transport</th></tr></thead><tbody>';
+            let h = `<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:12px;">${conns.length} conexoes</div>`;
+            h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">SPID</th><th>Login</th><th>Host</th><th>Program</th><th>DB</th><th>Status</th><th>CPU ms</th><th>Connected</th><th>Transport</th></tr></thead><tbody>';
             conns.forEach(c => {
                 h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:4px 8px;color:var(--color-text-link);">${c.spid}</td>`;
                 h += `<td style="padding:4px 8px;color:var(--color-text-bright);">${c.login_name||''}</td>`;
-                h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:10px;">${c.client_host||''}</td>`;
-                h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:10px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.program_name||''}</td>`;
+                h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:12px;">${c.client_host||''}</td>`;
+                h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.program_name||''}</td>`;
                 h += `<td style="padding:4px 8px;">${c.current_db||''}</td>`;
                 h += `<td style="padding:4px 8px;">${c.status||''}</td>`;
                 h += `<td style="padding:4px 8px;text-align:right;">${(c.total_cpu_ms||0).toLocaleString()}</td>`;
                 h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);">${c.connected_minutes||0}m</td>`;
-                h += `<td style="padding:4px 8px;color:var(--color-text-disabled);font-size:10px;">${c.net_transport||''}</td></tr>`;
+                h += `<td style="padding:4px 8px;color:var(--color-text-disabled);font-size:12px;">${c.net_transport||''}</td></tr>`;
             });
             return h + '</tbody></table>';
         }
@@ -51271,7 +51271,7 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveRenderAlwaysOn(data) {
             const replicas = data.replicas || [];
             if (!replicas.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>Sem AGs configurados</div>';
-            let h = '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">AG</th><th>Replica</th><th>Role</th><th>Sync Health</th><th>DB</th><th>Sync State</th><th>Send Queue</th><th>Redo Queue</th><th>Send KB/s</th><th>Lag sec</th></tr></thead><tbody>';
+            let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">AG</th><th>Replica</th><th>Role</th><th>Sync Health</th><th>DB</th><th>Sync State</th><th>Send Queue</th><th>Redo Queue</th><th>Send KB/s</th><th>Lag sec</th></tr></thead><tbody>';
             replicas.forEach(r => {
                 const hc = (r.synchronization_health_desc||'').includes('HEALTHY') ? '#10b981' : '#ef4444';
                 const sq = r.send_queue_kb || 0, rq = r.redo_queue_kb || 0;
@@ -51322,7 +51322,7 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveRenderPlanCache(data) {
             const queries = data.queries || [];
             if (!queries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Plan cache vazio</div>';
-            let h = '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">DB</th><th>Avg CPU us</th><th>Avg Reads</th><th>Execs</th><th>Total CPU ms</th><th>Recompiles</th><th style="min-width:200px;">SQL</th></tr></thead><tbody>';
+            let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">DB</th><th>Avg CPU us</th><th>Avg Reads</th><th>Execs</th><th>Total CPU ms</th><th>Recompiles</th><th style="min-width:200px;">SQL</th></tr></thead><tbody>';
             queries.forEach(q => {
                 const sql = (q.sql_text || '').replace(/</g,'&lt;').substring(0, 200);
                 const rc = q.recompiles || 0;
@@ -51333,7 +51333,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:4px 8px;text-align:right;">${(q.execution_count||0).toLocaleString()}</td>`;
                 h += `<td style="padding:4px 8px;text-align:right;">${(q.total_cpu_ms||0).toLocaleString()}</td>`;
                 h += `<td style="padding:4px 8px;text-align:right;color:${rcColor};font-weight:${rc>5?'600':'400'};">${rc}</td>`;
-                h += `<td style="padding:4px 8px;color:var(--color-text-secondary);font-size:10px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sql}">${sql}</td></tr>`;
+                h += `<td style="padding:4px 8px;color:var(--color-text-secondary);font-size:12px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sql}">${sql}</td></tr>`;
             });
             return h + '</tbody></table>';
         }
@@ -51341,7 +51341,7 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveRenderErrorLog(data) {
             const entries = data.entries || [];
             if (!entries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Error log vazio</div>';
-            let h = '<div style="font-family:\'Cascadia Code\',Consolas,monospace;font-size:11px;line-height:1.6;">';
+            let h = '<div style="font-family:\'Cascadia Code\',Consolas,monospace;font-size:12px;line-height:1.6;">';
             entries.forEach(e => {
                 const txt = (e.Text || e.text || '').replace(/</g,'&lt;');
                 const isErr = /error|fail|severity/i.test(txt);
@@ -51361,7 +51361,7 @@ window.showDiskDrilldown = async function(drive, label) {
             h += `<span>Total Runnable: <b style="color:${totalRunnable>scheds.length?'#ef4444':'#10b981'};">${totalRunnable}</b></span>`;
             h += `<span>Total Pending I/O: <b style="color:${totalPendingIO>50?'#f59e0b':'#10b981'};">${totalPendingIO}</b></span>`;
             h += `<span>Schedulers: <b>${scheds.length}</b></span></div>`;
-            h += '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">Sched#</th><th>CPU#</th><th>Current Tasks</th><th>Runnable</th><th>Workers</th><th>Active</th><th>Pending I/O</th><th>Yields</th><th>Ctx Switches</th></tr></thead><tbody>';
+            h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">Sched#</th><th>CPU#</th><th>Current Tasks</th><th>Runnable</th><th>Workers</th><th>Active</th><th>Pending I/O</th><th>Yields</th><th>Ctx Switches</th></tr></thead><tbody>';
             scheds.forEach(s => {
                 const rc = (s.runnable_tasks_count||0) > 2 ? '#ef4444' : '#10b981';
                 h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-link);">${s.scheduler_id}</td>`;
