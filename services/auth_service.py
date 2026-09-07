@@ -84,6 +84,10 @@ JWT_ALGORITHM = settings.jwt_algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_expire_minutes
 MAX_FAILED_ATTEMPTS = 5
 LOCKOUT_MINUTES = 15
+# A-4.4 (QA externo 2026-09-07): resposta unica para TODOS os ramos locais de falha de login.
+# Qualquer variacao (mensagem, contador, bloqueio) e' um oraculo de existencia de contas.
+# O motivo real fica em dbo.WatcherDB_Auth_Log, nunca na resposta HTTP.
+GENERIC_LOGIN_ERROR = "Credenciais invalidas"
 
 
 # ==========================================
@@ -1135,7 +1139,7 @@ class AuthService:
             # Constant-time: fazer hash dummy para evitar user enumeration via timing
             verify_password(password, hash_password("dummy-constant-time"))
             self._log_auth("UNKNOWN", "LOGIN_FAILED", ip, "Credenciais invalidas")
-            return {"success": False, "error": "Credenciais invalidas"}
+            return {"success": False, "error": GENERIC_LOGIN_ERROR}
 
         # Check lockout
         if user.get("locked_until"):
@@ -1143,11 +1147,19 @@ class AuthService:
             if isinstance(locked, str):
                 locked = datetime.fromisoformat(locked)
             if isinstance(locked, datetime) and locked > datetime.now():
-                return {"success": False, "error": f"Conta bloqueada ate {locked.strftime('%H:%M')}"}
+                self._log_auth(login_name, "LOGIN_FAILED", ip, f"Conta bloqueada ate {locked.strftime('%H:%M')}")
+                return {"success": False, "error": GENERIC_LOGIN_ERROR}
+            if isinstance(locked, datetime):
+                # A-4.5 (QA externo 2026-09-07): bloqueio expirado -> repor o contador. Sem isto
+                # failed_attempts ficava em MAX e a 1.a falha seguinte re-bloqueava de imediato.
+                self._reset_failed_attempts(login_name)
+                user["failed_attempts"] = 0
+                user["locked_until"] = None
 
         # Check disabled
         if user.get("disabled"):
-            return {"success": False, "error": "Conta desactivada"}
+            self._log_auth(login_name, "LOGIN_FAILED", ip, "Conta desactivada")
+            return {"success": False, "error": GENERIC_LOGIN_ERROR}
 
         # === Decisao do hash a verificar (dual auth) ===
         pw_hash = user.get("password_hash", "") or ""
@@ -1383,13 +1395,13 @@ class AuthService:
             return 0
 
     def _failed_attempt_message(self, attempts_now: int) -> str:
-        """Mensagem informativa de tentativas restantes antes do lockout."""
-        remaining = max(0, MAX_FAILED_ATTEMPTS - attempts_now)
-        if remaining <= 0:
-            return (f"Password incorrecta. Conta BLOQUEADA por {LOCKOUT_MINUTES} min "
-                    f"apos {MAX_FAILED_ATTEMPTS} tentativas falhadas.")
-        return (f"Password incorrecta. Tentativa {attempts_now}/{MAX_FAILED_ATTEMPTS} — "
-                f"faltam {remaining} antes de bloquear {LOCKOUT_MINUTES} min.")
+        """A-4.4 (QA externo 2026-09-07): resposta GENERICA, igual a' de conta inexistente.
+
+        A mensagem antiga ("Tentativa n/5 -- faltam r antes de bloquear") so' saia para
+        contas existentes e permitia enumeracao. O contador (n/MAX) continua a ser gravado
+        no audit log por cada ramo que chama este metodo; a resposta HTTP nao varia.
+        """
+        return GENERIC_LOGIN_ERROR
 
     def _reset_failed_attempts(self, username: str):
         try:
