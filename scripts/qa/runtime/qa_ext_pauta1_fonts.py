@@ -212,12 +212,16 @@ def main():
                     ctx.close()
                     continue
                 page.wait_for_timeout(6000)
-                # Pagina KPIs: hook do portal (templates/watcherdb_portal.html:4205)
+                # Pagina KPIs: createDashboardKPIstab() (portal:6730) cria/activa a aba tabType
+                # 'dashboard-kpis'; isOnDashboardKPIs() (portal:6505) confirma que esta activa.
+                # (Ronda 4: o gancho anterior goToDashboardKPIs nao existe no template.)
                 try:
-                    page.evaluate("() => { if (typeof goToDashboardKPIs === 'function') goToDashboardKPIs(); }")
-                except Exception:
-                    pass
+                    page.evaluate("() => { if (typeof createDashboardKPIstab === 'function') createDashboardKPIstab(); }")
+                    page.wait_for_function("() => typeof isOnDashboardKPIs === 'function' && isOnDashboardKPIs()", timeout=15000)
+                except Exception as e:
+                    r["kpi_nav_error"] = type(e).__name__
                 page.wait_for_timeout(8000)
+                r["kpi_active_tab"] = page.evaluate("() => { try { const t = openTabs.get(activeTabId); return t ? t.tabType : null; } catch (e) { return 'err'; } }")
                 r["env_after_login"] = page.evaluate(JS_ENV)
                 sizes = page.evaluate(JS_ALL_SIZES)
                 r["kpi_page_sizes"] = sizes
@@ -230,11 +234,16 @@ def main():
 
                 # Overview de servidor: primeiro item da lista de servidores
                 try:
-                    # Overview: selectServer(primeiro servidor) + showTab('overview') (portal:7455, :4771)
-                    page.evaluate("() => { const s = (window.allServers||[])[0]; if (s && typeof selectServer==='function') selectServer(s); }")
+                    # Overview: selectServer(primeiro servidor) -> createTab(server,'overview') (portal:7459-7475).
+                    # allServers e' `let` de topo (portal:5515): nao e' window.allServers; usa-se o
+                    # identificador simples. Espera ate' a lista estar carregada (portal:6231).
+                    page.wait_for_function("() => typeof allServers !== 'undefined' && allServers.length > 0", timeout=20000)
+                    r["overview_servers_loaded"] = page.evaluate("() => allServers.length")
+                    page.evaluate("() => { const s = allServers[0]; if (s && typeof selectServer==='function') selectServer(s); }")
                     page.wait_for_timeout(4000)
                     page.evaluate("() => { if (typeof showTab==='function') showTab('overview'); }")
                     page.wait_for_timeout(8000)
+                    r["overview_active_tab"] = page.evaluate("() => { try { const t = openTabs.get(activeTabId); return t ? t.tabType : null; } catch (e) { return 'err'; } }")
                     sizes = page.evaluate(JS_ALL_SIZES)
                     r["overview_sizes"] = sizes
                     r["overview_on"], r["overview_off"] = classify(sizes)
