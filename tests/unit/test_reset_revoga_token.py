@@ -128,4 +128,6 @@ def test_revogacao_unknown_quando_a_bd_nao_responde(monkeypatch):
 def test_health_expoe_a_flag_no_fonte():
     src = (PORTAL_ROOT / "watcherdb_main.py").read_text(encoding="utf-8")
     i = src.index('@app.get("/api/v3/health")')
-    assert "'auth': _auth_health_flags()" in src[i:i + 4000]
+    # PASSO 4 (2026-09-08): a flag so' sai com sessao valida -> `corpo['auth'] = _auth_health_flags()`
+    assert "_auth_health_flags()" in src[i:i + 4000]
+    assert "if await _sessao_valida(request):" in src[i:i + 4000]
