@@ -1678,6 +1678,14 @@ async def api_version():
     """Versao/build em execucao (VERSION.txt do bundle ou git sha em fontes)."""
     return _read_version_info()
 
+def _auth_health_flags() -> dict:
+    try:
+        from services.auth_service import revogacao_por_reset_activa
+        return revogacao_por_reset_activa()
+    except Exception as e:  # pragma: no cover - health nunca cai por causa disto
+        return {"reset_revocation": "unknown", "error": str(e)[:120]}
+
+
 @app.get("/api/v3/health")
 async def health_check():
     """Health check of real data system"""
@@ -1718,6 +1726,9 @@ async def health_check():
                 'inventory': 'healthy' if inventory_healthy else 'unhealthy',
                 'real_data': 'loaded' if real_data_count > 0 else 'no data found'
             },
+            # P4 ronda 2 (2026-09-08): estado da revogacao de sessao por reset, observavel por GET.
+            # Nunca faz o health falhar: erro na sondagem => "unknown".
+            'auth': _auth_health_flags(),
             'implementation': 'WatcherDB Monitoring System v3.0.0 - Using YOUR Excel data only'
         }
         

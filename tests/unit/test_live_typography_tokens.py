@@ -94,6 +94,8 @@ def test_programas_do_live_sem_texto_abaixo_de_12px(portal):
 
 
 def test_programas_do_live_sem_monospace_cru(portal):
+    # P4 ronda 2 (2026-09-08): a forma com aspas escapadas (\\'Cascadia Code\\') escapou ao regex
+    # antigo. No bloco o unico uso legitimo e' var(--font-mono), que nao contem estes literais.
     blk = _live_render_block(portal)
-    assert not re.search(r"font-family:\s*monospace\b", blk)
-    assert "'Cascadia Code',Consolas,monospace" not in blk
+    assert "monospace" not in blk, "stack mono cru nos programas do LIVE"
+    assert "Cascadia" not in blk and "Consolas" not in blk

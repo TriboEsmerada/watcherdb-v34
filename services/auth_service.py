@@ -286,6 +286,36 @@ def _token_valido_apos_reset(payload: dict, user: dict, tolerancia_s: int = 1) -
     return float(iat) + tolerancia_s >= changed.timestamp()
 
 
+_REVOGACAO_CACHE: dict = {"at": 0.0, "valor": None}
+
+
+def revogacao_por_reset_activa(force: bool = False) -> dict:
+    """Estado da revogacao de sessao por reset, observavel por GET (P4 ronda 2 do QA externo).
+
+    Sonda a coluna dbo.WatcherDB_Users.password_changed_at (migracao 13) com cache de 60 s.
+    "active"   -> a coluna existe: tokens anteriores a um reset sao rejeitados.
+    "inactive" -> coluna em falta (fail-open com aviso no log): correr 13_ADD_PASSWORD_CHANGED_AT.sql.
+    "unknown"  -> BD indisponivel na sondagem.
+    """
+    import time as _t
+
+    agora = _t.time()
+    if not force and _REVOGACAO_CACHE["valor"] and agora - _REVOGACAO_CACHE["at"] < 60:
+        return _REVOGACAO_CACHE["valor"]
+    try:
+        _execute_query("SELECT TOP 1 password_changed_at FROM dbo.WatcherDB_Users")
+        estado = "active"
+    except Exception as e:
+        estado = "inactive" if ("password_changed_at" in str(e) or "Invalid column" in str(e)) else "unknown"
+    valor = {
+        "reset_revocation": estado,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "migration": "database/13_ADD_PASSWORD_CHANGED_AT.sql",
+    }
+    _REVOGACAO_CACHE.update(at=agora, valor=valor)
+    return valor
+
+
 # ==========================================
 # LDAP / Active Directory Authentication (generic, configurable)
 # ==========================================

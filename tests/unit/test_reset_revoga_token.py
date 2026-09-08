@@ -11,6 +11,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from pathlib import Path
+
+PORTAL_ROOT = Path(__file__).resolve().parents[2]
+
 import services.auth_service as auth
 from services.auth_service import AuthService, _token_valido_apos_reset, create_access_token
 
@@ -95,3 +99,33 @@ def test_change_password_grava_password_changed_at(svc, monkeypatch):
 def test_select_v13_le_a_coluna():
     assert "password_changed_at" in auth._USER_SELECT_V13
     assert "password_changed_at" not in auth._USER_SELECT_V12
+
+
+# ---------------------------------------------------------------- observavel por GET (P4 ronda 2)
+
+def test_revogacao_activa_quando_a_coluna_existe(monkeypatch):
+    monkeypatch.setattr(auth, "_execute_query", lambda q, p=None: [{"password_changed_at": None}])
+    r = auth.revogacao_por_reset_activa(force=True)
+    assert r["reset_revocation"] == "active"
+
+
+def test_revogacao_inactiva_quando_a_coluna_falta(monkeypatch):
+    def _boom(q, p=None):
+        raise Exception("('42S22', \"Invalid column name 'password_changed_at'\")")
+    monkeypatch.setattr(auth, "_execute_query", _boom)
+    r = auth.revogacao_por_reset_activa(force=True)
+    assert r["reset_revocation"] == "inactive"
+    assert "13_ADD_PASSWORD_CHANGED_AT" in r["migration"]
+
+
+def test_revogacao_unknown_quando_a_bd_nao_responde(monkeypatch):
+    def _boom(q, p=None):
+        raise Exception("Login timeout expired")
+    monkeypatch.setattr(auth, "_execute_query", _boom)
+    assert auth.revogacao_por_reset_activa(force=True)["reset_revocation"] == "unknown"
+
+
+def test_health_expoe_a_flag_no_fonte():
+    src = (PORTAL_ROOT / "watcherdb_main.py").read_text(encoding="utf-8")
+    i = src.index('@app.get("/api/v3/health")')
+    assert "'auth': _auth_health_flags()" in src[i:i + 4000]

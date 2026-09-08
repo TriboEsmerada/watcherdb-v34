@@ -21,7 +21,7 @@ from collections import Counter
 
 from playwright.sync_api import sync_playwright
 
-UA = "WatcherDB-QA-Externo/pauta-1"
+UA = os.environ.get("WATCHERDB_QA_UA", "WatcherDB-QA-Externo/pauta-1")  # P4r2: override por env
 URL = os.environ["WATCHERDB_QA_URL"].rstrip("/")
 SCALE = [12, 14, 16, 18, 20, 24, 30, 36]
 
@@ -276,6 +276,8 @@ def main():
                         r["live_family_count"] = Counter(l["ff"] for l in leaves).most_common()
                         r["live_size_count"] = Counter(l["fs"] for l in leaves).most_common()
                         r["live_leaf_count"] = len(leaves)
+                        # P4r2: icones <i aria-hidden> de _liveArrow (portal ~50737) ficam FORA do gate; regista-se n x tamanho
+                        r["live_icons_aria_hidden"] = page.evaluate("() => { const out={}; for (const e of document.querySelectorAll('#live-tv-modal i[aria-hidden=\"true\"]')) { if (e.getClientRects().length===0) continue; const k=getComputedStyle(e).fontSize; out[k]=(out[k]||0)+1; } return out; }")
                         r["live_form_controls"] = page.evaluate(
                             """() => { const out={}; for (const e of document.querySelectorAll('#live-tv-modal button, #live-tv-modal input, #live-tv-modal select')) { const ff=getComputedStyle(e).fontFamily; out[ff]=(out[ff]||0)+1; } return out; }"""
                         )

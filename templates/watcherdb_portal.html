@@ -51358,7 +51358,7 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveRenderErrorLog(data) {
             const entries = data.entries || [];
             if (!entries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Error log vazio</div>';
-            let h = '<div style="font-family:\'Cascadia Code\',Consolas,monospace;font-size:12px;line-height:1.6;">';
+            let h = '<div style="font-family:var(--font-mono);font-size:12px;line-height:1.6;">';
             entries.forEach(e => {
                 const txt = (e.Text || e.text || '').replace(/</g,'&lt;');
                 const isErr = /error|fail|severity/i.test(txt);
