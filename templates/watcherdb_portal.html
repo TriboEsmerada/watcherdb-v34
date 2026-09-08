@@ -5066,6 +5066,21 @@
                 clearTimeout(_prefSyncTimer);
                 syncPreferencesToServer();
             }
+            // A-4.3 (QA externo 2026-09-07): revogar a sessao no servidor -- blacklist do token +
+            // delete_cookie do access_token HttpOnly (que a UI nao consegue apagar sozinha).
+            // Optimista: a UI limpa ja; o POST segue em paralelo com keepalive (sobrevive ao fecho
+            // da aba). Se o servico estiver em baixo, o token/cookie expiram por si (24h).
+            const _logoutToken = getAuthToken();
+            try {
+                _originalFetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    keepalive: true,
+                    headers: _logoutToken ? { 'Authorization': 'Bearer ' + _logoutToken } : {}
+                }).catch(function (e) { debugLog('logout: revogacao no servidor falhou: ' + e, 'warn'); });
+            } catch (e) {
+                debugLog('logout: fetch indisponivel: ' + e, 'warn');
+            }
             clearAuthData();
             showLoginOverlay();
         }
