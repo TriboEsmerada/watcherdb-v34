@@ -61,6 +61,30 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=15, help="login + command timeout em segundos")
     args = ap.parse_args()
 
+    # O servico carrega o .env "3-tier" (WATCHERDB_DATA_DIR/.env -> ProgramData (frozen) -> raiz do repo)
+    # ANTES de qualquer import (watcherdb_main.py:16-42). Sem isto a chave mestra (WATCHERDB_ENCRYPTION_KEY
+    # ou _DPAPI) nao existe neste processo e as passwords do servers.json ficam cifradas.
+    try:
+        from dotenv import load_dotenv
+
+        _cands = []
+        _wdd = __import__("os").environ.get("WATCHERDB_DATA_DIR")
+        if _wdd:
+            _cands.append(Path(_wdd) / ".env")
+        # ordem do servico em dev (nao-frozen): WATCHERDB_DATA_DIR, depois a raiz do repo;
+        # ProgramData so' conta no bundle congelado -- fica em ultimo como fallback
+        _cands.append(ROOT / ".env")
+        _cands.append(Path(r"C:\ProgramData\WatcherDB") / ".env")
+        for _c in _cands:
+            if _c.exists():
+                load_dotenv(_c)
+                print(f"[env] carregado: {_c}")
+                break
+        else:
+            print("[env] nenhum .env encontrado (WATCHERDB_DATA_DIR / ProgramData / raiz) -- a chave mestra tem de vir do ambiente")
+    except ImportError:
+        print("[env] python-dotenv indisponivel -- a chave mestra tem de vir do ambiente")
+
     import pyodbc  # noqa: WPS433 -- o mesmo driver do servico
     from api.connection_pool import get_sql_server_pool
 
@@ -86,6 +110,16 @@ def main() -> int:
     if not server_ids:
         print("ABORT: servers.json sem instancias (ou nao encontrado em", pool._creds_cache_path, ")")
         return 1
+
+    # Guarda (2026-09-08): sem a chave mestra neste processo, as passwords ficam "encrypted:..." e o
+    # script faria 63 logins falhados com um literal cifrado. Aborta ANTES de tocar em qualquer instancia.
+    cifradas = [s for s in server_ids if str((pool._resolve_credentials(s) or {}).get("password") or "").startswith("encrypted:")]
+    if cifradas:
+        print(f"ABORT: {len(cifradas)}/{len(server_ids)} passwords continuam cifradas -- a chave mestra nao esta "
+              f"disponivel neste processo (services.secrets.try_get_master_key() devolveu vazio).")
+        print("       Corre na shell onde a chave resolve (ver services/secrets.py: ficheiro DPAPI machine-scope,")
+        print("       env DPAPI user-scope ou chave em claro) ou com a identidade do servico. Nenhuma instancia foi contactada.")
+        return 2
 
     data = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     out_qa = ROOT / "docs" / "qa" / "externo" / f"{data}-p2-preflight.csv"
