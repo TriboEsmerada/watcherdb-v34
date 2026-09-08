@@ -1678,6 +1678,21 @@ async def api_version():
     """Versao/build em execucao (VERSION.txt do bundle ou git sha em fontes)."""
     return _read_version_info()
 
+async def _sessao_valida(request) -> bool:
+    """True se o pedido traz um token valido (Bearer ou cookie). Nunca levanta.
+
+    P4 ronda 3 (2026-09-08): /api/v3/health e' publico (instalador/smoke dependem do 200 sem
+    credenciais), mas `auth` e `real_data_servers` so' saem com sessao valida.
+    """
+    try:
+        token = _auth_get_token(request)
+        if not token or token in _auth_blacklist:
+            return False
+        return bool(await _auth_get_service().get_current_user(token))
+    except Exception:
+        return False
+
+
 def _auth_health_flags() -> dict:
     try:
         from services.auth_service import revogacao_por_reset_activa
@@ -1687,7 +1702,7 @@ def _auth_health_flags() -> dict:
 
 
 @app.get("/api/v3/health")
-async def health_check():
+async def health_check(request: Request):
     """Health check of real data system"""
     try:
         # Check components
@@ -1715,22 +1730,24 @@ async def health_check():
         
         overall_healthy = cache_healthy and file_io_healthy and inventory_healthy
         
-        return {
+        corpo = {
             'success': True,
             'status': 'healthy' if overall_healthy else 'degraded',
             'timestamp': datetime.now().isoformat(),
-            'real_data_servers': real_data_count,
             'components': {
                 'cache': 'healthy' if cache_healthy else 'unhealthy',
                 'file_io': 'healthy' if file_io_healthy else 'unhealthy', 
                 'inventory': 'healthy' if inventory_healthy else 'unhealthy',
                 'real_data': 'loaded' if real_data_count > 0 else 'no data found'
             },
-            # P4 ronda 2 (2026-09-08): estado da revogacao de sessao por reset, observavel por GET.
-            # Nunca faz o health falhar: erro na sondagem => "unknown".
-            'auth': _auth_health_flags(),
             'implementation': 'WatcherDB Monitoring System v3.0.0 - Using YOUR Excel data only'
         }
+        # P4 ronda 3 (2026-09-08): so' com sessao valida. O anonimo (instalador, smoke, probes)
+        # recebe status/components; estado da revogacao e dimensao da frota nao saem sem login.
+        if await _sessao_valida(request):
+            corpo['real_data_servers'] = real_data_count
+            corpo['auth'] = _auth_health_flags()  # nunca faz o health falhar: erro => "unknown"
+        return corpo
         
     except Exception as e:
         return {
