@@ -185,6 +185,8 @@ WATCHERDB_V3.1/
 |   +-- alerts.json               # Configuracao de alertas
 +-- database/
 |   +-- CREATE_USER_AUTH_PREFS.sql # Schema: Users, Auth_Log, Preferences
+|   +-- 12_ADD_LOCAL_PASSWORD_HASH.sql   # Dual auth (AD + fallback local) -- obrigatorio
+|   +-- 13_ADD_PASSWORD_CHANGED_AT.sql   # Revogacao de sessao por reset (P4 A-4.7) -- obrigatorio
 |   +-- 00_WATCHERDB_MASTER_DEPLOY.sql  # Deploy completo
 |   +-- SQLSERVER_KPI_DEPLOY_COMPLETE.sql # Views e procedures KPI
 |   +-- (... 20+ scripts SQL)

@@ -18,7 +18,8 @@ from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
 
 from services.auth_service import (
-    get_auth_service, decode_token, _execute_query, _execute_update, verify_password
+    get_auth_service, decode_token, _execute_query, _execute_update, verify_password,
+    create_access_token
 )
 from api.error_helpers import safe_http_error
 from api.models import (
@@ -306,6 +307,19 @@ def _decrypt_pref(value: str) -> str:
 # ============================================
 # ENDPOINTS — Authentication
 # ============================================
+def _set_session_cookie(response: JSONResponse, request: Request, token: str) -> None:
+    """Cookie de sessao com os mesmos atributos do login (HttpOnly, SameSite=lax, Secure em HTTPS)."""
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=(request.url.scheme == "https"),
+        samesite="lax",
+        max_age=86400,
+        path="/",
+    )
+
+
 @router.post("/login", response_model=LoginResponse)
 @limiter.limit("5/minute")
 async def login(request: Request, login_req: LoginRequest):
@@ -437,7 +451,22 @@ async def change_password(body: ChangePasswordRequest, request: Request):
     except Exception:
         pass  # Column may not exist yet — graceful degradation
 
-    return JSONResponse(content=result)
+    # Lote P4 A-4.7 (2026-09-08): a mudanca de password revoga TODOS os tokens anteriores
+    # (password_changed_at). Para o proprio utilizador nao ficar deslogado, emite-se um
+    # token novo (iat posterior a' mudanca) e o cookie e' renovado. As outras sessoes caem.
+    novo_token = create_access_token({"sub": user["username"], "role": user.get("role", "viewer")})
+    result = dict(result)
+    result["access_token"] = novo_token
+    result["token_type"] = "bearer"
+    result["user"] = {
+        "username": user["username"],
+        "role": user.get("role", "viewer"),
+        "full_name": user.get("full_name", user["username"]),
+        "email": user.get("email"),
+    }
+    response = JSONResponse(content=result)
+    _set_session_cookie(response, request, novo_token)
+    return response
 
 
 @router.post("/users/{username}/toggle", response_model=SuccessResponse)

@@ -10048,6 +10048,87 @@ PRINT 'Para testar o job manualmente:';
 PRINT '  EXEC msdb.dbo.sp_start_job @job_name = ''WatcherDB - Refresh Overview Dashboard'';';
 PRINT '';
 GO
+-- ============================================================================
+-- SECAO 13: AUTENTICACAO (WatcherDB_Users, WatcherDB_Auth_Log, WatcherDB_User_Preferences)
+-- Origem: database/CREATE_USER_AUTH_PREFS.sql (tabelas) + 12_ADD_LOCAL_PASSWORD_HASH.sql
+-- + 13_ADD_PASSWORD_CHANGED_AT.sql. Incluido no canonico em 2026-09-08 (lote P4 A-4.7):
+-- ate' aqui o canonico nao criava NENHUMA tabela de autenticacao. SEM utilizadores
+-- semente: contas por omissao nao pertencem ao canonico (criar pela UI de admin).
+-- Nao inclui 07_ADD_MUST_CHANGE_PASSWORD.sql (DEFAULT 1 obriga todos a mudar; decisao
+-- separada do owner).
+-- ============================================================================
+USE [WatcherDB_Intelligence];
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'WatcherDB_Users')
+BEGIN
+    CREATE TABLE dbo.WatcherDB_Users (
+        id              INT IDENTITY(1,1) PRIMARY KEY,
+        username        NVARCHAR(100)  NOT NULL UNIQUE,
+        password_hash   NVARCHAR(500)  NOT NULL,
+        role            NVARCHAR(50)   NOT NULL DEFAULT 'viewer',  -- admin, analyst, viewer, operator
+        email           NVARCHAR(200)  NULL,
+        full_name       NVARCHAR(200)  NULL,
+        disabled        BIT            NOT NULL DEFAULT 0,
+        failed_attempts INT            NOT NULL DEFAULT 0,
+        locked_until    DATETIME2      NULL,
+        last_login      DATETIME2      NULL,
+        created_at      DATETIME2      NOT NULL DEFAULT GETDATE()
+    );
+    PRINT 'Tabela WatcherDB_Users criada.';
+END
+GO
 
+-- 2. Tabela de Auth Log
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'WatcherDB_Auth_Log')
+BEGIN
+    CREATE TABLE dbo.WatcherDB_Auth_Log (
+        id          INT IDENTITY(1,1) PRIMARY KEY,
+        username    NVARCHAR(100)  NOT NULL,
+        action      NVARCHAR(50)   NOT NULL,  -- LOGIN_SUCCESS, LOGIN_FAILED, PASSWORD_CHANGE, USER_ENABLED, USER_DISABLED
+        ip_address  NVARCHAR(50)   NULL,
+        details     NVARCHAR(500)  NULL,
+        created_at  DATETIME2      NOT NULL DEFAULT GETDATE()
+    );
 
+    CREATE NONCLUSTERED INDEX IX_AuthLog_Username
+        ON dbo.WatcherDB_Auth_Log (username, created_at DESC);
+
+    PRINT 'Tabela WatcherDB_Auth_Log criada.';
+END
+GO
+
+-- 3. Tabela de Preferencias por Utilizador
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'WatcherDB_User_Preferences')
+BEGIN
+    CREATE TABLE dbo.WatcherDB_User_Preferences (
+        id               INT IDENTITY(1,1) PRIMARY KEY,
+        username         NVARCHAR(100)  NOT NULL,
+        preference_key   NVARCHAR(100)  NOT NULL,
+        preference_value NVARCHAR(MAX)  NULL,  -- Valor ENCRIPTADO com Fernet
+        updated_at       DATETIME2      NOT NULL DEFAULT GETDATE(),
+
+        CONSTRAINT UQ_UserPref_Key UNIQUE (username, preference_key)
+    );
+
+    CREATE NONCLUSTERED INDEX IX_UserPref_Username
+        ON dbo.WatcherDB_User_Preferences (username)
+        INCLUDE (preference_key, preference_value);
+
+    PRINT 'Tabela WatcherDB_User_Preferences criada.';
+END
+GO
+
+-- 12: dual auth (AD + fallback local)
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.WatcherDB_Users') AND name = 'local_password_hash')
+    ALTER TABLE dbo.WatcherDB_Users ADD local_password_hash NVARCHAR(500) NULL;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.WatcherDB_Users') AND name = 'local_password_set_at')
+    ALTER TABLE dbo.WatcherDB_Users ADD local_password_set_at DATETIME2(0) NULL;
+GO
+-- 13: revogacao de sessao por mudanca/reset de password
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.WatcherDB_Users') AND name = 'password_changed_at')
+    ALTER TABLE dbo.WatcherDB_Users ADD password_changed_at DATETIME2(0) NULL;
+GO
+PRINT '  - Secao 13: Autenticacao (WatcherDB_Users/Auth_Log/User_Preferences + colunas 12/13)';
+GO
 

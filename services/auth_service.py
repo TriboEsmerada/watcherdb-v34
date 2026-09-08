@@ -241,6 +241,52 @@ def decode_token(token: str) -> Optional[dict]:
 
 
 # ==========================================
+# Revogacao de sessao por mudanca de password (lote P4 A-4.7, 2026-09-08)
+# ==========================================
+_USER_COLS_BASE = "id, username, password_hash, role, email, full_name, disabled, failed_attempts, locked_until, last_login"
+_USER_SELECT_LEGACY = f"SELECT {_USER_COLS_BASE} FROM dbo.WatcherDB_Users WHERE username = ?"
+_USER_SELECT_V12 = f"SELECT {_USER_COLS_BASE}, local_password_hash FROM dbo.WatcherDB_Users WHERE username = ?"
+_USER_SELECT_V13 = f"SELECT {_USER_COLS_BASE}, local_password_hash, password_changed_at FROM dbo.WatcherDB_Users WHERE username = ?"
+_AVISOS_SCHEMA_EMITIDOS: set = set()
+
+
+def _avisar_schema_uma_vez(chave: str, mensagem: str) -> None:
+    """Aviso de schema em falta: UMA linha por processo, em WARNING, e nao a cada pedido."""
+    if chave not in _AVISOS_SCHEMA_EMITIDOS:
+        _AVISOS_SCHEMA_EMITIDOS.add(chave)
+        logger.warning(mensagem)
+
+
+def _token_valido_apos_reset(payload: dict, user: dict, tolerancia_s: int = 1) -> bool:
+    """False se o token foi emitido ANTES da ultima mudanca de password do utilizador.
+
+    - user sem a chave password_changed_at (schema sem a migracao 13): aceita, mas avisa
+      uma vez por processo -- a revogacao esta' INACTIVA e isso tem de ser visivel no log.
+    - password_changed_at NULL (nunca mudou): aceita.
+    - token sem iat: rejeita (nao se prova que e' posterior).
+    - iat + tolerancia >= password_changed_at (UTC): aceita.
+    """
+    if "password_changed_at" not in user:
+        _avisar_schema_uma_vez(
+            "password_changed_at",
+            "[AUTH] coluna password_changed_at em falta em dbo.WatcherDB_Users -- "
+            "REVOGACAO DE SESSAO POR RESET INACTIVA. Run database/13_ADD_PASSWORD_CHANGED_AT.sql",
+        )
+        return True
+    changed = user.get("password_changed_at")
+    if not changed:
+        return True
+    iat = payload.get("iat")
+    if iat is None:
+        return False
+    if isinstance(changed, str):
+        changed = datetime.fromisoformat(changed)
+    if changed.tzinfo is None:
+        changed = changed.replace(tzinfo=timezone.utc)  # SYSUTCDATETIME() -> UTC
+    return float(iat) + tolerancia_s >= changed.timestamp()
+
+
+# ==========================================
 # LDAP / Active Directory Authentication (generic, configurable)
 # ==========================================
 # Configuration via environment variables or config.yaml:
@@ -1051,26 +1097,37 @@ class AuthService:
         cai para o SELECT legacy sem essa coluna.
         """
         try:
+            # Schema v13 (migracoes 12 + 13) -> v12 (so' 12) -> legacy (nenhuma), cada degradacao
+            # avisada UMA vez por processo. Lote P4 A-4.7 (2026-09-08): a revogacao por reset
+            # depende de password_changed_at; sem a coluna o servico funciona mas avisa.
+            def _sel(q):
+                return _execute_query(q, (username,))
+
+            def _coluna_em_falta(err, col):
+                s = str(err)
+                return col in s or ('Invalid column' in s and col == 'local_password_hash')
+
             try:
-                # Schema novo (com dual auth)
-                rows = _execute_query(
-                    "SELECT id, username, password_hash, local_password_hash, role, email, full_name, disabled, "
-                    "failed_attempts, locked_until, last_login FROM dbo.WatcherDB_Users WHERE username = ?",
-                    (username,)
-                )
+                rows = _sel(_USER_SELECT_V13)
             except Exception as e:
-                # Schema legacy: a coluna local_password_hash ainda nao existe
-                # (script 12_ADD_LOCAL_PASSWORD_HASH.sql nao foi corrido)
-                if 'local_password_hash' in str(e) or 'Invalid column' in str(e):
-                    logger.warning(
-                        f"[AUTH] local_password_hash column missing — caindo para schema legacy. "
-                        f"Run database/12_ADD_LOCAL_PASSWORD_HASH.sql para activar dual auth."
+                if _coluna_em_falta(e, 'password_changed_at') or _coluna_em_falta(e, 'local_password_hash'):
+                    _avisar_schema_uma_vez(
+                        "select_v13",
+                        "[AUTH] dbo.WatcherDB_Users sem password_changed_at -- REVOGACAO DE SESSAO POR RESET "
+                        "INACTIVA. Run database/13_ADD_PASSWORD_CHANGED_AT.sql",
                     )
-                    rows = _execute_query(
-                        "SELECT id, username, password_hash, role, email, full_name, disabled, "
-                        "failed_attempts, locked_until, last_login FROM dbo.WatcherDB_Users WHERE username = ?",
-                        (username,)
-                    )
+                    try:
+                        rows = _sel(_USER_SELECT_V12)
+                    except Exception as e2:
+                        if _coluna_em_falta(e2, 'local_password_hash'):
+                            _avisar_schema_uma_vez(
+                                "select_v12",
+                                "[AUTH] local_password_hash column missing — schema legacy. "
+                                "Run database/12_ADD_LOCAL_PASSWORD_HASH.sql para activar dual auth.",
+                            )
+                            rows = _sel(_USER_SELECT_LEGACY)
+                        else:
+                            raise
                 else:
                     raise
             if rows:
@@ -1243,6 +1300,9 @@ class AuthService:
         user = self._get_user_from_db(username)
         if not user or user.get("disabled"):
             return None
+        if not _token_valido_apos_reset(payload, user):
+            # Lote P4 A-4.7: token emitido antes do ultimo reset/mudanca de password
+            return None
         return {
             "username": username,
             "role": user.get("role", payload.get("role", "viewer")),
@@ -1287,10 +1347,26 @@ class AuthService:
         """
         hashed = hash_password(new_password)
         try:
-            _execute_update(
-                "UPDATE dbo.WatcherDB_Users SET password_hash = ?, failed_attempts = 0, locked_until = NULL WHERE username = ?",
-                (hashed, username)
-            )
+            try:
+                # Lote P4 A-4.7: marca a mudanca em UTC -> tokens anteriores deixam de validar
+                _execute_update(
+                    "UPDATE dbo.WatcherDB_Users SET password_hash = ?, failed_attempts = 0, locked_until = NULL, "
+                    "password_changed_at = SYSUTCDATETIME() WHERE username = ?",
+                    (hashed, username)
+                )
+            except Exception as e:
+                if 'password_changed_at' in str(e) or 'Invalid column' in str(e):
+                    _avisar_schema_uma_vez(
+                        "update_v13",
+                        "[AUTH] change_password sem password_changed_at -- REVOGACAO DE SESSAO POR RESET "
+                        "INACTIVA. Run database/13_ADD_PASSWORD_CHANGED_AT.sql",
+                    )
+                    _execute_update(
+                        "UPDATE dbo.WatcherDB_Users SET password_hash = ?, failed_attempts = 0, locked_until = NULL WHERE username = ?",
+                        (hashed, username)
+                    )
+                else:
+                    raise
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}
