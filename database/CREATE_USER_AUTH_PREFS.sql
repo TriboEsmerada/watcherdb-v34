@@ -66,28 +66,9 @@ BEGIN
 END
 GO
 
--- 4. Inserir Users Default (password: admin123)
--- Hash bcrypt gerado com: python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('admin123'))"
--- Hash bcrypt para "admin123" (gerado com passlib)
-DECLARE @hash NVARCHAR(500) = '$2b$12$w8ge4gtxBD2xEtacbiNssuctD4y3YqFtK5XMVYBjOEkiWUj20.VlS';
-
-IF NOT EXISTS (SELECT 1 FROM dbo.WatcherDB_Users WHERE username = 'admin')
-    INSERT INTO dbo.WatcherDB_Users (username, password_hash, role, full_name)
-    VALUES ('admin', @hash, 'admin', 'Administrador');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.WatcherDB_Users WHERE username = 'salomao')
-    INSERT INTO dbo.WatcherDB_Users (username, password_hash, role, full_name)
-    VALUES ('salomao', @hash, 'admin', 'Salomao');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.WatcherDB_Users WHERE username = 'ricardo')
-    INSERT INTO dbo.WatcherDB_Users (username, password_hash, role, full_name)
-    VALUES ('ricardo', @hash, 'admin', 'Ricardo');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.WatcherDB_Users WHERE username = 'viewer')
-    INSERT INTO dbo.WatcherDB_Users (username, password_hash, role, full_name)
-    VALUES ('viewer', @hash, 'viewer', 'Utilizador Viewer');
-GO
-
-PRINT 'Users default inseridos (password: admin123).';
-PRINT 'IMPORTANTE: Alterar passwords apos primeiro login!';
+-- 4. Utilizadores: NAO ha' contas semente (removidas em 2026-09-08, lote BD).
+--    Ate' aqui este bloco inseria admin/salomao/ricardo/viewer com a password 'admin123' e o hash
+--    bcrypt em claro, num ficheiro que esteve num repositorio publico. Verificado em 08/09: nenhuma
+--    conta em PRD tinha esse hash. Contas criam-se pela UI de admin (POST /api/auth/users) e o
+--    reset pelo admin marca must_change_password = 1 (migracao 07).
 GO

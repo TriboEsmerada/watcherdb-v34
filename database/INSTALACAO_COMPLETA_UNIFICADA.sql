@@ -10054,8 +10054,8 @@ GO
 -- + 13_ADD_PASSWORD_CHANGED_AT.sql. Incluido no canonico em 2026-09-08 (lote P4 A-4.7):
 -- ate' aqui o canonico nao criava NENHUMA tabela de autenticacao. SEM utilizadores
 -- semente: contas por omissao nao pertencem ao canonico (criar pela UI de admin).
--- Nao inclui 07_ADD_MUST_CHANGE_PASSWORD.sql (DEFAULT 1 obriga todos a mudar; decisao
--- separada do owner).
+-- Inclui 07_ADD_MUST_CHANGE_PASSWORD.sql (o proprio script repoe 0 nos utilizadores activos;
+-- so' forca a mudanca em contas que ainda tenham o hash semente).
 -- ============================================================================
 USE [WatcherDB_Intelligence];
 GO
@@ -10129,6 +10129,13 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.WatcherDB_Users') AND name = 'password_changed_at')
     ALTER TABLE dbo.WatcherDB_Users ADD password_changed_at DATETIME2(0) NULL;
 GO
-PRINT '  - Secao 13: Autenticacao (WatcherDB_Users/Auth_Log/User_Preferences + colunas 12/13)';
+-- 07: obrigar mudanca de password no proximo login (reset pelo admin marca 1; /change-password limpa)
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.WatcherDB_Users') AND name = 'must_change_password')
+BEGIN
+    ALTER TABLE dbo.WatcherDB_Users ADD must_change_password BIT NOT NULL DEFAULT 1;
+    EXEC('UPDATE dbo.WatcherDB_Users SET must_change_password = 0 WHERE disabled = 0');
+END
+GO
+PRINT '  - Secao 13: Autenticacao (WatcherDB_Users/Auth_Log/User_Preferences + colunas 07/12/13)';
 GO
 
