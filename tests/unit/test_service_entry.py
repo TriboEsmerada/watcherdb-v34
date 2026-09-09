@@ -12,7 +12,11 @@ pytestmark = pytest.mark.skipif(
     sys.platform != "win32", reason="Launcher e Windows-only (pywin32)"
 )
 
-import watcherdb_service  # noqa: E402
+# LOTE0 hotfix 2026-09-05: o skipif acima so' actua DEPOIS da coleccao; um
+# import directo puxa servicemanager/win32* e rebenta a coleccao em Linux (CI).
+watcherdb_service = pytest.importorskip(
+    "watcherdb_service", reason="Launcher e Windows-only (pywin32)"
+)
 
 
 @pytest.fixture(autouse=True)
