@@ -124,14 +124,18 @@ def main() -> int:
             for i, lote in enumerate(lotes_exec):
                 try:
                     cur.execute(lote)
-                    if cur.description:  # lote de verificacao devolve 1 linha
-                        vals = dict(zip([d[0] for d in cur.description], cur.fetchone()))
-                        for k, v in vals.items():
-                            if k in row:
-                                row[k] = "" if v is None else v
-                    # consumir result sets restantes (PRINTs nao contam)
-                    while cur.nextset():
-                        pass
+                    # o lote de verificacao tem USE/EXECUTE AS antes do SELECT: o 1.o result set pode
+                    # vir vazio -> percorrer todos os result sets e capturar o que tiver colunas
+                    while True:
+                        if cur.description:
+                            r1 = cur.fetchone()
+                            if r1 is not None:
+                                vals = dict(zip([d[0] for d in cur.description], r1))
+                                for k, v in vals.items():
+                                    if k in row:
+                                        row[k] = "" if v is None else v
+                        if not cur.nextset():
+                            break
                 except Exception as e:
                     msg = str(e)
                     if "login NAO existe" in msg or "nao existe nesta instancia" in msg:

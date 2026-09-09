@@ -34,6 +34,13 @@ Uso
 ---
   sqlcmd -S <instance> -E -i LEAST_PRIVILEGE_SETUP.sql
 
+Producao (conta canonica `sql_monitoring`, que JA existe na frota): NAO correr o
+bloco CREATE LOGIN; usar docs/security/GRANTS_SQL_MONITORING_INSTANCIA.sql, que da'
+exactamente este conjunto de permissoes a essa conta, e' idempotente e termina com
+uma linha de verificacao por instancia. Para as N instancias de uma vez: SSMS >
+Registered Servers (scripts/qa/runtime/gera_regsrvr.py gera o grupo) > New Query
+sobre o grupo. Rollback = REVOKE / sp_droprolemember, nunca DROP LOGIN.
+
 Ou copiar para SSMS e executar secção a secção. Ler comentários antes de
 executar — há placeholders `<PASSWORD_AQUI>`, `<DOMAIN>` que requerem
 substituição.
@@ -148,7 +155,9 @@ GRANT EXECUTE ON dbo.sp_help_jobactivity TO WatcherDBReader;
 -- 'sysjobactivity'/'syssessions'"). O caminho canonico e menos-privilegio e a
 -- role fixa de msdb SQLAgentReaderRole -- read-only, ve TODOS os jobs e a sua
 -- actividade/sessoes. Provado a devolver linhas em SQL 2025 (2026-08-21).
-ALTER ROLE SQLAgentReaderRole ADD MEMBER WatcherDBReader;
+-- sp_addrolemember: aceite de 2005 a 2022. ALTER ROLE ... ADD MEMBER so' existe desde 2012 e em
+-- 2005/2008 o PARSER rejeita o lote inteiro (medido em producao, 2026-09-08).
+EXEC sp_addrolemember N'SQLAgentReaderRole', N'WatcherDBReader';
 GRANT SELECT ON dbo.syscategories TO WatcherDBReader;
 PRINT 'msdb: GRANT SELECT backup*/sysjobs* + SQLAgentReaderRole (job activity+sessions) + syscategories.';
 

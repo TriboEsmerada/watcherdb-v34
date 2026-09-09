@@ -58,6 +58,7 @@ def _iid(server_id: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="so' as N primeiras instancias (teste)")
+    ap.add_argument("--ids", default="", help="so' estes server_id (separados por virgula); nao reescreve o CSV completo")
     ap.add_argument("--timeout", type=int, default=15, help="login + command timeout em segundos")
     args = ap.parse_args()
 
@@ -105,6 +106,9 @@ def main() -> int:
             server_ids.append(sid)
             ambiente[sid] = str(e.get("environment") or "")
     server_ids = sorted(set(server_ids))
+    if args.ids:
+        pedidos = {s.strip().upper() for s in args.ids.split(",") if s.strip()}
+        server_ids = [s for s in server_ids if s.upper() in pedidos]
     if args.limit:
         server_ids = server_ids[: args.limit]
     if not server_ids:
@@ -122,8 +126,10 @@ def main() -> int:
         return 2
 
     data = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    out_qa = ROOT / "docs" / "qa" / "externo" / f"{data}-p2-preflight.csv"
-    out_map = ROOT / "docs" / "context" / f"p2_mapa_instancias_{data}.csv"
+    # corrida filtrada (--ids/--limit) nao substitui o CSV completo da frota
+    sufixo = "-parcial" if (args.ids or args.limit) else ""
+    out_qa = ROOT / "docs" / "qa" / "externo" / f"{data}-p2-preflight{sufixo}.csv"
+    out_map = ROOT / "docs" / "context" / f"p2_mapa_instancias_{data}{sufixo}.csv"
     out_qa.parent.mkdir(parents=True, exist_ok=True)
 
     rows, mapa = [], []

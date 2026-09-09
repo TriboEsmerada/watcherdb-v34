@@ -64,24 +64,21 @@ New-NetFirewallRule -DisplayName "WatcherDB V3.3 Portal" `
 
 A service account (ver seccao 2) vai precisar de login SQL com permissoes minimas nos servidores monitorizados:
 
-```sql
--- Execute este script em CADA SQL Server que o WatcherDB vai monitorizar.
-USE master;
-GO
-CREATE LOGIN [DOMAIN\svc_watcherdb_v33] FROM WINDOWS;
-GO
-GRANT VIEW SERVER STATE TO [DOMAIN\svc_watcherdb_v33];
-GRANT VIEW ANY DEFINITION TO [DOMAIN\svc_watcherdb_v33];
-GO
+Execute, em **cada** SQL Server que o WatcherDB vai monitorizar, o script canonico
+`docs/security/GRANTS_SQL_MONITORING_INSTANCIA.sql` (login SQL `sql_monitoring`, ja criado) ou
+`docs/security/LEAST_PRIVILEGE_SETUP.sql` (cria um login novo; substituir os placeholders). Conjunto
+de permissoes, identico nos dois e validado em producao (2026-09-08):
 
--- Em cada base de dados que queira ser monitorizada:
-USE [master];  -- repetir para cada BD
-GO
-CREATE USER [DOMAIN\svc_watcherdb_v33] FOR LOGIN [DOMAIN\svc_watcherdb_v33];
-EXEC sp_addrolemember N'db_datareader', N'DOMAIN\svc_watcherdb_v33';
-GRANT VIEW DATABASE STATE TO [DOMAIN\svc_watcherdb_v33];
-GO
-```
+| Ambito | Permissao | Para que |
+|---|---|---|
+| servidor | `VIEW SERVER STATE`, `VIEW ANY DEFINITION`, `VIEW ANY DATABASE` | DMVs, metadata, enumeracao de BDs |
+| master | `EXECUTE ON sys.xp_readerrorlog`, `SHOWPLAN` | error log, planos de execucao |
+| msdb | `SELECT` em `backupset`/`backupmedia*`/`backupfile`/`sysjob*`/`sysschedules`/`sysoperators`/`syscategories`, `EXECUTE sp_help_jobactivity`, membro de `SQLAgentReaderRole` | backups e jobs |
+
+Para muitas instancias de uma vez: SSMS > View > Registered Servers > grupo com as instancias >
+New Query sobre o grupo (o script corre em todas com a sua sessao de administracao). Validar
+depois como `sql_monitoring`: a ultima query do script devolve 1 linha por instancia, tudo a 1 e
+`sysadmin = 0`. Compativel de SQL Server 2005 a 2022.
 
 **NUNCA conceder `sysadmin`, `db_owner` ou permissoes elevadas.** Banking audit (SOC 2 / DORA / ISO 27001) vai pedir evidencia do least-privilege.
 

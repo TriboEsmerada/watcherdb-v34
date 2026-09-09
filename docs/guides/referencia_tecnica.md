@@ -188,6 +188,7 @@ WATCHERDB_V3.1/
 |   +-- 07_ADD_MUST_CHANGE_PASSWORD.sql   # must_change_password (reset pelo admin) -- obrigatorio
 |   +-- 12_ADD_LOCAL_PASSWORD_HASH.sql   # Dual auth (AD + fallback local) -- obrigatorio
 |   +-- 13_ADD_PASSWORD_CHANGED_AT.sql   # Revogacao de sessao por reset (P4 A-4.7) -- obrigatorio
+|   (instancias monitorizadas: docs/security/GRANTS_SQL_MONITORING_INSTANCIA.sql -- least-privilege do sql_monitoring, 1x por instancia)
 |   +-- 00_WATCHERDB_MASTER_DEPLOY.sql  # Deploy completo
 |   +-- SQLSERVER_KPI_DEPLOY_COMPLETE.sql # Views e procedures KPI
 |   +-- (... 20+ scripts SQL)

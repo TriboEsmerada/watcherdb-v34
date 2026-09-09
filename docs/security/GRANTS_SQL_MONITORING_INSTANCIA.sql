@@ -1,5 +1,5 @@
 -- =============================================================================
--- GRANTS_SQL_MONITORING_MULTI_SERVER.sql  (WatcherDB V3.4, P2, 2026-09-08)
+-- GRANTS_SQL_MONITORING_INSTANCIA.sql  (canonico das instancias monitorizadas; WatcherDB V3.4, 2026-09-08)
 -- Completa as permissoes minimas do login EXISTENTE `sql_monitoring` em cada
 -- instancia. Derivado de docs/security/LEAST_PRIVILEGE_SETUP.sql (tier STANDARD),
 -- sem CREATE LOGIN, sem placeholders <DOMAIN>, sem a parte da WatcherDB_Intelligence
