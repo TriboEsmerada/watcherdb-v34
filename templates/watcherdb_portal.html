@@ -7175,8 +7175,8 @@
         // Uso:
         //   const lc = startLoadingChecklist(content, t('logs.loading'));
         //   const [a, b] = await Promise.all([
-        //       lc.track('Windows Event Log', fetchA),
-        //       lc.track('SQL Error Log', fetchB)
+        //       lc.track(t('lc.windows_event_log'), fetchA),
+        //       lc.track(t('lc.sql_error_log'), fetchB)
         //   ]);
         // O relogio auto-termina quando o innerHTML for substituido pelo
         // conteudo real (ou a tab fechada a meio — isConnected guard).
@@ -7209,7 +7209,7 @@
                     if (list) {
                         const item = document.createElement('div');
                         item.dataset.lcItem = key;
-                        item.innerHTML = `<i class="fas fa-circle-notch fa-spin" style="width: 16px; color: var(--color-text-link);"></i> A carregar ${label}...`;
+                        item.innerHTML = `<i class="fas fa-circle-notch fa-spin" style="width: 16px; color: var(--color-text-link);"></i> ${_kpiTp('lc.loading', 'A carregar {label}...', { label })}`;  // lote F7 2026-09-09
                         list.appendChild(item);
                     }
                     const s0 = Date.now();
@@ -7219,7 +7219,7 @@
                         const secs = ((Date.now() - s0) / 1000).toFixed(1);
                         item.innerHTML = ok
                             ? `<i class="fas fa-check" style="width: 16px; color: #10b981;"></i> ${label} <span style="color: var(--color-text-disabled);">${secs}s</span>`
-                            : `<i class="fas fa-times" style="width: 16px; color: #f59e0b;"></i> ${label} <span style="color: var(--color-text-disabled);">sem resposta (${secs}s)</span>`;
+                            : `<i class="fas fa-times" style="width: 16px; color: #f59e0b;"></i> ${label} <span style="color: var(--color-text-disabled);">${_kpiTp('lc.no_response', 'sem resposta ({secs}s)', { secs })}</span>`;
                     };
                     return Promise.resolve(promise).then(
                         (r) => { mark(true); return r; },
@@ -8189,7 +8189,7 @@
             const lc = startLoadingChecklist(content, t('users.loading'));
 
             try {
-                const response = await lc.track('Logins, roles e permissoes', createFetchWithAbort(`/api/users/server/${serverId}`));
+                const response = await lc.track(t('lc.logins_roles_perms'), createFetchWithAbort(`/api/users/server/${serverId}`));
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -9082,7 +9082,7 @@
                 // Converter serverId para formato da API (backslash para underscore)
                 const serverIdFormatted = serverId.replace(/\\/g, '_');
                 debugLog(`[DBG] Fazendo fetch para: /api/jobs/server/${serverIdFormatted}`, 'info');
-                const response = await lc.track('Jobs, historico e schedules', createFetchWithAbort(`/api/jobs/server/${serverIdFormatted}`));
+                const response = await lc.track(t('lc.jobs_history_schedules'), createFetchWithAbort(`/api/jobs/server/${serverIdFormatted}`));
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -9800,11 +9800,11 @@
 
                 // Buscar volumes, espaco nao alocado, I/O, log space e historico em paralelo
                 const [volumesResponse, unallocatedResponse, ioResponse, logSpaceResponse, historyResponse] = await Promise.all([
-                    lc.track('Volumes de disco', createFetchWithAbort('/api/queries/disk-volumes/' + serverIdFormatted)),
-                    lc.track('Espaco nao alocado', createFetchWithAbort('/api/disk-unallocated/server/' + serverIdFormatted)).catch(() => null),
-                    lc.track('Diagnostico de I/O', createFetchWithAbort('/api/queries/disk-io-diagnostics/' + serverIdFormatted)).catch(() => null),
-                    lc.track('Log space', createFetchWithAbort('/api/queries/log-space/' + serverIdFormatted)).catch(() => null),
-                    lc.track('Historico (90d)', createFetchWithAbort('/api/disk-unallocated/history/' + serverIdFormatted + '?days=90')).catch(() => null)
+                    lc.track(t('lc.disk_volumes'), createFetchWithAbort('/api/queries/disk-volumes/' + serverIdFormatted)),
+                    lc.track(t('lc.unallocated_space'), createFetchWithAbort('/api/disk-unallocated/server/' + serverIdFormatted)).catch(() => null),
+                    lc.track(t('lc.io_diagnostics'), createFetchWithAbort('/api/queries/disk-io-diagnostics/' + serverIdFormatted)).catch(() => null),
+                    lc.track(t('lc.log_space'), createFetchWithAbort('/api/queries/log-space/' + serverIdFormatted)).catch(() => null),
+                    lc.track(t('lc.history_90d'), createFetchWithAbort('/api/disk-unallocated/history/' + serverIdFormatted + '?days=90')).catch(() => null)
                 ]);
 
                 if (!volumesResponse.ok) throw new Error('HTTP ' + volumesResponse.status);
@@ -15255,21 +15255,21 @@
             // ✓ quando a resposta chega de facto (via timedFetch), com relógio
             // decorrido. UX: o user vê o que está a ser carregado e o que falta.
             // ══════════════════════════════════════════════════
-            const _skelLabels = {
-                SERVICES: 'Serviços SQL',
-                CPU: 'CPU',
-                MEMORY: 'Memória',
-                DATABASES: 'Databases',
-                BACKUP_SUMMARY: 'Backup — resumo',
-                BACKUP_GAPS: 'Backup — gaps',
-                BACKUP_PATTERNS: 'Backup — padrões'
+            const _skelLabels = {  // lote F7 2026-09-09: rotulos por chave lc.skel_* (fallback = literal)
+                SERVICES: _kpiT('lc.skel_services', 'Serviços SQL'),
+                CPU: _kpiT('lc.skel_cpu', 'CPU'),
+                MEMORY: _kpiT('lc.skel_memory', 'Memória'),
+                DATABASES: _kpiT('lc.skel_databases', 'Databases'),
+                BACKUP_SUMMARY: _kpiT('lc.skel_backup_summary', 'Backup — resumo'),
+                BACKUP_GAPS: _kpiT('lc.skel_backup_gaps', 'Backup — gaps'),
+                BACKUP_PATTERNS: _kpiT('lc.skel_backup_patterns', 'Backup — padrões')
             };
             const skelStepStart = (key) => {
                 const list = content.querySelector('#skeleton-checklist');
                 if (!list) return;
                 const item = document.createElement('div');
                 item.dataset.skelStep = key;
-                item.innerHTML = `<i class="fas fa-circle-notch fa-spin" style="width: 16px; color: var(--color-text-link);"></i> A carregar ${_skelLabels[key] || key}...`;
+                item.innerHTML = `<i class="fas fa-circle-notch fa-spin" style="width: 16px; color: var(--color-text-link);"></i> ${_kpiTp('lc.loading', 'A carregar {label}...', { label: _skelLabels[key] || key })}`;
                 list.appendChild(item);
             };
             const skelStepDone = (key, ms, ok) => {
@@ -15279,7 +15279,7 @@
                 if (ok) {
                     item.innerHTML = `<i class="fas fa-check" style="width: 16px; color: #10b981;"></i> ${_skelLabels[key] || key} <span style="color: var(--color-text-disabled);">${secs}s</span>`;
                 } else {
-                    item.innerHTML = `<i class="fas fa-times" style="width: 16px; color: #f59e0b;"></i> ${_skelLabels[key] || key} <span style="color: var(--color-text-disabled);">sem resposta (${secs}s)</span>`;
+                    item.innerHTML = `<i class="fas fa-times" style="width: 16px; color: #f59e0b;"></i> ${_skelLabels[key] || key} <span style="color: var(--color-text-disabled);">${_kpiTp('lc.no_response', 'sem resposta ({secs}s)', { secs })}</span>`;
                 }
             };
             // Relógio decorrido: auto-termina quando o skeleton sai do DOM
@@ -17037,7 +17037,7 @@
                 const apiUrl = `/api/monitoring/space/server/${serverId}?t=${Date.now()}`;
                 debugLog(`[DBG] API: ${apiUrl}`, 'info');
 
-                const response = await lc.track('Filegroups e espaco por database', createFetchWithAbort(apiUrl));
+                const response = await lc.track(t('lc.filegroups_space'), createFetchWithAbort(apiUrl));
                 const json = await response.json();
                 
                 debugLog(`[DBG] Status: ${response.status}`, response.ok ? 'success' : 'error');
@@ -17418,7 +17418,7 @@
                 const apiUrl = `/api/monitoring/memory/server/${serverId}?t=${Date.now()}`;
                 debugLog(`[DBG] API: ${apiUrl}`, 'info');
 
-                const response = await lc.track('Analise de memoria (DMVs)', createFetchWithAbort(apiUrl));
+                const response = await lc.track(t('lc.memory_analysis'), createFetchWithAbort(apiUrl));
                 const json = await response.json();
                 
                 debugLog(`[DBG] Status: ${response.status}`, response.ok ? 'success' : 'error');
@@ -19779,7 +19779,7 @@
 
             try {
                 const apiUrl = `/api/monitoring/cpu/server/${serverId}?t=${Date.now()}`;
-                const response = await lc.track('Analise de CPU (DMVs)', createFetchWithAbort(apiUrl));
+                const response = await lc.track(t('lc.cpu_analysis'), createFetchWithAbort(apiUrl));
                 const json = await response.json();
                 if (!json.success) throw new Error(json.error || 'Erro na API de CPU');
                 renderCPUAnalysis(json.data, serverId, content);
@@ -19814,7 +19814,7 @@
                 const url = `/api/monitoring/security/server/${serverId}`;
                 debugLog(`[DBG] API: ${url}`, 'info');
 
-                const res = await lc.track('Checks de seguranca', createFetchWithAbort(url));
+                const res = await lc.track(t('lc.security_checks'), createFetchWithAbort(url));
                 const data = await res.json();
 
                 if (!data.success) {
@@ -20055,8 +20055,8 @@
                 debugLog(`   - /api/queries/tde-database-status/${serverIdFormatted}`, 'info');
 
                 const [tdeStatusRes, tdeDbStatusRes] = await Promise.all([
-                    lc.track('Estado TDE do servidor', fetchWithTimeout(`/api/queries/tde-status/${serverIdFormatted}`)),
-                    lc.track('TDE por database', fetchWithTimeout(`/api/queries/tde-database-status/${serverIdFormatted}`))
+                    lc.track(t('lc.tde_server'), fetchWithTimeout(`/api/queries/tde-status/${serverIdFormatted}`)),
+                    lc.track(t('lc.tde_per_db'), fetchWithTimeout(`/api/queries/tde-database-status/${serverIdFormatted}`))
                 ]);
 
                 // FIND-20260612-103: sem este check, um 500 virava "TDE nao activo /
@@ -20702,10 +20702,10 @@
                 // Buscar dados de gaps, summary, jobs de backup e conflitos em paralelo
                 const serverIdForJobs = serverId.replace('\\', '_');
                 const [gapsRes, summaryRes, jobsRes, conflictsRes] = await Promise.all([
-                    lc.track('Gaps de backup (30d)', createFetchWithAbort(gapsUrl, { timeout: 300000 })),
+                    lc.track(t('lc.backup_gaps_30d'), createFetchWithAbort(gapsUrl, { timeout: 300000 })),
                     lc.track(`Resumo de backups (${summaryDays}d)`, createFetchWithAbort(summaryUrl, { timeout: 300000 })),
-                    lc.track('Jobs de backup', createFetchWithAbort(`/api/jobs/server/${serverIdForJobs}`, { timeout: 30000 })).catch(() => null),
-                    lc.track('Colisoes de schedule', createFetchWithAbort(`/api/jobs/server/${serverIdForJobs}/schedule-conflicts`, { timeout: 30000 })).catch(() => null)
+                    lc.track(t('lc.backup_jobs'), createFetchWithAbort(`/api/jobs/server/${serverIdForJobs}`, { timeout: 30000 })).catch(() => null),
+                    lc.track(t('lc.schedule_collisions'), createFetchWithAbort(`/api/jobs/server/${serverIdForJobs}/schedule-conflicts`, { timeout: 30000 })).catch(() => null)
                 ]);
 
                 const gapsData = await gapsRes.json();
@@ -22649,8 +22649,8 @@
 
                 // Buscar logs do Windows e SQL Server em paralelo
                 const [windowsLogsRes, sqlLogsRes] = await Promise.all([
-                    lc.track('Windows Event Log', createFetchWithAbort(`/api/monitoring/windows-events/${serverId}?hours=${hours}`)).catch(() => null),
-                    lc.track('SQL Server Error Log', createFetchWithAbort(`/api/monitoring/sql-errors/${serverId}?hours=${hours}`)).catch(() => null)
+                    lc.track(t('lc.windows_event_log'), createFetchWithAbort(`/api/monitoring/windows-events/${serverId}?hours=${hours}`)).catch(() => null),
+                    lc.track(t('lc.sql_server_error_log'), createFetchWithAbort(`/api/monitoring/sql-errors/${serverId}?hours=${hours}`)).catch(() => null)
                 ]);
 
                 // Verificar se as requisições foram bem-sucedidas
@@ -30929,7 +30929,7 @@
                 let quickValidationRes;
                 try {
                     // Timeout curto (3 segundos) para validação rápida - reduzido para evitar travamento
-                    quickValidationRes = await lc.track('Validacao Always On', fetchWithTimeout(serverUrl, 3000));
+                    quickValidationRes = await lc.track(t('lc.alwayson_validation'), fetchWithTimeout(serverUrl, 3000));
                 } catch (err) {
                     debugLog(`[DBG] Erro na validação rápida: ${err.message}`, 'warn');
                     // Se timeout, assumir desconhecido e continuar (não bloquear)
@@ -31040,13 +31040,13 @@
                     const startTime = Date.now();
 
                     // Iniciar eventos em paralelo mas NÃO esperar (non-blocking)
-                    _eventsPromise = lc.track('Eventos Always On (30d)', fetchWithTimeout(eventsUrl, 45000)).catch(err => {
+                    _eventsPromise = lc.track(t('lc.alwayson_events_30d'), fetchWithTimeout(eventsUrl, 45000)).catch(err => {
                         debugLog(`[AlwaysOn] Erro ao buscar eventos (não crítico): ${err.message}`, 'warn');
                         return { ok: false, json: async () => ({ total_events: 0, events: [], patterns: [] }) };
                     });
 
                     // Esperar APENAS o overview (30s timeout — falha rápida)
-                    const serverRes = await lc.track('Estado do Availability Group', fetchWithTimeout(serverUrl, 30000)).catch(err => {
+                    const serverRes = await lc.track(t('lc.ag_state'), fetchWithTimeout(serverUrl, 30000)).catch(err => {
                         debugLog(`[AlwaysOn] Erro ao buscar status do servidor: ${err.message}`, 'warn');
                         return { ok: false, json: async () => ({ is_alwayson: false, error: err.message }) };
                     });
@@ -31902,7 +31902,7 @@
                 // Carregar databases do servidor
                 let databases = [];
                 try {
-                    const dbRes = await lc.track('Lista de databases', createFetchWithAbort(`/api/queries/databases/${serverId}`));
+                    const dbRes = await lc.track(t('lc.database_list'), createFetchWithAbort(`/api/queries/databases/${serverId}`));
                     if (dbRes && dbRes.ok) {
                         const dbData = await dbRes.json();
                         databases = dbData.databases || [];
@@ -31939,7 +31939,7 @@
                 let customQueries = [];
                 try {
                     // Global custom queries
-                    const customRes = await lc.track('Queries customizadas', createFetchWithAbort('/api/config/custom-queries'));
+                    const customRes = await lc.track(t('lc.custom_queries'), createFetchWithAbort('/api/config/custom-queries'));
                     if (customRes && customRes.ok) {
                         const globalCustom = await customRes.json();
                         customQueries = (Array.isArray(globalCustom) ? globalCustom : []).map(q => ({
@@ -32747,7 +32747,7 @@
 
             try {
                 // Buscar todos os serviços SQL relacionados (skip_cache=true para dados em tempo real)
-                const servicesRes = await lc.track('Servicos SQL (tempo real, sem cache)', createFetchWithAbort(`/api/monitoring/services/server/${serverId}?all_services=true&skip_cache=true`));
+                const servicesRes = await lc.track(t('lc.sql_services_realtime'), createFetchWithAbort(`/api/monitoring/services/server/${serverId}?all_services=true&skip_cache=true`));
                 if (!servicesRes.ok) {
                     throw new Error(`HTTP ${servicesRes.status}: ${await servicesRes.text()}`);
                 }

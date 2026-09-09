@@ -9,6 +9,11 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Lote F7 (BUG-003): o checklist de carregamento das abas segue o idioma** (owner 09/09: "achei mais
+  1 caso" — "A carregar Filegroups e espaço por database…" em inglês). Os 26 passos das 13 abas e o
+  prefixo/estado do checklist ("A carregar…", "sem resposta") ganham chaves `lc.*` em pt-PT, en-US e es
+  (pt-BR herda), com fallback ao literal. [tier: Std]
+
 - **Lote F4b (BUG-003): os títulos da modal "KPI Documentation" seguem o idioma** (owner 09/09: "a
   interrogação dos KPIs não está sendo traduzida"). As categorias já traduziam; os 29 títulos eram
   português cru sem chave, no menu, na pesquisa e no cabeçalho. Namespace novo `kpi_doc.<id>.title`
