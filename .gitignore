@@ -270,3 +270,6 @@ docs/context/p2_mapa_instancias_*.csv
 config/sql_auth_rollout.json
 
 config/sql_auth_rollout.json
+# TESTGRAPETE TG-1: evidencias pesadas (screenshots/traces) e credenciais de QA
+docs/qa/externo/*/council/playwright/
+.env.qa

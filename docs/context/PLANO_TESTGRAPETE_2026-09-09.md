@@ -52,6 +52,19 @@ não justificam), FEATURE_MATRIX como PRD (é um stub de 4 linhas).
 3. Hora do job: 02:00 evita o pico de coleta? Confirmar com o intervalo dos collectors.
 4. TestSprite: trial só depois de TG-3, em laboratório fora da TAP, sem upload de código.
 
+## Evidências são locais por desenho
+
+docs/qa/externo/ está no .gitignore desde 05/09 (linha 266): os bundles têm
+hostnames de instâncias e ficam só nesta máquina. O painel (index.html) é local.
+O que vai para o git é o motor (runner, job, gerador, NIGHTLY.txt), nunca as corridas.
+
+## 1.ª corrida real (2026-09-09, 8434, perfil admin)
+
+51 casos recolhidos; 15 FAILED por três defeitos do runner, não do portal: rate
+limit do login (24 x 429), id da aba calculado com timestamp, servidor escolhido
+em produção. Corrigido em TG1_PASSO3_fix_apply.py. Externo: 5 de 9 scripts
+correm sem argumentos; lista em scripts/qa/runtime/NIGHTLY.txt.
+
 ## Ficheiros
 
 - docs/context/TG1_PASSO1_apply.py: escreve o teste, o script noturno e o .gitignore das evidências pesadas.

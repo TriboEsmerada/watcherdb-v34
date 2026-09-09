@@ -47,7 +47,11 @@ $councilExit = $LASTEXITCODE
 
 # ---- 2) qa-externo: scripts proprios, intocados, cada um no seu log ----
 $extResults = @()
-Get-ChildItem scripts/qa/runtime -Filter 'qa_ext_*.py' | Sort-Object Name | ForEach-Object {
+# TG-1 PASSO 3: so' os scripts listados em scripts/qa/runtime/NIGHTLY.txt (um por linha;
+# o qa-externo e' dono da lista). 4 dos 9 exigem argumentos de pauta e nao sao noturnos.
+$lista = Join-Path $repo 'scripts\qa\runtime\NIGHTLY.txt'
+$nomes = if (Test-Path $lista) { Get-Content $lista | Where-Object { $_ -and -not $_.StartsWith('#') } | ForEach-Object { $_.Trim() } } else { @() }
+Get-ChildItem scripts/qa/runtime -Filter 'qa_ext_*.py' | Where-Object { $nomes -contains $_.Name } | Sort-Object Name | ForEach-Object {
     $log = Join-Path $externo ($_.BaseName + '.log')
     & py $_.FullName 2>&1 | Out-File -FilePath $log -Encoding utf8
     $extResults += [pscustomobject]@{ script = $_.Name; exit = $LASTEXITCODE }
