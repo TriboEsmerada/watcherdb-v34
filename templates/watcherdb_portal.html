@@ -29316,10 +29316,21 @@
                 ></iframe>
             `;
 
+            // 2026-09-09: o iframe about:blank HERDA a CSP do portal (script-src/style-src
+            // com nonce, sem CDNs). O relatorio traz <style> e <script> inline e carregava o
+            // Chart.js do jsdelivr -> tudo bloqueado: sem grafico, sem estilo. Injecta-se o
+            // nonce deste pedido nos blocos inline e qualquer CDN antigo (relatorios ja em
+            // disco) e' reescrito para a copia auto-hospedada. style="" e handlers continuam
+            // permitidos pela CSP via *-attr.
+            const _cspNonce = '{{ csp_nonce }}';
+            const _safeHtml = String(htmlContent || '')
+                .replace(/https:\/\/cdn\.jsdelivr\.net\/npm\/chart\.js@[^"']+/g, '/static/vendor/chartjs/chart.min.js')
+                .replace(/<script(?![^>]*\bnonce=)([\s>])/gi, `<script nonce="${_cspNonce}"$1`)
+                .replace(/<style(?![^>]*\bnonce=)([\s>])/gi, `<style nonce="${_cspNonce}"$1`);
             const iframe = document.getElementById('reportFrame');
             const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
             iframeDoc.open();
-            iframeDoc.write(htmlContent);
+            iframeDoc.write(_safeHtml);
             iframeDoc.close();
             
             debugLog(`[DBG] Relatório exibido no iframe`, 'success');

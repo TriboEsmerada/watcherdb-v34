@@ -457,7 +457,9 @@ class FilegroupForecastAnalyzerWatcherDB:
 <head>
     <meta charset="UTF-8">
     <title>Analise Preditiva: {self.filegroup}</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- 2026-09-09: Chart.js auto-hospedado (CSP do portal: sem CDNs); o iframe do portal
+         resolve o caminho contra a origem do servico -->
+    <script src="/static/vendor/chartjs/chart.min.js"></script>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
@@ -606,7 +608,7 @@ class FilegroupForecastAnalyzerWatcherDB:
         </div>
 
         <div class="footer">
-            Gerado em {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | WatcherDB Intelligence v5 (WatcherDB Data Source)<br>
+            Gerado em {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | WatcherDB<br>
             Dados coletados em: {current_info.get('data_coleta', 'N/A')} | Historico: {len(historical_data)} dias
         </div>
     </div>

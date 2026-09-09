@@ -47,3 +47,14 @@ def test_portal_button_admin_only_and_json_guard():
     assert "window._currentUser.role === 'admin') ?" in PORTAL
     assert "_ctype.includes('application/json')" in PORTAL
     assert "errorData.error || errorData.detail ||" in PORTAL
+
+def test_report_is_csp_compatible_20260909():
+    """O iframe herda a CSP do portal: sem CDN no relatorio, Chart.js auto-hospedado,
+    nonce injectado nos blocos inline antes do document.write, rodape 'WatcherDB'."""
+    assert "cdn.jsdelivr.net" not in SCRIPT
+    assert "/static/vendor/chartjs/chart.min.js" in SCRIPT
+    assert (ROOT / "static" / "vendor" / "chartjs" / "chart.min.js").exists()
+    assert "Intelligence v5 (WatcherDB Data Source)" not in SCRIPT
+    assert "const _cspNonce = '{{ csp_nonce }}';" in PORTAL
+    assert "iframeDoc.write(_safeHtml);" in PORTAL
+    assert "iframeDoc.write(htmlContent);" not in PORTAL
