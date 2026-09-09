@@ -58,7 +58,7 @@ from modules.monitoring.backup_analysis import BackupAnalysisEngine
 from modules.monitoring.backup_pattern_analysis import BackupPatternAnalyzer
 from modules.monitoring.security_analysis import SecurityAnalysisEngine
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request, Body
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request, Body, Depends
 from fastapi.templating import Jinja2Templates
 from typing import Optional, List, Dict
 from fastapi.middleware.cors import CORSMiddleware
@@ -645,6 +645,7 @@ app.add_middleware(APIDeprecationMiddleware)
 from api.routers.auth_compat import (
     _get_token_from_request as _auth_get_token,
     _require_auth as _auth_require,
+    _require_admin as _auth_require_admin,  # 2026-09-09: Depends() do relatorio preditivo
     _token_blacklist as _auth_blacklist,
 )
 from services.auth_service import get_auth_service as _auth_get_service
@@ -5107,7 +5108,11 @@ class PredictiveReportRequest(BaseModel):
     threshold: float = 0.85
 
 @app.post("/api/monitoring/space/filegroup/generate-report")
-async def generate_predictive_report(http_request: Request, request: PredictiveReportRequest):
+async def generate_predictive_report(
+    http_request: Request,
+    request: PredictiveReportRequest,
+    _user: dict = Depends(_auth_require_admin),  # 2026-09-09: gate na assinatura (R2-01)
+):
     """
     Gera relatório preditivo de crescimento de filegroup.
     
@@ -5135,8 +5140,6 @@ async def generate_predictive_report(http_request: Request, request: PredictiveR
     document.getElementById('modal-content').innerHTML = html;
     ```
     """
-    from api.routers.auth_compat import _require_admin
-    await _require_admin(http_request)
     try:
         logger.info(f"🔮 Gerando análise preditiva: {request.server_id}/{request.database_name}/{request.filegroup_name}")
         
@@ -5205,10 +5208,14 @@ async def generate_predictive_report(http_request: Request, request: PredictiveR
                 """
                 return HTMLResponse(content=elegant_error_html, status_code=200)
             else:
-                return {
+                # 2026-09-09: era dict com HTTP 200 -> o portal via response.ok e
+                # injectava o JSON (com traceback e caminhos do servidor) no modal
+                # como relatorio. 500 + mensagem ja' saneada pelo analisador; o
+                # detalhe integral fica no log do servico.
+                return JSONResponse(status_code=500, content={
                     "success": False,
                     "error": result["error"]
-                }
+                })
         
         # Lê o HTML gerado
         html_content = analyzer.read_report_html(result["html_path"])

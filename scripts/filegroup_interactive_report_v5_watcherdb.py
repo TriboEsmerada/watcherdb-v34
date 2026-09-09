@@ -13,6 +13,64 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import json
 
+# 2026-09-09: o script corre como subprocess do servico. Precisa da raiz do repo
+# no sys.path para reutilizar a identidade de ligacao da aplicacao (Regra de
+# Ouro #2: so' sql_monitoring toca em BD; nunca a conta Windows do servico).
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+
+def _load_env_3tier() -> None:
+    """Carrega o .env pela mesma ordem do watcherdb_main (env var, ProgramData, raiz).
+    Nao sobrepoe variaveis ja' herdadas do processo do servico."""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    candidates = []
+    wdd = os.environ.get("WATCHERDB_DATA_DIR")
+    if wdd:
+        candidates.append(Path(wdd) / ".env")
+    candidates.append(Path(r"C:\ProgramData\WatcherDB") / ".env")
+    candidates.append(_REPO_ROOT / ".env")
+    for c in candidates:
+        if c.exists():
+            load_dotenv(c, override=False)
+            break
+
+
+def build_intelligence_conn_str(timeout: int = 30) -> str:
+    """Connection string da WatcherDB_Intelligence com a identidade da aplicacao.
+
+    Espelha api/connection_pool.IntelligenceConnectionPool com uma diferenca
+    deliberada: este script NAO tem ramo Windows Auth. Se a identidade resolvida
+    nao for SQL Auth explicita, falha com instrucoes em vez de ligar com a conta
+    Windows do servico."""
+    _load_env_3tier()
+    from watcherdb.core.settings import settings
+    from watcherdb.core.db_identity import resolve, SQL
+    from services.secrets import get_secret
+
+    identity = resolve()
+    if identity.mode != SQL:
+        raise RuntimeError(
+            "Identidade de ligacao nao e' SQL Auth explicita "
+            f"({identity.mode}: {identity.source}). Define INTELLIGENCE_USE_WINDOWS_AUTH=false, "
+            "INTELLIGENCE_SQL_USER=sql_monitoring e INTELLIGENCE_SQL_PASSWORD no .env."
+        )
+    password = get_secret("INTELLIGENCE_SQL_PASSWORD", "")
+    if not password:
+        raise RuntimeError("INTELLIGENCE_SQL_PASSWORD ausente ou nao desencriptavel neste contexto.")
+    return (
+        f"DRIVER={{{settings.odbc_driver}}};"
+        f"SERVER={settings.intelligence_server};"
+        f"DATABASE={settings.intelligence_database};"
+        f"UID={settings.intelligence_sql_user};"
+        f"PWD={password};"
+        f"Connection Timeout={timeout};"
+    )
+
 class FilegroupForecastAnalyzerWatcherDB:
     """Analisador usando dados do WatcherDB Intelligence"""
 
@@ -28,21 +86,19 @@ class FilegroupForecastAnalyzerWatcherDB:
         self.reports_path = self.base_path / "reports"
         self.reports_path.mkdir(exist_ok=True)
 
-        # WatcherDB Intelligence connection
-        self.watcherdb_server = "SQLHDSTST505\\I01"
-        self.watcherdb_database = "WatcherDB_Intelligence"
+        # WatcherDB Intelligence connection: servidor/BD/identidade vem das
+        # settings da aplicacao (.env), nao hardcoded (2026-09-09).
+        _load_env_3tier()
+        from watcherdb.core.settings import settings as _settings
+        self.watcherdb_server = _settings.intelligence_server
+        self.watcherdb_database = _settings.intelligence_database
 
     def get_watcherdb_connection(self, timeout=30):
         """Conecta ao WatcherDB Intelligence (local)"""
         try:
-            conn_str = (
-                f'DRIVER={{ODBC Driver 17 for SQL Server}};'
-                f'SERVER={self.watcherdb_server};'
-                f'DATABASE={self.watcherdb_database};'
-                f'Trusted_Connection=yes;'
-                f'Connection Timeout={timeout};'
-            )
-            return pyodbc.connect(conn_str)
+            # 2026-09-09: identidade da aplicacao (sql_monitoring), nunca a conta
+            # Windows do servico -- ver build_intelligence_conn_str.
+            return pyodbc.connect(build_intelligence_conn_str(timeout))
         except Exception as e:
             raise Exception(f"Erro ao conectar no WatcherDB Intelligence: {e}")
 

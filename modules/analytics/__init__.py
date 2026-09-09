@@ -14,6 +14,20 @@ import os
 from pathlib import Path
 from datetime import datetime
 import logging
+import re as _re
+
+_WIN_PATH_RE = _re.compile(r"[A-Za-z]:\\[^\s'\"<>|]+")
+
+
+def _sanitize_script_error(msg: str) -> str:
+    """Ultima linha util do erro do subprocess, sem caminhos do servidor.
+
+    2026-09-09: o traceback completo (C:\\Users\\<conta>\\...) chegava ao browser
+    dentro do modal. O detalhe integral continua no log do servico; ao
+    utilizador vai so' a linha final (ex.: "ModuleNotFoundError: ...")."""
+    lines = [ln.strip() for ln in (msg or "").splitlines() if ln.strip()]
+    last = lines[-1] if lines else (msg or "").strip()
+    return _WIN_PATH_RE.sub("<path>", last)[:300]
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +118,9 @@ class PredictiveAnalyzer:
 
             # Comando para executar o script (igual você faz no CMD)
             cmd = [
-                "python",
+                # 2026-09-09: era o literal "python" (PATH da conta do servico ->
+                # 3.14 sem pyodbc). O interpretador certo e' o do proprio servico.
+                sys.executable,
                 str(self.forecast_script),
                 identifier,
                 str(forecast_days),
@@ -136,7 +152,7 @@ class PredictiveAnalyzer:
 
                 return {
                     "success": False,
-                    "error": f"Falha na execução: {error_msg}",
+                    "error": f"Falha na execução: {_sanitize_script_error(error_msg)}",
                     "returncode": result.returncode,
                     "stdout": result.stdout,
                     "stderr": result.stderr
