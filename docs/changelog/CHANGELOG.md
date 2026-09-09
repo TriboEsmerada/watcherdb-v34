@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Lote F3 (BUG-003): as ajudas "?" dos cartões das abas seguem o idioma** (owner 09/09: "acho que
+  todas as interrogações não traduzem"). As 92 ajudas (444 textos: título, secções e dica) eram português
+  cru sem acentos e sem chave. Namespace novo `card_help.<id>.*` em pt-PT acentuado, en-US e es (pt-BR
+  herda), resolvido no balão com fallback ao literal; o rótulo "Dica:" passa a usar a chave que já existia.
+  Traduções dos três lotes do v33-i18n-linguist. [tier: Std]
+
 - **Lote F7 (BUG-003): o checklist de carregamento das abas segue o idioma** (owner 09/09: "achei mais
   1 caso" — "A carregar Filegroups e espaço por database…" em inglês). Os 26 passos das 13 abas e o
   prefixo/estado do checklist ("A carregar…", "sem resposta") ganham chaves `lc.*` em pt-PT, en-US e es

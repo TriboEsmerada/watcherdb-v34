@@ -67,6 +67,9 @@ _PRE_AO90 = re.compile(
     r"afectad|seleccion|excepc|objectiv|colectar)",
     re.IGNORECASE,
 )
+# Identificadores tecnicos (snake_case, MAIUSCULAS: log_reuse_wait_desc, ACTIVE_TRANSACTION,
+# active_end_date) nao sao portugues -- saem antes da regex (lote F3 2026-09-09).
+_IDENTIFICADOR = re.compile(r"\b[A-Za-z0-9]+(?:_[A-Za-z0-9]+)+\b|\b[A-Z]{4,}\b")
 
 
 def test_pt_uses_post_ao90_spelling(dicts):
@@ -75,7 +78,7 @@ def test_pt_uses_post_ao90_spelling(dicts):
         f"{loc}:{k}": v
         for loc in ("pt",) + OVERLAY_LOCALES
         for k, v in dicts[loc].items()
-        if isinstance(v, str) and _PRE_AO90.search(v)
+        if isinstance(v, str) and _PRE_AO90.search(_IDENTIFICADOR.sub("", v))
     }
     assert not offenders, (
         "grafia pre-AO90 em pt.json (usar atualizar/ativo/direto/selecionado): "

@@ -18969,17 +18969,18 @@
             const leftPos = Math.max(10, Math.min(rect.left - 40, window.innerWidth - 480));
             tooltip.style.cssText = `position:fixed;top:${topPos}px;left:${leftPos}px;max-width:460px;min-width:280px;background:var(--color-bg-panel);border:1px solid ${config.color || '#6366f1'};border-radius:8px;padding:14px;z-index:10000;font-size:12px;color:var(--color-text-secondary);line-height:1.7;box-shadow:0 8px 25px rgba(0,0,0,0.4);max-height:${window.innerHeight - topPos - 20}px;overflow-y:auto;`;
 
-            let sectionsHtml = config.sections.map(s => {
+            let sectionsHtml = config.sections.map((s, si) => {
                 let hdr = '';
+                const sLabel = _chT(helpKey, 's' + si + '_label', s.label), sText = _chT(helpKey, 's' + si + '_text', s.text);
                 if (s.icon) {
-                    hdr = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><i class="fas ${s.icon}" style="color:${s.iconColor || '#3b82f6'};"></i><strong style="color:${s.iconColor || 'var(--color-text-link)'};">${s.label}</strong></div>`;
+                    hdr = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><i class="fas ${s.icon}" style="color:${s.iconColor || '#3b82f6'};"></i><strong style="color:${s.iconColor || 'var(--color-text-link)'};">${sLabel}</strong></div>`;
                 }
-                return `<div style="background:var(--color-bg-sunken);border-radius:6px;padding:10px;margin-bottom:8px;">${hdr}<p style="margin:0;color:var(--color-text-tertiary);font-size:11px;">${s.text}</p></div>`;
+                return `<div style="background:var(--color-bg-sunken);border-radius:6px;padding:10px;margin-bottom:8px;">${hdr}<p style="margin:0;color:var(--color-text-tertiary);font-size:11px;">${sText}</p></div>`;
             }).join('');
 
-            const tipHtml = config.tip ? `<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:8px;font-size:11px;color:#fbbf24;"><i class="fas fa-lightbulb"></i> <strong>Dica:</strong> ${config.tip}</div>` : '';
+            const tipHtml = config.tip ? `<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:8px;font-size:11px;color:#fbbf24;"><i class="fas fa-lightbulb"></i> <strong>${t('help.tip')}</strong> ${_chT(helpKey, 'tip', config.tip)}</div>` : '';
 
-            tooltip.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><strong style="color:${config.color || '#a5b4fc'};"><i class="fas fa-info-circle"></i> ${config.title}</strong><span onclick="document.getElementById('${helpId}').remove();" style="cursor:pointer;color:var(--color-text-disabled);font-size:14px;">&times;</span></div>${sectionsHtml}${tipHtml}`;
+            tooltip.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><strong style="color:${config.color || '#a5b4fc'};"><i class="fas fa-info-circle"></i> ${_chT(helpKey, 'title', config.title)}</strong><span onclick="document.getElementById('${helpId}').remove();" style="cursor:pointer;color:var(--color-text-disabled);font-size:14px;">&times;</span></div>${sectionsHtml}${tipHtml}`;
 
             document.body.appendChild(tooltip);
             setTimeout(() => {
@@ -34894,6 +34895,7 @@
         function _kpiT(key, fb) { try { const v = (typeof t === 'function') ? t(key) : null; return (v && v !== key) ? v : fb; } catch (e) { return fb; } }
         function _kpiTp(key, fb, p) { let s = _kpiT(key, fb); Object.keys(p || {}).forEach(k => { s = s.split('{' + k + '}').join(p[k]); }); return s; }  // placeholders {n} (lote F1 2026-09-03)
         function _docTitle(kpiId, kpi) { return _kpiT('kpi_doc.' + kpiId + '.title', kpi.title); }  // lote F4b 2026-09-09: titulos da modal de documentacao seguem o idioma (fallback = title PT)
+        function _chT(id, field, fb) { return _kpiT('card_help.' + id + '.' + field, fb); }  // lote F3 2026-09-09: ajudas "?" dos cartoes (CARD_HELP_TEXTS) seguem o idioma (fallback = literal PT)
         function _kpiEsc(s) { try { return (typeof escapeHtml === 'function') ? escapeHtml(String(s)) : String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); } catch (e) { return String(s); } }
         function _kpiDefVal(id, data) {
             // 2026-07-25 (owner, opcao B): pseudo-id sem card proprio -- P4 (CHECKDB

@@ -1,0 +1,3609 @@
+{
+ "sess-total": {
+  "pt": {
+   "title": "Total de Sessões",
+   "sections": [
+    {
+     "label": "O que conta",
+     "text": "Todas as sessões ligadas à instância neste momento — de utilizadores, aplicações e tarefas internas do SQL Server. A própria ligação do WatcherDB é excluída."
+    },
+    {
+     "label": "Ao clicar",
+     "text": "Limpa os filtros de coluna e mostra a lista completa. Os cards funcionam como vistas rápidas: clicar substitui os filtros ativos."
+    }
+   ],
+   "tip": "Uma sessão ligada não significa atividade — a maioria costuma estar sleeping (ligada mas sem pedido em curso)."
+  },
+  "en": {
+   "title": "Total Sessions",
+   "sections": [
+    {
+     "label": "What counts",
+     "text": "All sessions connected to the instance at this moment — from users, applications, and internal SQL Server tasks. WatcherDB's own connection is excluded."
+    },
+    {
+     "label": "On click",
+     "text": "Clears the column filters and shows the full list. Cards work as quick views: clicking replaces the active filters."
+    }
+   ],
+   "tip": "A connected session does not imply activity — most sessions are typically sleeping (connected but with no request in progress)."
+  },
+  "es": {
+   "title": "Total de Sesiones",
+   "sections": [
+    {
+     "label": "Qué cuenta",
+     "text": "Todas las sesiones conectadas a la instancia en este momento — de usuarios, aplicaciones y tareas internas del SQL Server. La propia conexión de WatcherDB queda excluida."
+    },
+    {
+     "label": "Al hacer clic",
+     "text": "Limpia los filtros de columna y muestra la lista completa. Las tarjetas funcionan como vistas rápidas: al hacer clic se sustituyen los filtros activos."
+    }
+   ],
+   "tip": "Una sesión conectada no significa actividad — la mayoría suele estar en sleeping (conectada pero sin solicitud en curso)."
+  }
+ },
+ "sess-active": {
+  "pt": {
+   "title": "Com Tarefa Ativa",
+   "sections": [
+    {
+     "label": "O que conta",
+     "text": "Sessões com um pedido em execução neste momento: Task State RUNNING (a usar CPU), RUNNABLE (na fila por CPU) ou SUSPENDED (à espera de um recurso, ex. I/O ou lock)."
+    },
+    {
+     "label": "O que fica de fora",
+     "text": "Sessões sleeping — ligadas mas sem pedido ativo. São normais e não consomem CPU."
+    }
+   ]
+  },
+  "en": {
+   "title": "Active Task",
+   "sections": [
+    {
+     "label": "What counts",
+     "text": "Sessions with a request executing right now: Task State RUNNING (using CPU), RUNNABLE (queued for CPU), or SUSPENDED (waiting on a resource, e.g. I/O or lock)."
+    },
+    {
+     "label": "What is excluded",
+     "text": "Sleeping sessions — connected but with no active request. These are normal and do not consume CPU."
+    }
+   ]
+  },
+  "es": {
+   "title": "Con Tarea Activa",
+   "sections": [
+    {
+     "label": "Qué cuenta",
+     "text": "Sesiones con una solicitud en ejecución en este momento: Task State RUNNING (usando CPU), RUNNABLE (en cola por CPU) o SUSPENDED (esperando un recurso, ej. I/O o lock)."
+    },
+    {
+     "label": "Qué queda fuera",
+     "text": "Sesiones sleeping — conectadas pero sin solicitud activa. Son normales y no consumen CPU."
+    }
+   ]
+  }
+ },
+ "sess-running": {
+  "pt": {
+   "title": "Running",
+   "sections": [
+    {
+     "label": "O que conta",
+     "text": "Sessões em RUNNING puro — a executar em CPU neste preciso momento. É um subconjunto de “Com Tarefa Ativa”."
+    },
+    {
+     "label": "Diferença para os outros estados",
+     "text": "RUNNABLE = pronto mas à espera de CPU livre (fila alta indica pressão de CPU). SUSPENDED = à espera de um recurso (I/O, lock, latch, memória) — ver colunas Wait Type e Wait Resource."
+    }
+   ],
+   "tip": "Número de RUNNING consistentemente próximo do número de cores da instância sugere saturação de CPU."
+  },
+  "en": {
+   "title": "Running",
+   "sections": [
+    {
+     "label": "What counts",
+     "text": "Sessions in pure RUNNING state — executing on CPU at this exact moment. This is a subset of “Active Task.”"
+    },
+    {
+     "label": "Difference from other states",
+     "text": "RUNNABLE = ready but waiting for a free CPU (a high queue indicates CPU pressure). SUSPENDED = waiting on a resource (I/O, lock, latch, memory) — see the Wait Type and Wait Resource columns."
+    }
+   ],
+   "tip": "A RUNNING count consistently close to the instance's core count suggests CPU saturation."
+  },
+  "es": {
+   "title": "Running",
+   "sections": [
+    {
+     "label": "Qué cuenta",
+     "text": "Sesiones en RUNNING puro — ejecutando en CPU en este preciso momento. Es un subconjunto de “Con Tarea Activa”."
+    },
+    {
+     "label": "Diferencia con los demás estados",
+     "text": "RUNNABLE = listo pero esperando CPU libre (una cola alta indica presión de CPU). SUSPENDED = esperando un recurso (I/O, lock, latch, memoria) — ver las columnas Wait Type y Wait Resource."
+    }
+   ],
+   "tip": "Un número de RUNNING consistentemente cercano al número de núcleos de la instancia sugiere saturación de CPU."
+  }
+ },
+ "sess-user": {
+  "pt": {
+   "title": "Sessões de Utilizador",
+   "sections": [
+    {
+     "label": "O que conta",
+     "text": "Sessões abertas por utilizadores e aplicações (User Process = 1). Exclui tarefas internas do SQL Server (system sessions)."
+    },
+    {
+     "label": "Para investigar",
+     "text": "As colunas Login, Host Name e Application identificam quem está ligado e de onde. A coluna Query mostra o que está a executar (clique para copiar)."
+    }
+   ]
+  },
+  "en": {
+   "title": "User Sessions",
+   "sections": [
+    {
+     "label": "What counts",
+     "text": "Sessions opened by users and applications (User Process = 1). Excludes internal SQL Server tasks (system sessions)."
+    },
+    {
+     "label": "To investigate",
+     "text": "The Login, Host Name, and Application columns identify who is connected and from where. The Query column shows what is currently executing (click to copy)."
+    }
+   ]
+  },
+  "es": {
+   "title": "Sesiones de Usuario",
+   "sections": [
+    {
+     "label": "Qué cuenta",
+     "text": "Sesiones abiertas por usuarios y aplicaciones (User Process = 1). Excluye tareas internas del SQL Server (system sessions)."
+    },
+    {
+     "label": "Para investigar",
+     "text": "Las columnas Login, Host Name y Application identifican quién está conectado y desde dónde. La columna Query muestra qué se está ejecutando (clic para copiar)."
+    }
+   ]
+  }
+ },
+ "sess-person": {
+  "pt": {
+   "title": "Utilizadores Não Aplicacionais",
+   "sections": [
+    {
+     "label": "O que conta",
+     "text": "Sessões de utilizador abertas por FERRAMENTAS INTERATIVAS — SSMS, Azure Data Studio, sqlcmd, DBeaver, DataGrip, HeidiSQL, Toad. Ou seja: alguém ligado à mão, não uma aplicação/serviço."
+    },
+    {
+     "label": "Como é detetado",
+     "text": "Heurística pelo nome da aplicação (coluna Application). É fiável para os casos típicos, mas uma pessoa ligada por uma ferramenta fora desta lista não é contada — confirmar pelo Login e Host Name em caso de dúvida."
+    }
+   ],
+   "tip": "Útil para auditoria rápida: quem está ligado à mão a uma instância de produção neste momento?"
+  },
+  "en": {
+   "title": "Non-Application Users",
+   "sections": [
+    {
+     "label": "What counts",
+     "text": "User sessions opened by INTERACTIVE TOOLS — SSMS, Azure Data Studio, sqlcmd, DBeaver, DataGrip, HeidiSQL, Toad. In other words: someone connected manually, not an application/service."
+    },
+    {
+     "label": "How it is detected",
+     "text": "Heuristic based on the application name (Application column). It is reliable for typical cases, but a person connected through a tool outside this list is not counted — confirm using the Login and Host Name columns if in doubt."
+    }
+   ],
+   "tip": "Useful for a quick audit: who is manually connected to a production instance right now?"
+  },
+  "es": {
+   "title": "Usuarios No Aplicacionales",
+   "sections": [
+    {
+     "label": "Qué cuenta",
+     "text": "Sesiones de usuario abiertas por HERRAMIENTAS INTERACTIVAS — SSMS, Azure Data Studio, sqlcmd, DBeaver, DataGrip, HeidiSQL, Toad. Es decir: alguien conectado manualmente, no una aplicación/servicio."
+    },
+    {
+     "label": "Cómo se detecta",
+     "text": "Heurística basada en el nombre de la aplicación (columna Application). Es fiable para los casos típicos, pero una persona conectada mediante una herramienta fuera de esta lista no se cuenta — confirmar con las columnas Login y Host Name en caso de duda."
+    }
+   ],
+   "tip": "Útil para una auditoría rápida: ¿quién está conectado manualmente a una instancia de producción en este momento?"
+  }
+ },
+ "sess-blocked": {
+  "pt": {
+   "title": "Sessões Bloqueadas",
+   "sections": [
+    {
+     "label": "O que conta",
+     "text": "Sessões à espera de um recurso preso por OUTRA sessão. A coluna Blocked By mostra o session_id de quem está a prender."
+    },
+    {
+     "label": "Impacto",
+     "text": "Bloqueios prolongados degradam a aplicação (timeouts, filas). Cadeias longas costumam ter uma única raiz — ver o card Head Blockers."
+    }
+   ],
+   "tip": "Linhas destacadas a vermelho na tabela são as sessões bloqueadas."
+  },
+  "en": {
+   "title": "Blocked Sessions",
+   "sections": [
+    {
+     "label": "What counts",
+     "text": "Sessions waiting on a resource held by ANOTHER session. The Blocked By column shows the session_id holding the lock."
+    },
+    {
+     "label": "Impact",
+     "text": "Prolonged blocking degrades the application (timeouts, queues). Long chains usually have a single root cause — see the Head Blockers card."
+    }
+   ],
+   "tip": "Rows highlighted in red in the table are the blocked sessions."
+  },
+  "es": {
+   "title": "Sesiones Bloqueadas",
+   "sections": [
+    {
+     "label": "Qué cuenta",
+     "text": "Sesiones esperando un recurso retenido por OTRA sesión. La columna Blocked By muestra el session_id de quien está reteniendo el recurso."
+    },
+    {
+     "label": "Impacto",
+     "text": "Los bloqueos prolongados degradan la aplicación (timeouts, colas). Las cadenas largas suelen tener una única raíz — ver la tarjeta Head Blockers."
+    }
+   ],
+   "tip": "Las filas resaltadas en rojo en la tabla son las sesiones bloqueadas."
+  }
+ },
+ "sess-head": {
+  "pt": {
+   "title": "Head Blockers",
+   "sections": [
+    {
+     "label": "O que conta",
+     "text": "Sessões que estão a bloquear outras e NÃO estão elas próprias bloqueadas — a raiz da cadeia de bloqueio. Marcadas com o selo HEAD na tabela."
+    },
+    {
+     "label": "Como resolver",
+     "text": "Resolver o head liberta a cadeia inteira: verificar a Query em curso, o Wait Type e, em último caso, terminar a sessão. O botão KILL apenas COPIA o comando — a execução é sempre manual, no SSMS, por decisão do DBA."
+    }
+   ],
+   "tip": "Clicar num session_id localiza a mesma sessão na tabela de Sessões Problemáticas (e vice-versa)."
+  },
+  "en": {
+   "title": "Head Blockers",
+   "sections": [
+    {
+     "label": "What counts",
+     "text": "Sessions that are blocking others and are NOT themselves blocked — the root of the blocking chain. Flagged with the HEAD tag in the table."
+    },
+    {
+     "label": "How to resolve",
+     "text": "Resolving the head frees the entire chain: check the current Query, the Wait Type, and, as a last resort, kill the session. The KILL button only COPIES the command — execution is always manual, in SSMS, by DBA decision."
+    }
+   ],
+   "tip": "Clicking a session_id locates the same session in the Problem Sessions table (and vice versa)."
+  },
+  "es": {
+   "title": "Head Blockers",
+   "sections": [
+    {
+     "label": "Qué cuenta",
+     "text": "Sesiones que están bloqueando a otras y que NO están bloqueadas ellas mismas — la raíz de la cadena de bloqueo. Marcadas con la etiqueta HEAD en la tabla."
+    },
+    {
+     "label": "Cómo resolver",
+     "text": "Resolver el head libera toda la cadena: revisar la Query en curso, el Wait Type y, en último caso, terminar la sesión. El botón KILL solo COPIA el comando — la ejecución siempre es manual, en SSMS, por decisión del DBA."
+    }
+   ],
+   "tip": "Hacer clic en un session_id ubica la misma sesión en la tabla de Sesiones Problemáticas (y viceversa)."
+  }
+ },
+ "overview-sql-version": {
+  "pt": {
+   "title": "Versão do SQL Server",
+   "sections": [
+    {
+     "label": "Versão Instalada",
+     "text": "Mostra a versão principal do SQL Server (2012, 2014, 2016, 2017, 2019, 2022). A versão determina funcionalidades disponíveis e o ciclo de suporte da Microsoft."
+    },
+    {
+     "label": "Detalhes",
+     "text": "Abaixo do nome aparece a versão completa (ex: 16.0.4135.4), o Service Pack/CU level e a edição (Standard, Enterprise, Developer)."
+    }
+   ],
+   "tip": "Versões fora do suporte mainstream da Microsoft (ex: 2012, 2014) devem ser planeadas para upgrade."
+  },
+  "en": {
+   "title": "SQL Server Version",
+   "sections": [
+    {
+     "label": "Installed Version",
+     "text": "Shows the SQL Server major version (2012, 2014, 2016, 2017, 2019, 2022). The version determines the available features and Microsoft's support lifecycle."
+    },
+    {
+     "label": "Details",
+     "text": "Below the name, the full version appears (e.g., 16.0.4135.4), the Service Pack/CU level, and the edition (Standard, Enterprise, Developer)."
+    }
+   ],
+   "tip": "Versions outside Microsoft's mainstream support (e.g., 2012, 2014) should be scheduled for an upgrade."
+  },
+  "es": {
+   "title": "Versión de SQL Server",
+   "sections": [
+    {
+     "label": "Versión Instalada",
+     "text": "Muestra la versión principal de SQL Server (2012, 2014, 2016, 2017, 2019, 2022). La versión determina las funcionalidades disponibles y el ciclo de soporte de Microsoft."
+    },
+    {
+     "label": "Detalles",
+     "text": "Debajo del nombre aparece la versión completa (ej.: 16.0.4135.4), el Service Pack/CU level y la edición (Standard, Enterprise, Developer)."
+    }
+   ],
+   "tip": "Las versiones fuera del soporte mainstream de Microsoft (ej.: 2012, 2014) deben planificarse para una actualización."
+  }
+ },
+ "overview-dbs-problema": {
+  "pt": {
+   "title": "Databases com Problema",
+   "sections": [
+    {
+     "label": "O que conta como problema?",
+     "text": "Databases em estado SUSPECT, RECOVERY_PENDING, RESTORING ou OFFLINE. Também databases com is_accessible = 0 (sem acesso)."
+    },
+    {
+     "label": "Impacto",
+     "text": "Bases neste estado não estão disponíveis para as aplicações. Pode indicar corrupção, falha de disco ou processo de restore incompleto."
+    }
+   ],
+   "tip": "Clique no card para ver a lista detalhada de databases com problema e o seu estado."
+  },
+  "en": {
+   "title": "Databases with Issues",
+   "sections": [
+    {
+     "label": "What counts as an issue?",
+     "text": "Databases in SUSPECT, RECOVERY_PENDING, RESTORING, or OFFLINE state. Also databases with is_accessible = 0 (no access)."
+    },
+    {
+     "label": "Impact",
+     "text": "Databases in this state are unavailable to applications. It may indicate corruption, disk failure, or an incomplete restore process."
+    }
+   ],
+   "tip": "Click the card to see the detailed list of databases with issues and their status."
+  },
+  "es": {
+   "title": "Bases de Datos con Problemas",
+   "sections": [
+    {
+     "label": "¿Qué cuenta como problema?",
+     "text": "Bases de datos en estado SUSPECT, RECOVERY_PENDING, RESTORING u OFFLINE. También bases de datos con is_accessible = 0 (sin acceso)."
+    },
+    {
+     "label": "Impacto",
+     "text": "Las bases en este estado no están disponibles para las aplicaciones. Puede indicar corrupción, fallo de disco o un proceso de restore incompleto."
+    }
+   ],
+   "tip": "Haga clic en la tarjeta para ver la lista detallada de bases de datos con problemas y su estado."
+  }
+ },
+ "overview-backup": {
+  "pt": {
+   "title": "Estado de Backup",
+   "sections": [
+    {
+     "label": "Indicador",
+     "text": "Mostra o número de databases com issues de backup detetadas. Verifica se os backups FULL, DIFF e LOG estão dentro dos intervalos esperados."
+    },
+    {
+     "label": "Intervalos Esperados",
+     "text": "FULL: <= 7 dias, DIFF: <= 24h, LOG (FULL recovery): <= 8h. Se algum backup ultrapassar estes limites, é contado como issue."
+    }
+   ]
+  },
+  "en": {
+   "title": "Backup Status",
+   "sections": [
+    {
+     "label": "Indicator",
+     "text": "Shows the number of databases with detected backup issues. Checks whether FULL, DIFF, and LOG backups are within the expected intervals."
+    },
+    {
+     "label": "Expected Intervals",
+     "text": "FULL: <= 7 days, DIFF: <= 24h, LOG (FULL recovery): <= 8h. If any backup exceeds these limits, it is counted as an issue."
+    }
+   ]
+  },
+  "es": {
+   "title": "Estado del Backup",
+   "sections": [
+    {
+     "label": "Indicador",
+     "text": "Muestra el número de bases de datos con problemas de backup detectados. Verifica si los backups FULL, DIFF y LOG están dentro de los intervalos esperados."
+    },
+    {
+     "label": "Intervalos Esperados",
+     "text": "FULL: <= 7 días, DIFF: <= 24h, LOG (FULL recovery): <= 8h. Si algún backup supera estos límites, se cuenta como problema."
+    }
+   ]
+  },
+  "pt-BR": {
+   "title": "Status de Backup",
+   "sections": [
+    {
+     "label": "Indicador",
+     "text": "Mostra o número de databases com issues de backup detetadas. Verifica se os backups FULL, DIFF e LOG estão dentro dos intervalos esperados."
+    },
+    {
+     "label": "Intervalos Esperados",
+     "text": "FULL: <= 7 dias, DIFF: <= 24h, LOG (FULL recovery): <= 8h. Se algum backup ultrapassar estes limites, é contado como issue."
+    }
+   ]
+  }
+ },
+ "overview-backup-gaps": {
+  "pt": {
+   "title": "Gaps de Backup",
+   "sections": [
+    {
+     "label": "O que são gaps?",
+     "text": "Períodos onde não houve backup de um determinado tipo (FULL, DIFF ou LOG) além do intervalo aceitável. Um gap de FULL > 7 dias é crítico."
+    },
+    {
+     "label": "Janela de análise",
+     "text": "A análise considera os últimos 30 dias de histórico de backup para identificar padrões e falhas."
+    }
+   ]
+  },
+  "en": {
+   "title": "Backup Gaps",
+   "sections": [
+    {
+     "label": "What are gaps?",
+     "text": "Periods where no backup of a given type (FULL, DIFF, or LOG) occurred beyond the acceptable interval. A FULL gap > 7 days is critical."
+    },
+    {
+     "label": "Analysis Window",
+     "text": "The analysis considers the last 30 days of backup history to identify patterns and failures."
+    }
+   ]
+  },
+  "es": {
+   "title": "Gaps de Backup",
+   "sections": [
+    {
+     "label": "¿Qué son los gaps?",
+     "text": "Períodos en los que no hubo backup de un tipo determinado (FULL, DIFF o LOG) más allá del intervalo aceptable. Un gap de FULL > 7 días es crítico."
+    },
+    {
+     "label": "Ventana de análisis",
+     "text": "El análisis considera los últimos 30 días de historial de backup para identificar patrones y fallos."
+    }
+   ]
+  }
+ },
+ "overview-services": {
+  "pt": {
+   "title": "Serviços SQL",
+   "sections": [
+    {
+     "label": "Serviços monitorizados",
+     "text": "SQL Server Database Engine, SQL Server Agent, SQL Server Browser, SSIS, SSRS, SSAS e serviços Full-Text."
+    }
+   ]
+  },
+  "en": {
+   "title": "SQL Services",
+   "sections": [
+    {
+     "label": "Monitored services",
+     "text": "SQL Server Database Engine, SQL Server Agent, SQL Server Browser, SSIS, SSRS, SSAS, and Full-Text services."
+    }
+   ]
+  },
+  "es": {
+   "title": "Servicios SQL",
+   "sections": [
+    {
+     "label": "Servicios monitorizados",
+     "text": "SQL Server Database Engine, SQL Server Agent, SQL Server Browser, SSIS, SSRS, SSAS y servicios Full-Text."
+    }
+   ]
+  }
+ },
+ "overview-windows-events": {
+  "pt": {
+   "title": "Windows Events",
+   "sections": [
+    {
+     "label": "Fonte",
+     "text": "Eventos do Windows Event Log (Application e System) filtrados por fontes SQL Server. Inclui erros, avisos e informações."
+    },
+    {
+     "label": "Severidade",
+     "text": "ERRO: problemas graves que requerem ação. AVISO: situações a monitorizar. INFO: eventos informativos."
+    }
+   ]
+  },
+  "en": {
+   "title": "Windows Events",
+   "sections": [
+    {
+     "label": "Source",
+     "text": "Windows Event Log events (Application and System) filtered by SQL Server sources. Includes errors, warnings, and information."
+    },
+    {
+     "label": "Severity",
+     "text": "ERROR: severe issues requiring action. WARNING: situations to monitor. INFO: informational events."
+    }
+   ]
+  },
+  "es": {
+   "title": "Windows Events",
+   "sections": [
+    {
+     "label": "Origen",
+     "text": "Eventos del Windows Event Log (Application y System) filtrados por fuentes de SQL Server. Incluye errores, advertencias e información."
+    },
+    {
+     "label": "Severidad",
+     "text": "ERROR: problemas graves que requieren acción. ADVERTENCIA: situaciones a monitorizar. INFO: eventos informativos."
+    }
+   ]
+  }
+ },
+ "mem-os-memory": {
+  "pt": {
+   "title": "Memória do Sistema Operativo",
+   "sections": [
+    {
+     "label": "RAM Física",
+     "text": "Percentagem de memória RAM física em uso pelo SO. Inclui todos os processos (SQL Server + outros + SO)."
+    },
+    {
+     "label": "Limiares",
+     "text": "Crítico: >= 95% uso (< 5% livre). Alerta: >= 90%. Saudável: < 90%."
+    }
+   ],
+   "tip": "O SO precisa de pelo menos 2-4 GB livres para funcionar corretamente. Reduzir o Max Server Memory do SQL se necessário."
+  },
+  "en": {
+   "title": "Operating System Memory",
+   "sections": [
+    {
+     "label": "Physical RAM",
+     "text": "Percentage of physical RAM in use by the OS. Includes all processes (SQL Server + others + OS)."
+    },
+    {
+     "label": "Thresholds",
+     "text": "Critical: >= 95% usage (< 5% free). Warning: >= 90%. Healthy: < 90%."
+    }
+   ],
+   "tip": "The OS needs at least 2-4 GB free to function correctly. Reduce SQL Server's Max Server Memory if necessary."
+  },
+  "es": {
+   "title": "Memoria del Sistema Operativo",
+   "sections": [
+    {
+     "label": "RAM Física",
+     "text": "Porcentaje de memoria RAM física en uso por el SO. Incluye todos los procesos (SQL Server + otros + SO)."
+    },
+    {
+     "label": "Umbrales",
+     "text": "Crítico: >= 95% de uso (< 5% libre). Alerta: >= 90%. Saludable: < 90%."
+    }
+   ],
+   "tip": "El SO necesita al menos 2-4 GB libres para funcionar correctamente. Reducir el Max Server Memory de SQL si es necesario."
+  },
+  "pt-BR": {
+   "title": "Memória do Sistema Operacional",
+   "sections": [
+    {
+     "label": "RAM Física",
+     "text": "Percentagem de memória RAM física em uso pelo SO. Inclui todos os processos (SQL Server + outros + SO)."
+    },
+    {
+     "label": "Limiares",
+     "text": "Crítico: >= 95% uso (< 5% livre). Alerta: >= 90%. Saudável: < 90%."
+    }
+   ],
+   "tip": "O SO precisa de pelo menos 2-4 GB livres para funcionar corretamente. Reduzir o Max Server Memory do SQL se necessário."
+  }
+ },
+ "mem-sql-memory": {
+  "pt": {
+   "title": "Uso Real vs Marca d'Água",
+   "sections": [
+    {
+     "label": "Uso Real (Working Set)",
+     "text": "Memória física realmente em uso pelo processo SQL Server. Equivalente ao Working Set no Task Manager (physical_memory_in_use_kb)."
+    },
+    {
+     "label": "Marca d'Água (Total Server Memory)",
+     "text": "Memória que o SQL Server alocou e reservou no Memory Manager. Inclui buffer pool, plan cache e caches. O SQL Server tende a manter esta memória reservada."
+    }
+   ],
+   "tip": "Quando a marca d'água se aproxima do Max Server Memory, não significa necessariamente pressão. O uso real é o indicador mais fiável."
+  },
+  "en": {
+   "title": "Actual Usage vs High-Water Mark",
+   "sections": [
+    {
+     "label": "Actual Usage (Working Set)",
+     "text": "Physical memory actually in use by the SQL Server process. Equivalent to the Working Set in Task Manager (physical_memory_in_use_kb)."
+    },
+    {
+     "label": "High-Water Mark (Total Server Memory)",
+     "text": "Memory that SQL Server has allocated and reserved in the Memory Manager. Includes buffer pool, plan cache, and other caches. SQL Server tends to keep this memory reserved."
+    }
+   ],
+   "tip": "When the high-water mark approaches Max Server Memory, it does not necessarily mean pressure. Actual usage is the more reliable indicator."
+  },
+  "es": {
+   "title": "Uso Real vs Marca de Agua",
+   "sections": [
+    {
+     "label": "Uso Real (Working Set)",
+     "text": "Memoria física realmente en uso por el proceso de SQL Server. Equivalente al Working Set en el Task Manager (physical_memory_in_use_kb)."
+    },
+    {
+     "label": "Marca de Agua (Total Server Memory)",
+     "text": "Memoria que SQL Server asignó y reservó en el Memory Manager. Incluye buffer pool, plan cache y otras cachés. SQL Server tiende a mantener esta memoria reservada."
+    }
+   ],
+   "tip": "Cuando la marca de agua se acerca al Max Server Memory, no significa necesariamente presión. El uso real es el indicador más fiable."
+  }
+ },
+ "mem-resource-governor": {
+  "pt": {
+   "title": "Resource Governor",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Funcionalidade do SQL Server que limita e gere a alocação de CPU e memória entre diferentes workloads."
+    },
+    {
+     "label": "Resource Pools",
+     "text": "default = queries normais, internal = reservado ao SQL Server. Apenas pools com memória em uso ou eventos OOM são mostrados."
+    }
+   ],
+   "tip": "OOM (Event 701) indica que queries falharam por falta de memória no pool."
+  },
+  "en": {
+   "title": "Resource Governor",
+   "sections": [
+    {
+     "label": "What is it?",
+     "text": "SQL Server feature that limits and manages CPU and memory allocation across different workloads."
+    },
+    {
+     "label": "Resource Pools",
+     "text": "default = normal queries, internal = reserved for SQL Server. Only pools with memory in use or OOM events are shown."
+    }
+   ],
+   "tip": "OOM (Event 701) indicates that queries failed due to insufficient memory in the pool."
+  },
+  "es": {
+   "title": "Resource Governor",
+   "sections": [
+    {
+     "label": "¿Qué es?",
+     "text": "Funcionalidad de SQL Server que limita y gestiona la asignación de CPU y memoria entre diferentes workloads."
+    },
+    {
+     "label": "Resource Pools",
+     "text": "default = consultas normales, internal = reservado para SQL Server. Solo se muestran los pools con memoria en uso o eventos OOM."
+    }
+   ],
+   "tip": "OOM (Event 701) indica que las consultas fallaron por falta de memoria en el pool."
+  }
+ },
+ "mem-config": {
+  "pt": {
+   "title": "Configuração de Memória",
+   "sections": [
+    {
+     "label": "Max Server Memory",
+     "text": "Limite máximo de memória que o SQL Server pode alocar. Deve deixar 2-4 GB livres para o SO (ou 10% da RAM em servidores grandes)."
+    },
+    {
+     "label": "Métricas",
+     "text": "Page Life Expectancy (PLE): quanto tempo uma página permanece no buffer pool. Valores < 300s podem indicar pressão de memória."
+    }
+   ]
+  },
+  "en": {
+   "title": "Memory Configuration",
+   "sections": [
+    {
+     "label": "Max Server Memory",
+     "text": "Maximum amount of memory SQL Server can allocate. Should leave 2-4 GB free for the OS (or 10% of RAM on large servers)."
+    },
+    {
+     "label": "Metrics",
+     "text": "Page Life Expectancy (PLE): how long a page remains in the buffer pool. Values < 300s may indicate memory pressure."
+    }
+   ]
+  },
+  "es": {
+   "title": "Configuración de Memoria",
+   "sections": [
+    {
+     "label": "Max Server Memory",
+     "text": "Límite máximo de memoria que SQL Server puede asignar. Debe dejar 2-4 GB libres para el SO (o el 10% de la RAM en servidores grandes)."
+    },
+    {
+     "label": "Métricas",
+     "text": "Page Life Expectancy (PLE): cuánto tiempo permanece una página en el buffer pool. Valores < 300s pueden indicar presión de memoria."
+    }
+   ]
+  }
+ },
+ "mem-top-processes": {
+  "pt": {
+   "title": "Top Processos (Memória)",
+   "sections": [
+    {
+     "label": "Processos Windows",
+     "text": "Lista os processos do Windows que mais consomem memória. Útil para identificar processos não-SQL que competem por RAM."
+    }
+   ],
+   "tip": "Se processos externos (antivírus, ETL, etc.) consomem muita memória, considere mover para outro servidor."
+  },
+  "en": {
+   "title": "Top Processes (Memory)",
+   "sections": [
+    {
+     "label": "Windows Processes",
+     "text": "Lists the Windows processes consuming the most memory. Useful for identifying non-SQL processes competing for RAM."
+    }
+   ],
+   "tip": "If external processes (antivirus, ETL, etc.) consume a lot of memory, consider moving them to another server."
+  },
+  "es": {
+   "title": "Top de Procesos (Memoria)",
+   "sections": [
+    {
+     "label": "Procesos Windows",
+     "text": "Lista los procesos de Windows que más memoria consumen. Útil para identificar procesos no relacionados con SQL que compiten por RAM."
+    }
+   ],
+   "tip": "Si procesos externos (antivirus, ETL, etc.) consumen mucha memoria, considere moverlos a otro servidor."
+  }
+ },
+ "cpu-os": {
+  "pt": {
+   "title": "CPU do Sistema Operativo",
+   "sections": [
+    {
+     "label": "CPU Total",
+     "text": "Percentagem total de CPU em uso no servidor. Inclui SQL Server + outros processos + overhead do SO."
+    },
+    {
+     "label": "Limiares",
+     "text": "Crítico: >= 95%. Alerta: >= 85%. Normal: < 85%."
+    },
+    {
+     "label": "Cores",
+     "text": "Mostra também o número de cores físicos e lógicos (com Hyper-Threading)."
+    }
+   ]
+  },
+  "en": {
+   "title": "Operating System CPU",
+   "sections": [
+    {
+     "label": "Total CPU",
+     "text": "Total percentage of CPU in use on the server. Includes SQL Server + other processes + OS overhead."
+    },
+    {
+     "label": "Thresholds",
+     "text": "Critical: >= 95%. Warning: >= 85%. Normal: < 85%."
+    },
+    {
+     "label": "Cores",
+     "text": "Also shows the number of physical and logical cores (with Hyper-Threading)."
+    }
+   ]
+  },
+  "es": {
+   "title": "CPU del Sistema Operativo",
+   "sections": [
+    {
+     "label": "CPU Total",
+     "text": "Porcentaje total de CPU en uso en el servidor. Incluye SQL Server + otros procesos + overhead del SO."
+    },
+    {
+     "label": "Umbrales",
+     "text": "Crítico: >= 95%. Alerta: >= 85%. Normal: < 85%."
+    },
+    {
+     "label": "Núcleos",
+     "text": "Muestra también el número de núcleos físicos y lógicos (con Hyper-Threading)."
+    }
+   ]
+  },
+  "pt-BR": {
+   "title": "CPU do Sistema Operacional",
+   "sections": [
+    {
+     "label": "CPU Total",
+     "text": "Percentagem total de CPU em uso no servidor. Inclui SQL Server + outros processos + overhead do SO."
+    },
+    {
+     "label": "Limiares",
+     "text": "Crítico: >= 95%. Alerta: >= 85%. Normal: < 85%."
+    },
+    {
+     "label": "Cores",
+     "text": "Mostra também o número de cores físicos e lógicos (com Hyper-Threading)."
+    }
+   ]
+  }
+ },
+ "cpu-sql": {
+  "pt": {
+   "title": "CPU do SQL Server",
+   "sections": [
+    {
+     "label": "SQL CPU",
+     "text": "Percentagem de CPU consumida exclusivamente pelo SQL Server. Baseado em sys.dm_os_ring_buffers."
+    },
+    {
+     "label": "Pressão de CPU",
+     "text": "HEALTHY: sem problemas. WARNING: runnable tasks elevadas. CRITICAL: saturação com impacto no desempenho."
+    }
+   ],
+   "tip": "Diferença grande entre CPU SO e SQL CPU indica processos externos a consumir CPU."
+  },
+  "en": {
+   "title": "SQL Server CPU",
+   "sections": [
+    {
+     "label": "SQL CPU",
+     "text": "Percentage of CPU consumed exclusively by SQL Server. Based on sys.dm_os_ring_buffers."
+    },
+    {
+     "label": "CPU Pressure",
+     "text": "HEALTHY: no issues. WARNING: elevated runnable tasks. CRITICAL: saturation impacting performance."
+    }
+   ],
+   "tip": "A large gap between OS CPU and SQL CPU indicates external processes consuming CPU."
+  },
+  "es": {
+   "title": "CPU de SQL Server",
+   "sections": [
+    {
+     "label": "SQL CPU",
+     "text": "Porcentaje de CPU consumido exclusivamente por SQL Server. Basado en sys.dm_os_ring_buffers."
+    },
+    {
+     "label": "Presión de CPU",
+     "text": "HEALTHY: sin problemas. WARNING: runnable tasks elevadas. CRITICAL: saturación con impacto en el rendimiento."
+    }
+   ],
+   "tip": "Una diferencia grande entre CPU del SO y SQL CPU indica procesos externos consumiendo CPU."
+  }
+ },
+ "cpu-top-processes": {
+  "pt": {
+   "title": "Top Processos (CPU)",
+   "sections": [
+    {
+     "label": "Processos Windows",
+     "text": "Lista os processos Windows que mais consomem CPU. Útil para identificar se a carga vem do SQL ou de processos externos."
+    }
+   ]
+  },
+  "en": {
+   "title": "Top Processes (CPU)",
+   "sections": [
+    {
+     "label": "Windows Processes",
+     "text": "Lists the Windows processes consuming the most CPU. Useful for identifying whether the load comes from SQL or from external processes."
+    }
+   ]
+  },
+  "es": {
+   "title": "Top de Procesos (CPU)",
+   "sections": [
+    {
+     "label": "Procesos Windows",
+     "text": "Lista los procesos de Windows que más CPU consumen. Útil para identificar si la carga proviene de SQL o de procesos externos."
+    }
+   ]
+  }
+ },
+ "conflicts-critical": {
+  "pt": {
+   "title": "Conflitos Críticos",
+   "sections": [
+    {
+     "label": "O que são?",
+     "text": "Jobs com schedules sobrepostos do MESMO TIPO (ex: dois backups FULL simultâneos, dois DBCC CHECKDB ao mesmo tempo). Causam contenção severa de I/O, locks e podem provocar falhas ou timeouts."
+    },
+    {
+     "label": "Impacto",
+     "text": "Risco elevado de falha. Backups concorrentes podem corromper a cadeia de restore. Manutenções simultâneas podem causar deadlocks e degradação grave de performance."
+    }
+   ],
+   "tip": "Clique no card para ver os pares de jobs em conflito e recomendações com comandos SQL prontos para corrigir."
+  },
+  "en": {
+   "title": "Critical Conflicts",
+   "sections": [
+    {
+     "label": "What are they?",
+     "text": "Jobs with overlapping schedules of the SAME TYPE (e.g., two simultaneous FULL backups, two DBCC CHECKDB runs at once). They cause severe I/O contention and locks, and can trigger failures or timeouts."
+    },
+    {
+     "label": "Impact",
+     "text": "High risk of failure. Concurrent backups can corrupt the restore chain. Simultaneous maintenance jobs can cause deadlocks and severe performance degradation."
+    }
+   ],
+   "tip": "Click the card to see the conflicting job pairs and recommendations with ready-to-run SQL commands to fix them."
+  },
+  "es": {
+   "title": "Conflictos Críticos",
+   "sections": [
+    {
+     "label": "¿Qué son?",
+     "text": "Jobs con schedules superpuestos del MISMO TIPO (ej.: dos backups FULL simultáneos, dos DBCC CHECKDB al mismo tiempo). Causan contención severa de I/O, locks y pueden provocar fallos o timeouts."
+    },
+    {
+     "label": "Impacto",
+     "text": "Riesgo elevado de fallo. Los backups concurrentes pueden corromper la cadena de restore. Los mantenimientos simultáneos pueden causar deadlocks y una degradación grave del rendimiento."
+    }
+   ],
+   "tip": "Haga clic en la tarjeta para ver los pares de jobs en conflicto y recomendaciones con comandos SQL listos para corregirlo."
+  }
+ },
+ "conflicts-warning": {
+  "pt": {
+   "title": "Conflitos de Aviso",
+   "sections": [
+    {
+     "label": "O que são?",
+     "text": "Jobs de tipos DIFERENTES com schedules sobrepostos (ex: backup FULL + index rebuild ao mesmo tempo). Embora menos graves que conflitos críticos, podem causar contenção de recursos."
+    },
+    {
+     "label": "Impacto",
+     "text": "Pode aumentar tempo de execução, consumo de I/O e CPU. Em servidores com recursos limitados, pode degradar a performance das aplicações."
+    }
+   ],
+   "tip": "Considere separar os horários com pelo menos 30 minutos de intervalo entre jobs de tipos diferentes."
+  },
+  "en": {
+   "title": "Warning Conflicts",
+   "sections": [
+    {
+     "label": "What are they?",
+     "text": "Jobs of DIFFERENT types with overlapping schedules (e.g., a FULL backup + an index rebuild at the same time). Although less severe than critical conflicts, they can still cause resource contention."
+    },
+    {
+     "label": "Impact",
+     "text": "Can increase execution time and I/O/CPU consumption. On servers with limited resources, it can degrade application performance."
+    }
+   ],
+   "tip": "Consider spacing schedules with at least a 30-minute interval between jobs of different types."
+  },
+  "es": {
+   "title": "Conflictos de Advertencia",
+   "sections": [
+    {
+     "label": "¿Qué son?",
+     "text": "Jobs de tipos DIFERENTES con schedules superpuestos (ej.: backup FULL + index rebuild al mismo tiempo). Aunque menos graves que los conflictos críticos, pueden causar contención de recursos."
+    },
+    {
+     "label": "Impacto",
+     "text": "Puede aumentar el tiempo de ejecución y el consumo de I/O y CPU. En servidores con recursos limitados, puede degradar el rendimiento de las aplicaciones."
+    }
+   ],
+   "tip": "Considere separar los horarios con al menos 30 minutos de intervalo entre jobs de tipos diferentes."
+  }
+ },
+ "conflicts-collisions": {
+  "pt": {
+   "title": "Colisões Reais Confirmadas",
+   "sections": [
+    {
+     "label": "O que são?",
+     "text": "Pares de jobs que REALMENTE correram ao mesmo tempo nos últimos 30 dias. Confirmado pelo histórico de execução do SQL Agent (sysjobhistory)."
+    },
+    {
+     "label": "Dados analisados",
+     "text": "Mostra quantas vezes os jobs colidiram, a sobreposição média em minutos e se houve falhas durante as colisões. Quanto mais colisões, mais urgente a correção."
+    }
+   ],
+   "tip": "Colisões com falhas associadas devem ser priorizadas. Use o Plano de Ação para obter comandos SQL de correção."
+  },
+  "en": {
+   "title": "Confirmed Real Collisions",
+   "sections": [
+    {
+     "label": "What are they?",
+     "text": "Pairs of jobs that ACTUALLY ran at the same time in the last 30 days. Confirmed by the SQL Agent execution history (sysjobhistory)."
+    },
+    {
+     "label": "Analyzed data",
+     "text": "Shows how many times the jobs collided, the average overlap in minutes, and whether failures occurred during the collisions. The more collisions, the more urgent the fix."
+    }
+   ],
+   "tip": "Collisions with associated failures should be prioritized. Use the Action Plan to get corrective SQL commands."
+  },
+  "es": {
+   "title": "Colisiones Reales Confirmadas",
+   "sections": [
+    {
+     "label": "¿Qué son?",
+     "text": "Pares de jobs que REALMENTE se ejecutaron al mismo tiempo en los últimos 30 días. Confirmado por el historial de ejecución del SQL Agent (sysjobhistory)."
+    },
+    {
+     "label": "Datos analizados",
+     "text": "Muestra cuántas veces colisionaron los jobs, la superposición promedio en minutos y si hubo fallos durante las colisiones. Cuantas más colisiones, más urgente la corrección."
+    }
+   ],
+   "tip": "Las colisiones con fallos asociados deben priorizarse. Use el Plan de Acción para obtener comandos SQL de corrección."
+  }
+ },
+ "conflicts-failures": {
+  "pt": {
+   "title": "Falhas em Colisão",
+   "sections": [
+    {
+     "label": "O que são?",
+     "text": "Jobs que FALHARAM durante períodos de colisão com outros jobs. A falha pode ter sido causada diretamente pela contenção de recursos da execução simultânea."
+    },
+    {
+     "label": "Investigação",
+     "text": "Verifique o exit code e mensagem de erro no histórico do job. Erros comuns: timeout, deadlock, out of memory, backup device busy."
+    }
+   ],
+   "tip": "Se as falhas coincidem com colisões, separar os horários dos jobs tende a resolver o problema sem outras alterações."
+  },
+  "en": {
+   "title": "Collision Failures",
+   "sections": [
+    {
+     "label": "What are they?",
+     "text": "Jobs that FAILED during collision periods with other jobs. The failure may have been caused directly by resource contention from concurrent execution."
+    },
+    {
+     "label": "Investigation",
+     "text": "Check the exit code and error message in the job history. Common errors: timeout, deadlock, out of memory, backup device busy."
+    }
+   ],
+   "tip": "If failures coincide with collisions, separating the job schedules tends to resolve the problem without other changes."
+  },
+  "es": {
+   "title": "Fallos por Colisión",
+   "sections": [
+    {
+     "label": "¿Qué son?",
+     "text": "Jobs que FALLARON durante períodos de colisión con otros jobs. El fallo puede haber sido causado directamente por la contención de recursos de la ejecución simultánea."
+    },
+    {
+     "label": "Investigación",
+     "text": "Verifique el exit code y el mensaje de error en el historial del job. Errores comunes: timeout, deadlock, out of memory, backup device busy."
+    }
+   ],
+   "tip": "Si los fallos coinciden con colisiones, separar los horarios de los jobs tiende a resolver el problema sin otros cambios."
+  }
+ },
+ "jobs-total": {
+  "pt": {
+   "title": "Total de Jobs",
+   "sections": [
+    {
+     "label": "Jobs Configurados",
+     "text": "Número total de jobs do SQL Server Agent configurados na instância, incluindo jobs habilitados e desabilitados."
+    }
+   ]
+  },
+  "en": {
+   "title": "Total Jobs",
+   "sections": [
+    {
+     "label": "Configured Jobs",
+     "text": "Total number of SQL Server Agent jobs configured on the instance, including enabled and disabled jobs."
+    }
+   ]
+  },
+  "es": {
+   "title": "Total de Jobs",
+   "sections": [
+    {
+     "label": "Jobs Configurados",
+     "text": "Número total de jobs de SQL Server Agent configurados en la instancia, incluidos los jobs habilitados y deshabilitados."
+    }
+   ]
+  }
+ },
+ "jobs-failed-24h": {
+  "pt": {
+   "title": "Jobs Falhados (24h)",
+   "sections": [
+    {
+     "label": "Falhas Recentes",
+     "text": "Número de jobs que falharam pelo menos uma vez nas últimas 24 horas. Inclui falhas em qualquer step do job."
+    },
+    {
+     "label": "Investigação",
+     "text": "Clique para ver detalhes de cada job falhado: nome, step, mensagem de erro e hora da falha."
+    }
+   ],
+   "tip": "Jobs de backup e manutenção falhados devem ser investigados imediatamente."
+  },
+  "en": {
+   "title": "Failed Jobs (24h)",
+   "sections": [
+    {
+     "label": "Recent Failures",
+     "text": "Number of jobs that failed at least once in the last 24 hours. Includes failures in any job step."
+    },
+    {
+     "label": "Investigation",
+     "text": "Click to see details for each failed job: name, step, error message, and failure time."
+    }
+   ],
+   "tip": "Failed backup and maintenance jobs must be investigated immediately."
+  },
+  "es": {
+   "title": "Jobs Fallidos (24h)",
+   "sections": [
+    {
+     "label": "Fallos Recientes",
+     "text": "Número de jobs que fallaron al menos una vez en las últimas 24 horas. Incluye fallos en cualquier step del job."
+    },
+    {
+     "label": "Investigación",
+     "text": "Haga clic para ver los detalles de cada job fallido: nombre, step, mensaje de error y hora del fallo."
+    }
+   ],
+   "tip": "Los jobs de backup y mantenimiento fallidos deben investigarse de inmediato."
+  }
+ },
+ "jobs-running": {
+  "pt": {
+   "title": "Jobs em Execução",
+   "sections": [
+    {
+     "label": "Ativos Agora",
+     "text": "Jobs que estão em execução neste momento. Pode indicar jobs longos ou presos se o valor for elevado."
+    }
+   ]
+  },
+  "en": {
+   "title": "Running Jobs",
+   "sections": [
+    {
+     "label": "Active Now",
+     "text": "Jobs currently running. A high value may indicate long-running or stuck jobs."
+    }
+   ]
+  },
+  "es": {
+   "title": "Jobs en Ejecución",
+   "sections": [
+    {
+     "label": "Activos Ahora",
+     "text": "Jobs que están en ejecución en este momento. Un valor elevado puede indicar jobs largos o bloqueados."
+    }
+   ]
+  }
+ },
+ "jobs-disabled": {
+  "pt": {
+   "title": "Jobs Desabilitados",
+   "sections": [
+    {
+     "label": "Inativos",
+     "text": "Jobs configurados mas desabilitados. Podem ser jobs temporariamente pausados ou obsoletos que devem ser revistos."
+    }
+   ]
+  },
+  "en": {
+   "title": "Disabled Jobs",
+   "sections": [
+    {
+     "label": "Inactive",
+     "text": "Jobs configured but disabled. May be temporarily paused jobs or obsolete jobs that should be reviewed."
+    }
+   ]
+  },
+  "es": {
+   "title": "Jobs Deshabilitados",
+   "sections": [
+    {
+     "label": "Inactivos",
+     "text": "Jobs configurados pero deshabilitados. Pueden ser jobs pausados temporalmente u obsoletos que deben revisarse."
+    }
+   ]
+  }
+ },
+ "jobs-overdue": {
+  "pt": {
+   "title": "Sem Próxima Execução Válida",
+   "sections": [
+    {
+     "label": "O que é",
+     "text": "Jobs habilitados cuja próxima execução registada pelo SQL Agent já passou e não foi recalculada. O job devia ter corrido e não correu."
+    },
+    {
+     "label": "Causa provável",
+     "text": "SQL Server Agent parado ou reiniciado sem recalcular schedules, ou schedule expirado (active_end_date). Verificar o serviço SQL Server Agent na instância."
+    }
+   ],
+   "tip": "É o sinal mais fiável de “job morreu em silêncio”. Diferente de “sem agendamento”: aqui HÁ agendamento e ele não disparou."
+  },
+  "en": {
+   "title": "No Valid Next Run Time",
+   "sections": [
+    {
+     "label": "What it is",
+     "text": "Enabled jobs whose next run time registered by SQL Agent has already passed and was not recalculated. The job was supposed to run and did not."
+    },
+    {
+     "label": "Likely cause",
+     "text": "SQL Server Agent stopped or restarted without recalculating schedules, or an expired schedule (active_end_date). Check the SQL Server Agent service on the instance."
+    }
+   ],
+   "tip": "This is the most reliable sign of a “job that died silently.” Different from “no schedule”: here a schedule DOES exist and it did not fire."
+  },
+  "es": {
+   "title": "Sin Próxima Ejecución Válida",
+   "sections": [
+    {
+     "label": "Qué es",
+     "text": "Jobs habilitados cuya próxima ejecución registrada por SQL Agent ya pasó y no fue recalculada. El job debía haber corrido y no corrió."
+    },
+    {
+     "label": "Causa probable",
+     "text": "SQL Server Agent detenido o reiniciado sin recalcular schedules, o schedule vencido (active_end_date). Verificar el servicio SQL Server Agent en la instancia."
+    }
+   ],
+   "tip": "Es la señal más fiable de un “job que murió en silencio”. Diferente de “sin agendamiento”: aquí SÍ hay agendamiento y no se disparó."
+  }
+ },
+ "jobs-no-schedule": {
+  "pt": {
+   "title": "Sem Agendamento no Agent",
+   "sections": [
+    {
+     "label": "O que é",
+     "text": "Jobs habilitados sem nenhum agendamento ativo no SQL Server Agent (sem schedule, ou com todos os schedules desligados)."
+    },
+    {
+     "label": "Não é alarme por si",
+     "text": "Uma ferramenta externa de backup ou um agendador externo pode chamar o job via sp_start_job sem agendamento no Agent. Se a última execução é recente e regular, o disparo é externo. A aba Backup mostra a origem detetada (virtual device) por database."
+    }
+   ],
+   "tip": "Cruzar com a última execução: job habilitado, sem schedule e sem execução recente = candidato a job órfão."
+  },
+  "en": {
+   "title": "No Schedule in Agent",
+   "sections": [
+    {
+     "label": "What it is",
+     "text": "Enabled jobs with no active schedule in SQL Server Agent (no schedule, or all schedules disabled)."
+    },
+    {
+     "label": "Not an alarm by itself",
+     "text": "An external backup tool or external scheduler can trigger the job via sp_start_job without an Agent schedule. If the last run is recent and regular, the trigger is external. The Backup tab shows the detected source (virtual device) per database."
+    }
+   ],
+   "tip": "Cross-check with the last run: enabled job, no schedule and no recent execution = candidate for an orphaned job."
+  },
+  "es": {
+   "title": "Sin Agendamiento en Agent",
+   "sections": [
+    {
+     "label": "Qué es",
+     "text": "Jobs habilitados sin ningún agendamiento activo en SQL Server Agent (sin schedule, o con todos los schedules deshabilitados)."
+    },
+    {
+     "label": "No es una alarma por sí sola",
+     "text": "Una herramienta externa de backup o un programador externo puede ejecutar el job vía sp_start_job sin agendamiento en Agent. Si la última ejecución es reciente y regular, el disparo es externo. La pestaña Backup muestra el origen detectado (virtual device) por base de datos."
+    }
+   ],
+   "tip": "Cruzar con la última ejecución: job habilitado, sin schedule y sin ejecución reciente = candidato a job huérfano."
+  }
+ },
+ "jobs-next-24h": {
+  "pt": {
+   "title": "Próximas 24 Horas",
+   "sections": [
+    {
+     "label": "Janela",
+     "text": "Número de agendamentos ativos com próxima execução nas próximas 24 horas (contam schedules, não jobs: um job com 2 schedules conta 2)."
+    }
+   ],
+   "tip": "Útil para planear janelas de manutenção e evitar colisões com backups."
+  },
+  "en": {
+   "title": "Next 24 Hours",
+   "sections": [
+    {
+     "label": "Window",
+     "text": "Number of active schedules with next run within the next 24 hours (counts schedules, not jobs: a job with 2 schedules counts as 2)."
+    }
+   ],
+   "tip": "Useful for planning maintenance windows and avoiding collisions with backups."
+  },
+  "es": {
+   "title": "Próximas 24 Horas",
+   "sections": [
+    {
+     "label": "Ventana",
+     "text": "Número de agendamientos activos con próxima ejecución en las próximas 24 horas (se cuentan schedules, no jobs: un job con 2 schedules cuenta 2)."
+    }
+   ],
+   "tip": "Útil para planificar ventanas de mantenimiento y evitar colisiones con backups."
+  }
+ },
+ "jobs-maintenance-index": {
+  "pt": {
+   "title": "Manutenção de Índices",
+   "sections": [
+    {
+     "label": "Index Rebuild/Reorg",
+     "text": "Indica se existem jobs de manutenção de índices (rebuild, reorganize) configurados. Essencial para o desempenho das queries."
+    }
+   ],
+   "tip": "Sem manutenção de índices, a fragmentação aumenta e o desempenho degrada progressivamente."
+  },
+  "en": {
+   "title": "Index Maintenance",
+   "sections": [
+    {
+     "label": "Index Rebuild/Reorg",
+     "text": "Indicates whether index maintenance jobs (rebuild, reorganize) are configured. Essential for query performance."
+    }
+   ],
+   "tip": "Without index maintenance, fragmentation increases and performance degrades progressively."
+  },
+  "es": {
+   "title": "Mantenimiento de Índices",
+   "sections": [
+    {
+     "label": "Index Rebuild/Reorg",
+     "text": "Indica si existen jobs de mantenimiento de índices (rebuild, reorganize) configurados. Esencial para el desempeño de las queries."
+    }
+   ],
+   "tip": "Sin mantenimiento de índices, la fragmentación aumenta y el desempeño se degrada progresivamente."
+  }
+ },
+ "jobs-maintenance-stats": {
+  "pt": {
+   "title": "Atualização de Estatísticas",
+   "sections": [
+    {
+     "label": "Update Statistics",
+     "text": "Indica se existem jobs de atualização de estatísticas. Estatísticas desatualizadas causam planos de execução subótimos."
+    }
+   ]
+  },
+  "en": {
+   "title": "Statistics Update",
+   "sections": [
+    {
+     "label": "Update Statistics",
+     "text": "Indicates whether statistics update jobs are configured. Outdated statistics cause suboptimal execution plans."
+    }
+   ]
+  },
+  "es": {
+   "title": "Actualización de Estadísticas",
+   "sections": [
+    {
+     "label": "Update Statistics",
+     "text": "Indica si existen jobs de actualización de estadísticas. Las estadísticas desactualizadas provocan planes de ejecución subóptimos."
+    }
+   ]
+  }
+ },
+ "jobs-maintenance-integrity": {
+  "pt": {
+   "title": "Verificação de Integridade",
+   "sections": [
+    {
+     "label": "DBCC CHECKDB",
+     "text": "Indica se existem jobs de verificação de integridade (CHECKDB). Deteta corrupção de dados antes que cause perda permanente."
+    }
+   ],
+   "tip": "Sem CHECKDB regular, corrupção silenciosa pode propagar-se para os backups."
+  },
+  "en": {
+   "title": "Integrity Check",
+   "sections": [
+    {
+     "label": "DBCC CHECKDB",
+     "text": "Indicates whether integrity check jobs (CHECKDB) are configured. Detects data corruption before it causes permanent loss."
+    }
+   ],
+   "tip": "Without regular DBCC CHECKDB, silent corruption can propagate into the backups."
+  },
+  "es": {
+   "title": "Verificación de Integridad",
+   "sections": [
+    {
+     "label": "DBCC CHECKDB",
+     "text": "Indica si existen jobs de verificación de integridad (CHECKDB). Detecta corrupción de datos antes de que cause pérdida permanente."
+    }
+   ],
+   "tip": "Sin DBCC CHECKDB regular, la corrupción silenciosa puede propagarse a los backups."
+  }
+ },
+ "jobs-maintenance-coverage": {
+  "pt": {
+   "title": "Cobertura de Manutenção",
+   "sections": [
+    {
+     "label": "Percentagem",
+     "text": "Percentagem de databases que têm pelo menos um job de manutenção (index ou statistics). Ideal: 100%."
+    }
+   ]
+  },
+  "en": {
+   "title": "Maintenance Coverage",
+   "sections": [
+    {
+     "label": "Percentage",
+     "text": "Percentage of databases with at least one maintenance job (index or statistics). Ideal: 100%."
+    }
+   ]
+  },
+  "es": {
+   "title": "Cobertura de Mantenimiento",
+   "sections": [
+    {
+     "label": "Porcentaje",
+     "text": "Porcentaje de bases de datos que tienen al menos un job de mantenimiento (index o statistics). Ideal: 100%."
+    }
+   ]
+  }
+ },
+ "jobs-maintenance-missing": {
+  "pt": {
+   "title": "DBs sem Manutenção",
+   "sections": [
+    {
+     "label": "Bases Descobertas",
+     "text": "Databases que não são cobertas por nenhum job de manutenção. Risco de degradação progressiva do desempenho."
+    }
+   ]
+  },
+  "en": {
+   "title": "DBs Without Maintenance",
+   "sections": [
+    {
+     "label": "Uncovered Databases",
+     "text": "Databases not covered by any maintenance job. Risk of progressive performance degradation."
+    }
+   ]
+  },
+  "es": {
+   "title": "DBs sin Mantenimiento",
+   "sections": [
+    {
+     "label": "Bases sin Cobertura",
+     "text": "Bases de datos que no están cubiertas por ningún job de mantenimiento. Riesgo de degradación progresiva del desempeño."
+    }
+   ]
+  }
+ },
+ "jobs-trend-analyzed": {
+  "pt": {
+   "title": "Jobs Analisados (Tendências)",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Número de jobs que possuem histórico de execução suficiente para análise de tendência. Compara os últimos 7 dias com os últimos 30 dias."
+    },
+    {
+     "label": "Critério",
+     "text": "Só são analisados jobs que executaram pelo menos 2 vezes em cada período (7 e 30 dias). Jobs sem execuções recentes são excluídos."
+    }
+   ],
+   "tip": "Quanto mais jobs analisados, mais completa é a visão de saúde dos jobs do servidor."
+  },
+  "en": {
+   "title": "Analyzed Jobs (Trends)",
+   "sections": [
+    {
+     "label": "What it is",
+     "text": "Number of jobs with enough execution history for trend analysis. Compares the last 7 days against the last 30 days."
+    },
+    {
+     "label": "Criteria",
+     "text": "Only jobs that ran at least 2 times in each period (7 and 30 days) are analyzed. Jobs without recent executions are excluded."
+    }
+   ],
+   "tip": "The more jobs analyzed, the more complete the view of the server's job health."
+  },
+  "es": {
+   "title": "Jobs Analizados (Tendencias)",
+   "sections": [
+    {
+     "label": "Qué es",
+     "text": "Número de jobs que cuentan con historial de ejecución suficiente para el análisis de tendencia. Compara los últimos 7 días con los últimos 30 días."
+    },
+    {
+     "label": "Criterio",
+     "text": "Solo se analizan jobs que se ejecutaron al menos 2 veces en cada período (7 y 30 días). Los jobs sin ejecuciones recientes se excluyen."
+    }
+   ],
+   "tip": "Cuantos más jobs analizados, más completa la visión de la salud de los jobs del servidor."
+  }
+ },
+ "jobs-trend-degraded": {
+  "pt": {
+   "title": "Performance Degradada",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Jobs cujo tempo médio de execução nos últimos 7 dias é significativamente superior ao dos últimos 30 dias. Indica degradação recente."
+    },
+    {
+     "label": "Causas comuns",
+     "text": "Índices fragmentados, crescimento de tabelas, bloqueios, mudanças recentes no código, ou aumento de carga no servidor."
+    },
+    {
+     "label": "Ação recomendada",
+     "text": "Investigue o histórico do job, verifique índices, estatísticas e planos de execução. Compare com períodos anteriores de boa performance."
+    }
+   ]
+  },
+  "en": {
+   "title": "Degraded Performance",
+   "sections": [
+    {
+     "label": "What it is",
+     "text": "Jobs whose average run time in the last 7 days is significantly higher than in the last 30 days. Indicates recent degradation."
+    },
+    {
+     "label": "Common causes",
+     "text": "Fragmented indexes, table growth, blocking, recent code changes, or increased server load."
+    },
+    {
+     "label": "Recommended action",
+     "text": "Investigate the job's execution history, check indexes, statistics, and execution plans. Compare with earlier periods of good performance."
+    }
+   ]
+  },
+  "es": {
+   "title": "Rendimiento Degradado",
+   "sections": [
+    {
+     "label": "Qué es",
+     "text": "Jobs cuyo tiempo promedio de ejecución en los últimos 7 días es significativamente superior al de los últimos 30 días. Indica una degradación reciente."
+    },
+    {
+     "label": "Causas comunes",
+     "text": "Índices fragmentados, crecimiento de tablas, bloqueos, cambios recientes en el código o aumento de carga en el servidor."
+    },
+    {
+     "label": "Acción recomendada",
+     "text": "Investigue el historial del job, verifique índices, estadísticas y planes de ejecución. Compare con períodos anteriores de buen rendimiento."
+    }
+   ]
+  }
+ },
+ "jobs-trend-failures": {
+  "pt": {
+   "title": "Aumento de Falhas",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Jobs cuja taxa de falha nos últimos 7 dias é superior à dos últimos 30 dias. Indica um problema recente ou crescente."
+    },
+    {
+     "label": "Investigação",
+     "text": "Verifique o histórico de execução do job, mensagens de erro, e se houve mudanças recentes no ambiente (deploys, patches, permissões)."
+    }
+   ],
+   "tip": "Um aumento de falhas pode indicar problemas de disco, permissões, timeouts ou alterações no schema."
+  },
+  "en": {
+   "title": "Increased Failures",
+   "sections": [
+    {
+     "label": "What it is",
+     "text": "Jobs whose failure rate in the last 7 days is higher than in the last 30 days. Indicates a recent or growing problem."
+    },
+    {
+     "label": "Investigation",
+     "text": "Check the job's execution history, error messages, and whether there were recent changes to the environment (deployments, patches, permissions)."
+    }
+   ],
+   "tip": "An increase in failures may indicate disk issues, permission problems, timeouts, or schema changes."
+  },
+  "es": {
+   "title": "Aumento de Fallos",
+   "sections": [
+    {
+     "label": "Qué es",
+     "text": "Jobs cuya tasa de fallo en los últimos 7 días es superior a la de los últimos 30 días. Indica un problema reciente o creciente."
+    },
+    {
+     "label": "Investigación",
+     "text": "Verifique el historial de ejecución del job, los mensajes de error y si hubo cambios recientes en el entorno (despliegues, parches, permisos)."
+    }
+   ],
+   "tip": "Un aumento de fallos puede indicar problemas de disco, permisos, timeouts o cambios en el schema."
+  }
+ },
+ "jobs-trend-improved": {
+  "pt": {
+   "title": "Melhorias Detetadas",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Jobs cujo tempo médio de execução nos últimos 7 dias é inferior ao dos últimos 30 dias. Indica melhoria recente na performance."
+    },
+    {
+     "label": "Bom sinal",
+     "text": "Pode ser resultado de manutenção de índices, atualização de estatísticas, otimização de queries, ou redução de carga."
+    }
+   ]
+  },
+  "en": {
+   "title": "Improvements Detected",
+   "sections": [
+    {
+     "label": "What it is",
+     "text": "Jobs whose average run time in the last 7 days is lower than in the last 30 days. Indicates a recent performance improvement."
+    },
+    {
+     "label": "Good sign",
+     "text": "May result from index maintenance, statistics updates, query optimization, or reduced load."
+    }
+   ]
+  },
+  "es": {
+   "title": "Mejoras Detectadas",
+   "sections": [
+    {
+     "label": "Qué es",
+     "text": "Jobs cuyo tiempo promedio de ejecución en los últimos 7 días es menor al de los últimos 30 días. Indica una mejora reciente en el rendimiento."
+    },
+    {
+     "label": "Buena señal",
+     "text": "Puede ser resultado de mantenimiento de índices, actualización de estadísticas, optimización de queries o reducción de carga."
+    }
+   ]
+  }
+ },
+ "bkp-databases": {
+  "pt": {
+   "title": "Total de Databases",
+   "sections": [
+    {
+     "label": "Monitorizadas",
+     "text": "Número total de databases avaliadas na análise de backup. Exclui system databases (master, model, msdb, tempdb)."
+    }
+   ]
+  },
+  "en": {
+   "title": "Total Databases",
+   "sections": [
+    {
+     "label": "Monitored",
+     "text": "Total number of databases evaluated in the backup analysis. Excludes system databases (master, model, msdb, tempdb)."
+    }
+   ]
+  },
+  "es": {
+   "title": "Total de Bases de Datos",
+   "sections": [
+    {
+     "label": "Monitoreadas",
+     "text": "Número total de bases de datos evaluadas en el análisis de backup. Excluye system databases (master, model, msdb, tempdb)."
+    }
+   ]
+  }
+ },
+ "bkp-issues": {
+  "pt": {
+   "title": "Databases com Issues",
+   "sections": [
+    {
+     "label": "Problemas Detetados",
+     "text": "Databases com pelo menos um problema de backup: FULL > 7 dias, DIFF > 24h, LOG > 8h (FULL recovery), ou sem backup registado."
+    }
+   ]
+  },
+  "en": {
+   "title": "Databases with Issues",
+   "sections": [
+    {
+     "label": "Detected Problems",
+     "text": "Databases with at least one backup issue: FULL > 7 days, DIFF > 24h, LOG > 8h (FULL recovery), or no backup on record."
+    }
+   ]
+  },
+  "es": {
+   "title": "Bases de Datos con Issues",
+   "sections": [
+    {
+     "label": "Problemas Detectados",
+     "text": "Bases de datos con al menos un problema de backup: FULL > 7 días, DIFF > 24h, LOG > 8h (FULL recovery), o sin backup registrado."
+    }
+   ]
+  }
+ },
+ "bkp-jobs-failed": {
+  "pt": {
+   "title": "Jobs de Backup",
+   "sections": [
+    {
+     "label": "O que é",
+     "text": "Todos os jobs de backup do SQL Agent desta instância (FULL/DIFF/LOG classificados pelo nome, o mesmo critério do KPI global), com agendamento, última e próxima execução."
+    },
+    {
+     "label": "Falhado",
+     "text": "Job cuja ÚLTIMA execução falhou (estado atual, sem janela temporal) — é o que ainda está em falta. A sub-lista “falhas nas últimas 24h” mostra o histórico recente ao vivo (msdb)."
+    },
+    {
+     "label": "Ferramenta externa",
+     "text": "Se os backups são escritos por uma ferramenta externa (virtual device, detetado em msdb.backupmediafamily), pode não haver jobs no Agent: a secção mostra as bases com origem externa (o nome da ferramenta só aparece quando reconhecido no dispositivo; caso contrário “Externo (VDI)”) e o “próximo esperado” vem do padrão histórico do backupset, na tabela por database."
+    }
+   ],
+   "tip": "Janelas: o KPI global “Backup Failed” mostra falhas dos últimos 7 dias recolhidas pelo collector; aqui é o estado atual + 24h ao vivo. Detalhe completo no módulo Jobs."
+  },
+  "en": {
+   "title": "Backup Jobs",
+   "sections": [
+    {
+     "label": "What it is",
+     "text": "All SQL Agent backup jobs on this instance (FULL/DIFF/LOG classified by name, the same criterion used by the global KPI), with schedule, last and next run."
+    },
+    {
+     "label": "Failed",
+     "text": "A job whose LAST run failed (current state, no time window) — this is what is still outstanding. The “failures in the last 24h” sub-list shows the recent live history (msdb)."
+    },
+    {
+     "label": "External tool",
+     "text": "If backups are written by an external tool (virtual device, detected in msdb.backupmediafamily), there may be no Agent jobs: the section shows the databases with an external source (the tool name only appears when recognized on the device; otherwise “External (VDI)”) and the “next expected” comes from the backupset's historical pattern, in the per-database table."
+    }
+   ],
+   "tip": "Windows: the global “Backup Failed” KPI shows failures from the last 7 days collected by the collector; this is the current state + 24h live. Full detail in the Jobs module."
+  },
+  "es": {
+   "title": "Jobs de Backup",
+   "sections": [
+    {
+     "label": "Qué es",
+     "text": "Todos los jobs de backup de SQL Agent en esta instancia (FULL/DIFF/LOG clasificados por el nombre, el mismo criterio del KPI global), con agendamiento, última y próxima ejecución."
+    },
+    {
+     "label": "Fallido",
+     "text": "Job cuya ÚLTIMA ejecución falló (estado actual, sin ventana temporal) — es lo que aún está pendiente. La sublista “fallos en las últimas 24h” muestra el historial reciente en vivo (msdb)."
+    },
+    {
+     "label": "Herramienta externa",
+     "text": "Si los backups son escritos por una herramienta externa (virtual device, detectado en msdb.backupmediafamily), puede no haber jobs en Agent: la sección muestra las bases con origen externo (el nombre de la herramienta solo aparece cuando se reconoce en el dispositivo; en caso contrario “Externo (VDI)”) y el “próximo esperado” proviene del patrón histórico del backupset, en la tabla por base de datos."
+    }
+   ],
+   "tip": "Ventanas: el KPI global “Backup Failed” muestra fallos de los últimos 7 días recolectados por el collector; aquí es el estado actual + 24h en vivo. Detalle completo en el módulo Jobs."
+  }
+ },
+ "bkp-schedule-conflicts": {
+  "pt": {
+   "title": "Colisões de Schedule de Backup",
+   "sections": [
+    {
+     "label": "Conflitos de Agendamento",
+     "text": "Jobs de backup (FULL, DIFF, LOG) com schedules sobrepostos que podem causar contenção de I/O, locks no transaction log, ou falhas por timeout."
+    },
+    {
+     "label": "Colisões Reais",
+     "text": "Analisa o histórico dos últimos 30 dias para detetar jobs que realmente correram ao mesmo tempo, com detalhes de sobreposição e falhas."
+    }
+   ],
+   "tip": "Clique no card para ver recomendações detalhadas com comandos SQL prontos. Para análise completa, use o módulo Jobs."
+  },
+  "en": {
+   "title": "Backup Schedule Collisions",
+   "sections": [
+    {
+     "label": "Schedule Conflicts",
+     "text": "Backup jobs (FULL, DIFF, LOG) with overlapping schedules that can cause I/O contention, transaction log locks, or timeout failures."
+    },
+    {
+     "label": "Actual Collisions",
+     "text": "Analyzes the last 30 days of history to detect jobs that actually ran at the same time, with overlap and failure details."
+    }
+   ],
+   "tip": "Click the card to see detailed recommendations with ready-to-use SQL commands. For full analysis, use the Jobs module."
+  },
+  "es": {
+   "title": "Colisiones de Schedule de Backup",
+   "sections": [
+    {
+     "label": "Conflictos de Agendamiento",
+     "text": "Jobs de backup (FULL, DIFF, LOG) con schedules superpuestos que pueden causar contención de I/O, locks en el transaction log, o fallos por timeout."
+    },
+    {
+     "label": "Colisiones Reales",
+     "text": "Analiza el historial de los últimos 30 días para detectar jobs que realmente corrieron al mismo tiempo, con detalles de superposición y fallos."
+    }
+   ],
+   "tip": "Haga clic en el card para ver recomendaciones detalladas con comandos SQL listos para usar. Para un análisis completo, use el módulo Jobs."
+  }
+ },
+ "bkp-gaps-full": {
+  "pt": {
+   "title": "Gaps de Backup FULL",
+   "sections": [
+    {
+     "label": "FULL > 7 dias",
+     "text": "Número de databases cujo último backup FULL tem mais de 7 dias. Em caso de desastre, a recuperação será impossível ou incompleta."
+    }
+   ]
+  },
+  "en": {
+   "title": "Backup FULL Gaps",
+   "sections": [
+    {
+     "label": "FULL > 7 days",
+     "text": "Number of databases whose last FULL backup is more than 7 days old. In a disaster scenario, recovery will be impossible or incomplete."
+    }
+   ]
+  },
+  "es": {
+   "title": "Gaps de Backup FULL",
+   "sections": [
+    {
+     "label": "FULL > 7 días",
+     "text": "Número de bases de datos cuyo último backup FULL tiene más de 7 días. En caso de desastre, la recuperación será imposible o incompleta."
+    }
+   ]
+  }
+ },
+ "bkp-gaps-diff": {
+  "pt": {
+   "title": "Gaps de Backup DIFF",
+   "sections": [
+    {
+     "label": "DIFF > 24h",
+     "text": "Databases cujo último backup diferencial tem mais de 24 horas. Backups diferenciais reduzem o tempo de restore."
+    }
+   ]
+  },
+  "en": {
+   "title": "Backup DIFF Gaps",
+   "sections": [
+    {
+     "label": "DIFF > 24h",
+     "text": "Databases whose last differential backup is more than 24 hours old. Differential backups reduce restore time."
+    }
+   ]
+  },
+  "es": {
+   "title": "Gaps de Backup DIFF",
+   "sections": [
+    {
+     "label": "DIFF > 24h",
+     "text": "Bases de datos cuyo último backup diferencial tiene más de 24 horas. Los backups diferenciales reducen el tiempo de restore."
+    }
+   ]
+  }
+ },
+ "bkp-gaps-log": {
+  "pt": {
+   "title": "Gaps de Backup LOG",
+   "sections": [
+    {
+     "label": "LOG > 8h",
+     "text": "Databases em FULL recovery cujo último backup de transaction log tem mais de 8 horas. Risco de perda de dados e crescimento descontrolado do log."
+    }
+   ],
+   "tip": "Sem backups de log regulares, o transaction log cresce indefinidamente até encher o disco."
+  },
+  "en": {
+   "title": "Backup LOG Gaps",
+   "sections": [
+    {
+     "label": "LOG > 8h",
+     "text": "Databases in FULL recovery whose last transaction log backup is more than 8 hours old. Risk of data loss and uncontrolled log growth."
+    }
+   ],
+   "tip": "Without regular log backups, the transaction log grows indefinitely until it fills the disk."
+  },
+  "es": {
+   "title": "Gaps de Backup LOG",
+   "sections": [
+    {
+     "label": "LOG > 8h",
+     "text": "Bases de datos en FULL recovery cuyo último backup de transaction log tiene más de 8 horas. Riesgo de pérdida de datos y crecimiento descontrolado del log."
+    }
+   ],
+   "tip": "Sin backups de log regulares, el transaction log crece indefinidamente hasta llenar el disco."
+  }
+ },
+ "disk-total-volumes": {
+  "pt": {
+   "title": "Total de Volumes",
+   "sections": [
+    {
+     "label": "Volumes Detetados",
+     "text": "Total de volumes/drives montados detetados via sys.dm_os_volume_stats. Inclui todos os drives onde existem ficheiros de base de dados."
+    }
+   ]
+  },
+  "en": {
+   "title": "Total Volumes",
+   "sections": [
+    {
+     "label": "Detected Volumes",
+     "text": "Total mounted volumes/drives detected via sys.dm_os_volume_stats. Includes every drive where database files reside."
+    }
+   ]
+  },
+  "es": {
+   "title": "Total de Volúmenes",
+   "sections": [
+    {
+     "label": "Volúmenes Detectados",
+     "text": "Total de volúmenes/drives montados detectados vía sys.dm_os_volume_stats. Incluye todos los drives donde existen archivos de base de datos."
+    }
+   ]
+  }
+ },
+ "disk-critical": {
+  "pt": {
+   "title": "Volumes Críticos (>= 95%)",
+   "sections": [
+    {
+     "label": "Crítico",
+     "text": "Volumes com 95% ou mais de espaço utilizado. Risco iminente de disco cheio, podendo causar paragem das databases."
+    }
+   ],
+   "tip": "Ação imediata necessária: libertar espaço, mover ficheiros ou expandir o disco."
+  },
+  "en": {
+   "title": "Critical Volumes (>= 95%)",
+   "sections": [
+    {
+     "label": "Critical",
+     "text": "Volumes with 95% or more space used. Imminent risk of running out of disk space, which can cause databases to stop."
+    }
+   ],
+   "tip": "Immediate action required: free up space, move files, or expand the disk."
+  },
+  "es": {
+   "title": "Volúmenes Críticos (>= 95%)",
+   "sections": [
+    {
+     "label": "Crítico",
+     "text": "Volúmenes con 95% o más de espacio utilizado. Riesgo inminente de disco lleno, lo que puede causar la detención de las bases de datos."
+    }
+   ],
+   "tip": "Acción inmediata necesaria: liberar espacio, mover archivos o expandir el disco."
+  }
+ },
+ "disk-high": {
+  "pt": {
+   "title": "Volumes Altos (>= 90%)",
+   "sections": [
+    {
+     "label": "Elevado",
+     "text": "Volumes com 90-94% de espaço utilizado. Devem ser monitorizados de perto e planeada a expansão."
+    }
+   ]
+  },
+  "en": {
+   "title": "High Volumes (>= 90%)",
+   "sections": [
+    {
+     "label": "High",
+     "text": "Volumes with 90-94% space used. Should be closely monitored, with expansion planned."
+    }
+   ]
+  },
+  "es": {
+   "title": "Volúmenes Altos (>= 90%)",
+   "sections": [
+    {
+     "label": "Alto",
+     "text": "Volúmenes con 90-94% de espacio utilizado. Deben ser monitoreados de cerca y planificarse la expansión."
+    }
+   ]
+  }
+ },
+ "disk-alert": {
+  "pt": {
+   "title": "Volumes em Alerta (>= 85%)",
+   "sections": [
+    {
+     "label": "Alerta",
+     "text": "Volumes com 85-89% de espaço utilizado. Ainda têm margem mas o crescimento deve ser monitorizado."
+    }
+   ]
+  },
+  "en": {
+   "title": "Volumes on Alert (>= 85%)",
+   "sections": [
+    {
+     "label": "Alert",
+     "text": "Volumes with 85-89% space used. Still have margin, but growth should be monitored."
+    }
+   ]
+  },
+  "es": {
+   "title": "Volúmenes en Alerta (>= 85%)",
+   "sections": [
+    {
+     "label": "Alerta",
+     "text": "Volúmenes con 85-89% de espacio utilizado. Aún tienen margen, pero el crecimiento debe monitorearse."
+    }
+   ]
+  }
+ },
+ "disk-io-critical": {
+  "pt": {
+   "title": "I/O Crítico (>= 50ms)",
+   "sections": [
+    {
+     "label": "Latência Crítica",
+     "text": "Ficheiros de base de dados com latência de leitura ou escrita >= 50ms. Indica problemas graves de performance de disco."
+    }
+   ],
+   "tip": "Latência > 50ms causa lentidão visível nas queries. Verificar SAN, discos e configuração de I/O."
+  },
+  "en": {
+   "title": "Critical I/O (>= 50ms)",
+   "sections": [
+    {
+     "label": "Critical Latency",
+     "text": "Database files with read or write latency >= 50ms. Indicates severe disk performance problems."
+    }
+   ],
+   "tip": "Latency above 50ms causes visible query slowdowns. Check the SAN, disks, and I/O configuration."
+  },
+  "es": {
+   "title": "I/O Crítico (>= 50ms)",
+   "sections": [
+    {
+     "label": "Latencia Crítica",
+     "text": "Archivos de base de datos con latencia de lectura o escritura >= 50ms. Indica problemas graves de rendimiento de disco."
+    }
+   ],
+   "tip": "Una latencia > 50ms provoca lentitud visible en las queries. Verificar la SAN, los discos y la configuración de I/O."
+  }
+ },
+ "disk-io-warning": {
+  "pt": {
+   "title": "I/O Elevado (>= 20ms)",
+   "sections": [
+    {
+     "label": "Latência Elevada",
+     "text": "Ficheiros com latência 20-49ms. Pode causar lentidão intermitente. Ideal: < 10ms para dados, < 5ms para logs."
+    }
+   ]
+  },
+  "en": {
+   "title": "Elevated I/O (>= 20ms)",
+   "sections": [
+    {
+     "label": "Elevated Latency",
+     "text": "Files with latency between 20-49ms. May cause intermittent slowdowns. Ideal: < 10ms for data, < 5ms for logs."
+    }
+   ]
+  },
+  "es": {
+   "title": "I/O Elevado (>= 20ms)",
+   "sections": [
+    {
+     "label": "Latencia Elevada",
+     "text": "Archivos con latencia de 20-49ms. Puede causar lentitud intermitente. Ideal: < 10ms para datos, < 5ms para logs."
+    }
+   ]
+  }
+ },
+ "space-total-dbs": {
+  "pt": {
+   "title": "Total de Databases",
+   "sections": [
+    {
+     "label": "Analisadas",
+     "text": "Número total de databases incluídas na análise de espaço de filegroups."
+    }
+   ]
+  },
+  "en": {
+   "title": "Total Databases",
+   "sections": [
+    {
+     "label": "Analyzed",
+     "text": "Total number of databases included in the filegroup space analysis."
+    }
+   ]
+  },
+  "es": {
+   "title": "Total de Bases de Datos",
+   "sections": [
+    {
+     "label": "Analizadas",
+     "text": "Número total de bases de datos incluidas en el análisis de espacio de filegroups."
+    }
+   ]
+  }
+ },
+ "space-fg-critical": {
+  "pt": {
+   "title": "FileGroups Críticos",
+   "sections": [
+    {
+     "label": "< 2% Livre",
+     "text": "Filegroups com menos de 2% de espaço livre. Risco iminente de overflow que impede INSERT/UPDATE na database."
+    }
+   ],
+   "tip": "Filegroups sem espaço causam erro 1105. Expandir ficheiros ou adicionar novo ficheiro ao filegroup."
+  },
+  "en": {
+   "title": "Critical FileGroups",
+   "sections": [
+    {
+     "label": "< 2% Free",
+     "text": "Filegroups with less than 2% free space. Imminent risk of overflow, which blocks INSERT/UPDATE on the database."
+    }
+   ],
+   "tip": "Filegroups out of space cause error 1105. Expand files or add a new file to the filegroup."
+  },
+  "es": {
+   "title": "FileGroups Críticos",
+   "sections": [
+    {
+     "label": "< 2% Libre",
+     "text": "Filegroups con menos de 2% de espacio libre. Riesgo inminente de overflow que impide INSERT/UPDATE en la base de datos."
+    }
+   ],
+   "tip": "Los filegroups sin espacio provocan el error 1105. Expandir archivos o agregar un nuevo archivo al filegroup."
+  }
+ },
+ "space-fg-warning": {
+  "pt": {
+   "title": "FileGroups em Alerta",
+   "sections": [
+    {
+     "label": "2-5% Livre",
+     "text": "Filegroups com 2-5% de espaço livre. Devem ser monitorizados e planeada a expansão."
+    }
+   ]
+  },
+  "en": {
+   "title": "FileGroups on Alert",
+   "sections": [
+    {
+     "label": "2-5% Free",
+     "text": "Filegroups with 2-5% free space. Should be monitored, with expansion planned."
+    }
+   ]
+  },
+  "es": {
+   "title": "FileGroups en Alerta",
+   "sections": [
+    {
+     "label": "2-5% Libre",
+     "text": "Filegroups con 2-5% de espacio libre. Deben ser monitoreados y planificarse la expansión."
+    }
+   ]
+  }
+ },
+ "space-dbs-issues": {
+  "pt": {
+   "title": "DBs com Issues de Espaço",
+   "sections": [
+    {
+     "label": "Databases Afetadas",
+     "text": "Número de databases que têm pelo menos um filegroup em estado crítico ou de alerta."
+    }
+   ]
+  },
+  "en": {
+   "title": "DBs with Space Issues",
+   "sections": [
+    {
+     "label": "Affected Databases",
+     "text": "Number of databases with at least one filegroup in critical or alert state."
+    }
+   ]
+  },
+  "es": {
+   "title": "DBs con Issues de Espacio",
+   "sections": [
+    {
+     "label": "Bases de Datos Afectadas",
+     "text": "Número de bases de datos que tienen al menos un filegroup en estado crítico o de alerta."
+    }
+   ]
+  }
+ },
+ "space-disk-critical": {
+  "pt": {
+   "title": "Espaço em Disco Crítico",
+   "sections": [
+    {
+     "label": "<= 5% Livre",
+     "text": "Discos/volumes com 5% ou menos de espaço livre. Risco iminente de falha — databases não poderão crescer e operações de escrita falharão."
+    }
+   ],
+   "tip": "Expandir disco ou mover dados/backups antigos imediatamente. Monitorizar autogrowth dos ficheiros de dados."
+  },
+  "en": {
+   "title": "Disk Space Critical",
+   "sections": [
+    {
+     "label": "<= 5% Free",
+     "text": "Disks/volumes with 5% or less free space. Imminent risk of failure — databases will not be able to grow and write operations will fail."
+    }
+   ],
+   "tip": "Expand the disk or move old data/backups immediately. Monitor autogrowth on the data files."
+  },
+  "es": {
+   "title": "Espacio en Disco Crítico",
+   "sections": [
+    {
+     "label": "<= 5% Libre",
+     "text": "Discos/volúmenes con 5% o menos de espacio libre. Riesgo inminente de falla — las bases de datos no podrán crecer y las operaciones de escritura fallarán."
+    }
+   ],
+   "tip": "Expandir el disco o mover datos/backups antiguos de inmediato. Monitorear el autogrowth de los archivos de datos."
+  },
+  "pt-BR": {
+   "title": "Espaço em Disco Crítico",
+   "sections": [
+    {
+     "label": "<= 5% Livre",
+     "text": "Discos/volumes com 5% ou menos de espaço livre. Risco iminente de falha — databases não poderão crescer e operações de escrita falharão."
+    }
+   ],
+   "tip": "Expandir disco ou mover dados/backups antigos imediatamente. Monitorar autogrowth dos ficheiros de dados."
+  }
+ },
+ "space-disk-warning": {
+  "pt": {
+   "title": "Aviso de Espaço em Disco",
+   "sections": [
+    {
+     "label": "<= 10% Livre",
+     "text": "Discos/volumes com 10% ou menos de espaço livre. Planear expansão de disco ou limpeza de ficheiros temporários."
+    }
+   ]
+  },
+  "en": {
+   "title": "Disk Space Warning",
+   "sections": [
+    {
+     "label": "<= 10% Free",
+     "text": "Disks/volumes with 10% or less free space. Plan disk expansion or clean up temporary files."
+    }
+   ]
+  },
+  "es": {
+   "title": "Aviso de Espacio en Disco",
+   "sections": [
+    {
+     "label": "<= 10% Libre",
+     "text": "Discos/volúmenes con 10% o menos de espacio libre. Planificar la expansión del disco o la limpieza de archivos temporales."
+    }
+   ]
+  },
+  "pt-BR": {
+   "title": "Aviso de Espaço em Disco",
+   "sections": [
+    {
+     "label": "<= 10% Livre",
+     "text": "Discos/volumes com 10% ou menos de espaço livre. Planejar expansão de disco ou limpeza de ficheiros temporários."
+    }
+   ]
+  }
+ },
+ "space-disk-overflow": {
+  "pt": {
+   "title": "Risco de Overflow de Disco",
+   "sections": [
+    {
+     "label": "Overflow",
+     "text": "Databases cujo MAXSIZE configurado excede o espaço físico disponível no disco. Se a database crescer até ao limite, o disco ficará cheio."
+    },
+    {
+     "label": "Risco",
+     "text": "Verificar MAXSIZE de ficheiros de dados e ajustar conforme espaço disponível. Considerar UNLIMITED apenas com monitorização ativa."
+    }
+   ]
+  },
+  "en": {
+   "title": "Disk Overflow Risk",
+   "sections": [
+    {
+     "label": "Overflow",
+     "text": "Databases whose configured MAXSIZE exceeds the physical space available on the disk. If the database grows to the limit, the disk will fill up."
+    },
+    {
+     "label": "Risk",
+     "text": "Check the MAXSIZE of data files and adjust according to available space. Consider UNLIMITED only with active monitoring."
+    }
+   ]
+  },
+  "es": {
+   "title": "Riesgo de Overflow de Disco",
+   "sections": [
+    {
+     "label": "Overflow",
+     "text": "Bases de datos cuyo MAXSIZE configurado excede el espacio físico disponible en el disco. Si la base de datos crece hasta el límite, el disco se llenará."
+    },
+    {
+     "label": "Riesgo",
+     "text": "Verificar el MAXSIZE de los archivos de datos y ajustarlo según el espacio disponible. Considerar UNLIMITED solo con monitoreo activo."
+    }
+   ]
+  }
+ },
+ "ag-status": {
+  "pt": {
+   "title": "Status do Availability Group",
+   "sections": [
+    {
+     "label": "Sync Health",
+     "text": "HEALTHY: todas as réplicas sincronizadas. NOT_HEALTHY: pelo menos uma réplica com problemas de sincronização."
+    },
+    {
+     "label": "Proteção",
+     "text": "O AlwaysOn Availability Groups fornece alta disponibilidade e disaster recovery para bases de dados críticas."
+    }
+   ]
+  },
+  "en": {
+   "title": "Availability Group Status",
+   "sections": [
+    {
+     "label": "Sync Health",
+     "text": "HEALTHY: all replicas are synchronized. NOT_HEALTHY: at least one replica has synchronization issues."
+    },
+    {
+     "label": "Protection",
+     "text": "AlwaysOn Availability Groups provide high availability and disaster recovery for critical databases."
+    }
+   ]
+  },
+  "es": {
+   "title": "Estado del Availability Group",
+   "sections": [
+    {
+     "label": "Estado de sincronización",
+     "text": "HEALTHY: todas las réplicas están sincronizadas. NOT_HEALTHY: al menos una réplica tiene problemas de sincronización."
+    },
+    {
+     "label": "Protección",
+     "text": "AlwaysOn Availability Groups proporciona alta disponibilidad y disaster recovery para bases de datos críticas."
+    }
+   ]
+  }
+ },
+ "ag-listener": {
+  "pt": {
+   "title": "AG Listener",
+   "sections": [
+    {
+     "label": "Listener",
+     "text": "O Listener é o ponto de acesso virtual (VNN/IP) que as aplicações usam para se ligar ao AG. Redireciona automaticamente para a réplica primária."
+    }
+   ],
+   "tip": "Sem Listener configurado, as aplicações precisam de saber qual é a réplica primária — sem failover automático transparente."
+  },
+  "en": {
+   "title": "AG Listener",
+   "sections": [
+    {
+     "label": "Listener",
+     "text": "The listener is the virtual access point (VNN/IP) that applications use to connect to the AG. It automatically redirects to the primary replica."
+    }
+   ],
+   "tip": "Without a listener configured, applications need to know which replica is primary — there is no transparent automatic failover."
+  },
+  "es": {
+   "title": "AG Listener",
+   "sections": [
+    {
+     "label": "Listener",
+     "text": "El listener es el punto de acceso virtual (VNN/IP) que las aplicaciones usan para conectarse al AG. Redirige automáticamente a la réplica primaria."
+    }
+   ],
+   "tip": "Sin un listener configurado, las aplicaciones necesitan saber cuál es la réplica primaria — no hay failover automático transparente."
+  }
+ },
+ "ag-replicas": {
+  "pt": {
+   "title": "Réplicas",
+   "sections": [
+    {
+     "label": "Instâncias Réplica",
+     "text": "Número de instâncias SQL Server que participam no AG. Cada réplica pode ser síncrona ou assíncrona."
+    },
+    {
+     "label": "Modos",
+     "text": "SYNCHRONOUS_COMMIT: zero data loss, mais lento. ASYNCHRONOUS_COMMIT: mais rápido, risco de perda de dados no failover."
+    }
+   ]
+  },
+  "en": {
+   "title": "Replicas",
+   "sections": [
+    {
+     "label": "Replica Instances",
+     "text": "Number of SQL Server instances participating in the AG. Each replica can be synchronous or asynchronous."
+    },
+    {
+     "label": "Modes",
+     "text": "SYNCHRONOUS_COMMIT: zero data loss, slower. ASYNCHRONOUS_COMMIT: faster, risk of data loss on failover."
+    }
+   ]
+  },
+  "es": {
+   "title": "Réplicas",
+   "sections": [
+    {
+     "label": "Instancias Réplica",
+     "text": "Número de instancias SQL Server que participan en el AG. Cada réplica puede ser síncrona o asíncrona."
+    },
+    {
+     "label": "Modos",
+     "text": "SYNCHRONOUS_COMMIT: cero pérdida de datos, más lento. ASYNCHRONOUS_COMMIT: más rápido, riesgo de pérdida de datos en el failover."
+    }
+   ]
+  }
+ },
+ "ag-databases": {
+  "pt": {
+   "title": "Databases no AG",
+   "sections": [
+    {
+     "label": "Bases Protegidas",
+     "text": "Número de databases incluídas no Availability Group. Cada base é replicada para todas as réplicas secundárias."
+    }
+   ]
+  },
+  "en": {
+   "title": "Databases in the AG",
+   "sections": [
+    {
+     "label": "Protected Databases",
+     "text": "Number of databases included in the Availability Group. Each database is replicated to all secondary replicas."
+    }
+   ]
+  },
+  "es": {
+   "title": "Databases en el AG",
+   "sections": [
+    {
+     "label": "Bases Protegidas",
+     "text": "Número de databases incluidas en el Availability Group. Cada base de datos se replica a todas las réplicas secundarias."
+    }
+   ]
+  }
+ },
+ "sec-score": {
+  "pt": {
+   "title": "Score de Segurança",
+   "sections": [
+    {
+     "label": "Pontuação",
+     "text": "Score de 0 a 100 baseado em best practices de segurança SQL Server. >= 80: Bom. 60-79: Necessita atenção. < 60: Crítico."
+    },
+    {
+     "label": "Categorias",
+     "text": "Avalia: autenticação, permissões, configuração, encriptação, auditoria e conformidade."
+    }
+   ]
+  },
+  "en": {
+   "title": "Security Score",
+   "sections": [
+    {
+     "label": "Score",
+     "text": "Score from 0 to 100 based on SQL Server security best practices. >= 80: Good. 60-79: Needs attention. < 60: Critical."
+    },
+    {
+     "label": "Categories",
+     "text": "Evaluates: authentication, permissions, configuration, encryption, auditing, and compliance."
+    }
+   ]
+  },
+  "es": {
+   "title": "Score de Seguridad",
+   "sections": [
+    {
+     "label": "Puntuación",
+     "text": "Score de 0 a 100 basado en las mejores prácticas de seguridad de SQL Server. >= 80: Bueno. 60-79: Necesita atención. < 60: Crítico."
+    },
+    {
+     "label": "Categorías",
+     "text": "Evalúa: autenticación, permisos, configuración, cifrado, auditoría y cumplimiento."
+    }
+   ]
+  }
+ },
+ "sec-passed": {
+  "pt": {
+   "title": "Checks OK",
+   "sections": [
+    {
+     "label": "Passaram",
+     "text": "Verificações de segurança que estão em conformidade com as best practices."
+    }
+   ]
+  },
+  "en": {
+   "title": "Checks Passed",
+   "sections": [
+    {
+     "label": "Passed",
+     "text": "Security checks that are compliant with best practices."
+    }
+   ]
+  },
+  "es": {
+   "title": "Checks OK",
+   "sections": [
+    {
+     "label": "Aprobados",
+     "text": "Verificaciones de seguridad que cumplen con las mejores prácticas."
+    }
+   ]
+  }
+ },
+ "sec-failed": {
+  "pt": {
+   "title": "Checks Falhados",
+   "sections": [
+    {
+     "label": "Falharam",
+     "text": "Verificações que detetaram configurações de segurança não conformes. Devem ser investigadas e corrigidas."
+    }
+   ]
+  },
+  "en": {
+   "title": "Failed Checks",
+   "sections": [
+    {
+     "label": "Failed",
+     "text": "Checks that detected non-compliant security configurations. Must be investigated and corrected."
+    }
+   ]
+  },
+  "es": {
+   "title": "Checks Fallidos",
+   "sections": [
+    {
+     "label": "Fallaron",
+     "text": "Verificaciones que detectaron configuraciones de seguridad no conformes. Deben ser investigadas y corregidas."
+    }
+   ]
+  }
+ },
+ "sec-warnings": {
+  "pt": {
+   "title": "Avisos de Segurança",
+   "sections": [
+    {
+     "label": "Warnings",
+     "text": "Configurações que não são críticas mas devem ser revistas. Podem indicar desvios de best practices ou riscos futuros."
+    }
+   ]
+  },
+  "en": {
+   "title": "Security Warnings",
+   "sections": [
+    {
+     "label": "Warnings",
+     "text": "Configurations that are not critical but should be reviewed. May indicate deviations from best practices or future risks."
+    }
+   ]
+  },
+  "es": {
+   "title": "Avisos de Seguridad",
+   "sections": [
+    {
+     "label": "Warnings",
+     "text": "Configuraciones que no son críticas pero deben revisarse. Pueden indicar desviaciones de las mejores prácticas o riesgos futuros."
+    }
+   ]
+  }
+ },
+ "sec-critical": {
+  "pt": {
+   "title": "Issues Críticos",
+   "sections": [
+    {
+     "label": "Critical",
+     "text": "Vulnerabilidades de segurança de severidade máxima. Requerem ação imediata — risco de comprometimento do servidor ou dados."
+    }
+   ],
+   "tip": "Issues críticos devem ser corrigidos antes de qualquer outro trabalho. Incluem: sa habilitado, permissões excessivas, sem auditoria."
+  },
+  "en": {
+   "title": "Critical Issues",
+   "sections": [
+    {
+     "label": "Critical",
+     "text": "Maximum-severity security vulnerabilities. Require immediate action — risk of server or data compromise."
+    }
+   ],
+   "tip": "Critical issues must be fixed before any other work. Includes: sa enabled, excessive permissions, no auditing."
+  },
+  "es": {
+   "title": "Issues Críticos",
+   "sections": [
+    {
+     "label": "Critical",
+     "text": "Vulnerabilidades de seguridad de severidad máxima. Requieren acción inmediata — riesgo de compromiso del servidor o de los datos."
+    }
+   ],
+   "tip": "Los issues críticos deben corregirse antes de cualquier otro trabajo. Incluyen: sa habilitado, permisos excesivos, sin auditoría."
+  }
+ },
+ "sec-high": {
+  "pt": {
+   "title": "Issues de Alta Severidade",
+   "sections": [
+    {
+     "label": "High",
+     "text": "Problemas de segurança de severidade alta. Devem ser planeados para correção a curto prazo."
+    }
+   ]
+  },
+  "en": {
+   "title": "High Severity Issues",
+   "sections": [
+    {
+     "label": "High",
+     "text": "High-severity security issues. Should be scheduled for short-term remediation."
+    }
+   ]
+  },
+  "es": {
+   "title": "Issues de Severidad Alta",
+   "sections": [
+    {
+     "label": "High",
+     "text": "Problemas de seguridad de severidad alta. Deben planificarse para corrección a corto plazo."
+    }
+   ]
+  }
+ },
+ "svc-status": {
+  "pt": {
+   "title": "Estado Geral dos Serviços",
+   "sections": [
+    {
+     "label": "Status",
+     "text": "OK se todos os serviços críticos estão em execução. CRÍTICO se pelo menos um serviço crítico está parado."
+    }
+   ]
+  },
+  "en": {
+   "title": "Overall Services Status",
+   "sections": [
+    {
+     "label": "Status",
+     "text": "OK if all critical services are running. CRITICAL if at least one critical service is stopped."
+    }
+   ]
+  },
+  "es": {
+   "title": "Estado General de los Servicios",
+   "sections": [
+    {
+     "label": "Status",
+     "text": "OK si todos los servicios críticos están en ejecución. CRÍTICO si al menos un servicio crítico está detenido."
+    }
+   ]
+  }
+ },
+ "svc-running": {
+  "pt": {
+   "title": "Serviços em Execução",
+   "sections": [
+    {
+     "label": "Ativos",
+     "text": "Contagem de serviços SQL em execução vs total. Mostra quantos dos serviços configurados estão operacionais."
+    }
+   ]
+  },
+  "en": {
+   "title": "Running Services",
+   "sections": [
+    {
+     "label": "Active",
+     "text": "Count of running SQL services vs total. Shows how many configured services are operational."
+    }
+   ]
+  },
+  "es": {
+   "title": "Servicios en Ejecución",
+   "sections": [
+    {
+     "label": "Activos",
+     "text": "Conteo de servicios SQL en ejecución frente al total. Muestra cuántos de los servicios configurados están operativos."
+    }
+   ]
+  }
+ },
+ "svc-stopped": {
+  "pt": {
+   "title": "Serviços Parados",
+   "sections": [
+    {
+     "label": "Parados",
+     "text": "Serviços que não estão em execução. Se forem serviços “Automatic”, devem ser investigados."
+    }
+   ],
+   "tip": "Serviços manuais ou desabilitados parados são normais. Foque-se nos serviços automáticos."
+  },
+  "en": {
+   "title": "Stopped Services",
+   "sections": [
+    {
+     "label": "Stopped",
+     "text": "Services that are not running. If they are “Automatic” services, they should be investigated."
+    }
+   ],
+   "tip": "Manual or disabled services that are stopped are normal. Focus on automatic services."
+  },
+  "es": {
+   "title": "Servicios Detenidos",
+   "sections": [
+    {
+     "label": "Detenidos",
+     "text": "Servicios que no están en ejecución. Si son servicios “Automatic”, deben investigarse."
+    }
+   ],
+   "tip": "Los servicios manuales o deshabilitados detenidos son normales. Concéntrese en los servicios automáticos."
+  }
+ },
+ "svc-critical": {
+  "pt": {
+   "title": "Serviços Críticos Parados",
+   "sections": [
+    {
+     "label": "Críticos",
+     "text": "Serviços essenciais como SQL Server Engine e SQL Agent que estão parados. Requer ação imediata."
+    }
+   ]
+  },
+  "en": {
+   "title": "Critical Services Stopped",
+   "sections": [
+    {
+     "label": "Critical",
+     "text": "Essential services such as SQL Server Engine and SQL Agent that are stopped. Requires immediate action."
+    }
+   ]
+  },
+  "es": {
+   "title": "Servicios Críticos Detenidos",
+   "sections": [
+    {
+     "label": "Críticos",
+     "text": "Servicios esenciales como SQL Server Engine y SQL Agent que están detenidos. Requiere acción inmediata."
+    }
+   ]
+  }
+ },
+ "usr-total": {
+  "pt": {
+   "title": "Total de Utilizadores",
+   "sections": [
+    {
+     "label": "Logins & Users",
+     "text": "Número total de logins SQL Server e database users na instância. Inclui logins de Windows e SQL Authentication."
+    }
+   ]
+  },
+  "en": {
+   "title": "Total Users",
+   "sections": [
+    {
+     "label": "Logins & Users",
+     "text": "Total number of SQL Server logins and database users on the instance. Includes Windows logins and SQL Authentication."
+    }
+   ]
+  },
+  "es": {
+   "title": "Total de Usuarios",
+   "sections": [
+    {
+     "label": "Logins & Users",
+     "text": "Número total de logins de SQL Server y database users en la instancia. Incluye logins de Windows y SQL Authentication."
+    }
+   ]
+  }
+ },
+ "usr-orphaned": {
+  "pt": {
+   "title": "Utilizadores Órfãos",
+   "sections": [
+    {
+     "label": "Sem Login Mapeado",
+     "text": "Database users que não têm um login correspondente a nível do servidor. Podem ter sido criados antes de uma migração ou restore."
+    }
+   ],
+   "tip": "Corrigir com ALTER USER ... WITH LOGIN = ou remover se não forem necessários."
+  },
+  "en": {
+   "title": "Orphaned Users",
+   "sections": [
+    {
+     "label": "No Mapped Login",
+     "text": "Database users that do not have a corresponding login at the server level. May have been created before a migration or restore."
+    }
+   ],
+   "tip": "Fix with ALTER USER ... WITH LOGIN = or remove if not needed."
+  },
+  "es": {
+   "title": "Usuarios Huérfanos",
+   "sections": [
+    {
+     "label": "Sin Login Mapeado",
+     "text": "Database users que no tienen un login correspondiente a nivel del servidor. Pueden haberse creado antes de una migración o restore."
+    }
+   ],
+   "tip": "Corregir con ALTER USER ... WITH LOGIN = o eliminar si no son necesarios."
+  }
+ },
+ "usr-excessive": {
+  "pt": {
+   "title": "Permissões Excessivas",
+   "sections": [
+    {
+     "label": "Privilégios Elevados",
+     "text": "Utilizadores com sysadmin, db_owner ou outras roles privilegiadas. Princípio do menor privilégio: dar apenas as permissões necessárias."
+    }
+   ]
+  },
+  "en": {
+   "title": "Excessive Permissions",
+   "sections": [
+    {
+     "label": "Elevated Privileges",
+     "text": "Users with sysadmin, db_owner, or other privileged roles. Principle of least privilege: grant only the permissions that are necessary."
+    }
+   ]
+  },
+  "es": {
+   "title": "Permisos Excesivos",
+   "sections": [
+    {
+     "label": "Privilegios Elevados",
+     "text": "Usuarios con sysadmin, db_owner u otros roles privilegiados. Principio de mínimo privilegio: otorgar solo los permisos necesarios."
+    }
+   ]
+  }
+ },
+ "usr-inactive": {
+  "pt": {
+   "title": "Utilizadores Inativos",
+   "sections": [
+    {
+     "label": "Sem Atividade",
+     "text": "Logins que não se ligaram à instância num período prolongado. Contas inativas são um risco de segurança."
+    }
+   ]
+  },
+  "en": {
+   "title": "Inactive Users",
+   "sections": [
+    {
+     "label": "No Activity",
+     "text": "Logins that have not connected to the instance for an extended period. Inactive accounts are a security risk."
+    }
+   ]
+  },
+  "es": {
+   "title": "Usuarios Inactivos",
+   "sections": [
+    {
+     "label": "Sin Actividad",
+     "text": "Logins que no se conectaron a la instancia durante un período prolongado. Las cuentas inactivas son un riesgo de seguridad."
+    }
+   ]
+  }
+ },
+ "usr-weak-pwd": {
+  "pt": {
+   "title": "Passwords Fracas",
+   "sections": [
+    {
+     "label": "Segurança",
+     "text": "SQL logins com passwords que não cumprem as políticas de complexidade ou que são conhecidas como fracas."
+    }
+   ],
+   "tip": "Habilitar CHECK_POLICY e CHECK_EXPIRATION para todos os SQL logins."
+  },
+  "en": {
+   "title": "Weak Passwords",
+   "sections": [
+    {
+     "label": "Security",
+     "text": "SQL logins with passwords that do not meet complexity policies or are known to be weak."
+    }
+   ],
+   "tip": "Enable CHECK_POLICY and CHECK_EXPIRATION for all SQL logins."
+  },
+  "es": {
+   "title": "Contraseñas Débiles",
+   "sections": [
+    {
+     "label": "Seguridad",
+     "text": "SQL logins con contraseñas que no cumplen las políticas de complejidad o que se conocen como débiles."
+    }
+   ],
+   "tip": "Habilitar CHECK_POLICY y CHECK_EXPIRATION para todos los SQL logins."
+  }
+ },
+ "log-windows-events": {
+  "pt": {
+   "title": "Eventos Windows",
+   "sections": [
+    {
+     "label": "Windows Event Log",
+     "text": "Eventos do Application e System Event Log filtrados por fontes SQL Server. Agrupados por severidade: Erro, Aviso, Informação."
+    }
+   ]
+  },
+  "en": {
+   "title": "Windows Events",
+   "sections": [
+    {
+     "label": "Windows Event Log",
+     "text": "Events from the Application and System Event Log filtered by SQL Server sources. Grouped by severity: Error, Warning, Information."
+    }
+   ]
+  },
+  "es": {
+   "title": "Eventos de Windows",
+   "sections": [
+    {
+     "label": "Windows Event Log",
+     "text": "Eventos del Application y System Event Log filtrados por fuentes de SQL Server. Agrupados por severidad: Error, Advertencia, Información."
+    }
+   ]
+  }
+ },
+ "log-sql-errors": {
+  "pt": {
+   "title": "Erros SQL Server",
+   "sections": [
+    {
+     "label": "SQL ErrorLog",
+     "text": "Erros registados no SQL Server ErrorLog. Inclui erros de severidade elevada (>= 17), problemas de I/O, falhas de login e deadlocks."
+    }
+   ]
+  },
+  "en": {
+   "title": "SQL Server Errors",
+   "sections": [
+    {
+     "label": "SQL ErrorLog",
+     "text": "Errors logged in the SQL Server ErrorLog. Includes high-severity errors (>= 17), I/O issues, login failures, and deadlocks."
+    }
+   ]
+  },
+  "es": {
+   "title": "Errores de SQL Server",
+   "sections": [
+    {
+     "label": "SQL ErrorLog",
+     "text": "Errores registrados en el SQL ErrorLog. Incluye errores de severidad alta (>= 17), problemas de I/O, fallos de login y deadlocks."
+    }
+   ]
+  }
+ },
+ "tde-status": {
+  "pt": {
+   "title": "Estado TDE",
+   "sections": [
+    {
+     "label": "Transparent Data Encryption",
+     "text": "TDE encripta os ficheiros de dados (.mdf/.ndf/.ldf) em repouso. Protege contra acesso não autorizado aos ficheiros físicos."
+    }
+   ]
+  },
+  "en": {
+   "title": "TDE Status",
+   "sections": [
+    {
+     "label": "Transparent Data Encryption",
+     "text": "TDE encrypts data files (.mdf/.ndf/.ldf) at rest. Protects against unauthorized access to the physical files."
+    }
+   ]
+  },
+  "es": {
+   "title": "Estado TDE",
+   "sections": [
+    {
+     "label": "Transparent Data Encryption",
+     "text": "TDE cifra los archivos de datos (.mdf/.ndf/.ldf) en reposo. Protege contra el acceso no autorizado a los archivos físicos."
+    }
+   ]
+  }
+ },
+ "tde-encrypted": {
+  "pt": {
+   "title": "Databases Encriptadas",
+   "sections": [
+    {
+     "label": "Protegidas",
+     "text": "Databases com TDE ativo. Os dados são encriptados automaticamente quando escritos no disco e desencriptados ao ler."
+    }
+   ]
+  },
+  "en": {
+   "title": "Encrypted Databases",
+   "sections": [
+    {
+     "label": "Protected",
+     "text": "Databases with TDE active. Data is automatically encrypted when written to disk and decrypted on read."
+    }
+   ]
+  },
+  "es": {
+   "title": "Databases Cifradas",
+   "sections": [
+    {
+     "label": "Protegidas",
+     "text": "Databases con TDE activo. Los datos se cifran automáticamente al escribirse en disco y se descifran al leerse."
+    }
+   ]
+  }
+ },
+ "tde-unencrypted": {
+  "pt": {
+   "title": "Databases sem Encriptação",
+   "sections": [
+    {
+     "label": "Desprotegidas",
+     "text": "Databases sem TDE. Os ficheiros de dados podem ser lidos diretamente se copiados para outro servidor."
+    }
+   ],
+   "tip": "Em ambientes de produção com dados sensíveis, habilitar TDE é uma best practice de segurança."
+  },
+  "en": {
+   "title": "Unencrypted Databases",
+   "sections": [
+    {
+     "label": "Unprotected",
+     "text": "Databases without TDE. Data files can be read directly if copied to another server."
+    }
+   ],
+   "tip": "In production environments with sensitive data, enabling TDE is a security best practice."
+  },
+  "es": {
+   "title": "Databases sin Cifrado",
+   "sections": [
+    {
+     "label": "Desprotegidas",
+     "text": "Databases sin TDE. Los archivos de datos pueden leerse directamente si se copian a otro servidor."
+    }
+   ],
+   "tip": "En entornos de producción con datos sensibles, habilitar TDE es una best practice de seguridad."
+  }
+ },
+ "tde-certificate": {
+  "pt": {
+   "title": "Certificados TDE",
+   "sections": [
+    {
+     "label": "Validade",
+     "text": "Certificados usados para encriptar as database encryption keys. Devem ser monitorizados para evitar expiração."
+    }
+   ],
+   "tip": "Fazer backup do certificado e chave privada! Sem eles, é impossível restaurar a base noutro servidor."
+  },
+  "en": {
+   "title": "TDE Certificates",
+   "sections": [
+    {
+     "label": "Validity",
+     "text": "Certificates used to encrypt the database encryption keys. Should be monitored to avoid expiration."
+    }
+   ],
+   "tip": "Back up the certificate and private key! Without them, it is impossible to restore the database on another server."
+  },
+  "es": {
+   "title": "Certificados TDE",
+   "sections": [
+    {
+     "label": "Validez",
+     "text": "Certificados usados para cifrar las database encryption keys. Deben monitorearse para evitar la expiración."
+    }
+   ],
+   "tip": "¡Haga backup del certificado y la clave privada! Sin ellos, es imposible restaurar la base de datos en otro servidor."
+  }
+ },
+ "disk-recoverable-by-drive": {
+  "pt": {
+   "title": "Recuperável por Drive",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Agregação por letra de drive (F:, L:, M:, ...) do espaço recuperável dentro dos ficheiros das databases que residem nessa drive. Não confundir com espaço livre da drive ao nível do sistema operativo - este é o espaço livre DENTRO dos .mdf/.ndf/.ldf alocados."
+    },
+    {
+     "label": "Breakdown DATA / LOG",
+     "text": "Cada card mostra quanto do espaço recuperável é ficheiros de dados (DATA, ícone azul) e quanto é transaction log (LOG, ícone roxo). Permite saber onde está concentrado o espaço vazio."
+    },
+    {
+     "label": "Barra de uso (% usado de XXX GB)",
+     "text": "Representa a percentagem usada da soma dos ficheiros nessa drive (não da drive física). Verde < 70%, amarelo 70-90%, vermelho >= 90%."
+    },
+    {
+     "label": "Interação",
+     "text": "Clique no card aplica filtro à tabela em baixo, mostrando só as databases dessa drive. Botão Analisar abre modal detalhado da drive."
+    }
+   ],
+   "tip": "Drives com muito espaço recuperável em LOG são candidatas a reduzir o tamanho do transaction log após backups regulares. Drives com muito espaço em DATA podem ter databases superdimensionadas."
+  },
+  "en": {
+   "title": "Recoverable Space by Drive",
+   "sections": [
+    {
+     "label": "What is it?",
+     "text": "Aggregation by drive letter (F:, L:, M:, ...) of the recoverable space within the database files residing on that drive. Not to be confused with free space on the drive at the operating system level - this is the free space INSIDE the allocated .mdf/.ndf/.ldf files."
+    },
+    {
+     "label": "DATA / LOG Breakdown",
+     "text": "Each card shows how much of the recoverable space is data files (DATA, blue icon) and how much is transaction log (LOG, purple icon). Lets you see where the empty space is concentrated."
+    },
+    {
+     "label": "Usage bar (% used of XXX GB)",
+     "text": "Represents the percentage used of the sum of the files on that drive (not of the physical drive). Green < 70%, yellow 70-90%, red >= 90%."
+    },
+    {
+     "label": "Interaction",
+     "text": "Clicking the card filters the table below, showing only the databases on that drive. The Analyze button opens a detailed modal for the drive."
+    }
+   ],
+   "tip": "Drives with a lot of recoverable space in LOG are candidates to shrink the transaction log after regular backups. Drives with a lot of space in DATA may have oversized databases."
+  },
+  "es": {
+   "title": "Recuperable por Drive",
+   "sections": [
+    {
+     "label": "¿Qué es?",
+     "text": "Agregación por letra de drive (F:, L:, M:, ...) del espacio recuperable dentro de los archivos de las databases que residen en ese drive. No confundir con el espacio libre del drive a nivel del sistema operativo - este es el espacio libre DENTRO de los .mdf/.ndf/.ldf asignados."
+    },
+    {
+     "label": "Desglose DATA / LOG",
+     "text": "Cada card muestra cuánto del espacio recuperable son archivos de datos (DATA, ícono azul) y cuánto es transaction log (LOG, ícono morado). Permite saber dónde está concentrado el espacio vacío."
+    },
+    {
+     "label": "Barra de uso (% usado de XXX GB)",
+     "text": "Representa el porcentaje usado de la suma de los archivos en ese drive (no del drive físico). Verde < 70%, amarillo 70-90%, rojo >= 90%."
+    },
+    {
+     "label": "Interacción",
+     "text": "Al hacer clic en el card se aplica un filtro a la tabla de abajo, mostrando solo las databases de ese drive. El botón Analizar abre un modal detallado del drive."
+    }
+   ],
+   "tip": "Los drives con mucho espacio recuperable en LOG son candidatos a reducir el tamaño del transaction log después de backups regulares. Los drives con mucho espacio en DATA pueden tener databases sobredimensionadas."
+  }
+ },
+ "disk-total-recoverable": {
+  "pt": {
+   "title": "Total Recuperável",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Soma do espaço livre alocado mas não usado dentro de TODOS os ficheiros .mdf/.ndf/.ldf das databases desta instância. É o espaço que poderia ser libertado para o filesystem via DBCC SHRINKFILE."
+    },
+    {
+     "label": "Importante",
+     "text": "Este valor NÃO é o espaço livre da drive física. É o “ar” dentro dos ficheiros de DB. A drive pode estar cheia mesmo com muito espaço recuperável."
+    },
+    {
+     "label": "Aritmética, não recomendação",
+     "text": "Este total soma TODO o espaço livre, incluindo o de ficheiros bem dimensionados que NÃO devem ser encolhidos (<30% livre). O valor acionável real é menor: ver a classificação por linha na tabela (CANDIDATO / OBSERVAR / BEM DIM.) e o card Candidatos a Shrink."
+    },
+    {
+     "label": "Antes de fazer shrink",
+     "text": "Shrink causa fragmentação de índices severa e é operação I/O intensiva. Aplicar só quando há falta real de espaço em disco e idealmente apenas em ficheiros LOG. Para DATA, considerar primeiro arquivar dados antigos."
+    }
+   ],
+   "tip": "Clique no card para limpar filtros e ver todas as databases."
+  },
+  "en": {
+   "title": "Total Recoverable",
+   "sections": [
+    {
+     "label": "What is it?",
+     "text": "Sum of the allocated but unused free space within ALL .mdf/.ndf/.ldf files of the databases on this instance. This is the space that could be released to the filesystem via DBCC SHRINKFILE."
+    },
+    {
+     "label": "Important",
+     "text": "This value is NOT the free space on the physical drive. It is the “air” inside the DB files. The drive can be full even with a lot of recoverable space."
+    },
+    {
+     "label": "Arithmetic, not a recommendation",
+     "text": "This total adds up ALL the free space, including that of well-sized files that should NOT be shrunk (<30% free). The real actionable value is smaller: see the classification per row in the table (CANDIDATE / MONITOR / WELL SIZED) and the Shrink Candidates card."
+    },
+    {
+     "label": "Before shrinking",
+     "text": "Shrink causes severe index fragmentation and is an I/O-intensive operation. Apply only when there is a real lack of disk space, ideally only on LOG files. For DATA, consider archiving old data first."
+    }
+   ],
+   "tip": "Click the card to clear filters and view all databases."
+  },
+  "es": {
+   "title": "Total Recuperable",
+   "sections": [
+    {
+     "label": "¿Qué es?",
+     "text": "Suma del espacio libre asignado pero no usado dentro de TODOS los archivos .mdf/.ndf/.ldf de las databases de esta instancia. Es el espacio que podría liberarse al filesystem mediante DBCC SHRINKFILE."
+    },
+    {
+     "label": "Importante",
+     "text": "Este valor NO es el espacio libre del drive físico. Es el “aire” dentro de los archivos de la DB. El drive puede estar lleno aunque haya mucho espacio recuperable."
+    },
+    {
+     "label": "Aritmética, no recomendación",
+     "text": "Este total suma TODO el espacio libre, incluyendo el de archivos bien dimensionados que NO deben encogerse (<30% libre). El valor accionable real es menor: ver la clasificación por fila en la tabla (CANDIDATO / OBSERVAR / BIEN DIM.) y el card Candidatos a Shrink."
+    },
+    {
+     "label": "Antes de hacer shrink",
+     "text": "El shrink causa fragmentación severa de índices y es una operación intensiva en I/O. Aplicar solo cuando hay una falta real de espacio en disco, idealmente solo en archivos LOG. Para DATA, considerar primero archivar datos antiguos."
+    }
+   ],
+   "tip": "Haga clic en el card para limpiar los filtros y ver todas las databases."
+  }
+ },
+ "disk-data-recoverable": {
+  "pt": {
+   "title": "Espaço Recuperável em Ficheiros DATA",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Espaço vazio dentro dos ficheiros de dados (.mdf, .ndf). Indica que a database está sobre-dimensionada - páginas alocadas mas não usadas por dados ou índices."
+    },
+    {
+     "label": "de XXX GB total",
+     "text": "Mostra o ratio livre/total dos ficheiros DATA. Ex: 4 TB livre de 30 TB total = ~13% de espaço vazio em ficheiros de dados."
+    },
+    {
+     "label": "Cuidado",
+     "text": "Shrink em ficheiros DATA fragmenta índices clusterizados. Só fazer após eliminação/arquivo significativo de dados, e seguir SEMPRE com REBUILD dos índices afetados. Regra de ouro: ficheiro com <30% livre está bem dimensionado — fora da lista, independentemente do valor absoluto."
+    }
+   ],
+   "tip": "Clique para filtrar a tabela e ver só ficheiros DATA, ordenados por espaço recuperável."
+  },
+  "en": {
+   "title": "Recoverable Space in DATA Files",
+   "sections": [
+    {
+     "label": "What is it?",
+     "text": "Empty space inside data files (.mdf, .ndf). Indicates the database is oversized - pages allocated but not used by data or indexes."
+    },
+    {
+     "label": "of XXX GB total",
+     "text": "Shows the free/total ratio of DATA files. E.g.: 4 TB free out of 30 TB total = ~13% empty space in data files."
+    },
+    {
+     "label": "Caution",
+     "text": "Shrinking DATA files fragments clustered indexes. Only do this after significant deletion/archiving of data, and ALWAYS follow up with a REBUILD of the affected indexes. Golden rule: a file with <30% free is well sized — keep it off the list, regardless of the absolute value."
+    }
+   ],
+   "tip": "Click to filter the table and view only DATA files, sorted by recoverable space."
+  },
+  "es": {
+   "title": "Espacio Recuperable en Archivos DATA",
+   "sections": [
+    {
+     "label": "¿Qué es?",
+     "text": "Espacio vacío dentro de los archivos de datos (.mdf, .ndf). Indica que la database está sobredimensionada - páginas asignadas pero no usadas por datos o índices."
+    },
+    {
+     "label": "de XXX GB total",
+     "text": "Muestra la proporción libre/total de los archivos DATA. Ej.: 4 TB libres de 30 TB total = ~13% de espacio vacío en archivos de datos."
+    },
+    {
+     "label": "Cuidado",
+     "text": "El shrink en archivos DATA fragmenta índices clusterizados. Hacerlo solo después de una eliminación/archivado significativo de datos, y seguir SIEMPRE con un REBUILD de los índices afectados. Regla de oro: un archivo con <30% libre está bien dimensionado — fuera de la lista, independientemente del valor absoluto."
+    }
+   ],
+   "tip": "Haga clic para filtrar la tabla y ver solo archivos DATA, ordenados por espacio recuperable."
+  }
+ },
+ "disk-log-recoverable": {
+  "pt": {
+   "title": "Espaço Recuperável em Transaction Logs",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Espaço vazio dentro dos ficheiros de transaction log (.ldf). Em condições normais, deve ser elevado - significa que os VLFs já foram reutilizáveis (truncados)."
+    },
+    {
+     "label": "Por que há espaço livre no LOG?",
+     "text": "Após backup de log (em FULL/BULK_LOGGED) ou checkpoint (em SIMPLE), o SQL Server marca os VLFs como reutilizáveis. O ficheiro não encolhe, mas o espaço fica disponível para novas transações."
+    },
+    {
+     "label": "Quando é problema?",
+     "text": "Se houver muito espaço livre persistentemente alto E o ficheiro tiver crescido para tamanho excessivo (ex: log de 100 GB com 90 GB livres), provavelmente houve uma transação gigante no passado. Cruzar com a coluna Log Reuse Wait - se NOTHING e há muito livre, considerar shrink único do log + dimensionar para steady-state."
+    }
+   ],
+   "tip": "Em DBs com recovery FULL, verificar a frequência de backups de log antes de assumir que o log está sobre-dimensionado."
+  },
+  "en": {
+   "title": "Recoverable Space in Transaction Logs",
+   "sections": [
+    {
+     "label": "What is it?",
+     "text": "Empty space inside transaction log files (.ldf). Under normal conditions, it should be high - meaning the VLFs have already become reusable (truncated)."
+    },
+    {
+     "label": "Why is there free space in the LOG?",
+     "text": "After a log backup (in FULL/BULK_LOGGED) or a checkpoint (in SIMPLE), SQL Server marks the VLFs as reusable. The file does not shrink, but the space becomes available for new transactions."
+    },
+    {
+     "label": "When is it a problem?",
+     "text": "If there is persistently high free space AND the file has grown to an excessive size (e.g. a 100 GB log with 90 GB free), there was likely a giant transaction in the past. Cross-check with the Log Reuse Wait column - if it is NOTHING and there is a lot free, consider a one-time shrink of the log plus sizing it for steady-state."
+    }
+   ],
+   "tip": "On databases with FULL recovery, check the frequency of log backups before assuming the log is oversized."
+  },
+  "es": {
+   "title": "Espacio Recuperable en Transaction Logs",
+   "sections": [
+    {
+     "label": "¿Qué es?",
+     "text": "Espacio vacío dentro de los archivos de transaction log (.ldf). En condiciones normales, debe ser alto - significa que los VLF ya se volvieron reutilizables (truncados)."
+    },
+    {
+     "label": "¿Por qué hay espacio libre en el LOG?",
+     "text": "Después de un backup de log (en FULL/BULK_LOGGED) o un checkpoint (en SIMPLE), SQL Server marca los VLF como reutilizables. El archivo no se encoge, pero el espacio queda disponible para nuevas transacciones."
+    },
+    {
+     "label": "¿Cuándo es un problema?",
+     "text": "Si hay mucho espacio libre persistentemente alto Y el archivo ha crecido a un tamaño excesivo (ej.: log de 100 GB con 90 GB libres), probablemente hubo una transacción gigante en el pasado. Cruzar con la columna Log Reuse Wait - si es NOTHING y hay mucho libre, considerar un shrink único del log más dimensionarlo para el steady-state."
+    }
+   ],
+   "tip": "En DBs con recovery FULL, verificar la frecuencia de backups de log antes de asumir que el log está sobredimensionado."
+  }
+ },
+ "disk-shrink-candidates": {
+  "pt": {
+   "title": "Candidatos a Shrink",
+   "sections": [
+    {
+     "label": "Critério",
+     "text": "Contagem de ficheiros (DATA ou LOG) com shrink_recommendation = HIGH, ou seja, com mais de 50% do espaço livre. Tipicamente indicam crescimento pontual não revertido."
+    },
+    {
+     "label": "Bons candidatos",
+     "text": "Ficheiros LOG após transação gigante já terminada (DBCC OPENTRAN limpo, log_reuse_wait = NOTHING). Ficheiros DATA após truncate/delete em massa de tabelas grandes."
+    },
+    {
+     "label": "Maus candidatos",
+     "text": "Ficheiros DATA de OLTP ativo - shrink fragmenta índices, degrada performance e o ficheiro voltará a crescer. Ficheiros tempdb - em vez disso, dimensionar adequadamente no arranque."
+    },
+    {
+     "label": "Regra de ouro",
+     "text": "Ficheiro DATA com menos de 30% livre está BEM DIMENSIONADO e fica fora da lista, mesmo que o valor “recuperável” pareça grande (971 GB num ficheiro de 11 TB = 9% livre = não tocar). O número da coluna Recuperável é aritmética, não recomendação — a classificação é que decide."
+    },
+    {
+     "label": "Cicatriz ou margem?",
+     "text": "Espaço livre é CICATRIZ (evento passado: archive, drop de tabela, migração — candidato real) ou MARGEM (o ETL/rebuild reusa em ciclo — encolher hoje é regrowth amanhã). Em dúvida, tratar como margem e perguntar ao dono do ETL qual o pico regular."
+    },
+    {
+     "label": "Como agir (passadas)",
+     "text": "(1) Há pressão real de espaço no drive? Sem pressão, shrink é risco sem prémio. (2) TRUNCATEONLY primeiro em TODOS os candidatos — corta o vazio no fim do ficheiro, zero movimentação, zero fragmentação. (3) Reavaliar: só onde o truncate rendeu pouco E o prémio justifica, shrink com alvo = usado x 1.3, em fatias de 2-5 GB, com SET LOCK_TIMEOUT, em janela de baixa. (4) SEMPRE no fim: FILEGROWTH fixo sensato (1-4 GB, nunca %) — sem isto a lista de candidatos renasce no ano seguinte. Nunca DBCC SHRINKDATABASE."
+    }
+   ],
+   "tip": "Gerador de plano pronto (read-only): scripts/sql/SHRINK_DATA_PLAN_GENERATOR.sql — classifica os ficheiros da instância e gera as 3 passadas para revisão. Após shrink com movimentação em DATA, REBUILD dos índices críticos."
+  },
+  "en": {
+   "title": "Shrink Candidates",
+   "sections": [
+    {
+     "label": "Criteria",
+     "text": "Count of files (DATA or LOG) with shrink_recommendation = HIGH, i.e. with more than 50% free space. Typically indicates a one-off growth event that was never reverted."
+    },
+    {
+     "label": "Good candidates",
+     "text": "LOG files after a giant transaction has already finished (DBCC OPENTRAN clean, log_reuse_wait = NOTHING). DATA files after a bulk truncate/delete on large tables."
+    },
+    {
+     "label": "Bad candidates",
+     "text": "DATA files on active OLTP - shrink fragments indexes, degrades performance, and the file will grow back. Tempdb files - instead, size them properly at startup."
+    },
+    {
+     "label": "Golden rule",
+     "text": "A DATA file with less than 30% free is WELL SIZED and stays off the list, even if the “recoverable” value looks large (971 GB in an 11 TB file = 9% free = do not touch). The number in the Recoverable column is arithmetic, not a recommendation — the classification is what decides."
+    },
+    {
+     "label": "Scar or margin?",
+     "text": "Free space is either a SCAR (past event: archive, table drop, migration — a real candidate) or MARGIN (the ETL/rebuild reuses it in a cycle — shrink today, regrowth tomorrow). When in doubt, treat it as margin and ask the ETL owner what the regular peak is."
+    },
+    {
+     "label": "How to act (passes)",
+     "text": "(1) Is there real space pressure on the drive? Without pressure, shrink is risk without reward. (2) TRUNCATEONLY first on ALL candidates — cuts the empty space at the end of the file, zero movement, zero fragmentation. (3) Reassess: only where truncate yielded little AND the reward justifies it, shrink with a target = used x 1.3, in 2-5 GB slices, with SET LOCK_TIMEOUT, during a low-activity window. (4) ALWAYS at the end: set a sensible fixed FILEGROWTH (1-4 GB, never %) — without this, the candidate list comes back next year. Never DBCC SHRINKDATABASE."
+    }
+   ],
+   "tip": "Ready-made plan generator (read-only): scripts/sql/SHRINK_DATA_PLAN_GENERATOR.sql — classifies the instance's files and generates the 3 passes for review. After a shrink with movement in DATA, REBUILD the critical indexes."
+  },
+  "es": {
+   "title": "Candidatos a Shrink",
+   "sections": [
+    {
+     "label": "Criterio",
+     "text": "Conteo de archivos (DATA o LOG) con shrink_recommendation = HIGH, es decir, con más del 50% del espacio libre. Típicamente indican un crecimiento puntual no revertido."
+    },
+    {
+     "label": "Buenos candidatos",
+     "text": "Archivos LOG después de una transacción gigante ya finalizada (DBCC OPENTRAN limpio, log_reuse_wait = NOTHING). Archivos DATA después de truncate/delete masivo en tablas grandes."
+    },
+    {
+     "label": "Malos candidatos",
+     "text": "Archivos DATA de OLTP activo - el shrink fragmenta índices, degrada el performance y el archivo volverá a crecer. Archivos tempdb - en su lugar, dimensionarlos adecuadamente al inicio."
+    },
+    {
+     "label": "Regla de oro",
+     "text": "Un archivo DATA con menos del 30% libre está BIEN DIMENSIONADO y queda fuera de la lista, aunque el valor “recuperable” parezca grande (971 GB en un archivo de 11 TB = 9% libre = no tocar). El número de la columna Recuperable es aritmética, no recomendación — la clasificación es la que decide."
+    },
+    {
+     "label": "¿Cicatriz o margen?",
+     "text": "El espacio libre es CICATRIZ (evento pasado: archive, drop de tabla, migración — candidato real) o MARGEN (el ETL/rebuild lo reutiliza en ciclo — encoger hoy es regrowth mañana). En caso de duda, tratarlo como margen y preguntar al dueño del ETL cuál es el pico regular."
+    },
+    {
+     "label": "Cómo actuar (pasadas)",
+     "text": "(1) ¿Hay presión real de espacio en el drive? Sin presión, el shrink es riesgo sin premio. (2) TRUNCATEONLY primero en TODOS los candidatos — corta el vacío al final del archivo, cero movimiento, cero fragmentación. (3) Reevaluar: solo donde el truncate rindió poco Y el premio lo justifica, shrink con objetivo = usado x 1.3, en tramos de 2-5 GB, con SET LOCK_TIMEOUT, en una ventana de baja actividad. (4) SIEMPRE al final: FILEGROWTH fijo razonable (1-4 GB, nunca %) — sin esto, la lista de candidatos renace al año siguiente. Nunca DBCC SHRINKDATABASE."
+    }
+   ],
+   "tip": "Generador de plan listo (read-only): scripts/sql/SHRINK_DATA_PLAN_GENERATOR.sql — clasifica los archivos de la instancia y genera las 3 pasadas para revisión. Después de un shrink con movimiento en DATA, REBUILD de los índices críticos."
+  }
+ },
+ "disk-log-reuse-wait": {
+  "pt": {
+   "title": "Log Reuse Wait",
+   "sections": [
+    {
+     "label": "O que é?",
+     "text": "Indica o motivo pelo qual o SQL Server não consegue reutilizar (truncar) o espaço no transaction log. Um valor diferente de NOTHING significa que o log está a crescer porque algo impede a reutilização."
+    },
+    {
+     "label": "NOTHING",
+     "text": "O log pode ser reutilizado normalmente. Não há nenhuma operação a bloquear o truncamento. Estado ideal."
+    },
+    {
+     "label": "LOG_BACKUP",
+     "text": "O log não pode ser reutilizado porque ainda não foi feito backup do transaction log. Comum em bases com recovery model FULL ou BULK_LOGGED. Solução: executar um backup de log."
+    },
+    {
+     "label": "ACTIVE_TRANSACTION",
+     "text": "Existe uma transação ativa de longa duração que impede o truncamento do log. Solução: investigar transações abertas com DBCC OPENTRAN."
+    },
+    {
+     "label": "CHECKPOINT",
+     "text": "Um checkpoint está em andamento ou ainda não ocorreu desde o último truncamento. Normalmente resolve-se automaticamente."
+    },
+    {
+     "label": "REPLICATION",
+     "text": "O Log Reader Agent de replicação ainda não leu as transações do log. Solução: verificar se o agente de replicação está a funcionar."
+    },
+    {
+     "label": "DATABASE_MIRRORING / AVAILABILITY_REPLICA",
+     "text": "O log está a aguardar que as transações sejam enviadas/aplicadas na réplica secundária (Mirroring ou AlwaysOn). Solução: verificar conectividade e estado da réplica."
+    },
+    {
+     "label": "DATABASE_SNAPSHOT_CREATION",
+     "text": "Um database snapshot está a ser criado. Temporário, resolve-se quando o snapshot for concluído."
+    },
+    {
+     "label": "LOG_SCAN",
+     "text": "Um scan do log está em andamento (ex: para backup ou replicação). Temporário."
+    },
+    {
+     "label": "Outros",
+     "text": "ACTIVE_BACKUP_OR_RESTORE (backup/restore em curso), XTP_CHECKPOINT (In-Memory OLTP checkpoint pendente). Verificar com: SELECT name, log_reuse_wait_desc FROM sys.databases."
+    }
+   ],
+   "tip": "Se o log_reuse_wait persistir em LOG_BACKUP, configure backups de log regulares. Se for ACTIVE_TRANSACTION, investigue com DBCC OPENTRAN."
+  },
+  "en": {
+   "title": "Log Reuse Wait",
+   "sections": [
+    {
+     "label": "What is it?",
+     "text": "Indicates why SQL Server cannot reuse (truncate) space in the transaction log. A value other than NOTHING means the log is growing because something is preventing reuse."
+    },
+    {
+     "label": "NOTHING",
+     "text": "The log can be reused normally. No operation is blocking truncation. Ideal state."
+    },
+    {
+     "label": "LOG_BACKUP",
+     "text": "The log cannot be reused because a transaction log backup has not yet been taken. Common on databases with FULL or BULK_LOGGED recovery model. Solution: run a log backup."
+    },
+    {
+     "label": "ACTIVE_TRANSACTION",
+     "text": "There is a long-running active transaction preventing log truncation. Solution: investigate open transactions with DBCC OPENTRAN."
+    },
+    {
+     "label": "CHECKPOINT",
+     "text": "A checkpoint is in progress or has not yet occurred since the last truncation. Usually resolves automatically."
+    },
+    {
+     "label": "REPLICATION",
+     "text": "The replication Log Reader Agent has not yet read the log transactions. Solution: check whether the replication agent is running."
+    },
+    {
+     "label": "DATABASE_MIRRORING / AVAILABILITY_REPLICA",
+     "text": "The log is waiting for transactions to be sent/applied to the secondary replica (Mirroring or AlwaysOn). Solution: check connectivity and the replica's status."
+    },
+    {
+     "label": "DATABASE_SNAPSHOT_CREATION",
+     "text": "A database snapshot is being created. Temporary, resolves once the snapshot completes."
+    },
+    {
+     "label": "LOG_SCAN",
+     "text": "A scan of the log is in progress (e.g. for backup or replication). Temporary."
+    },
+    {
+     "label": "Other",
+     "text": "ACTIVE_BACKUP_OR_RESTORE (backup/restore in progress), XTP_CHECKPOINT (In-Memory OLTP checkpoint pending). Check with: SELECT name, log_reuse_wait_desc FROM sys.databases."
+    }
+   ],
+   "tip": "If log_reuse_wait persists at LOG_BACKUP, configure regular log backups. If it is ACTIVE_TRANSACTION, investigate with DBCC OPENTRAN."
+  },
+  "es": {
+   "title": "Log Reuse Wait",
+   "sections": [
+    {
+     "label": "¿Qué es?",
+     "text": "Indica el motivo por el cual SQL Server no puede reutilizar (truncar) el espacio en el transaction log. Un valor distinto de NOTHING significa que el log está creciendo porque algo impide la reutilización."
+    },
+    {
+     "label": "NOTHING",
+     "text": "El log puede reutilizarse normalmente. No hay ninguna operación bloqueando el truncamiento. Estado ideal."
+    },
+    {
+     "label": "LOG_BACKUP",
+     "text": "El log no puede reutilizarse porque todavía no se ha hecho un backup del transaction log. Común en bases con recovery model FULL o BULK_LOGGED. Solución: ejecutar un backup de log."
+    },
+    {
+     "label": "ACTIVE_TRANSACTION",
+     "text": "Existe una transacción activa de larga duración que impide el truncamiento del log. Solución: investigar transacciones abiertas con DBCC OPENTRAN."
+    },
+    {
+     "label": "CHECKPOINT",
+     "text": "Un checkpoint está en curso o todavía no ha ocurrido desde el último truncamiento. Normalmente se resuelve automáticamente."
+    },
+    {
+     "label": "REPLICATION",
+     "text": "El Log Reader Agent de la replicación todavía no ha leído las transacciones del log. Solución: verificar si el agente de replicación está funcionando."
+    },
+    {
+     "label": "DATABASE_MIRRORING / AVAILABILITY_REPLICA",
+     "text": "El log está esperando que las transacciones se envíen/apliquen en la réplica secundaria (Mirroring o AlwaysOn). Solución: verificar la conectividad y el estado de la réplica."
+    },
+    {
+     "label": "DATABASE_SNAPSHOT_CREATION",
+     "text": "Se está creando un database snapshot. Temporal, se resuelve cuando el snapshot se completa."
+    },
+    {
+     "label": "LOG_SCAN",
+     "text": "Hay un scan del log en curso (ej.: para backup o replicación). Temporal."
+    },
+    {
+     "label": "Otros",
+     "text": "ACTIVE_BACKUP_OR_RESTORE (backup/restore en curso), XTP_CHECKPOINT (In-Memory OLTP checkpoint pendiente). Verificar con: SELECT name, log_reuse_wait_desc FROM sys.databases."
+    }
+   ],
+   "tip": "Si el log_reuse_wait persiste en LOG_BACKUP, configure backups de log regulares. Si es ACTIVE_TRANSACTION, investigue con DBCC OPENTRAN."
+  }
+ }
+}
