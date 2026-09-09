@@ -60,6 +60,10 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0, help="so' as N primeiras instancias (teste)")
     ap.add_argument("--ids", default="", help="so' estes server_id (separados por virgula); nao reescreve o CSV completo")
     ap.add_argument("--timeout", type=int, default=15, help="login + command timeout em segundos")
+    ap.add_argument("--sessoes", action="store_true",
+                    help="em vez das permissoes, lista quem esta ligado a cada instancia A PARTIR desta maquina "
+                         "(prova do rollout SQL Auth: esperado sql_monitoring, nao a conta de dominio)")
+    ap.add_argument("--host", default="", help="host_name das sessoes a procurar (default: esta maquina)")
     args = ap.parse_args()
 
     # O servico carrega o .env "3-tier" (WATCHERDB_DATA_DIR/.env -> ProgramData (frozen) -> raiz do repo)
@@ -124,6 +128,44 @@ def main() -> int:
         print("       Corre na shell onde a chave resolve (ver services/secrets.py: ficheiro DPAPI machine-scope,")
         print("       env DPAPI user-scope ou chave em claro) ou com a identidade do servico. Nenhuma instancia foi contactada.")
         return 2
+
+    # ---- modo --sessoes: prova em runtime da identidade que o servico usa em cada instancia ----------
+    if args.sessoes:
+        import socket
+
+        host = (args.host or socket.gethostname()).upper()
+        q = ("SELECT login_name, program_name, COUNT(*) AS n FROM sys.dm_exec_sessions "
+             "WHERE UPPER(host_name) = ? AND is_user_process = 1 GROUP BY login_name, program_name ORDER BY n DESC")
+        dominio = 0
+        sqlm = 0
+        for sid in server_ids:
+            iid = _iid(sid)
+            conn_str = pool._build_connection_string_sql_auth(sid, "master")
+            if not conn_str:
+                print(f"{iid}  sem_credenciais_sql")
+                continue
+            try:
+                conn = pyodbc.connect(conn_str, timeout=args.timeout)
+                conn.timeout = args.timeout
+                cur = conn.cursor()
+                cur.execute(q, host)
+                rows_s = cur.fetchall()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                print(f"{iid}  erro: {str(e)[:100]}")
+                continue
+            resumo = ", ".join(f"{r[0]}[{(r[1] or '')[:18]}]x{r[2]}" for r in rows_s) or "(nenhuma sessao desta maquina)"
+            for r in rows_s:
+                ln = str(r[0]).lower()
+                if "\\" in ln:
+                    dominio += int(r[2])
+                elif ln == "sql_monitoring":
+                    sqlm += int(r[2])
+            print(f"{iid}  {resumo}")
+        print(f"\nsessoes vindas de {host}: sql_monitoring={sqlm}  conta_de_dominio={dominio}  "
+              f"(esperado apos o rollout: dominio so' na OATXP01 e nas ligacoes do pre-flight, que e' sql_monitoring)")
+        return 0
 
     data = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     # corrida filtrada (--ids/--limit) nao substitui o CSV completo da frota
