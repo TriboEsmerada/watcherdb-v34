@@ -73,6 +73,8 @@ traduz", "todas as interrogações"). Regra: quando o pedido é "traduzir tudo" 
 | Modal "KPI Documentation" (29 entradas) | `KPI_DOCUMENTATION` ~40063-41545, `tDoc()` + `_docTitle()` | sub-blocos `i18n:{en,es}` + `kpi_doc.<id>.title` | coberto (F4 27d427e / F4b) |
 | Ajudas "?" dos cartões das abas (92 entradas, 444 textos) | `CARD_HELP_TEXTS` ~18170-18944, `showCardHelp` ~18959 | `card_help.<id>.*` via `_chT()` | F3 (em curso 2026-09-09) |
 | Checklist de carregamento das abas (26 passos + prefixo/estado) | `lc.track('…')` em 13 abas; renderer `startLoadingChecklist` ~7186-7244 | `lc.*` via `t()` / `_kpiTp` | F7 (2026-09-09) |
+| Modal "Análise Preditiva de Crescimento" (openReportModal, showNoDataError ×2, showScriptNotFoundError, showReportError ×2, displayReport ×2) | ~28873-29331 | `predict.*` (27 chaves novas) | F6a (2026-09-09) |
+| Painel LIVE + drill de disco (placeholders, tooltips, "Sem dados de…", cabeçalhos) | ~50239-51400 | `live.*` (47 chaves) via `t()` / `_kpiTp` | F8 (2026-09-09) |
 | Ajudas legadas `toggleSqlMemHelp` / `toggleRGHelp` (~15 strings) | ~18100-18167 | nenhum | por fazer |
 | Relatórios exportados (HTML/PDF) | `sqlQueries`, `report-kpi-card`, cabeçalhos ~53300-54600 (~174) | nenhum | F5 por fazer |
 | Modais de diagnóstico / alertas de disco ("Volume ALTO", "Planejar expansao") | ~9700-10800 e diag.* (~250) | parcial (`diag.*`) | F6 por fazer |

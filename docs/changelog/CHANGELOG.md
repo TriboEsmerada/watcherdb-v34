@@ -9,6 +9,11 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Lote F8 (BUG-003): o painel LIVE segue o idioma** (owner 09/09: "achei mais 1 caso: o LIVE" — "A carregar
+  Fleet Dashboard…", "Filtrar instância…", "Canal…" em inglês). Placeholders, tooltips, mensagens "Sem dados
+  de…" / "Nenhum … ativo" e cabeçalhos de secção do painel LIVE e do drill de disco ganham chaves `live.*`
+  em pt-PT, en-US e es (pt-BR herda), com placeholders para contagens. [tier: Std]
+
 - **Lote F3 (BUG-003): as ajudas "?" dos cartões das abas seguem o idioma** (owner 09/09: "acho que
   todas as interrogações não traduzem"). As 92 ajudas (444 textos: título, secções e dica) eram português
   cru sem acentos e sem chave. Namespace novo `card_help.<id>.*` em pt-PT acentuado, en-US e es (pt-BR

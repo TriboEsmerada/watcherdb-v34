@@ -28486,7 +28486,7 @@
                                 <span class="badge ${statusClass}">${(isLogFg && fg.alert_level === 'DISK_OVERFLOW') ? 'OK' : (fg.alert_level || 'OK')}</span>
                             </td>
                             <td style="text-align: center;">
-                                ${fg.filegroup_type === 'ROWS' ? 
+                                ${fg.filegroup_type === 'ROWS' && (window._currentUser && window._currentUser.role === 'admin') ? 
                                     `<button class="analysis-btn" 
                                             onclick="generateReport('${serverIdEscaped}', '${dbNameEscaped}', '${fgNameEscaped}')"
                                             title="${t('predict.generate_title')}">
@@ -28832,9 +28832,13 @@
             
                 debugLog(`[DBG] Response status: ${response.status}`, response.ok ? 'success' : 'error');
             
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-                    const errorMessage = errorData.error || `HTTP ${response.status}`;
+                // 2026-09-09: o backend devolve JSON (nao HTML) em qualquer falha; sem este
+                // guarda um corpo {"success":false,...} com 200 era injectado no modal como
+                // relatorio. 401/403 do FastAPI vem em `detail`, nao em `error`.
+                const _ctype = (response.headers.get('content-type') || '').toLowerCase();
+                if (!response.ok || _ctype.includes('application/json')) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMessage = errorData.error || errorData.detail || `HTTP ${response.status}`;
                     
                     // Verificar se é erro de script não encontrado
                     if (errorMessage.includes('Scripts de análise não encontrados') || errorMessage.includes('Script não encontrado')) {
@@ -50232,7 +50236,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 '<button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:none;border:none;color:var(--color-text-tertiary);font-size:24px;cursor:pointer">&times;</button>' +
             '</div>' +
             '<div id="disk-drilldown-content" style="padding:20px">' +
-                '<div style="text-align:center;color:var(--color-text-tertiary)"><i class="fas fa-spinner fa-spin"></i> Carregando arquivos...</div>' +
+                '<div style="text-align:center;color:var(--color-text-tertiary)"><i class="fas fa-spinner fa-spin"></i> ' + t('live.loading_files') + '</div>' +
             '</div>' +
         '</div>' +
     '</div>';
@@ -50248,7 +50252,7 @@ window.showDiskDrilldown = async function(drive, label) {
         const data = await resp.json();
 
         if (!data.files || data.files.length === 0) {
-            document.getElementById('disk-drilldown-content').innerHTML = '<div style="text-align:center;color:var(--color-text-tertiary);padding:40px"><i class="fas fa-folder-open" style="font-size:48px;margin-bottom:16px;display:block"></i>Nenhum arquivo de banco de dados encontrado neste drive</div>';
+            document.getElementById('disk-drilldown-content').innerHTML = '<div style="text-align:center;color:var(--color-text-tertiary);padding:40px"><i class="fas fa-folder-open" style="font-size:48px;margin-bottom:16px;display:block"></i>' + t('live.no_db_files_drive') + '</div>';
             return;
         }
         
@@ -50334,12 +50338,12 @@ window.showDiskDrilldown = async function(drive, label) {
                     <span style="display:inline-flex;align-items:center;gap:4px;color:#ef4444;font-weight:700;font-size:13px;flex-shrink:0;">
                         <span style="width:8px;height:8px;background:#ef4444;border-radius:50%;animation:live-pulse 1.5s infinite;"></span> LIVE
                     </span>
-                    <input id="live-channel-search-${tabId}" type="text" placeholder="Filtrar instancia..."
+                    <input id="live-channel-search-${tabId}" type="text" placeholder="${t('live.filter_instance')}"
                            oninput="liveFilterChannels('${tabId}', this.value)" autocomplete="off"
                            style="width:130px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;">
                     <select id="live-channel-${tabId}" onchange="liveChangeChannel('${tabId}', this.value)"
                             style="max-width:320px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;font-weight:500;">
-                        <option value="">Canal...</option>
+                        <option value="">${t('live.channel_placeholder')}</option>
                     </select>
                     <span style="width:1px;height:14px;background:var(--color-border);"></span>
                     <button onclick="liveSetProgram('${tabId}','fleet')" class="live-prog-btn" data-prog="fleet" style="${_pb}" title="Fleet Dashboard">📡 Fleet</button>
@@ -50366,7 +50370,7 @@ window.showDiskDrilldown = async function(drive, label) {
                         </select>
                         <button onclick="liveTogglePause('${tabId}')" id="live-pause-${tabId}"
                                 style="padding:3px 8px;border-radius:4px;border:1px solid var(--color-border);background:var(--color-bg-panel);color:var(--color-text-tertiary);font-size:12px;cursor:pointer;"
-                                title="Pausar/Retomar">⏸</button>
+                                title="${t('live.pause_resume')}">⏸</button>
                     </div>
                 </div>
                 <div id="live-gauges-${tabId}" style="flex-shrink:0;display:flex;gap:14px;padding:4px 12px;background:var(--color-bg-sunken);border-bottom:1px solid var(--color-bg-panel);font-size:12px;color:var(--color-text-tertiary);">
@@ -50374,15 +50378,15 @@ window.showDiskDrilldown = async function(drive, label) {
                     <span title="Memoria OS. >85%=atencao, >95%=critico">Mem: <b id="lg-mem-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span title="Page Life Expectancy. <300=critico">PLE: <b id="lg-ple-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span title="Batch Requests/sec">Batch/s: <b id="lg-batch-${tabId}" style="color:var(--color-text-bright);">--</b></span>
-                    <span title="Sessoes activas">Sess: <b id="lg-sess-${tabId}" style="color:var(--color-text-bright);">--</b></span>
+                    <span title="${t('live.active_sessions')}">Sess: <b id="lg-sess-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span title="Queries em execucao">Qry: <b id="lg-qry-${tabId}" style="color:var(--color-text-bright);">--</b></span>
-                    <span title="Sessoes bloqueadas">Blk: <b id="lg-blk-${tabId}" style="color:var(--color-text-bright);">--</b></span>
+                    <span title="${t('live.blocked_sessions')}">Blk: <b id="lg-blk-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span id="live-status-${tabId}" style="margin-left:auto;color:var(--color-text-disabled);font-size:12px;">--</span>
                 </div>
                 <div id="live-screen-${tabId}" style="flex:1;overflow:auto;padding:12px;font-family:var(--font-mono);font-size:var(--font-sm);color:var(--color-text-bright);">
                     <div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
                         <i class="fas fa-satellite-dish" style="font-size:48px;margin-bottom:16px;color:var(--color-border);"></i>
-                        <div style="font-size:16px;margin-bottom:8px;">Selecione um canal ou clique em Fleet</div>
+                        <div style="font-size:16px;margin-bottom:8px;">${t('live.select_channel')}</div>
                     </div>
                 </div>
             </div>`;
@@ -50444,7 +50448,7 @@ window.showDiskDrilldown = async function(drive, label) {
                                 <button onclick="liveTvResize('small')" title="Reduzir" style="background:var(--color-bg-panel);border:1px solid var(--color-border);color:var(--color-text-tertiary);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;"><i class="fas fa-compress-alt"></i></button>
                                 <button onclick="liveTvResize('normal')" title="Tamanho normal" style="background:var(--color-bg-panel);border:1px solid var(--color-border);color:var(--color-text-tertiary);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;"><i class="fas fa-desktop"></i></button>
                                 <button onclick="liveTvResize('full')" title="Tela inteira" style="background:var(--color-bg-panel);border:1px solid var(--color-border);color:var(--color-text-tertiary);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;"><i class="fas fa-expand"></i></button>
-                                <button onclick="liveTvPopOut()" title="Abrir em janela separada" style="background:var(--color-bg-panel);border:1px solid var(--color-border);color:var(--color-text-tertiary);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;"><i class="fas fa-external-link-alt"></i></button>
+                                <button onclick="liveTvPopOut()" title="${t('live.pop_out')}" style="background:var(--color-bg-panel);border:1px solid var(--color-border);color:var(--color-text-tertiary);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;"><i class="fas fa-external-link-alt"></i></button>
                                 <button onclick="document.getElementById('live-tv-modal').remove(); if(_liveInterval){clearInterval(_liveInterval);_liveInterval=null;}" style="background:var(--color-bg-panel);border:1px solid var(--color-border);color:var(--color-text-tertiary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;"><i class="fas fa-power-off"></i> OFF</button>
                             </div>
                         </div>
@@ -50540,7 +50544,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const byEnv = _liveChannelsByEnv[tabId] || {};
             const current = sel.value || localStorage.getItem('live-last-channel') || '';
             const q = (filter || '').toLowerCase();
-            sel.innerHTML = '<option value="">Canal...</option>';
+            sel.innerHTML = '<option value="">' + t('live.channel_placeholder') + '</option>';
             for (const [env, instances] of Object.entries(byEnv)) {
                 const matched = q ? instances.filter(inst =>
                     (inst.instance || '').toLowerCase().includes(q) ||
@@ -50567,7 +50571,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const screen = document.getElementById('live-screen-' + tabId);
             if (screen) screen.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
                 <div style="display:inline-block;width:32px;height:32px;border:3px solid var(--color-border);border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
-                <div style="font-size:13px;">${msg || 'A carregar...'}</div>
+                <div style="font-size:13px;">${msg || t('live.loading')}</div>
             </div>`;
         }
 
@@ -50600,7 +50604,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 b.style.borderColor = active ? '#3b82f6' : 'var(--color-border)';
             });
             if (_liveInstance || program === 'fleet') {
-                const label = program === 'fleet' ? 'A carregar Fleet Dashboard...' : 'A carregar ' + program + '...';
+                const label = program === 'fleet' ? t('live.loading_fleet') : _kpiTp('live.loading_program', 'A carregar {program}...', { program });  // lote F8 2026-09-09
                 _liveShowLoading(tabId, label);
                 _liveRefresh(tabId);
                 if (!_liveInterval) {
@@ -50682,8 +50686,8 @@ window.showDiskDrilldown = async function(drive, label) {
                     }
                 } else if (progResp) {
                     const errCode = progResp.status;
-                    let errMsg = 'Sem dados disponiveis';
-                    if (errCode === 503) errMsg = 'Instancia indisponivel ou sem permissao para este recurso';
+                    let errMsg = t('live.no_data');
+                    if (errCode === 503) errMsg = t('live.instance_unavailable');
                     screen.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-text-disabled);">
                         <i class="fas fa-tv" style="font-size:36px;margin-bottom:12px;color:var(--color-border);display:block;"></i>
                         <div style="font-size:14px;margin-bottom:6px;color:var(--color-text-tertiary);">${errMsg}</div>
@@ -50784,7 +50788,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderQueries(data, tabId) {
             const queries = data.queries || [];
-            if (!queries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>Nenhuma query em execucao</div>';
+            if (!queries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_queries') + '</div>';
             // Wave S (2026-05-29): sortable headers + cached payload re-render.
             const NUMERIC_COLS_Q = ['spid', 'cpu_ms', 'logical_reads', 'elapsed_sec', 'blocking_spid'];
             const sortedQueries = _liveSortRows(queries, _liveSortState['queries'], NUMERIC_COLS_Q);
@@ -50817,11 +50821,11 @@ window.showDiskDrilldown = async function(drive, label) {
                     : elapsed > 300 ? getSevTokens('CRITICAL').fill : elapsed > 60 ? getSevTokens('WARNING').fill : 'var(--color-text-bright)';
                 const elHuman = (function(sec){ sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec/86400), hh = Math.floor((sec%86400)/3600), mm = Math.floor((sec%3600)/60), ss = sec%60;
                     if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm ' + ss + 's'; return ss + 's'; })(elapsed);
-                const elTitle = (q.start_time ? 'start_time: ' + q.start_time + ' | ' : '') + elapsed + 's' + (isIdle ? ' | sessao idle/a espera - nao e tempo de execucao' : '');
+                const elTitle = (q.start_time ? 'start_time: ' + q.start_time + ' | ' : '') + elapsed + 's' + (isIdle ? ' | ' + t('live.idle_not_exec') : '');
                 const sql = (q.current_statement || '').replace(/</g,'&lt;').substring(0, 200);
                 h += `<tr style="border-bottom:1px solid var(--color-bg-panel);${rowBg}">`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-link);font-weight:600;">${q.spid}</td>`;
-                h += `<td style="padding:5px 8px;">${q.status || ''}${isIdle ? ' <span title="Sessao a dormir ou a espera (transaccao aberta / fila) — nao e query em execucao" style="font-size:12px;color:var(--color-text-disabled);border:1px solid var(--color-border);border-radius:4px;padding:0 4px;">idle</span>' : ''}</td>`;
+                h += `<td style="padding:5px 8px;">${q.status || ''}${isIdle ? ' <span title="' + t('live.idle_title') + '" style="font-size:12px;color:var(--color-text-disabled);border:1px solid var(--color-border);border-radius:4px;padding:0 4px;">idle</span>' : ''}</td>`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;">${cmd.replace(/</g,'&lt;')}</td>`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${q.database_name || ''}</td>`;
                 h += `<td style="padding:5px 8px;color:#f59e0b;">${q.wait_type || '-'}</td>`;
@@ -50876,11 +50880,11 @@ window.showDiskDrilldown = async function(drive, label) {
                 });
                 h += '</tbody></table>';
             } else {
-                h += '<div style="color:var(--color-text-disabled);text-align:center;padding:20px;"><i class="fas fa-check-circle" style="color:#10b981;margin-right:6px;"></i>Nenhum consumer activo no TempDB</div>';
+                h += '<div style="color:var(--color-text-disabled);text-align:center;padding:20px;"><i class="fas fa-check-circle" style="color:#10b981;margin-right:6px;"></i>' + t('live.no_tempdb_consumer') + '</div>';
             }
             const activeUsage = data.active_usage || [];
             if (activeUsage.length) {
-                h += '<div style="font-weight:600;margin:16px 0 6px;color:#f59e0b;"><i class="fas fa-bolt" style="margin-right:6px;"></i>Utilizacao Activa de TempDB (' + activeUsage.length + ' queries)</div>';
+                h += '<div style="font-weight:600;margin:16px 0 6px;color:#f59e0b;"><i class="fas fa-bolt" style="margin-right:6px;"></i>' + _kpiTp('live.tempdb_active_usage', 'Utilização Ativa de TempDB ({n} queries)', { n: activeUsage.length }) + '</div>';
                 h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">SPID</th><th>TempDB</th><th>Status</th><th>Command</th><th>DB</th><th>Wait</th><th>CPU ms</th><th>Elapsed</th><th>Login</th><th style="min-width:180px;">SQL</th></tr></thead><tbody>';
                 activeUsage.forEach(au => {
                     const mb = parseFloat(au.tempdb_usage_mb) || 0;
@@ -50907,7 +50911,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderWaits(data, tabId) {
             const waits = data.waits || [];
-            if (!waits.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem wait stats significativos</div>';
+            if (!waits.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_wait_stats') + '</div>';
             let deltaWaits = waits;
             if (_liveWaitsPrev) {
                 const prevMap = {};
@@ -50951,7 +50955,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:5px 8px;text-align:right;color:var(--color-text-tertiary);">${(w.signal_wait_time_ms||0).toLocaleString()}</td></tr>`;
             });
             h += '</tbody></table>';
-            if (hasDelta) h = '<div style="margin-bottom:8px;color:var(--color-text-disabled);font-size:12px;">Delta desde ultimo refresh (' + (_liveRefreshRate/1000) + 's)</div>' + h;
+            if (hasDelta) h = '<div style="margin-bottom:8px;color:var(--color-text-disabled);font-size:12px;">' + _kpiTp('live.delta_since_refresh', 'Delta desde o último refresh ({s}s)', { s: _liveRefreshRate/1000 }) + '</div>' + h;
             return h;
         }
 
@@ -50964,10 +50968,10 @@ window.showDiskDrilldown = async function(drive, label) {
             const _inst = String(data.instance || '').replace(/</g,'&lt;');
             const _ts = data.timestamp ? new Date(data.timestamp * 1000).toLocaleTimeString() : '';
             const scope = '<div style="margin-bottom:6px;color:var(--color-text-disabled);font-size:12px;">'
-                + (_inst ? 'Instancia: <b style="color:var(--color-text-tertiary);">' + _inst + '</b>' : 'Sem canal seleccionado')
-                + (_ts ? ' &middot; amostra ' + _ts : '') + ' &middot; so esta instancia (o Fleet agrega varias)</div>';
-            if (!chains.length) return scope + '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>Nenhum bloqueio activo' + (_inst ? ' em ' + _inst : '') + (_ts ? ' as ' + _ts : '') + '</div>';
-            let h = scope + '<div style="margin-bottom:8px;color:#ef4444;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>' + chains.length + ' sessao(oes) bloqueada(s)</div>';
+                + (_inst ? t('live.instance_label') + ': <b style="color:var(--color-text-tertiary);">' + _inst + '</b>' : t('live.no_channel'))
+                + (_ts ? ' &middot; ' + t('live.sample') + ' ' + _ts : '') + ' &middot; ' + t('live.only_this_instance') + '</div>';
+            if (!chains.length) return scope + '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_blocking') + (_inst ? ' ' + t('live.in') + ' ' + _inst : '') + (_ts ? ' ' + t('live.at') + ' ' + _ts : '') + '</div>';
+            let h = scope + '<div style="margin-bottom:8px;color:#ef4444;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>' + _kpiTp('live.blocked_sessions_n', '{n} sessão(ões) bloqueada(s)', { n: chains.length }) + '</div>';
             h += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
             h += '<thead><tr style="background:#7f1d1d44;color:#fca5a5;"><th style="padding:6px 8px;">Blocked</th><th>Blocker</th><th>DB</th><th>Wait</th><th>Wait sec</th><th>Blocked SQL</th><th>Blocker SQL</th></tr></thead><tbody>';
             chains.forEach(c => {
@@ -51024,7 +51028,7 @@ window.showDiskDrilldown = async function(drive, label) {
             h += _fleetCard('Online', online.length, '#10b981', 'fa-check-circle');
             h += _fleetCard('Parcial', partial.length, partial.length>0?'#f59e0b':'var(--color-text-disabled)', 'fa-exclamation');
             h += _fleetCard('Offline', offline.length, offline.length>0?'#ef4444':'var(--color-text-disabled)', 'fa-times-circle');
-            h += _fleetCard('Sem dados', noData.length, 'var(--color-text-disabled)', 'fa-question-circle');
+            h += _fleetCard(t('live.no_data_short'), noData.length, 'var(--color-text-disabled)', 'fa-question-circle');
             h += _fleetCard('CPU >50%', cpuHigh.length, cpuHigh.length>0?'#f59e0b':'#10b981', 'fa-microchip');
             h += _fleetCard('MEM >85%', memHigh.length, memHigh.length>0?'#f59e0b':'#10b981', 'fa-memory');
             h += _fleetCard('Low PLE', lowPle.length, lowPle.length>0?'#ef4444':'#10b981', 'fa-clock');
@@ -51053,16 +51057,16 @@ window.showDiskDrilldown = async function(drive, label) {
                     const fCpuH = (function(sec){ sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec/86400), hh = Math.floor((sec%86400)/3600), mm = Math.floor((sec%3600)/60);
                         if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm'; return sec + 's'; })(cpuMs/1000);
                     const fElC = fIdle ? 'var(--color-text-disabled)' : fEl > 300 ? '#ef4444' : fEl > 60 ? '#f59e0b' : 'var(--color-text-tertiary)';
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:75px;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><div style="width:55px;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="CPU acumulado (soma das threads em plano paralelo) — nao e tempo decorrido">CPU ${fCpuH}</div><div style="width:58px;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="Tempo decorrido desde start_time${fIdle ? ' — sessao idle/a espera, nao e tempo de execucao' : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:75px;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><div style="width:55px;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="${t('live.cpu_title')}">CPU ${fCpuH}</div><div style="width:58px;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="${t('live.elapsed_title')}${fIdle ? ' — ' + t('live.idle_not_exec') : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem queries pesadas</div>';
+                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_heavy_queries') + '</div>';
             }
             h += '</div></div>';
 
             if (liveBlocking.length) {
                 h += '<div style="background:#7f1d1d22;border:1px solid #7f1d1d;border-radius:8px;padding:12px;margin-bottom:12px;">';
-                h += '<div style="color:#fca5a5;font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-lock" style="margin-right:6px;"></i>BLOCKING ACTIVO (' + liveBlocking.length + ')<span style="font-weight:400;color:var(--color-text-disabled);margin-left:8px;">sessoes bloqueadas nas instancias em drill (top 8) &middot; Blocked/Blocker = SPID &middot; clica na linha para abrir o canal</span></div>';
+                h += '<div style="color:#fca5a5;font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-lock" style="margin-right:6px;"></i>' + _kpiTp('live.blocking_active', 'BLOCKING ATIVO ({n})', { n: liveBlocking.length }) + '<span style="font-weight:400;color:var(--color-text-disabled);margin-left:8px;">' + t('live.blocking_hint') + '</span></div>';
                 h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--color-text-tertiary);"><th style="padding:3px 6px;text-align:left;">Instance</th><th>Blocked</th><th>Blocker</th><th>DB</th><th>Wait</th><th>Sec</th></tr></thead><tbody>';
                 liveBlocking.slice(0,8).forEach(b => {
                     const name = (b.instance||'').split('_')[0];
@@ -51084,7 +51088,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${t.instance} SPID ${t.spid}: ${mb} MB"><div style="width:75px;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${t.spid}</div><div style="width:50px;color:${c};font-size:12px;font-weight:600;">${formatSizeMB(mb)}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem consumers activos</div>';
+                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_active_consumers') + '</div>';
             }
             h += '</div>';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -51101,10 +51105,10 @@ window.showDiskDrilldown = async function(drive, label) {
                 const topWaits = Object.values(waitMap).sort((a,b) => b.total_ms - a.total_ms).slice(0,5);
                 const maxMs = Math.max(...topWaits.map(w => w.total_ms), 1);
                 topWaits.forEach(w => {
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} instancias"><div style="width:110px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:#f59e0b;height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:#f59e0b;font-size:12px;">${w.instances.size} inst</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} ${t('live.instances')}"><div style="width:110px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:#f59e0b;height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:#f59e0b;font-size:12px;">${w.instances.size} inst</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem waits significativos</div>';
+                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_significant_waits') + '</div>';
             }
             h += '</div></div>';
 
@@ -51127,7 +51131,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 }
                 h += '</div>';
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-                h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-user-clock" style="margin-right:6px;color:var(--color-text-tertiary);"></i>SESSOES IDLE >1h</div>';
+                h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-user-clock" style="margin-right:6px;color:var(--color-text-tertiary);"></i>' + t('live.idle_sessions_1h') + '</div>';
                 if (liveIdle.length) {
                     liveIdle.slice(0,5).forEach(s => {
                         const name = (s.instance||'').split('_')[0];
@@ -51137,7 +51141,7 @@ window.showDiskDrilldown = async function(drive, label) {
                         h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${s.instance}','connections')" title="${s.instance} SPID ${s.spid}: ${s.login_name} idle ${hours}h"><div style="width:70px;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${s.spid}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.login_name||''} / ${s.program_name||''}</div><div style="color:${c};font-size:12px;font-weight:600;">${hours}h</div></div>`;
                     });
                 } else {
-                    h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Sem sessoes idle</div>';
+                    h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_idle_sessions') + '</div>';
                 }
                 h += '</div></div>';
             }
@@ -51196,7 +51200,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderIO(data) {
             const files = data.files || [];
-            if (!files.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem dados de I/O</div>';
+            if (!files.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_io_data') + '</div>';
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">Database</th><th>Type</th><th>Reads</th><th>Writes</th><th>Read Lat ms</th><th>Write Lat ms</th><th>Read MB</th><th>Write MB</th><th>File Size</th></tr></thead><tbody>';
             // Fix 2026-08-05: literais 20/50 substituidos pelo threshold
             // efectivo (registry + override do cliente). Hoisted para fora do
@@ -51218,7 +51222,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderJobs(data) {
             const jobs = data.jobs || [];
-            if (!jobs.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>Nenhum job em execucao</div>';
+            if (!jobs.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_jobs') + '</div>';
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:6px 8px;text-align:left;">Job</th><th>Step</th><th>Progress</th><th>Running</th><th>Category</th><th>Started</th></tr></thead><tbody>';
             jobs.forEach(j => {
                 const mins = j.running_minutes || 0;
@@ -51267,12 +51271,12 @@ window.showDiskDrilldown = async function(drive, label) {
                 });
                 h += '</tbody></table>';
             }
-            return h || '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem dados de memoria</div>';
+            return h || '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_memory_data') + '</div>';
         }
 
         function _liveRenderConnections(data) {
             const conns = data.connections || [];
-            if (!conns.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem conexoes activas</div>';
+            if (!conns.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_active_connections') + '</div>';
             let h = `<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:12px;">${conns.length} conexoes</div>`;
             h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">SPID</th><th>Login</th><th>Host</th><th>Program</th><th>DB</th><th>Status</th><th>CPU ms</th><th>Connected</th><th>Transport</th></tr></thead><tbody>';
             conns.forEach(c => {
@@ -51291,7 +51295,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderAlwaysOn(data) {
             const replicas = data.replicas || [];
-            if (!replicas.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>Sem AGs configurados</div>';
+            if (!replicas.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_ags') + '</div>';
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">AG</th><th>Replica</th><th>Role</th><th>Sync Health</th><th>DB</th><th>Sync State</th><th>Send Queue</th><th>Redo Queue</th><th>Send KB/s</th><th>Lag sec</th></tr></thead><tbody>';
             replicas.forEach(r => {
                 const hc = (r.synchronization_health_desc||'').includes('HEALTHY') ? '#10b981' : '#ef4444';
@@ -51314,7 +51318,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderTLog(data) {
             const dbs = data.databases || [];
-            if (!dbs.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem dados de transaction log</div>';
+            if (!dbs.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_tlog_data') + '</div>';
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:5px 8px;text-align:left;">Database</th>';
             const hasVlf = dbs[0].vlf_count !== undefined;
             if (hasVlf) h += '<th>VLFs</th><th>Active VLFs</th><th>Log Since Backup</th><th>Truncation Reason</th>';
@@ -51375,7 +51379,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderSchedulers(data) {
             const scheds = data.schedulers || [];
-            if (!scheds.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">Sem dados de schedulers</div>';
+            if (!scheds.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_scheduler_data') + '</div>';
             const totalRunnable = data.total_runnable || 0;
             const totalPendingIO = data.total_pending_io || 0;
             let h = `<div style="display:flex;gap:20px;margin-bottom:12px;font-size:13px;">`;
