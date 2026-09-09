@@ -28881,7 +28881,7 @@
             const subtitle = document.getElementById('modalSubtitle');
             const body = document.getElementById('modalBody');
         
-            title.textContent = 'Análise Preditiva de Crescimento';
+            title.textContent = t('predict.title');  // lote F6a 2026-09-09
             subtitle.textContent = `${serverId} > ${databaseName} > ${filegroupName}`;
 
             body.innerHTML = `
@@ -28889,19 +28889,19 @@
                     <div class="spinner" style="width: 64px; height: 64px;"></div>
                     <div style="text-align: center;">
                         <p style="color: var(--color-text-link); font-size: 16px; font-weight: 600; margin-bottom: 8px;">
-                            <i class="fas fa-brain"></i> Executando Machine Learning...
+                            <i class="fas fa-brain"></i> ${t('predict.running_ml')}
                         </p>
                         <p style="color: var(--color-text-tertiary); font-size: 14px; margin-bottom: 4px;">
-                            Extraindo dados históricos
+                            ${t('predict.extracting')}
                         </p>
                         <p style="color: var(--color-text-tertiary); font-size: 14px; margin-bottom: 4px;">
-                            Executando modelo de regressão linear
+                            ${t('predict.running_model')}
                         </p>
                         <p style="color: var(--color-text-tertiary); font-size: 14px;">
-                            Gerando gráficos interativos
+                            ${t('predict.charts')}
                         </p>
                         <p style="color: var(--color-text-disabled); font-size: 12px; margin-top: 16px; font-style: italic;">
-                            <i class="fas fa-clock"></i> Isso pode levar 30-90 segundos...
+                            <i class="fas fa-clock"></i> ${t('predict.may_take')}
                         </p>
                     </div>
                 </div>
@@ -28931,25 +28931,24 @@
                     
                     <!-- Título -->
                     <h2 style="color: #f59e0b; text-align: center; font-size: 24px; margin-bottom: 16px;">
-                        Sem Dados Históricos
+                        ${t('predict.no_data_title')}
                     </h2>
                     
                     <!-- Explicação -->
                     <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
                         <p style="color: #fbbf24; font-size: 16px; line-height: 1.6; margin: 0;">
-                            Não foram encontrados dados históricos no Oracle para este filegroup. 
-                            A análise preditiva requer pelo menos <strong>${t('predict.min_7_days')}</strong> de uso.
+                            ${t('predict.no_data_intro')} ${_kpiTp('predict.requires_at_least', 'A análise preditiva requer pelo menos {min} de uso.', { min: '<strong>' + t('predict.min_7_days') + '</strong>' })}
                         </p>
                     </div>
                     
                     <!-- Detalhes -->
                     <div style="background: var(--color-bg-panel); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                         <h4 style="color: var(--color-text-tertiary); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">
-                            Detalhes do FileGroup
+                            ${t('predict.fg_details')}
                         </h4>
                         <table style="width: 100%; font-size: 13px; color: var(--color-text-secondary);">
                             <tr>
-                                <td style="padding: 8px 0; color: var(--color-text-disabled);">Servidor:</td>
+                                <td style="padding: 8px 0; color: var(--color-text-disabled);">${t('predict.server_label')}</td>
                                 <td style="padding: 8px 0; font-family: monospace;">${serverId}</td>
                             </tr>
                             <tr>
@@ -28969,9 +28968,9 @@
                             Possíveis Causas
                         </h4>
                         <ul style="color: var(--color-text-secondary); font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
-                            <li>Este filegroup foi criado recentemente</li>
+                            <li>${t('predict.cause_recent')}</li>
                             <li>${t('predict.no_data_msg')}</li>
-                            <li>Nome do filegroup diferente na tabela Oracle</li>
+                            <li>${t('predict.cause_name_mismatch')}</li>
                             <li>${t('predict.not_monitored')}</li>
                         </ul>
                     </div>
@@ -28979,12 +28978,12 @@
                     <!-- Ações Recomendadas -->
                     <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                         <h4 style="color: var(--color-text-link); font-size: 14px; margin-bottom: 12px;">
-                            O Que Fazer
+                            ${t('predict.what_to_do')}
                         </h4>
                         <ol style="color: #93c5fd; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
                             <li>${t('predict.check_collection')}</li>
                             <li>${t('predict.wait_7_days')}</li>
-                            <li>Verificar nome do filegroup na tabela Oracle</li>
+                            <li>${t('predict.check_fg_name')}</li>
                             <li>${t('predict.try_another_fg')}</li>
                         </ol>
                     </div>
@@ -28998,7 +28997,7 @@
                                    transition: all 0.2s;"
                             onmouseover="this.style.background='var(--color-border)'"
                             onmouseout="this.style.background='var(--color-border-strong)'">
-                            <i class="fas fa-times"></i> Fechar
+                            <i class="fas fa-times"></i> ${t('predict.close')}
                         </button>
                     </div>
                     
@@ -29025,25 +29024,24 @@
                     
                     <!-- Título -->
                     <h2 style="color: #f59e0b; text-align: center; font-size: 24px; margin-bottom: 16px;">
-                        Sem Dados Históricos
+                        ${t('predict.no_data_title')}
                     </h2>
                     
                     <!-- Explicação -->
                     <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
                         <p style="color: #fbbf24; font-size: 16px; line-height: 1.6; margin: 0;">
-                            Não foram encontrados dados históricos no Oracle para este filegroup. 
-                            A análise preditiva requer pelo menos <strong>${t('predict.min_7_days')}</strong> de uso.
+                            ${t('predict.no_data_intro')} ${_kpiTp('predict.requires_at_least', 'A análise preditiva requer pelo menos {min} de uso.', { min: '<strong>' + t('predict.min_7_days') + '</strong>' })}
                         </p>
                     </div>
                     
                     <!-- Detalhes -->
                     <div style="background: var(--color-bg-panel); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                         <h4 style="color: var(--color-text-tertiary); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">
-                            Detalhes do FileGroup
+                            ${t('predict.fg_details')}
                         </h4>
                         <table style="width: 100%; font-size: 13px; color: var(--color-text-secondary);">
                             <tr>
-                                <td style="padding: 8px 0; color: var(--color-text-disabled);">Servidor:</td>
+                                <td style="padding: 8px 0; color: var(--color-text-disabled);">${t('predict.server_label')}</td>
                                 <td style="padding: 8px 0; font-family: monospace;">${serverId}</td>
                             </tr>
                             <tr>
@@ -29063,9 +29061,9 @@
                             Possíveis Causas
                         </h4>
                         <ul style="color: var(--color-text-secondary); font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
-                            <li>Este filegroup foi criado recentemente</li>
+                            <li>${t('predict.cause_recent')}</li>
                             <li>${t('predict.no_data_msg')}</li>
-                            <li>Nome do filegroup diferente na tabela Oracle</li>
+                            <li>${t('predict.cause_name_mismatch')}</li>
                             <li>${t('predict.not_monitored')}</li>
                         </ul>
                     </div>
@@ -29073,12 +29071,12 @@
                     <!-- Ações Recomendadas -->
                     <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                         <h4 style="color: var(--color-text-link); font-size: 14px; margin-bottom: 12px;">
-                            O Que Fazer
+                            ${t('predict.what_to_do')}
                         </h4>
                         <ol style="color: #93c5fd; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
                             <li>${t('predict.check_collection')}</li>
                             <li>${t('predict.wait_7_days')}</li>
-                            <li>Verificar nome do filegroup na tabela Oracle</li>
+                            <li>${t('predict.check_fg_name')}</li>
                             <li>${t('predict.try_another_fg')}</li>
                         </ol>
                     </div>
@@ -29092,7 +29090,7 @@
                                    transition: all 0.2s;"
                             onmouseover="this.style.background='var(--color-border)'"
                             onmouseout="this.style.background='var(--color-border-strong)'">
-                            <i class="fas fa-times"></i> Fechar
+                            <i class="fas fa-times"></i> ${t('predict.close')}
                         </button>
                     </div>
                     
@@ -29123,20 +29121,20 @@
                     
                     <!-- Título -->
                     <h2 style="color: #ef4444; text-align: center; font-size: 24px; margin-bottom: 16px;">
-                        Script de Análise Não Encontrado
+                        ${t('predict.script_title')}
                     </h2>
                     
                     <!-- Explicação -->
                     <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
                         <p style="color: #fca5a5; font-size: 16px; line-height: 1.6; margin: 0;">
-                            O script necessário para análise preditiva não foi encontrado no sistema.
+                            ${t('predict.script_missing')}
                         </p>
                     </div>
                     
                     <!-- Detalhes -->
                     <div style="background: var(--color-bg-panel); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                         <h4 style="color: var(--color-text-tertiary); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">
-                            Detalhes do Erro
+                            ${t('predict.error_details')}
                         </h4>
                         <div style="background: var(--color-bg-sunken); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; color: #fca5a5; word-break: break-all;">
                             ${errorMessage}
@@ -29146,11 +29144,11 @@
                     <!-- Informações do FileGroup -->
                     <div style="background: var(--color-bg-panel); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                         <h4 style="color: var(--color-text-tertiary); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">
-                            FileGroup Solicitado
+                            ${t('predict.fg_requested')}
                         </h4>
                         <table style="width: 100%; font-size: 13px; color: var(--color-text-secondary);">
                             <tr>
-                                <td style="padding: 8px 0; color: var(--color-text-disabled);">Servidor:</td>
+                                <td style="padding: 8px 0; color: var(--color-text-disabled);">${t('predict.server_label')}</td>
                                 <td style="padding: 8px 0; font-family: monospace;">${serverId}</td>
                             </tr>
                             <tr>
@@ -29167,10 +29165,10 @@
                     <!-- Solução -->
                     <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                         <h4 style="color: var(--color-text-link); font-size: 14px; margin-bottom: 12px;">
-                            Como Resolver
+                            ${t('predict.how_to_fix')}
                         </h4>
                         <ol style="color: #93c5fd; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 24px;">
-                            <li>Verifique se o arquivo <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">filegroup_interactive_report_v5.py</code> existe na raiz do projeto</li>
+                            <li>${_kpiTp('predict.check_file_exists', 'Verifique se o ficheiro {file} existe na raiz do projeto', { file: '<code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">filegroup_interactive_report_v5.py</code>' })}</li>
                             <li>${t('predict.script_not_found')}</li>
                             <li>${t('predict.use_space_analysis')}</li>
                         </ol>
@@ -29185,7 +29183,7 @@
                                    transition: all 0.2s;"
                             onmouseover="this.style.background='var(--color-border)'"
                             onmouseout="this.style.background='var(--color-border-strong)'">
-                            <i class="fas fa-times"></i> Fechar
+                            <i class="fas fa-times"></i> ${t('predict.close')}
                         </button>
                     </div>
                 </div>
@@ -29214,7 +29212,7 @@
                         </p>
                         <ul style="color: var(--color-text-tertiary); font-size: 12px; text-align: left; margin-left: 24px;">
                             <li>${t('predict.scripts_not_found')}</li>
-                            <li>Credenciais Oracle incorretas em oracle_to_csv.py</li>
+                            <li>${t('predict.cause_db_creds')}</li>
                             <li>${t('msg.no_historical_data')}</li>
                             <li>${t('predict.oracle_timeout')}</li>
                         </ul>
@@ -29228,7 +29226,7 @@
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform='translateY(0)'"
                     >
-                        <i class="fas fa-times"></i> Fechar
+                        <i class="fas fa-times"></i> ${t('predict.close')}
                     </button>
                 </div>
             `;
@@ -29261,9 +29259,9 @@
                 body.innerHTML = `
                     <div style="padding: 40px; text-align: center;">
                         <i class="fas fa-window-restore" style="font-size: 64px; color: var(--color-text-link); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--color-text-primary); margin-bottom: 16px;">Pop-up Bloqueado</h3>
+                        <h3 style="color: var(--color-text-primary); margin-bottom: 16px;">${t('predict.popup_blocked')}</h3>
                         <p style="color: var(--color-text-tertiary); margin-bottom: 24px;">
-                            Seu navegador bloqueou a abertura do relatório em nova aba.
+                            ${t('predict.popup_msg')}
                         </p>
                         <button 
                             onclick="window.open('${blobUrl}', '_blank')"
@@ -29273,7 +29271,7 @@
                                    transition: transform 0.2s;"
                             onmouseover="this.style.transform='translateY(-2px)'"
                             onmouseout="this.style.transform='translateY(0)'">
-                            <i class="fas fa-external-link-alt"></i> Abrir Relatório
+                            <i class="fas fa-external-link-alt"></i> ${t('predict.open_report')}
                         </button>
                     </div>
                 `;
@@ -29301,7 +29299,7 @@
                         onclick="closeReportModal()"
                         style="background: var(--color-border-strong); color: white; padding: 10px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;"
                     >
-                        Fechar
+                        ${t('predict.close')}
                     </button>
                 </div>
             `;

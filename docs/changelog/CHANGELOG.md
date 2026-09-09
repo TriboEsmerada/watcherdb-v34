@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Lote F6a (BUG-003): a modal "Análise Preditiva de Crescimento" segue o idioma** (owner 09/09: "ainda
+  continua em português com o inglês seleccionado"). Título, textos de carregamento, ecrãs "Sem Dados
+  Históricos", "Script Não Encontrado", erro e pop-up bloqueado, e o botão "Fechar" ganham chaves
+  `predict.*` em pt-PT, en-US e es. As referências a "Oracle" nesses textos, herdadas de um antepassado do
+  produto, desaparecem. As definições duplicadas dessas funções (a segunda sobrepõe a primeira) ficam
+  ambas traduzidas para não sobrar texto cru em código morto. [tier: Std]
+
 - **Lote F8 (BUG-003): o painel LIVE segue o idioma** (owner 09/09: "achei mais 1 caso: o LIVE" — "A carregar
   Fleet Dashboard…", "Filtrar instância…", "Canal…" em inglês). Placeholders, tooltips, mensagens "Sem dados
   de…" / "Nenhum … ativo" e cabeçalhos de secção do painel LIVE e do drill de disco ganham chaves `live.*`
