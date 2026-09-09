@@ -15535,7 +15535,7 @@
                         'Serviços SQL': servicesStatus?.data_available !== false,
                         'CPU': cpuData?.success === true,
                         'Memória': memoryData?.success === true,
-                        'Databases': databasesData?.success === true,
+                        'Databases': databasesData?.success === true || (Array.isArray(databasesData?.databases) && databasesData.databases.length > 0),  // 2026-09-09: endpoint nao tinha success -> check falhava sempre
                         'Backup': backupSummary?.success === true,
                         'Backup Gaps': backupGaps?.success === true,
                     };
@@ -15945,7 +15945,7 @@
                 // (servicesDataAvailable -> cinza); faltava nos outros tres.
                 const backupDataAvailable = backupSummary?.success === true;
                 const backupGapsAvailable = backupGaps?.success === true;
-                const dbDataAvailable = databasesData?.success === true;
+                const dbDataAvailable = databasesData?.success === true || (Array.isArray(databasesData?.databases) && databasesData.databases.length > 0);  // 2026-09-09: idem probe
                 const NO_DATA_COLOR = '#6b7280';  // mesmo cinza do card de Servicos
 
                 const backupColor = !backupDataAvailable ? NO_DATA_COLOR : (backupIssues.length === 0 ? '#10b981' : '#ef4444');
@@ -35935,7 +35935,7 @@
                 const evN = (sec, f) => { if (!envSel.length) return +sec[f] || 0; const be = f === 'count' ? 'count_by_env' : (/_count$/.test(f) ? f.replace(/_count$/, '_by_env') : f + '_by_env'); const m = sec[be]; if (m && typeof m === 'object') return envSel.reduce((s, k) => s + (+m[k] || 0), 0); return +sec[f] || 0; };
                 const online = evN(ia2, 'ok_count'), off = evN(ia2, 'off_count'), totI = online + off;
                 const availPct = totI > 0 ? Math.round(online / totI * 1000) / 10 : null;
-                const dbTotal = (+dba2.total_databases || 0) || (+dba2.total_count || 0);
+                const dbTotal = evN(dba2, 'total_databases') || evN(dba2, 'total_count');  // 2026-09-09: respeita filtro de ambiente (era total da frota)
                 h += `<div class="rep-card rep-exec-card"><div class="rep-card-h">${T('exec_summary', 'Resumo Executivo')} <i class="fas fa-circle-info rep-info" aria-hidden="true"></i></div><div class="rep-exec-grid">`;
                 h += `<div class="rep-exec-stat"><b>${_repFmt(totI)}</b><span>${T('instances', 'Instâncias')}</span></div>`;
                 h += `<div class="rep-exec-stat"><b>${dbTotal ? _repFmt(dbTotal) : '—'}</b><span>${T('databases', 'Bases de dados')}</span></div>`;
@@ -35991,7 +35991,7 @@
             const evN = (sec, f) => { if (!envSel.length) return +sec[f] || 0; const be = f === 'count' ? 'count_by_env' : (/_count$/.test(f) ? f.replace(/_count$/, '_by_env') : f + '_by_env'); const m = sec[be]; if (m && typeof m === 'object') return envSel.reduce((s, k) => s + (+m[k] || 0), 0); return +sec[f] || 0; };
             const online = evN(ia2, 'ok_count'), off = evN(ia2, 'off_count'), totI = online + off;
             const availPct = totI > 0 ? Math.round(online / totI * 1000) / 10 : null;
-            const dbTotal = (+dba2.total_databases || 0) || (+dba2.total_count || 0);
+            const dbTotal = evN(dba2, 'total_databases') || evN(dba2, 'total_count');  // 2026-09-09: respeita filtro de ambiente (era total da frota)
             const stat = (sv, ico, tint, body) => `<div class="rep-exec-stat${sv && sClk ? ' clk' : ''}${sv && (fil && fil.sev) === sv ? ' on' : ''}"${sv && sClk ? ` role="button" tabindex="0" onclick="${sClk}('${sv}')"` : ''}><span class="rep-exec-ico rep-ico-${tint}" aria-hidden="true"><i class="fas ${ico}"></i></span><div class="rep-exec-txt">${body}</div></div>`;
             let h = `<div class="rep-card rep-exec-card"><div class="rep-card-h">${T('exec_summary', 'Resumo Executivo')} <i class="fas fa-circle-info rep-info" aria-hidden="true"></i></div><div class="rep-exec-grid">`;
             h += stat(null, 'fa-display', 'info', `<b>${_repFmt(totI)}</b><span>${T('instances', 'Instâncias')}</span>`);
