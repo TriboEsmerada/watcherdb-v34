@@ -509,6 +509,8 @@ def init_dashboard_results() -> Dict[str, Any]:
             "abnormal_count": 0,
             "total_count": 0,
             "total_databases": 0,
+            "total_databases_by_env": {},
+            "total_by_env": {},
             "instances": []
         },
         "db_disk_file_system": {
@@ -726,6 +728,27 @@ async def collect_db_availability(results: Dict[str, Any]) -> None:
                     "TOTAL": total_available
                 }
                 logger.debug(f"DB Availability por ambiente: {results['db_availability']['by_environment']}")
+
+                # 2026-09-09 (owner): o tile "Bases de dados" do resumo executivo
+                # nao mudava ao filtrar por ambiente. evN() deriva
+                # total_databases_by_env e, sem a chave, cai no total da frota
+                # (mesmo anti-padrao do FIND-20260818-101). MESMA fonte do total
+                # (DET_VIEW) e classificacao por INST_ENVS (padrao 2026-08-07),
+                # para a soma por ambiente bater com o total_databases.
+                query_total_by_env = f"""
+                SELECT ISNULL(e.Env, 'Undefined') AS Env, COUNT(*) AS Cnt
+                FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_DB_AVAILABILITY_DET_VIEW d WITH (NOLOCK)
+                LEFT JOIN {INTELLIGENCE_SCHEMA}.KPI_MSSQL_INST_ENVS e WITH (NOLOCK)
+                    ON e.Instance = d.Instance
+                GROUP BY ISNULL(e.Env, 'Undefined')
+                """
+                total_by_env_data = await execute_intelligence_query_async(query_total_by_env, raise_on_error=False) or []
+                total_by_env = {'PRD': 0, 'QLT': 0, 'TST': 0, 'Undefined': 0}
+                for row in total_by_env_data:
+                    total_by_env[str(row.get('Env') or 'Undefined')] = int(row.get('Cnt') or 0)
+                results["db_availability"]["total_databases_by_env"] = total_by_env
+                results["db_availability"]["total_by_env"] = total_by_env
+                logger.debug(f"DB Availability total por ambiente: {total_by_env}")
             except Exception as e:
                 logger.warning(f"Erro ao calcular DB Availability por ambiente: {e}")
         except Exception as e:

@@ -114,6 +114,7 @@ async def get_databases(server_id: str):
         cached_entry = _DATABASES_CACHE.get(server_id.upper())
         if cached_entry and time.time() - cached_entry["ts"] <= _DATABASES_CACHE_TTL:
             return JSONResponse(content={
+                "success": True,  # 2026-09-09: probe/cartao do Overview exigem esta chave
                 "server_id": server_id,
                 "databases": cached_entry["data"],
                 "server_info": cached_entry.get("server_info", {}),
@@ -168,6 +169,7 @@ async def get_databases(server_id: str):
             _set_cached_databases(server_id, serialized_result, server_info)
 
         return JSONResponse(content={
+            "success": True,  # 2026-09-09: probe/cartao do Overview exigem esta chave
             "server_id": server_id,
             "databases": serialized_result,
             "server_info": server_info,

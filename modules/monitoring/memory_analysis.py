@@ -248,10 +248,10 @@ async def get_server_memory_analysis(server_name: str, sql_monitoring=None) -> D
             plan_cache_query = """
             SELECT
                 COUNT(*) AS PlanCount,
-                SUM(size_in_bytes) / 1024.0 / 1024.0 AS PlanCacheSizeMB,
-                SUM(CASE WHEN usecounts = 1 THEN size_in_bytes ELSE 0 END) / 1024.0 / 1024.0 AS SingleUsePlansMB,
-                SUM(CASE WHEN usecounts > 1 THEN size_in_bytes ELSE 0 END) / 1024.0 / 1024.0 AS MultiUsePlansMB,
-                100.0 * SUM(CASE WHEN usecounts = 1 THEN size_in_bytes ELSE 0 END) / NULLIF(SUM(size_in_bytes), 0) AS SingleUsePercentage
+                SUM(CAST(size_in_bytes AS BIGINT)) / 1024.0 / 1024.0 AS PlanCacheSizeMB,
+                SUM(CASE WHEN usecounts = 1 THEN CAST(size_in_bytes AS BIGINT) ELSE 0 END) / 1024.0 / 1024.0 AS SingleUsePlansMB,
+                SUM(CASE WHEN usecounts > 1 THEN CAST(size_in_bytes AS BIGINT) ELSE 0 END) / 1024.0 / 1024.0 AS MultiUsePlansMB,
+                100.0 * SUM(CASE WHEN usecounts = 1 THEN CAST(size_in_bytes AS BIGINT) ELSE 0 END) / NULLIF(SUM(CAST(size_in_bytes AS BIGINT)), 0) AS SingleUsePercentage
             FROM sys.dm_exec_cached_plans WITH(NOLOCK)
             """
 

@@ -18,6 +18,7 @@ REQUIRED_BACKEND_KEYS = [
     "unhealthy_by_env",                                                  # alwayson + mirroring
     "critical_items_total_by_env", "warning_items_total_by_env",         # filegroups (alias)
     "p1_by_env", "p3_by_env", "p4_by_env",                               # integridade
+    "total_databases_by_env", "total_by_env",                            # resumo executivo (2026-09-09)
 ]
 
 
@@ -36,6 +37,26 @@ def test_frontend_integrity_p3_p4_use_ev_not_plain_n():
     # regressao: P3/P4 usavam n(ig.pX_count) directo -> nunca filtravam
     assert "n(ig.p3_count)" not in PORTAL and "n(ig.p4_count)" not in PORTAL
     assert "ev(ig, 'p3_count')" in PORTAL and "ev(ig, 'p4_count')" in PORTAL
+
+
+def test_exec_summary_databases_tile_uses_evn_20260909():
+    """2026-09-09 (owner): tile "Bases de dados" nao mudava com o filtro de
+    ambiente -- lia dba2.total_databases directo. Tem de passar por evN() nas
+    2 funcoes (_repTopCards e _repExecCard) e o backend expor a chave."""
+    assert "const dbTotal = (+dba2.total_databases || 0)" not in PORTAL
+    assert PORTAL.count("const dbTotal = evN(dba2, 'total_databases')") == 2
+    assert '"total_databases_by_env"' in HELPERS
+
+
+def test_overview_databases_probe_not_bound_to_missing_success_key_20260909():
+    """2026-09-09: /api/queries/databases/{id} nunca devolveu `success`; o probe
+    do banner "N/6 checks failed" e o cartao DBs com Problema exigiam-no ->
+    falhavam em TODOS os servidores. Backend passa a devolver success:true e o
+    frontend aceita tambem lista nao vazia."""
+    space = (ROOT / "api" / "routers" / "queries" / "space.py").read_text(encoding="utf-8")
+    assert space.count('"success": True,') >= 2
+    assert "'Databases': databasesData?.success === true," not in PORTAL
+    assert "const dbDataAvailable = databasesData?.success === true;" not in PORTAL
 
 
 def test_frontend_ev_derived_keys_have_backend_source():
