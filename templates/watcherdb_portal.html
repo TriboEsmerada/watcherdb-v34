@@ -34893,6 +34893,7 @@
         // i18n via t() (motor watcherdb_i18n_v2). Dados reais de window.dashboardData. Nunca dados fake.
         function _kpiT(key, fb) { try { const v = (typeof t === 'function') ? t(key) : null; return (v && v !== key) ? v : fb; } catch (e) { return fb; } }
         function _kpiTp(key, fb, p) { let s = _kpiT(key, fb); Object.keys(p || {}).forEach(k => { s = s.split('{' + k + '}').join(p[k]); }); return s; }  // placeholders {n} (lote F1 2026-09-03)
+        function _docTitle(kpiId, kpi) { return _kpiT('kpi_doc.' + kpiId + '.title', kpi.title); }  // lote F4b 2026-09-09: titulos da modal de documentacao seguem o idioma (fallback = title PT)
         function _kpiEsc(s) { try { return (typeof escapeHtml === 'function') ? escapeHtml(String(s)) : String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); } catch (e) { return String(s); } }
         function _kpiDefVal(id, data) {
             // 2026-07-25 (owner, opcao B): pseudo-id sem card proprio -- P4 (CHECKDB
@@ -41253,7 +41254,7 @@ Tempo de Resposta: ${responseTime}
                 howItWorks: [
                     'Consulta a tabela KPI_MSSQL_BACKUP_JOBS_DISABLED_STG',
                     'Filtra msdb.dbo.sysjobs onde enabled = 0 OU sem nenhum agendamento ativo (sysschedules.enabled = 1), e categoria/nome indicia backup',
-                    '2026-07-29: passou a incluir jobs ativos sem agendamento ligado. Caso real: DBA_FULL_BACKUP em SQLMDMQLT03_I01 esteve 5 semanas sem correr com enabled=1 e o agendamento desligado, invisível a este KPI',
+                    '2026-07-29: passou a incluir jobs ativos sem agendamento ligado. Caso real: um job de backup FULL numa instância de QA esteve 5 semanas sem correr com enabled=1 e o agendamento desligado, invisível a este KPI',
                     'Snapshot (substitui tabela inactiva por ciclo)',
                     'Frequência: 15 min (PRD), 30 min (QA-TST)',
                     'Cor do card muda conforme ambiente: vermelho=PRD, amarelo=QLT, azul=TST',
@@ -41271,7 +41272,7 @@ Tempo de Resposta: ${responseTime}
                         howItWorks: [
                             'Queries the KPI_MSSQL_BACKUP_JOBS_DISABLED_STG table',
                             'Filters msdb.dbo.sysjobs where enabled = 0 OR with no active schedule (sysschedules.enabled = 1), and category/name suggests backup',
-                            '2026-07-29: now also includes enabled jobs with no active schedule. Real case: DBA_FULL_BACKUP on SQLMDMQLT03_I01 went 5 weeks without running, with enabled=1 and its schedule disabled, invisible to this KPI',
+                            '2026-07-29: now also includes enabled jobs with no active schedule. Real case: a FULL backup job on a QA instance went 5 weeks without running, with enabled=1 and its schedule disabled, invisible to this KPI',
                             'Snapshot mode (replaces inactive table per cycle)',
                             'Frequency: 15 min (PRD), 30 min (QA-TST)',
                             'Card color changes by environment: red=PRD, yellow=QLT, blue=TST',
@@ -41284,7 +41285,7 @@ Tempo de Resposta: ${responseTime}
                         howItWorks: [
                             'Consulta la tabla KPI_MSSQL_BACKUP_JOBS_DISABLED_STG',
                             'Filtra msdb.dbo.sysjobs donde enabled = 0 O sin ninguna programacion activa (sysschedules.enabled = 1), y categoria/nombre sugiere backup',
-                            '2026-07-29: ahora tambien incluye jobs activos sin programacion habilitada. Caso real: DBA_FULL_BACKUP en SQLMDMQLT03_I01 estuvo 5 semanas sin ejecutarse, con enabled=1 y su programacion deshabilitada, invisible a este KPI',
+                            '2026-07-29: ahora tambien incluye jobs activos sin programacion habilitada. Caso real: un job de backup FULL en una instancia de QA estuvo 5 semanas sin ejecutarse, con enabled=1 y su programacion deshabilitada, invisible a este KPI',
                             'Modo snapshot (reemplaza tabla inactiva por ciclo)',
                             'Frecuencia: 15 min (PRD), 30 min (QA-TST)',
                             'Color del card cambia segun ambiente: rojo=PRD, amarillo=QLT, azul=TST',
@@ -41589,7 +41590,7 @@ Tempo de Resposta: ${responseTime}
                                  onmouseover="if(!this.classList.contains('active')) this.style.background='rgba(59, 130, 246, 0.1)'"
                                  onmouseout="if(!this.classList.contains('active')) this.style.background='transparent'">
                                 <i class="fas ${kpi.icon}" style="width: 16px; color: ${color};"></i>
-                                <span style="font-size: 13px;">${kpi.title}</span>
+                                <span style="font-size: 13px;">${_docTitle(kpiId, kpi)}</span>
                             </div>
                         `).join('')}
                     </div>
@@ -41628,7 +41629,8 @@ Tempo de Resposta: ${responseTime}
                 const kpi = KPI_DOCUMENTATION[kpiId];
                 const desc = tDoc(kpi, 'description');
                 const catTranslated = tCategory(kpi.category);
-                const matches = kpi.title.toLowerCase().includes(term) ||
+                const matches = _docTitle(kpiId, kpi).toLowerCase().includes(term) ||
+                               kpi.title.toLowerCase().includes(term) ||
                                kpi.category.toLowerCase().includes(term) ||
                                catTranslated.toLowerCase().includes(term) ||
                                desc.toLowerCase().includes(term);
@@ -41671,7 +41673,7 @@ Tempo de Resposta: ${responseTime}
                             <i class="fas ${kpi.icon}" style="font-size: 24px; color: ${color};"></i>
                         </div>
                         <div>
-                            <h3 style="color: var(--color-text-primary); font-size: 20px; margin: 0 0 4px 0;">${kpi.title}</h3>
+                            <h3 style="color: var(--color-text-primary); font-size: 20px; margin: 0 0 4px 0;">${_docTitle(kpiId, kpi)}</h3>
                             <span style="background: ${color}30; color: ${color}; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
                                 ${tCategory(kpi.category)}
                             </span>

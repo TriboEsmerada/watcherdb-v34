@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Lote F4b (BUG-003): os títulos da modal "KPI Documentation" seguem o idioma** (owner 09/09: "a
+  interrogação dos KPIs não está sendo traduzida"). As categorias já traduziam; os 29 títulos eram
+  português cru sem chave, no menu, na pesquisa e no cabeçalho. Namespace novo `kpi_doc.<id>.title`
+  em pt/en/es (pt = texto actual, pt-BR herda) com fallback ao título antigo. De caminho, o texto de
+  ajuda dos jobs de backup deixa de citar uma instância de cliente pelo nome. [tier: Std]
+
 - **Lotes B/C do linguista: acentuação em pt.json e es.json** (owner: acentos correctos como P1; o screenshot em espanhol de 04/09 mostrava "Tamano", "diagnostico", "analisis"). 255 chaves em português e 460 em espanhol ganham os acentos, til, cedilha e ñ em falta, sem mudar termos nem frases; confirmados palavra a palavra pelo v33-i18n-linguist a partir de um varrimento mecânico. [tier: Std]
 
 - **Os botões de navegação da instância passam a traduzir** (owner 04/09, em espanhol: "os nomes
