@@ -114,9 +114,16 @@ class Colector:
         return [e for e in self.console if not any(r.lower() in e.lower() for r in tolerado)]
 
 
+_LOGIN_FALHOU: dict[str, str] = {}
+
+
 def _token(page, base_url: str, perfil: str) -> tuple[str, str]:
     if perfil in _TOKENS:
         return _TOKENS[perfil]
+    # TG-1 PASSO 8: um login falhado por perfil chega. Repetir 17x com a password
+    # errada bloqueia a conta (MAX_FAILED_ATTEMPTS=5, 15 min) e mascara a causa.
+    if perfil in _LOGIN_FALHOU:
+        pytest.fail(_LOGIN_FALHOU[perfil] + " (nao repetido: evita bloquear a conta)")
     user, pw = _creds(perfil)
     resposta = page.context.request.post(
         f"{base_url}/api/auth/login",
@@ -124,9 +131,12 @@ def _token(page, base_url: str, perfil: str) -> tuple[str, str]:
         headers={"Content-Type": "application/json"},
     )
     if resposta.status == 429:
-        pytest.fail(f"login de {user} ({perfil}) devolveu 429: rate limit 5/min esgotado "
-                    "(outra corrida em paralelo? esperar 1 min)")
-    assert resposta.ok, f"login de {user} ({perfil}) falhou com {resposta.status}"
+        _LOGIN_FALHOU[perfil] = f"login de {user} ({perfil}) devolveu 429: rate limit 5/min esgotado"
+        pytest.fail(_LOGIN_FALHOU[perfil] + " (outra corrida em paralelo? esperar 1 min)")
+    if not resposta.ok:
+        _LOGIN_FALHOU[perfil] = (f"login de {user} ({perfil}) falhou com {resposta.status}: "
+                                 "password errada, conta desactivada ou bloqueada (15 min apos 5 falhas)")
+        pytest.fail(_LOGIN_FALHOU[perfil])
     corpo = resposta.json()
     token = corpo.get("access_token") or corpo.get("token")
     assert token, f"login devolveu 200 mas sem token: {sorted(corpo)}"
@@ -227,10 +237,13 @@ class TestSmokeModulos:
                     if (el.querySelector('.fa-spin')) return false;
                     return (el.innerText || '').trim().length > 0;
                 }""",
-                tab_id, timeout=TAB_TIMEOUT_MS,
+                arg=tab_id, timeout=TAB_TIMEOUT_MS,  # TG-1 PASSO 8: `arg=` e' so' por nome
             )
-        except Exception:
-            warn.append(f"aba {tab} nao terminou em {TAB_TIMEOUT_MS} ms (instancia lenta ou sem resposta)")
+        except Exception as exc:  # noqa: BLE001
+            if "Timeout" in type(exc).__name__ or "imeout" in str(exc):
+                warn.append(f"aba {tab} nao terminou em {TAB_TIMEOUT_MS} ms (instancia lenta ou sem resposta)")
+            else:
+                pytest.fail(f"[{perfil}/{tab}] erro do runner ao esperar pela aba: {type(exc).__name__}: {exc}")
         load_ms = int((time.time() - t0) * 1000)
         conteudo = page.evaluate(
             "(tid) => { const el = document.getElementById('tab-content-' + tid); return el ? el.innerText.slice(0, 400) : ''; }",

@@ -71,7 +71,9 @@ def carrega_corrida(d: Path) -> dict:
     c_err = sum(1 for c in casos if c["_estado"] == "err")
     c_warn = sum(1 for c in casos if c["_estado"] == "warn")
     e_err = sum(1 for e in ext if e.get("exit") not in (0, None))
-    if not casos and not ext:
+    if not casos:
+        # TG-1 PASSO 5: sem casos do council a corrida nao mediu nada -> cinzento,
+        # mesmo que o externo tenha corrido.
         estado = "n"
     elif c_err:
         estado = "r"
