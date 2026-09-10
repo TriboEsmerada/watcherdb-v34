@@ -131,8 +131,16 @@ def _token(page, base_url: str, perfil: str) -> tuple[str, str]:
         headers={"Content-Type": "application/json"},
     )
     if resposta.status == 429:
-        _LOGIN_FALHOU[perfil] = f"login de {user} ({perfil}) devolveu 429: rate limit 5/min esgotado"
-        pytest.fail(_LOGIN_FALHOU[perfil] + " (outra corrida em paralelo? esperar 1 min)")
+        # TG-1c PASSO 5: uma espera e uma nova tentativa antes de desistir (corridas seguidas batem no 5/min).
+        time.sleep(61)
+        resposta = page.context.request.post(
+            f"{base_url}/api/auth/login",
+            data=json.dumps({"username": user, "password": pw}),
+            headers={"Content-Type": "application/json"},
+        )
+    if resposta.status == 429:
+        _LOGIN_FALHOU[perfil] = f"login de {user} ({perfil}) devolveu 429 duas vezes: rate limit 5/min esgotado"
+        pytest.fail(_LOGIN_FALHOU[perfil] + " (outra corrida em paralelo?)")
     if not resposta.ok:
         _LOGIN_FALHOU[perfil] = (f"login de {user} ({perfil}) falhou com {resposta.status}: "
                                  "password errada, conta desactivada ou bloqueada (15 min apos 5 falhas)")
@@ -155,7 +163,7 @@ def _autentica(page, base_url: str, perfil: str) -> str:
         % json.dumps(token)
     )
     page.goto(f"{base_url}{PORTAL}", wait_until="load", timeout=30000)
-    page.wait_for_load_state("networkidle", timeout=30000)
+    # TG-1c PASSO 7: sem "networkidle" - o portal faz polling permanente e nunca fica idle (timeouts ao acaso).
     page.wait_for_function(
         "() => document.body && !/Carregando KPIs|Loading KPIs/i.test(document.body.innerText)",
         timeout=60000,
@@ -245,13 +253,19 @@ class TestSmokeModulos:
             else:
                 pytest.fail(f"[{perfil}/{tab}] erro do runner ao esperar pela aba: {type(exc).__name__}: {exc}")
         load_ms = int((time.time() - t0) * 1000)
+        # TESTGRAPETE TG-1c (TC-003 do TestSprite): a aba activa e' DESTE servidor e o cabecalho diz o nome dele.
+        ctx = page.evaluate(
+            """() => { const t = openTabs.get(activeTabId); const h = document.getElementById('serverName');
+                       return { sid: t && t.server ? t.server.server_id : null, tipo: t ? t.tabType : null,
+                                header: h ? (h.innerText || '').trim() : '' }; }"""
+        )
         conteudo = page.evaluate(
             "(tid) => { const el = document.getElementById('tab-content-' + tid); return el ? el.innerText.slice(0, 400) : ''; }",
             tab_id,
         )
         caso = {
             "caso": f"tab_{tab}", "perfil": perfil, "user": user, "server": servidor,
-            "tab_id": tab_id, "load_ms": load_ms, "dom_nodes": _dom_nodes(page),
+            "tab_id": tab_id, "load_ms": load_ms, "dom_nodes": _dom_nodes(page), "contexto": ctx,
             "pageerrors": col.pageerrors, "console_errors": col.erros_de_consola(),
             "http5xx": col.http5xx, "warn": warn, "amostra": conteudo,
         }
@@ -261,3 +275,7 @@ class TestSmokeModulos:
         assert not caso["console_errors"], f"[{perfil}/{tab}] erros de consola:\n  - " + "\n  - ".join(caso["console_errors"][:10])
         assert tab_id and page.evaluate("(tid) => !!document.getElementById('tab-content-' + tid)", tab_id), \
             f"[{perfil}/{tab}] a aba nao foi criada (activeTabId={tab_id!r}; showTab sem servidor seleccionado?)"
+        assert ctx["sid"] == servidor["server_id"] and ctx["tipo"] == tab, \
+            f"[{perfil}/{tab}] contexto errado: aba activa e' {ctx['tipo']!r} de {ctx['sid']!r}, esperado {tab!r} de {servidor['server_id']!r}"
+        assert servidor["name"].split("\\")[0].lower() in ctx["header"].lower(), \
+            f"[{perfil}/{tab}] cabecalho nao mostra o servidor escolhido: {ctx['header']!r} vs {servidor['name']!r}"

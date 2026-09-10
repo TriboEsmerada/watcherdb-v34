@@ -51,7 +51,7 @@ $head = (git rev-parse --short HEAD).Trim()
 
 # ---- 1) Council: runner Playwright ----
 $junit = Join-Path $council 'junit.xml'
-& py -m pytest tests/e2e/test_smoke_modules_e2e.py -m e2e --no-cov -p no:cacheprovider -q `
+& py -m pytest tests/e2e/test_smoke_modules_e2e.py tests/e2e/test_semantic_e2e.py -m e2e --no-cov -p no:cacheprovider -q `
     --screenshot only-on-failure --tracing retain-on-failure --output (Join-Path $council 'playwright') `
     --junitxml $junit 2>&1 | Tee-Object -FilePath (Join-Path $council 'pytest.log') | Select-Object -Last 15
 $councilExit = $LASTEXITCODE

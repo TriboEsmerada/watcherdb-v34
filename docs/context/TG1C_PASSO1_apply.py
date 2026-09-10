@@ -1,4 +1,75 @@
-"""TESTGRAPETE TG-1c - asserções semânticas do dashboard de frota (council: afirma).
+"""TestGrapete TG-1c - PASSO 1: asserções semânticas (o que o TestSprite mede e o smoke não).
+
+Origem: TestSprite do owner (10/09) com TC-003 "servidor e bases respeitam o contexto" FAILED,
+TC-006 desktop, TC-007..014 grupos de KPI. O smoke prova que o portal não rebenta; isto prova que
+mostra a coisa certa, com invariantes baratos e sem crawler.
+
+O que escreve:
+  1. tests/e2e/test_smoke_modules_e2e.py: +1 asserção por aba (TC-003): a aba activa pertence ao
+     servidor escolhido e o cabeçalho #serverName mostra o nome dele.
+  2. tests/e2e/test_semantic_e2e.py (novo):
+       - TestGruposKPI: cada grupo do dashboard tem cartões e cada cartão tem valor (número, K ou N/D),
+         nunca vazio/undefined/NaN (TC-007..014).
+       - TestDrilldown: os N primeiros cartões (WATCHERDB_QA_DRILL_MAX, default 6) abrem a modal
+         #instancesModal; cartão > 0 => modal com conteúdo; valor e linhas gravados no JSON (FE-E2E-02
+         em modo registo: a igualdade exacta depende do KPI, humanos e ratchet comparam).
+       - TestViewport: dashboard e uma aba a 1093x614 (1366x768 @125%, persona) sem scroll horizontal (TC-006).
+  3. scripts/qa/nightly_testgrapete.ps1: corre também o ficheiro novo.
+  4. PLANO: linha TG-1c.
+
+Uso (raiz do repo):  py docs/context/TG1C_PASSO1_apply.py
+Depois:              pwsh docs/context/TG1C_PASSO2_commit.ps1
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+SMOKE = ROOT / "tests" / "e2e" / "test_smoke_modules_e2e.py"
+SEM = ROOT / "tests" / "e2e" / "test_semantic_e2e.py"
+NIGHTLY = ROOT / "scripts" / "qa" / "nightly_testgrapete.ps1"
+PLANO = ROOT / "docs" / "context" / "PLANO_TESTGRAPETE_2026-09-09.md"
+MARK = "TESTGRAPETE TG-1c"
+
+
+def rep(text: str, old: str, new: str, label: str) -> str:
+    n = text.count(old)
+    if n != 1:
+        sys.exit(f"ABORT [{label}]: esperava 1, encontrei {n}. Nada escrito.")
+    return text.replace(old, new)
+
+
+# ---------- 1. smoke: contexto da aba (TC-003) ----------
+S_OLD = '''        load_ms = int((time.time() - t0) * 1000)
+        conteudo = page.evaluate(
+'''
+S_NEW = '''        load_ms = int((time.time() - t0) * 1000)
+        # TESTGRAPETE TG-1c (TC-003 do TestSprite): a aba activa e' DESTE servidor e o cabecalho diz o nome dele.
+        ctx = page.evaluate(
+            """() => { const t = openTabs.get(activeTabId); const h = document.getElementById('serverName');
+                       return { sid: t && t.server ? t.server.server_id : null, tipo: t ? t.tabType : null,
+                                header: h ? (h.innerText || '').trim() : '' }; }"""
+        )
+        conteudo = page.evaluate(
+'''
+S_OLD2 = '''            "tab_id": tab_id, "load_ms": load_ms, "dom_nodes": _dom_nodes(page),
+'''
+S_NEW2 = '''            "tab_id": tab_id, "load_ms": load_ms, "dom_nodes": _dom_nodes(page), "contexto": ctx,
+'''
+S_OLD3 = '''        assert tab_id and page.evaluate("(tid) => !!document.getElementById('tab-content-' + tid)", tab_id), \\
+            f"[{perfil}/{tab}] a aba nao foi criada (activeTabId={tab_id!r}; showTab sem servidor seleccionado?)"
+'''
+S_NEW3 = '''        assert tab_id and page.evaluate("(tid) => !!document.getElementById('tab-content-' + tid)", tab_id), \\
+            f"[{perfil}/{tab}] a aba nao foi criada (activeTabId={tab_id!r}; showTab sem servidor seleccionado?)"
+        assert ctx["sid"] == servidor["server_id"] and ctx["tipo"] == tab, \\
+            f"[{perfil}/{tab}] contexto errado: aba activa e' {ctx['tipo']!r} de {ctx['sid']!r}, esperado {tab!r} de {servidor['server_id']!r}"
+        assert servidor["name"].split("\\\\")[0].lower() in ctx["header"].lower(), \\
+            f"[{perfil}/{tab}] cabecalho nao mostra o servidor escolhido: {ctx['header']!r} vs {servidor['name']!r}"
+'''
+
+# ---------- 2. ficheiro novo ----------
+SEM_SRC = r'''"""TESTGRAPETE TG-1c - asserções semânticas do dashboard de frota (council: afirma).
 
 Complementa o smoke (que só prova "não rebenta") com o que o TestSprite mede:
   - TestGruposKPI  (TC-007..014): cada grupo tem cartões; cada cartão tem valor legível.
@@ -85,22 +156,13 @@ class TestDrilldown:
         )
         resultados, warn, problemas = [], [], []
         for c in cartoes:
-            # TG-1c PASSO 5: a mesma chamada que o onClick do cartao faz (portal ~34627-34635), sem depender
-            # do DOM, que e' substituido a cada 30 s pelo refresh e fazia o clique real expirar.
             abriu = page.evaluate(
-                """(kpiId) => {
-                    const k = (window.KPI_METADATA || {})[kpiId];
-                    if (!k || typeof showProblematicInstances !== 'function') return false;
-                    let tipo = k.kpiType;
-                    if ((kpiId.includes('-critical') || kpiId.includes('-warning')) &&
-                        !(k.kpiType || '').includes('-critical') && !(k.kpiType || '').includes('-warning')) tipo = kpiId;
-                    if (k.all) showProblematicInstances(tipo, k.modalTitle, true); else showProblematicInstances(tipo, k.modalTitle);
-                    return true;
-                }""",
-                c["kpi"],
+                """(id) => { const h = (window._kpiCardClickHandlers || []).find(x => x.cardId === id);
+                            if (!h) return false; eval(h.onClick); return true; }""",
+                c["cardId"],
             )
             if not abriu:
-                problemas.append(f"{c['kpi']}: sem entrada em KPI_METADATA ou showProblematicInstances ausente")
+                problemas.append(f"{c['kpi']}: sem handler de clique")
                 continue
             t0 = time.time()
             try:
@@ -173,49 +235,46 @@ class TestViewport:
         if medidas.get("header"):
             assert not medidas["header"]["sobrepoe"], \
                 f"[{largura}x{altura}] o nome do servidor sobrepoe a barra de abas (UX-05): {medidas['header']}"
+'''
+
+# ---------- 3. nightly ----------
+N_OLD = "& py -m pytest tests/e2e/test_smoke_modules_e2e.py -m e2e --no-cov -p no:cacheprovider -q `\n"
+N_NEW = "& py -m pytest tests/e2e/test_smoke_modules_e2e.py tests/e2e/test_semantic_e2e.py -m e2e --no-cov -p no:cacheprovider -q `\n"
+
+# ---------- 4. plano ----------
+P_OLD = "| TG-2 | Job noturno:"
+P_NEW = ("| TG-1c | Asserções semânticas (o que o TestSprite mede): contexto da aba no smoke (TC-003), grupos de KPI com valor "
+         "(TC-007..014), drill-down dos cartões de topo com números gravados (FE-E2E-02), viewport 1093x614 sem scroll "
+         "horizontal nem sobreposição do cabeçalho (TC-006/UX-05). tests/e2e/test_semantic_e2e.py | meio dia | "
+         "Corrida na 8434 com viewer e dba verde; divergência com o TestSprite explicada |\n"
+         "| TG-2 | Job noturno:")
 
 
-# FIX DB-FILTER 2026-09-10 (TC-003 do TestSprite, reproduzido em casa): o filtro de bases do Overview.
-@pytest.mark.parametrize("perfil", [_perfil_param("viewer")])
-class TestFiltroBases:
-    def test_filtro_por_nome_filtra_e_mantem_o_foco(self, page, base_url, perfil):
-        col = _smk.Colector(page, base_url)
-        user = _smk._autentica(page, base_url, perfil)
-        servidor = _smk._escolhe_servidor(page)
-        if not servidor:
-            pytest.skip("sem servidor de test/quality no inventario")
-        page.evaluate("(sid) => { const s = allServers.find(x => x.server_id === sid); selectServer(s); }", servidor["server_id"])
-        page.wait_for_selector("#db-filter-input", timeout=90000)
-        page.wait_for_function("() => document.querySelectorAll('#db-table-body tr').length > 0", timeout=90000)
-        total = page.evaluate("() => document.querySelectorAll('#db-table-body tr').length")
-        primeiro = page.evaluate("() => (document.querySelector('#db-table-body tr td') || {}).innerText || ''").strip()
-        sub = primeiro[:3]
-        assert sub, "primeira linha sem nome de base"
-        page.fill("#db-filter-input", sub)
-        page.wait_for_timeout(300)
-        depois = page.evaluate(
-            """(sub) => { const rows = Array.from(document.querySelectorAll('#db-table-body tr'));
-                          const nomes = rows.map(r => (r.querySelector('td') || {}).innerText || '');
-                          return { n: rows.length, todos: nomes.every(x => x.toLowerCase().includes(sub.toLowerCase())),
-                                   contagem: (document.getElementById('db-count') || {}).textContent || '',
-                                   foco: document.activeElement && document.activeElement.id === 'db-filter-input' }; }""",
-            sub,
-        )
-        page.fill("#db-filter-input", "zzz__nao_existe__zzz")
-        page.wait_for_timeout(300)
-        vazio = page.evaluate(
-            """() => { const rows = document.querySelectorAll('#db-table-body tr');
-                       return { n: rows.length, texto: rows.length ? rows[0].innerText.trim() : '' }; }"""
-        )
-        _smk._grava({
-            "caso": "overview_filtro_bases", "perfil": perfil, "user": user, "server": servidor,
-            "total": total, "sub": sub, "filtrado": depois, "vazio": vazio,
-            "pageerrors": col.pageerrors, "console_errors": col.erros_de_consola(), "http5xx": col.http5xx,
-            "warn": [], "dom_nodes": _smk._dom_nodes(page), "load_ms": 0,
-        })
-        assert 0 < depois["n"] <= total and depois["todos"], \
-            f"filtro '{sub}' nao filtrou: {depois['n']}/{total} linhas, todos_contem={depois['todos']}"
-        assert depois["contagem"].startswith(str(depois["n"]) + "/"), f"contagem nao acompanha: {depois['contagem']!r}"
-        assert depois["foco"], "o input perdeu o foco ao filtrar (seccao recriada?)"
-        assert vazio["n"] == 1 and vazio["texto"], f"sem estado vazio: {vazio}"
-        assert not col.pageerrors and not col.http5xx
+def main() -> None:
+    s = SMOKE.read_text(encoding="utf-8")
+    if MARK in s:
+        print("Ja aplicado: smoke")
+    else:
+        s = rep(s, S_OLD, S_NEW, "smoke ctx"); s = rep(s, S_OLD2, S_NEW2, "smoke json"); s = rep(s, S_OLD3, S_NEW3, "smoke assert")
+        compile(s, str(SMOKE), "exec")
+        SMOKE.write_text(s, encoding="utf-8", newline="\n"); print("OK: tests/e2e/test_smoke_modules_e2e.py (+contexto)")
+    if SEM.exists():
+        if MARK not in SEM.read_text(encoding="utf-8", errors="replace"):
+            sys.exit("ABORT: test_semantic_e2e.py existe sem marcador."); print("Ja existe: test_semantic_e2e.py")
+    else:
+        compile(SEM_SRC, str(SEM), "exec"); SEM.write_text(SEM_SRC, encoding="utf-8", newline="\n"); print("OK: tests/e2e/test_semantic_e2e.py")
+    n = NIGHTLY.read_text(encoding="utf-8")
+    if "test_semantic_e2e.py" in n:
+        print("Ja aplicado: nightly")
+    else:
+        NIGHTLY.write_text(rep(n, N_OLD, N_NEW, "nightly"), encoding="utf-8", newline="\n"); print("OK: nightly")
+    p = PLANO.read_text(encoding="utf-8")
+    if "| TG-1c |" in p:
+        print("Ja aplicado: plano")
+    else:
+        PLANO.write_text(rep(p, P_OLD, P_NEW, "plano"), encoding="utf-8", newline="\n"); print("OK: plano")
+    print("Proximo: pwsh docs/context/TG1C_PASSO2_commit.ps1")
+
+
+if __name__ == "__main__":
+    main()
