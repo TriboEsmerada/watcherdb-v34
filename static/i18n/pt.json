@@ -1122,6 +1122,7 @@
     "dbs_problem": "DBs com Problema",
     "error_loading_overview": "Erro ao carregar overview",
     "filter_databases": "Filtrar databases...",
+    "no_databases_found": "Nenhuma base de dados encontrada",
     "free_memory": "Livre: {0}",
     "generate_report": "Gerar relatório de Overview",
     "instance_databases": "Databases da Instância",

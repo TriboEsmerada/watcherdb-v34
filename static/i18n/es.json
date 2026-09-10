@@ -1122,6 +1122,7 @@
     "dbs_problem": "DBs con Problemas",
     "error_loading_overview": "Error al cargar vista general",
     "filter_databases": "Filtrar bases de datos...",
+    "no_databases_found": "No se encontraron bases de datos",
     "free_memory": "Libre: {0}",
     "generate_report": "Generar informe de Vista General",
     "instance_databases": "Bases de Datos de la Instancia",

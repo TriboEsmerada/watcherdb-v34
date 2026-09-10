@@ -1122,6 +1122,7 @@
     "dbs_problem": "DBs with Issues",
     "error_loading_overview": "Error loading overview",
     "filter_databases": "Filter databases...",
+    "no_databases_found": "No databases found",
     "free_memory": "Free: {0}",
     "generate_report": "Generate Overview report",
     "instance_databases": "Instance Databases",
