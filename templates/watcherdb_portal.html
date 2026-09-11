@@ -15429,7 +15429,8 @@
                             debugLog(`? ${label}: Resposta OK recebida`, 'info');
                             return data;
                         } catch (error) {
-                            debugLog(`[processResponse] ${label} - ERRO: ${error}`, 'error');
+                            // PONTO 3 (11/09): pedido cancelado pela troca de aba nao e' erro (ruido no TestSukita e para quem depura)
+                            debugLog(`[processResponse] ${label} - ERRO: ${error}`, (error && error.name === 'AbortError') ? 'info' : 'error');
                             const errorMsg = error?.message || 'Erro desconhecido';
                             if (errorMsg.includes('timeout')) {
                                 debugLog(`[DBG] ${label}: Timeout detectado, usando fallback`, 'warning');

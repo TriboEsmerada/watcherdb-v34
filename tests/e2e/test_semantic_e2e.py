@@ -161,7 +161,9 @@ class TestViewport:
                 """() => { const h = document.getElementById('serverName'); const nav = document.querySelector('.nav-menu');
                            if (!h || !nav) return null; const a = h.getBoundingClientRect(), b = nav.getBoundingClientRect();
                            const sobrepoe = a.bottom > b.top && a.top < b.bottom && a.right > b.left && a.left < b.right;
-                           return { sobrepoe, h: [a.left, a.top, a.right, a.bottom], nav: [b.left, b.top, b.right, b.bottom] }; }"""
+                           // PONTO 3 (11/09): UX-05 medido = a barra de abas e' CORTADA (nav.right > innerWidth), nao sobreposta
+                           const cabe = b.right <= window.innerWidth + 1;
+                           return { sobrepoe, cabe, innerWidth: window.innerWidth, h: [a.left, a.top, a.right, a.bottom], nav: [b.left, b.top, b.right, b.bottom] }; }"""
             )
         _smk._grava({
             "caso": f"viewport_{largura}x{altura}", "perfil": perfil, "user": user, "medidas": medidas,
@@ -173,6 +175,8 @@ class TestViewport:
         if medidas.get("header"):
             assert not medidas["header"]["sobrepoe"], \
                 f"[{largura}x{altura}] o nome do servidor sobrepoe a barra de abas (UX-05): {medidas['header']}"
+            assert medidas["header"]["cabe"], \
+                f"[{largura}x{altura}] a barra de abas nao cabe na janela (UX-05, corte): nav.right={medidas['header']['nav'][2]} > innerWidth={medidas['header']['innerWidth']}"
 
 
 # FIX DB-FILTER 2026-09-10 (TC-003 do TestSprite, reproduzido em casa): o filtro de bases do Overview.
