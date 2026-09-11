@@ -1646,6 +1646,7 @@
     "tlog_critical": "Transaction Log Crítico"
   },
   "ui": {
+    "expand_collapse_modal": "Expandir/Reducir modal",
     "actions": "Acciones",
     "all": "Todos",
     "clear": "Limpiar",
@@ -3007,6 +3008,10 @@
     "no_ags": "Sin AGs configurados",
     "select_instance_for_program": "Seleccione una instancia en Canal para ver {program}",
     "error_http": "Error HTTP {code}",
+    "drag_to_move": "Arrastre para mover",
+    "off_tip": "Cerrar LIVE y detener el sondeo",
+    "nav_aria": "Abrir monitorización en tiempo real (LIVE)",
+    "nav_tip": "LIVE — Monitorización en tiempo real",
     "selected_group": "Seleccionada",
     "adhoc_plan": "(ad hoc)",
     "btn_reduce": "Reducir",

@@ -1646,6 +1646,7 @@
     "tlog_critical": "Transaction Log Critical"
   },
   "ui": {
+    "expand_collapse_modal": "Expand/Collapse modal",
     "actions": "Actions",
     "all": "All",
     "clear": "Clear",
@@ -3007,6 +3008,10 @@
     "no_ags": "No AGs configured",
     "select_instance_for_program": "Select an instance in Channel to view {program}",
     "error_http": "HTTP error {code}",
+    "drag_to_move": "Drag to move",
+    "off_tip": "Close LIVE and stop polling",
+    "nav_aria": "Open real-time monitoring (LIVE)",
+    "nav_tip": "LIVE — Real-time monitoring",
     "selected_group": "Selected",
     "adhoc_plan": "(ad hoc)",
     "btn_reduce": "Reduce",

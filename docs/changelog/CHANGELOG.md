@@ -9,6 +9,11 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **LIVE F9b: nomes de instância completos no Fleet dashboard e os tooltips que faltavam** — as células
+  de 70–75 px cortavam "SQLMDMQLT…" e o nome já vinha sem o sufixo da instância (duas instâncias no mesmo
+  host eram indistinguíveis); passa a id completo em 130 px. Botão LIVE da navbar, "Arraste para mover",
+  OFF e "Expandir/Reduzir modal" (diagnóstico) ganham chaves em pt-PT, en e es. [tier: Std]
+
 - **LIVE F9: cinco acertos de UX do teste completo do owner (11/09)** — o filtro de instância deixava a
   seleccionada fora da lista com o polling a continuar nela (passa a aparecer sempre, em optgroup
   "Selecionada"); a barra vermelha de dirty pages usava o buffer do próprio banco como 100% e gritava um
