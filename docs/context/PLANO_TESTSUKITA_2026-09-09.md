@@ -71,3 +71,19 @@ correm sem argumentos; lista em scripts/qa/runtime/NIGHTLY.txt.
 - docs/context/TG1_PASSO1_apply.py: escreve o teste, o script noturno e o .gitignore das evidências pesadas.
 - docs/context/TG1_PASSO2_commit.ps1: corrida manual de validação contra 8434 + commit.
 - Evidências: docs/qa/externo/AAAA-MM-DD/council/ (JSON por caso, junit, playwright/ com screenshots e traces só em falha) e docs/qa/externo/AAAA-MM-DD/externo/ (saída dos qa_ext_*.py).
+
+## V1 (11/09): paridade com o TestSprite e o que ele não faz
+
+| Capacidade | TestSprite | TestSukita v1 |
+|---|---|---|
+| Explorar interações | sim, na cloud | tests/e2e/test_interactions_e2e.py: 6 cliques + 2 campos + 1 select por aba e perfil, controlos destrutivos excluídos, modais fechadas |
+| Testes de API | sim | tests/e2e/test_api_smoke_e2e.py: GET do /openapi.json por perfil; nunca 5xx; viewer sem campos sensíveis nem 200 em /admin |
+| Bundle de falhas | screenshot + DOM + hipótese | screenshot + trace + DOM (conftest) + janela do log do serviço na mesma corrida |
+| Hipótese de causa | sim | scripts/qa/testsukita_ratchet.py: hipótese por assinatura, declarada como hipótese |
+| Regressão persistente | sim | ratchet vs corrida anterior: regressões, novas, resolvidas, persistentes, endpoints que mudaram; painel mostra |
+| Unidade cartão-modal | não | Always On: cartão = instâncias distintas na modal, todas as noites |
+| Duas metades independentes | não | council afirma, qa-externo confere, divergência = achado |
+| Dentro da rede do cliente | não | tudo local, evidências fora do git |
+| Perfis | 1 conta | viewer, dba, admin (quando existir qa_admin) |
+
+Runtime estimado por noite: 35 a 45 minutos (limite da tarefa: 2 horas).

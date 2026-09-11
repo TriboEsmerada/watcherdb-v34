@@ -81,7 +81,14 @@ def carrega_corrida(d: Path) -> dict:
         estado = "a"
     else:
         estado = "g"
-    return {"dia": d.name, "dir": d, "casos": casos, "ext": ext, "head": head, "base": base,
+    ratchet = None
+    rj = d / "council" / "RATCHET.json"
+    if rj.exists():
+        try:
+            ratchet = json.loads(rj.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            ratchet = None
+    return {"dia": d.name, "dir": d, "casos": casos, "ext": ext, "head": head, "base": base, "ratchet": ratchet,
             "c_err": c_err, "c_warn": c_warn, "e_err": e_err, "estado": estado}
 
 
@@ -150,6 +157,42 @@ def timeline(runs: list[dict], base: Path) -> str:
     return "<div class=tl>" + "".join(itens) + "</div>"
 
 
+def seccao_ratchet(run: dict) -> str:
+    """TESTSUKITA V1: regressoes/novas/resolvidas vs corrida anterior + hipoteses + API que mudou + interaccoes."""
+    r = run.get("ratchet")
+    inter = [c for c in run["casos"] if str(c.get("caso", "")).startswith("inter_")]
+    api = [c for c in run["casos"] if c.get("caso") == "api_smoke"]
+    partes = []
+    if r:
+        res = r.get("resumo", {})
+        partes.append(f"<div class=meta>vs {esc(r.get('anterior') or 'sem anterior')}: {res.get('regressoes', 0)} regressoes · {res.get('novas', 0)} novas · "
+                      f"{res.get('resolvidas', 0)} resolvidas · {res.get('persistentes', 0)} persistentes · {res.get('api_mudou', 0)} endpoints mudaram</div>")
+        for sec, chip in (("regressoes", "err"), ("novas", "err"), ("persistentes", "warn")):
+            for i in r.get(sec, []):
+                partes.append(f"<li><span class='chip {chip}'>{sec[:-1] if sec.endswith('s') else sec}</span> <b>{esc(i['caso'])}</b> — {esc(i['assinatura'][:140])}"
+                              f"<br><span class=meta>hipotese: {esc(i['hipotese'])}</span></li>")
+        for i in r.get("resolvidas", []):
+            partes.append(f"<li><span class='chip ok'>resolvida</span> {esc(i['caso'])}</li>")
+        for i in r.get("api_mudou", []):
+            partes.append(f"<li><span class='chip warn'>api</span> {esc(i['endpoint'])}: {esc(i['antes'])} → {esc(i['hoje'])}</li>")
+    cob = ""
+    if inter:
+        toc = sum(len(c.get("tocados", [])) for c in inter); tot = sum(int(c.get("total_controlos") or 0) for c in inter)
+        cob += f"<div class=meta>interaccoes: {len(inter)} abas exploradas, {toc} controlos tocados de {tot} visiveis, {sum(int(c.get('modais_fechadas') or 0) for c in inter)} modais abertas e fechadas</div>"
+    if api:
+        for c in api:
+            eps = c.get("endpoints", [])
+            por = {}
+            for e in eps:
+                por[e["status"]] = por.get(e["status"], 0) + 1
+            cob += f"<div class=meta>api {esc(c.get('perfil'))}: {len(eps)} GET testados de {esc(c.get('total_openapi_get'))} no OpenAPI · status " + ", ".join(f"{k}×{v}" for k, v in sorted(por.items(), key=lambda kv: str(kv[0]))) + "</div>"
+    if not partes and not cob:
+        return ""
+    lista = "<ul>" + "".join(p for p in partes if p.startswith("<li>")) + "</ul>" if any(p.startswith("<li>") for p in partes) else "<p class=meta>sem regressoes nem casos novos com erro</p>"
+    cab = "".join(p for p in partes if not p.startswith("<li>"))
+    return f"<h2>Ratchet: o que mudou desde a corrida anterior</h2><div class='card div'>{cab}{lista}{cob}</div>"
+
+
 def pagina(run: dict, runs: list[dict], base: Path, titulo: str) -> str:
     divs = divergencias(run)
     return f"""<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>{esc(titulo)}</title><style>{CSS}</style></head><body><div class=wrap>
@@ -160,6 +203,7 @@ def pagina(run: dict, runs: list[dict], base: Path, titulo: str) -> str:
 <div class=card><h3>Council afirma</h3>{tabela_council(run, base)}</div>
 <div class=card><h3>QA-externo confere</h3>{tabela_externo(run, base)}</div>
 </div>
+{seccao_ratchet(run)}
 <h2>Divergencias e achados candidatos</h2>
 <div class='card div'>{"<ul>" + "".join(f"<li>{esc(x)}</li>" for x in divs) + "</ul>" if divs else "<p class=meta>nenhuma: as duas metades concordam</p>"}</div>
 <p class=meta>Gerado por scripts/qa/testsukita_board.py. Evidencias em {esc(rel(run['dir'], base))}/ (screenshots e traces so' em falha, em council/playwright/).</p>

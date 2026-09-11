@@ -77,12 +77,29 @@ class TestDrilldown:
         col = _smk.Colector(page, base_url)
         user = _smk._autentica(page, base_url, perfil)
         _espera_dashboard(page)
+        # TESTSUKITA V1: os N primeiros cartoes + o Always On sempre (a unidade dele e' provada abaixo).
         cartoes = page.evaluate(
-            """(n) => Array.from(document.querySelectorAll('.kpi-category-group .kpi-card')).slice(0, n).map(c => ({
-                 cardId: c.id, kpi: c.dataset.kpiId,
-                 valor: (c.querySelector('.kpi-value') ? c.querySelector('.kpi-value').innerText : '').trim() }))""",
+            """(n) => { const todos = Array.from(document.querySelectorAll('.kpi-category-group .kpi-card'));
+                 const sel = todos.slice(0, n); const ao = todos.find(c => c.dataset.kpiId === 'always-on-unhealthy');
+                 if (ao && !sel.includes(ao)) sel.push(ao);
+                 return sel.map(c => ({ cardId: c.id, kpi: c.dataset.kpiId,
+                   valor: (c.querySelector('.kpi-value') ? c.querySelector('.kpi-value').innerText : '').trim() })); }""",
             DRILL_MAX,
         )
+        # V1 PASSO 3: o dashboard re-renderiza a cada 30 s; uma leitura vazia entre a espera e a leitura
+        # nao e' "sem cartoes" (1.a corrida do v1, viewer) -> ate' 3 leituras.
+        for _tentativa in range(3):
+            if cartoes:
+                break
+            page.wait_for_timeout(700)
+            cartoes = page.evaluate(
+                """(n) => { const todos = Array.from(document.querySelectorAll('.kpi-category-group .kpi-card'));
+                     const sel = todos.slice(0, n); const ao = todos.find(c => c.dataset.kpiId === 'always-on-unhealthy');
+                     if (ao && !sel.includes(ao)) sel.push(ao);
+                     return sel.map(c => ({ cardId: c.id, kpi: c.dataset.kpiId,
+                       valor: (c.querySelector('.kpi-value') ? c.querySelector('.kpi-value').innerText : '').trim() })); }""",
+                DRILL_MAX,
+            )
         resultados, warn, problemas = [], [], []
         for c in cartoes:
             # TG-1c PASSO 5: a mesma chamada que o onClick do cartao faz (portal ~34627-34635), sem depender
@@ -117,8 +134,11 @@ class TestDrilldown:
                     pytest.fail(f"[{perfil}] erro do runner na modal de {c['kpi']}: {type(exc).__name__}: {exc}")
             info = page.evaluate(
                 """() => { const b = document.getElementById('instancesModalBody'); const m = document.getElementById('instancesModal');
+                           const inst = b ? Array.from(b.querySelectorAll('[onclick*="selectInstanceFromModal"]')).map(e => {
+                               const mm = (e.getAttribute('onclick') || '').match(/selectInstanceFromModal\\('([^']+)'/); return mm ? mm[1] : null; }).filter(Boolean) : [];
                            return { linhas: b ? b.querySelectorAll('tbody tr, tr[data-row], .modal-row').length : -1,
                                     texto: b ? (b.innerText || '').trim().length : -1,
+                                    itens: inst.length, instancias_distintas: new Set(inst).size,
                                     visivel: !!(m && getComputedStyle(m).display !== 'none') }; }"""
             )
             numero = re.match(r"^(\d+)", (c["valor"] or "").replace(",", ""))
@@ -126,7 +146,11 @@ class TestDrilldown:
             if c["valor"].upper().endswith("K") and numero:
                 valor = int(float(c["valor"][:-1].replace(",", ".")) * 1000)
             resultados.append({"kpi": c["kpi"], "valor_cartao": c["valor"], "valor": valor,
-                               "modal_linhas": info["linhas"], "modal_texto": info["texto"], "ms": int((time.time() - t0) * 1000)})
+                               "modal_linhas": info["linhas"], "modal_itens": info["itens"], "modal_instancias": info["instancias_distintas"],
+                               "modal_texto": info["texto"], "ms": int((time.time() - t0) * 1000)})
+            # TESTSUKITA V1: unidade do Always On provada (cartao = instancias distintas na modal; regra unica ce0db42)
+            if c["kpi"] == "always-on-unhealthy" and valor is not None and info["visivel"] and info["itens"] > 0 and valor != info["instancias_distintas"]:
+                problemas.append(f"always-on-unhealthy: cartao diz {valor} mas a modal tem {info['instancias_distintas']} instancias distintas ({info['itens']} itens)")
             if not info["visivel"]:
                 problemas.append(f"{c['kpi']}: modal nao ficou visivel")
             elif valor and valor > 0 and info["linhas"] <= 0 and info["texto"] < 50:

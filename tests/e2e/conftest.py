@@ -53,3 +53,28 @@ def browser_context_args(browser_context_args):
         "ignore_https_errors": True,
         "viewport": {"width": 1920, "height": 1080},
     }
+
+
+# TESTSUKITA V1: snapshot do DOM em falha (alem de screenshot e trace do pytest-playwright).
+import os as _os
+import re as _re
+from pathlib import Path as _Path
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    if rep.when != "call" or not rep.failed:
+        return
+    page = item.funcargs.get("page") if hasattr(item, "funcargs") else None
+    bundle = _os.getenv("WATCHERDB_QA_BUNDLE")
+    if page is None or not bundle:
+        return
+    try:
+        d = _Path(bundle) / "dom"
+        d.mkdir(parents=True, exist_ok=True)
+        nome = _re.sub(r"[^A-Za-z0-9_.-]+", "_", item.nodeid)[-120:]
+        (d / f"{nome}.html").write_text(page.content(), encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass

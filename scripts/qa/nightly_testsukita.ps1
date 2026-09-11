@@ -48,10 +48,13 @@ $env:WATCHERDB_QA_BUNDLE = $council
 
 $inicio = Get-Date
 $head = (git rev-parse --short HEAD).Trim()
+# TESTSUKITA V1: janela do log do servico desta corrida (offset no inicio, delta no fim)
+$svcLog = Join-Path $repo 'logs\service_stderr.log'
+$svcOffset = if (Test-Path $svcLog) { (Get-Item $svcLog).Length } else { 0 }
 
 # ---- 1) Council: runner Playwright ----
 $junit = Join-Path $council 'junit.xml'
-& py -m pytest tests/e2e/test_smoke_modules_e2e.py tests/e2e/test_semantic_e2e.py -m e2e --no-cov -p no:cacheprovider -q `
+& py -m pytest tests/e2e/test_smoke_modules_e2e.py tests/e2e/test_semantic_e2e.py tests/e2e/test_interactions_e2e.py tests/e2e/test_api_smoke_e2e.py -m e2e --no-cov -p no:cacheprovider -q `
     --screenshot only-on-failure --tracing retain-on-failure --output (Join-Path $council 'playwright') `
     --junitxml $junit 2>&1 | Tee-Object -FilePath (Join-Path $council 'pytest.log') | Select-Object -Last 15
 $councilExit = $LASTEXITCODE
@@ -113,6 +116,17 @@ if (-not (Test-Path $nightly)) {
 Add-Content -Path $nightly -Value $logLine -Encoding utf8
 # ---- 4) Painel (TG-1b): resultados do externo em JSON + index.html/board.html ----
 $extResults | ConvertTo-Json -AsArray | Set-Content -Path (Join-Path $externo 'results.json') -Encoding utf8
+# TESTSUKITA V1: janela do log do servico + ratchet (regressoes e hipoteses) antes do painel
+try {
+    if (Test-Path $svcLog) {
+        $fs = [IO.FileStream]::new($svcLog, 'Open', 'Read', 'ReadWrite')
+        $len = $fs.Length; $off = if ($len -ge $svcOffset) { $svcOffset } else { 0 }
+        $fs.Seek($off, 'Begin') | Out-Null
+        $buf = New-Object byte[] ($len - $off); $fs.Read($buf, 0, $buf.Length) | Out-Null; $fs.Close()
+        [IO.File]::WriteAllBytes((Join-Path $council 'service_log_window.log'), $buf)
+    }
+} catch { Write-Host "janela do log nao copiada: $($_.Exception.Message)" }
+if (Test-Path scripts/qa/testsukita_ratchet.py) { & py scripts/qa/testsukita_ratchet.py 2>&1 | Select-Object -Last 2 }
 if (Test-Path scripts/qa/testsukita_board.py) { & py scripts/qa/testsukita_board.py 2>&1 | Select-Object -Last 2 }
 
 Write-Host $logLine
