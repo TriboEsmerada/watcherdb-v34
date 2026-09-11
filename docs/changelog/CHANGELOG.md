@@ -9,6 +9,16 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Always On: drill "Acompanhar resume"** (GO do owner 11/09; consenso sql-deep-reviewer + frontend +
+  v34). Nas bases de um AG suspensas, com filas altas ou fora de SYNCHRONIZED/SYNCHRONIZING aparece
+  o botão "Acompanhar", nas duas tabelas por base do separador Always On. Abre um modal que amostra a
+  DMV na primária a cada 10 s (endpoint read-only novo `GET /api/queries/alwayson-resume-sample`,
+  re-target automático à primária, fallback à secundária só se o redo vier nulo) e calcula no browser
+  a taxa real por declive, a estimativa de tempo, o progresso desde a fila inicial, a estagnação
+  (3 min sem descer) e a conclusão por modo (síncrono: SYNCHRONIZED; assíncrono: filas drenadas em
+  3 amostras). Corrige de caminho o limiar das filas na tabela do Always On: comparava KB com 1000 e
+  chamava-lhe "1 GB" — passa a 50 MB. Sem DDL, sem collector, sem Chart.js. [tier: Std]
+
 - **Lote F6a (BUG-003): a modal "Análise Preditiva de Crescimento" segue o idioma** (owner 09/09: "ainda
   continua em português com o inglês seleccionado"). Título, textos de carregamento, ecrãs "Sem Dados
   Históricos", "Script Não Encontrado", erro e pop-up bloqueado, e o botão "Fechar" ganham chaves

@@ -26,6 +26,7 @@ from api.routers.queries.tempdb import router as tempdb_router
 from api.routers.queries.plan_analysis import router as plan_analysis_router  # 2026-08-17 layout Diagnostico
 from api.routers.queries.mirroring_diagnosis import router as mirroring_diagnosis_router  # 2026-08-17 drill-down mirroring
 from api.routers.queries.tlog_diagnosis import router as tlog_diagnosis_router  # 2026-09-02 drill-down transaction log por base
+from api.routers.queries.alwayson_resume import router as alwayson_resume_router  # 2026-09-11 drill 'Acompanhar resume' Always On
 
 # Main assembled router - same prefix as original
 router = APIRouter(prefix="/api/queries", tags=["SQL Queries"])
@@ -39,6 +40,7 @@ router.include_router(tempdb_router)
 router.include_router(plan_analysis_router)
 router.include_router(mirroring_diagnosis_router)
 router.include_router(tlog_diagnosis_router)
+router.include_router(alwayson_resume_router)
 
 # Re-export helpers for backward compatibility
 from api.routers.queries.helpers import (
