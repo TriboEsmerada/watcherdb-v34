@@ -1033,6 +1033,16 @@
         .nav-btn.active i {
             color: #3b82f6;
         }
+        /* UX-05 (2026-09-11): a 1093 px CSS (1366x768 @125%) a barra de abas terminava em 1196 px e cortava os
+           ultimos botoes. Abaixo de 1200 px: so' icone (o title da' o nome), botoes compactos, nome do servidor
+           trunca. Medido pelo TestSukita (TestViewport) todas as noites. */
+        @media (max-width: 1200px) {
+            .server-header.show { gap: var(--space-sm); }
+            .server-header h2 { max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .nav-btn span { display: none; }
+            .nav-btn { padding: var(--space-xs); min-width: 34px; justify-content: center; }
+            .nav-btn i { font-size: var(--font-sm); }
+        }
         
         /* Tabs Container */
         .tabs-container {
