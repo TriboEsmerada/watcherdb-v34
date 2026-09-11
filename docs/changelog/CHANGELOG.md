@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **LIVE F9: cinco acertos de UX do teste completo do owner (11/09)** — o filtro de instância deixava a
+  seleccionada fora da lista com o polling a continuar nela (passa a aparecer sempre, em optgroup
+  "Selecionada"); a barra vermelha de dirty pages usava o buffer do próprio banco como 100% e gritava um
+  problema inexistente (mesma escala da barra azul); o Plan Cache tinha a coluna DB vazia porque o dbid do
+  texto SQL é nulo em planos ad hoc (dbid dos atributos do plano, "(ad hoc)" quando continua nulo); 19
+  literais em português cru ("PAUSADO", "N queries em execucao", tooltips do cabeçalho e das gauges…) passam a chaves
+  `live.*` em pt-PT, en e es; e reabrir o LIVE lembra o programa e o intervalo, não só a instância. [tier: Std]
+
 - **LIVE: quatro canais por instância voltam a responder e o painel deixa de fingir "tudo limpo"**
   (owner 11/09, teste em 3 instâncias; consenso sql-deep-reviewer + frontend-specialist). `io` e `tlog`
   davam 503 por um `WITH (NOLOCK)` numa função de tabela (erro 319/102 — não era CTE); `tlog` escondia

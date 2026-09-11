@@ -897,13 +897,14 @@ SELECT TOP 20
     qs.total_logical_reads,
     qs.plan_generation_num AS recompiles,
     qs.creation_time AS plan_created,
-    DB_NAME(qt.dbid) AS database_name,
+    COALESCE(DB_NAME(qt.dbid), DB_NAME(CAST(pa.value AS INT))) AS database_name,  -- 2026-09-11 F9: qt.dbid e' NULL em ad hoc/preparados
     SUBSTRING(qt.text, (qs.statement_start_offset/2)+1,
         CASE WHEN qs.statement_end_offset=-1 THEN LEN(qt.text)
              ELSE (qs.statement_end_offset-qs.statement_start_offset)/2+1 END
     ) AS sql_text
 FROM sys.dm_exec_query_stats qs WITH (NOLOCK)
 CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) qt
+OUTER APPLY (SELECT TOP 1 value FROM sys.dm_exec_plan_attributes(qs.plan_handle) WHERE attribute = 'dbid') pa
 ORDER BY qs.total_worker_time DESC;
 """
 
