@@ -49,7 +49,8 @@ TABS = [
 ]
 PERFIS = ("viewer", "dba", "admin")
 
-RUIDO_SEMPRE = ("favicon", "chrome-extension://", "ERR_INTERNET_DISCONNECTED")
+# PASSO 9: "AbortError: Request aborted" = pedido cancelado pela propria troca de aba do runner (contado em "abortados").
+RUIDO_SEMPRE = ("favicon", "chrome-extension://", "ERR_INTERNET_DISCONNECTED", "AbortError: Request aborted")
 TAB_TIMEOUT_MS = int(os.getenv("WATCHERDB_QA_TAB_TIMEOUT_MS", "60000"))
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -112,6 +113,9 @@ class Colector:
     def erros_de_consola(self, extra_ruido=()):
         tolerado = RUIDO_SEMPRE + tuple(extra_ruido)
         return [e for e in self.console if not any(r.lower() in e.lower() for r in tolerado)]
+
+    def abortados(self) -> int:
+        return sum(1 for e in self.console if "AbortError: Request aborted" in e)
 
 
 _LOGIN_FALHOU: dict[str, str] = {}
@@ -209,7 +213,7 @@ class TestSmokeFleet:
         caso = {
             "caso": "fleet_dashboard", "perfil": perfil, "user": user,
             "load_ms": int((time.time() - t0) * 1000), "dom_nodes": _dom_nodes(page),
-            "pageerrors": col.pageerrors, "console_errors": col.erros_de_consola(),
+            "pageerrors": col.pageerrors, "console_errors": col.erros_de_consola(), "abortados": col.abortados(),
             "http5xx": col.http5xx, "warn": [],
         }
         _grava(caso)
@@ -266,7 +270,7 @@ class TestSmokeModulos:
         caso = {
             "caso": f"tab_{tab}", "perfil": perfil, "user": user, "server": servidor,
             "tab_id": tab_id, "load_ms": load_ms, "dom_nodes": _dom_nodes(page), "contexto": ctx,
-            "pageerrors": col.pageerrors, "console_errors": col.erros_de_consola(),
+            "pageerrors": col.pageerrors, "console_errors": col.erros_de_consola(), "abortados": col.abortados(),
             "http5xx": col.http5xx, "warn": warn, "amostra": conteudo,
         }
         _grava(caso)
