@@ -1,4 +1,4 @@
-# TestGrapete: scripts do qa-externo que correm SOZINHOS todas as noites (sem argumentos).
+# TestSukita: scripts do qa-externo que correm SOZINHOS todas as noites (sem argumentos).
 # Dono da lista: qa-externo. Um nome por linha. Linhas com # sao ignoradas.
 # 2026-09-09: os 5 que correram com exit 0 na 1.a corrida; os outros 4 exigem --token-out/--csv/--fake-user.
 qa_ext_a1_login_origin.py

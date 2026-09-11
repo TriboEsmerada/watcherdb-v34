@@ -1,4 +1,4 @@
-"""TESTGRAPETE TG-1 - smoke dos modulos do portal, por perfil (council: afirma).
+"""TESTSUKITA TG-1 - smoke dos modulos do portal, por perfil (council: afirma).
 
 O QUE MEDE (invariantes, nunca valores literais):
   - 0 excepcoes JS por apanhar (pageerror) ao carregar o dashboard e cada aba
@@ -257,7 +257,7 @@ class TestSmokeModulos:
             else:
                 pytest.fail(f"[{perfil}/{tab}] erro do runner ao esperar pela aba: {type(exc).__name__}: {exc}")
         load_ms = int((time.time() - t0) * 1000)
-        # TESTGRAPETE TG-1c (TC-003 do TestSprite): a aba activa e' DESTE servidor e o cabecalho diz o nome dele.
+        # TESTSUKITA TG-1c (TC-003 do TestSprite): a aba activa e' DESTE servidor e o cabecalho diz o nome dele.
         ctx = page.evaluate(
             """() => { const t = openTabs.get(activeTabId); const h = document.getElementById('serverName');
                        return { sid: t && t.server ? t.server.server_id : null, tipo: t ? t.tabType : null,

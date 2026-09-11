@@ -1,8 +1,8 @@
-# TESTGRAPETE TG-1 - corrida noturna: council (afirma) e depois qa-externo (confere).
+# TESTSUKITA TG-1 - corrida noturna: council (afirma) e depois qa-externo (confere).
 # PS7. Corre no host da 8434. Credenciais em .env.qa (fora do git) ou no ambiente.
 #
-# Uso manual:   pwsh scripts/qa/nightly_testgrapete.ps1
-# Agendado:     ver docs/context/PLANO_TESTGRAPETE_2026-09-09.md (TG-2)
+# Uso manual:   pwsh scripts/qa/nightly_testsukita.ps1
+# Agendado:     ver docs/context/PLANO_TESTSUKITA_2026-09-09.md (TG-2)
 #
 # .env.qa (raiz do repo, ignorado pelo git), uma variavel por linha:
 #   WATCHERDB_BASE_URL=https://localhost:8434
@@ -92,7 +92,7 @@ foreach ($c in $cases) {
 }
 $dur = [int]((Get-Date) - $inicio).TotalSeconds
 $linhas = @(
-    "# TestGrapete $dia (HEAD $head, $($env:WATCHERDB_BASE_URL))",
+    "# TestSukita $dia (HEAD $head, $($env:WATCHERDB_BASE_URL))",
     "",
     "| Metade | Resultado |",
     "|---|---|",
@@ -108,12 +108,12 @@ $linhas | Set-Content -Path (Join-Path $bundle 'SUMMARY.md') -Encoding utf8
 $logLine = "| $dia | $head | council exit $councilExit ($(@($cases).Count) casos, $falhas erro, $warns aviso, $saltados saltados) | externo $(@($extResults | Where-Object exit -ne 0).Count)/$($extResults.Count) com erro | $dur s |"
 $nightly = Join-Path $repo 'docs\qa\externo\NIGHTLY_LOG.md'
 if (-not (Test-Path $nightly)) {
-    "# TestGrapete - corridas noturnas`n`n| Dia | HEAD | Council | qa-externo | Duracao |`n|---|---|---|---|---|" | Set-Content $nightly -Encoding utf8
+    "# TestSukita - corridas noturnas`n`n| Dia | HEAD | Council | qa-externo | Duracao |`n|---|---|---|---|---|" | Set-Content $nightly -Encoding utf8
 }
 Add-Content -Path $nightly -Value $logLine -Encoding utf8
 # ---- 4) Painel (TG-1b): resultados do externo em JSON + index.html/board.html ----
 $extResults | ConvertTo-Json -AsArray | Set-Content -Path (Join-Path $externo 'results.json') -Encoding utf8
-if (Test-Path scripts/qa/testgrapete_board.py) { & py scripts/qa/testgrapete_board.py 2>&1 | Select-Object -Last 2 }
+if (Test-Path scripts/qa/testsukita_board.py) { & py scripts/qa/testsukita_board.py 2>&1 | Select-Object -Last 2 }
 
 Write-Host $logLine
 exit $councilExit

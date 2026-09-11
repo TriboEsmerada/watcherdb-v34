@@ -1,4 +1,4 @@
-"""TESTGRAPETE TG-1c - asserções semânticas do dashboard de frota (council: afirma).
+"""TESTSUKITA TG-1c - asserções semânticas do dashboard de frota (council: afirma).
 
 Complementa o smoke (que só prova "não rebenta") com o que o TestSprite mede:
   - TestGruposKPI  (TC-007..014): cada grupo tem cartões; cada cartão tem valor legível.

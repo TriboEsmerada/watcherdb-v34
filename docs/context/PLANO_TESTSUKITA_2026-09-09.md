@@ -1,4 +1,4 @@
-# TestGrapete: plano (2026-09-09)
+# TestSukita: plano (2026-09-09)
 
 Origem: pergunta do owner sobre TestSprite (rejeitado para PRD por soberania;
 avaliação em laboratório fora da TAP fica como trilho separado). Council:
@@ -18,14 +18,14 @@ Duas metades com o mesmo motor:
 
 Lote 0 hotfix do CI (PASSO 3 e 4, ainda por aplicar em 09/09). Os três runs do
 Actions desde 05/09 falharam pela mesma causa (unixodbc + import win32 na
-coleção). Sem CI verde, o TestGrapete herda instabilidade que não é dele.
+coleção). Sem CI verde, o TestSukita herda instabilidade que não é dele.
 
 ## Lotes
 
 | Lote | Conteúdo | Esforço | Critério de saída |
 |---|---|---|---|
-| TG-1 | Runner do council: tests/e2e/test_smoke_modules_e2e.py (fleet + 16 abas x 3 perfis), evidências JSON por caso, screenshot e trace em falha; scripts/qa/nightly_testgrapete.ps1 que corre council e depois externo e escreve SUMMARY.md | meio dia | Corrida manual na 8434 com os 3 perfis: 0 pageerror, bundle escrito em docs/qa/externo/AAAA-MM-DD/ |
-| TG-1b | Painel estático: scripts/qa/testgrapete_board.py lê os bundles e gera docs/qa/externo/index.html (linha do tempo, council vs externo lado a lado, divergências) e board.html por corrida; o job noturno chama-o no fim. Sem servidor, sem dependências, abre por file:// | meio dia | index.html regenerado após cada corrida, divergências listadas |
+| TG-1 | Runner do council: tests/e2e/test_smoke_modules_e2e.py (fleet + 16 abas x 3 perfis), evidências JSON por caso, screenshot e trace em falha; scripts/qa/nightly_testsukita.ps1 que corre council e depois externo e escreve SUMMARY.md | meio dia | Corrida manual na 8434 com os 3 perfis: 0 pageerror, bundle escrito em docs/qa/externo/AAAA-MM-DD/ |
+| TG-1b | Painel estático: scripts/qa/testsukita_board.py lê os bundles e gera docs/qa/externo/index.html (linha do tempo, council vs externo lado a lado, divergências) e board.html por corrida; o job noturno chama-o no fim. Sem servidor, sem dependências, abre por file:// | meio dia | index.html regenerado após cada corrida, divergências listadas |
 | TG-1c | Asserções semânticas (o que o TestSprite mede): contexto da aba no smoke (TC-003), grupos de KPI com valor (TC-007..014), drill-down dos cartões de topo com números gravados (FE-E2E-02), viewport 1093x614 sem scroll horizontal nem sobreposição do cabeçalho (TC-006/UX-05). tests/e2e/test_semantic_e2e.py | meio dia | Corrida na 8434 com viewer e dba verde; divergência com o TestSprite explicada |
 | TG-2 | Job noturno: tarefa agendada no host da 8434 (02:00), credenciais em .env.qa fora do git, linha por corrida em docs/qa/externo/NIGHTLY_LOG.md | 1 hora | 3 noites seguidas com bundle escrito sem intervenção |
 | TG-3 | Ratchet de regressão: invariantes (0 pageerror, 0 erros de consola fora do ruído, 0 respostas 5xx, abas a responder) comparadas com a corrida anterior; falha nova = linha no findings-inbox | meio dia | Primeira regressão real apanhada antes do owner |

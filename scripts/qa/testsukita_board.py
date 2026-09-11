@@ -1,4 +1,4 @@
-"""TESTGRAPETE TG-1b - painel estatico das corridas (council afirma, qa-externo confere).
+"""TESTSUKITA TG-1b - painel estatico das corridas (council afirma, qa-externo confere).
 
 Le docs/qa/externo/<AAAA-MM-DD>/ (council/cases/*.json, externo/results.json,
 externo/*.log, SUMMARY.md) e escreve:
@@ -6,7 +6,7 @@ externo/*.log, SUMMARY.md) e escreve:
   docs/qa/externo/<dia>/board.html      pagina da corrida
 
 Sem servidor, sem dependencias, sem CDN: abre por file://. Um tema so'.
-Uso:  py scripts/qa/testgrapete_board.py [--root docs/qa/externo] [--dias 30]
+Uso:  py scripts/qa/testsukita_board.py [--root docs/qa/externo] [--dias 30]
 """
 from __future__ import annotations
 
@@ -153,7 +153,7 @@ def timeline(runs: list[dict], base: Path) -> str:
 def pagina(run: dict, runs: list[dict], base: Path, titulo: str) -> str:
     divs = divergencias(run)
     return f"""<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>{esc(titulo)}</title><style>{CSS}</style></head><body><div class=wrap>
-<h1>TestGrapete <span class=meta>{esc(run['dia'])}</span></h1>
+<h1>TestSukita <span class=meta>{esc(run['dia'])}</span></h1>
 <div class=meta>HEAD {esc(run['head'] or '?')} · {esc(run['base'] or '?')} · council {len(run['casos'])} casos ({run['c_err']} erro, {run['c_warn']} aviso) · qa-externo {len(run['ext'])} scripts ({run['e_err']} com exit != 0)</div>
 <h2>Linha do tempo</h2>{timeline(runs, base)}
 <div class=cols>
@@ -162,7 +162,7 @@ def pagina(run: dict, runs: list[dict], base: Path, titulo: str) -> str:
 </div>
 <h2>Divergencias e achados candidatos</h2>
 <div class='card div'>{"<ul>" + "".join(f"<li>{esc(x)}</li>" for x in divs) + "</ul>" if divs else "<p class=meta>nenhuma: as duas metades concordam</p>"}</div>
-<p class=meta>Gerado por scripts/qa/testgrapete_board.py. Evidencias em {esc(rel(run['dir'], base))}/ (screenshots e traces so' em falha, em council/playwright/).</p>
+<p class=meta>Gerado por scripts/qa/testsukita_board.py. Evidencias em {esc(rel(run['dir'], base))}/ (screenshots e traces so' em falha, em council/playwright/).</p>
 </div></body></html>"""
 
 
@@ -178,13 +178,13 @@ def main() -> None:
         root.mkdir(parents=True, exist_ok=True)
         vazio = {"dia": "sem corridas", "dir": root, "casos": [], "ext": [], "head": "", "base": "",
                  "c_err": 0, "c_warn": 0, "e_err": 0, "estado": "n"}
-        (root / "index.html").write_text(pagina(vazio, [], root, "TestGrapete"), encoding="utf-8")
+        (root / "index.html").write_text(pagina(vazio, [], root, "TestSukita"), encoding="utf-8")
         print("index.html escrito (sem corridas)")
         return
     for r in runs:
-        (r["dir"] / "board.html").write_text(pagina(r, runs, r["dir"], f"TestGrapete {r['dia']}"), encoding="utf-8")
+        (r["dir"] / "board.html").write_text(pagina(r, runs, r["dir"], f"TestSukita {r['dia']}"), encoding="utf-8")
     ultimo = runs[-1]
-    (root / "index.html").write_text(pagina(ultimo, runs, root, "TestGrapete"), encoding="utf-8")
+    (root / "index.html").write_text(pagina(ultimo, runs, root, "TestSukita"), encoding="utf-8")
     print(f"index.html + {len(runs)} board.html escritos (ultima corrida {ultimo['dia']}, estado {ultimo['estado']})")
 
 
