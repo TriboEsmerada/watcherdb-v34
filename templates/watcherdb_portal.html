@@ -37339,6 +37339,11 @@ Tempo de Resposta: ${responseTime}
                             summaryText += ` de <strong style="color: var(--color-text-primary);">${totalDatabases}</strong> ${t('kpi_modal.database_s_total')}`;
                         }
                     }
+                } else if (kpiType === 'always-on') {
+                    // ALWAYS ON REGRA UNICA 2026-09-11 (TestSprite TC-011): as linhas sao BASES (uma por instancia+base);
+                    // o cartao conta instancias distintas. Dizer as duas unidades evita ler 4 bases como 4 instancias.
+                    const _aoInstancias = new Set(instances.map(i => String(i.Instance || i.instance || i.SERVER_INSTANCE || i.AgName || ''))).size;
+                    summaryText = `Total: <strong style="color: var(--color-text-primary);">${_aoInstancias}</strong> ${t('kpi_modal.instance_s')} \u00b7 <strong style="color: var(--color-text-primary);">${instances.length}</strong> ${t('kpi_modal.database_s')} ${t('kpi_modal.with_problem')}`;
                 } else if (kpiType === 'db-availability-ok' || title === 'Instances OK') {
                     summaryText = `Total: <strong style="color: #10b981;">${instances.length}</strong> ${t('kpi_modal.instance_s')} OK`;
                 } else if (kpiType.includes('filegroup-usage')) {

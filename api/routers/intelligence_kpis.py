@@ -1336,6 +1336,11 @@ async def get_problematic_instances(kpi_type: str, all: bool = Query(False, desc
             # NOTA: nao usar a coluna s.Problem_Reason da STG — o collector escreve-a com
             # logica antiga que trata o lado vazio da replica (normal) como avaria, ficando
             # falso positivo em 100% das linhas. O Problem_Reasons abaixo e' recalculado aqui.
+            # ALWAYS ON REGRA UNICA 2026-09-11: WHERE e motivos da MESMA regra do cartao (alwayson_rules).
+            from api.routers.intelligence.alwayson_rules import (
+                unhealthy_where as _ao_where, problem_reasons_case as _ao_reasons, has_availability_mode as _ao_has_am,
+            )
+            _ao_avail = _ao_has_am(lambda q: execute_intelligence_query(q, raise_on_error=False) or [], INTELLIGENCE_SCHEMA)
             query = f"""
             SELECT
                 s.AgName,
@@ -1349,26 +1354,11 @@ async def get_problematic_instances(kpi_type: str, all: bool = Query(False, desc
                 s.Pri_Is_Suspended,
                 s.Sec_Is_Suspended,
                 s.Update_TS,
-                RTRIM(LTRIM(
-                    CASE WHEN (s.Pri_Synch_Health <> 'HEALTHY' AND s.Pri_Synch_Health IS NOT NULL AND s.Pri_Synch_Health <> '')
-                              OR (s.Sec_Synch_Health <> 'HEALTHY' AND s.Sec_Synch_Health IS NOT NULL AND s.Sec_Synch_Health <> '')
-                         THEN 'Health Problem; ' ELSE '' END +
-                    CASE WHEN s.Pri_Is_Suspended = 1 OR s.Sec_Is_Suspended = 1 THEN 'Suspended; ' ELSE '' END +
-                    CASE WHEN (s.Pri_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND s.Pri_Synch_State IS NOT NULL)
-                              OR (s.Sec_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND s.Sec_Synch_State IS NOT NULL)
-                         THEN 'Sync State; ' ELSE '' END
-                )) AS Problem_Reasons
+                {_ao_reasons('s', _ao_avail)} AS Problem_Reasons
             FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_ALWAYSON_STATUS_STG s WITH (NOLOCK)
             LEFT JOIN {INTELLIGENCE_SCHEMA}.KPI_MSSQL_INST_ENVS e ON e.Instance = s.Instance
             WHERE s.Update_TS >= DATEADD(MINUTE, -{FRESHNESS_WINDOWS['alwayson']}, GETDATE())
-            AND (
-                (s.Pri_Synch_Health <> 'HEALTHY' AND s.Pri_Synch_Health IS NOT NULL AND s.Pri_Synch_Health <> '')
-                OR (s.Sec_Synch_Health <> 'HEALTHY' AND s.Sec_Synch_Health IS NOT NULL AND s.Sec_Synch_Health <> '')
-                OR (s.Pri_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND s.Pri_Synch_State IS NOT NULL)
-                OR (s.Sec_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND s.Sec_Synch_State IS NOT NULL)
-                OR s.Pri_Is_Suspended = 1
-                OR s.Sec_Is_Suspended = 1
-            )
+            AND ({_ao_where('s', _ao_avail)})
             ORDER BY s.Instance, s.[Database]
             """
             all_instances = execute_intelligence_query(query, raise_on_error=False) or []

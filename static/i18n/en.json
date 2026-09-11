@@ -825,6 +825,7 @@
     "instance": "Instance",
     "instance_count_dbs": "occurrences",
     "instance_s": "instance(s)",
+    "database_s": "database(s)",
     "instances_shown": "Showing",
     "last_check": "Last Check",
     "longest_lock": "Longest Lock Time",

@@ -884,6 +884,12 @@ async def collect_disk_and_tlog(results: Dict[str, Any]) -> None:
         logger.error(f"Erro ao buscar Transaction Logs: {e}")
 
 
+from api.routers.intelligence.alwayson_rules import (  # ALWAYS ON REGRA UNICA 2026-09-11
+    unhealthy_where as _ao_where, problem_reasons_case as _ao_reasons,
+    by_env_distinct_instances as _ao_by_env, distinct_instances as _ao_distinct,
+)
+
+
 async def collect_alwayson(results: Dict[str, Any]) -> None:
     """Collect AlwaysOn Availability Group KPIs."""
     try:
@@ -898,30 +904,14 @@ async def collect_alwayson(results: Dict[str, Any]) -> None:
         except Exception:
             pass
 
-        if _has_avail_mode:
-            _state_filter = """
-                OR (Pri_Synch_State <> 'SYNCHRONIZED' AND Pri_Synch_State IS NOT NULL AND Pri_Synch_State <> 'UNKNOWN' AND Pri_Synch_State <> ''
-                    AND NOT (Pri_Synch_State = 'SYNCHRONIZING' AND ISNULL(Availability_Mode, '') = 'ASYNCHRONOUS_COMMIT'))
-                OR (Sec_Synch_State <> 'SYNCHRONIZED' AND Sec_Synch_State IS NOT NULL AND Sec_Synch_State <> 'UNKNOWN' AND Sec_Synch_State <> ''
-                    AND NOT (Sec_Synch_State = 'SYNCHRONIZING' AND ISNULL(Availability_Mode, '') = 'ASYNCHRONOUS_COMMIT'))
-            """
-        else:
-            _state_filter = """
-                OR (Pri_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND Pri_Synch_State IS NOT NULL)
-                OR (Sec_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND Sec_Synch_State IS NOT NULL)
-            """
+        # ALWAYS ON REGRA UNICA 2026-09-11: WHERE e motivos vem de alwayson_rules (o mesmo da modal).
+        _ao_w = _ao_where("", _has_avail_mode)
 
         query_unhealthy = f"""
         SELECT COUNT(DISTINCT Instance) AS Always_On_UnHealthy
         FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_ALWAYSON_STATUS_STG WITH (NOLOCK)
         WHERE Update_TS >= DATEADD(MINUTE, -{FRESHNESS_WINDOWS['alwayson']}, GETDATE())
-        AND (
-            (Pri_Synch_Health <> 'HEALTHY' AND Pri_Synch_Health IS NOT NULL AND Pri_Synch_Health <> '')
-            OR (Sec_Synch_Health <> 'HEALTHY' AND Sec_Synch_Health IS NOT NULL AND Sec_Synch_Health <> '')
-            {_state_filter}
-            OR Pri_Is_Suspended = 1
-            OR Sec_Is_Suspended = 1
-        )
+        AND ({_ao_w})
         """
         unhealthy_count_data = await execute_intelligence_query_async(query_unhealthy, raise_on_error=False)
         unhealthy_count = int(unhealthy_count_data[0].get('Always_On_UnHealthy', 0)) if unhealthy_count_data and unhealthy_count_data[0].get('Always_On_UnHealthy') else 0
@@ -939,25 +929,11 @@ async def collect_alwayson(results: Dict[str, Any]) -> None:
             s.Pri_Is_Suspended,
             s.Sec_Is_Suspended,
             s.Update_TS,
-            RTRIM(LTRIM(
-                CASE WHEN (s.Pri_Synch_Health <> 'HEALTHY' AND s.Pri_Synch_Health IS NOT NULL AND s.Pri_Synch_Health <> '')
-                          OR (s.Sec_Synch_Health <> 'HEALTHY' AND s.Sec_Synch_Health IS NOT NULL AND s.Sec_Synch_Health <> '')
-                     THEN 'Health Problem; ' ELSE '' END +
-                CASE WHEN s.Pri_Is_Suspended = 1 OR s.Sec_Is_Suspended = 1 THEN 'Suspended; ' ELSE '' END +
-                CASE WHEN (s.Pri_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND s.Pri_Synch_State IS NOT NULL)
-                          OR (s.Sec_Synch_State NOT IN ('SYNCHRONIZED', 'SYNCHRONIZING', 'UNKNOWN', '') AND s.Sec_Synch_State IS NOT NULL)
-                     THEN 'Sync State; ' ELSE '' END
-            )) AS Problem_Reasons
+            {_ao_reasons('s', _has_avail_mode)} AS Problem_Reasons
         FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_ALWAYSON_STATUS_STG s WITH (NOLOCK)
         LEFT JOIN {INTELLIGENCE_SCHEMA}.KPI_MSSQL_INST_ENVS e ON e.Instance = s.Instance
         WHERE s.Update_TS >= DATEADD(MINUTE, -{FRESHNESS_WINDOWS['alwayson']}, GETDATE())
-        AND (
-            (s.Pri_Synch_Health <> 'HEALTHY' AND s.Pri_Synch_Health IS NOT NULL AND s.Pri_Synch_Health <> '')
-            OR (s.Sec_Synch_Health <> 'HEALTHY' AND s.Sec_Synch_Health IS NOT NULL AND s.Sec_Synch_Health <> '')
-            {_state_filter}
-            OR s.Pri_Is_Suspended = 1
-            OR s.Sec_Is_Suspended = 1
-        )
+        AND ({_ao_where('s', _has_avail_mode)})
         ORDER BY s.Instance
         """
         unhealthy_instances = await execute_intelligence_query_async(query_stg_instances, raise_on_error=False) or []
@@ -967,7 +943,10 @@ async def collect_alwayson(results: Dict[str, Any]) -> None:
                 row['Problem_Reasons'] = reasons[:-2]
 
         results["always_on"]["instances"] = unhealthy_instances
-        results["always_on"]["unhealthy_by_env"] = _count_by_env(unhealthy_instances)
+        # ALWAYS ON REGRA UNICA: o breakdown conta INSTANCIAS distintas (soma o cartao); linhas sao bases.
+        results["always_on"]["unhealthy_by_env"] = _ao_by_env(unhealthy_instances, _infer_env_from_instance)
+        results["always_on"]["unhealthy_db_count"] = len(unhealthy_instances)
+        results["always_on"]["unhealthy_instances_count"] = len(_ao_distinct(unhealthy_instances))
     except Exception as e:
         logger.error(f"Erro ao buscar Always On: {e}")
 
