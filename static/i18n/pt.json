@@ -3005,6 +3005,8 @@
     "no_memory_data": "Sem dados de memória",
     "no_active_connections": "Sem conexões ativas",
     "no_ags": "Sem AGs configurados",
+    "select_instance_for_program": "Selecione uma instância no Canal para ver {program}",
+    "error_http": "Erro HTTP {code}",
     "no_tlog_data": "Sem dados de transaction log",
     "no_scheduler_data": "Sem dados de schedulers"
   }

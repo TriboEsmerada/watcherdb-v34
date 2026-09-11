@@ -3005,6 +3005,8 @@
     "no_memory_data": "No memory data",
     "no_active_connections": "No active connections",
     "no_ags": "No AGs configured",
+    "select_instance_for_program": "Select an instance in Channel to view {program}",
+    "error_http": "HTTP error {code}",
     "no_tlog_data": "No transaction log data",
     "no_scheduler_data": "No scheduler data"
   }

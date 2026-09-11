@@ -9,6 +9,20 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **LIVE: quatro canais por instância voltam a responder e o painel deixa de fingir "tudo limpo"**
+  (owner 11/09, teste em 3 instâncias; consenso sql-deep-reviewer + frontend-specialist). `io` e `tlog`
+  davam 503 por um `WITH (NOLOCK)` numa função de tabela (erro 319/102 — não era CTE); `tlog` escondia
+  ainda colunas que `sys.dm_db_log_stats` não tem e devolvia 0 linhas em 2016 SP2 (passa a CROSS APPLY
+  sobre `sys.databases`, só ONLINE e sem snapshots; provado numa secundária não legível); `alwayson` dava 207
+  porque `database_name` vem de `sys.availability_databases_cluster`, e o "lag" media o tempo desde a
+  última escrita — passa ao delta entre o commit da primária e o da réplica (2012-safe, NULL quando a linha
+  da primária não é visível); o mesmo 207 estava engolido no resumo de saúde (`ag_queues` nunca vinha);
+  `tempdb` dava 500 puro por um Decimal — todas as respostas do LIVE passam por `jsonable_encoder`
+  (Decimal, datetime, bytes em hex). No portal: sem instância, um programa mostra "Selecione uma instância"
+  em vez do render anterior (podia ser um check verde sem pedido nenhum), o carimbo volta a `--`, um erro
+  HTTP fica escrito a vermelho no carimbo, uma resposta tardia não reescreve um estado que já mudou, e o
+  lag do AG nulo mostra `n/d` em vez de 0 verde. 3 chaves `live.*` em pt/en/es. [tier: Std]
+
 - **Always On: drill "Acompanhar resume"** (GO do owner 11/09; consenso sql-deep-reviewer + frontend +
   v34). Nas bases de um AG suspensas, com filas altas ou fora de SYNCHRONIZED/SYNCHRONIZING aparece
   o botão "Acompanhar", nas duas tabelas por base do separador Always On. Abre um modal que amostra a

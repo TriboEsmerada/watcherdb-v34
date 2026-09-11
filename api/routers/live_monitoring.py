@@ -23,11 +23,23 @@ import time
 from typing import Callable, Optional
 from fastapi import APIRouter, Depends, HTTPException, Header, Request, Response
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from fastapi.routing import APIRoute
 
 from api.error_helpers import safe_http_error
 
 logger = logging.getLogger(__name__)
+
+
+def _live_json(payload, status_code: int = 200):
+    """JSONResponse com Decimal/datetime/bytes seguros.
+
+    2026-09-11: /live/{inst}/tempdb dava 500 puro ("Object of type Decimal is not JSON
+    serializable") sempre que TEMPDB_ACTIVE_USAGE_SQL tinha linhas -- o 1024.0 devolve
+    Decimal. Em vez de caçar coluna a coluna, todas as respostas do LIVE passam por aqui.
+    """
+    return JSONResponse(status_code=status_code,
+                        content=jsonable_encoder(payload, custom_encoder={bytes: lambda b: b.hex()}))
 
 
 # RBAC do LIVE (QA externo 2026-08-16, decisao 2 / achado do security-auditor):
@@ -222,14 +234,14 @@ async def get_live_gauges(instance: str):
     if err:
         raise HTTPException(status_code=503, detail=err)
     if not rows:
-        return JSONResponse(content={"instance": instance, "data": None})
+        return _live_json({"instance": instance, "data": None})
 
     r = rows[0]
     total_mem = r.get("total_memory_mb") or 1
     avail_mem = r.get("available_memory_mb") or 0
     mem_pct = round((total_mem - avail_mem) / total_mem * 100, 1) if total_mem > 0 else 0
 
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance,
         "timestamp": time.time(),
         "gauges": {
@@ -301,7 +313,7 @@ async def get_running_queries(instance: str):
         if r.get("start_time") and hasattr(r["start_time"], "isoformat"):
             r["start_time"] = r["start_time"].isoformat()
 
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance,
         "timestamp": time.time(),
         "count": len(rows or []),
@@ -448,7 +460,7 @@ async def get_tempdb_live(instance: str):
     finally:
         pool.return_connection(instance, conn)
 
-    return JSONResponse(content=result)
+    return _live_json(result)
 
 
 # =========================================================================
@@ -497,7 +509,7 @@ async def get_wait_stats(instance: str):
     rows, err = _query_instance(instance, WAIT_STATS_SQL)
     if err:
         raise HTTPException(status_code=503, detail=err)
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance,
         "timestamp": time.time(),
         "waits": rows or [],
@@ -546,7 +558,7 @@ async def get_blocking_chains(instance: str):
     rows, err = _query_instance(instance, BLOCKING_SQL)
     if err:
         raise HTTPException(status_code=503, detail=err)
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance,
         "timestamp": time.time(),
         "count": len(rows or []),
@@ -579,7 +591,7 @@ SELECT TOP 30
     vfs.io_stall_read_ms,
     vfs.io_stall_write_ms,
     vfs.size_on_disk_bytes / 1048576 AS file_size_mb
-FROM sys.dm_io_virtual_file_stats(NULL, NULL) vfs WITH (NOLOCK)
+FROM sys.dm_io_virtual_file_stats(NULL, NULL) AS vfs  -- sem hint: WITH (NOLOCK) numa TVF = erro 319 (2026-09-11)
 JOIN sys.master_files mf WITH (NOLOCK)
     ON vfs.database_id = mf.database_id AND vfs.file_id = mf.file_id
 ORDER BY (vfs.io_stall_read_ms + vfs.io_stall_write_ms) DESC;
@@ -592,7 +604,7 @@ async def get_io_stats(instance: str):
     rows, err = _query_instance(instance, IO_STATS_SQL)
     if err:
         raise HTTPException(status_code=503, detail=err)
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance, "timestamp": time.time(),
         "files": rows or [],
     })
@@ -632,7 +644,7 @@ async def get_jobs_running(instance: str):
     for r in (rows or []):
         if r.get("start_execution_date") and hasattr(r["start_execution_date"], "isoformat"):
             r["start_execution_date"] = r["start_execution_date"].isoformat()
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance, "timestamp": time.time(),
         "count": len(rows or []), "jobs": rows or [],
     })
@@ -714,7 +726,7 @@ async def get_memory_live(instance: str):
         result["error"] = str(e)
     finally:
         pool.return_connection(instance, conn)
-    return JSONResponse(content=result)
+    return _live_json(result)
 
 
 # =========================================================================
@@ -756,7 +768,7 @@ async def get_connections(instance: str):
     for r in (rows or []):
         if r.get("login_time") and hasattr(r["login_time"], "isoformat"):
             r["login_time"] = r["login_time"].isoformat()
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance, "timestamp": time.time(),
         "count": len(rows or []), "connections": rows or [],
     })
@@ -768,27 +780,39 @@ async def get_connections(instance: str):
 
 ALWAYSON_SQL = """
 SET NOCOUNT ON;
+-- 2026-09-11: dm_hadr_database_replica_states NAO tem database_name (erro 207) -- vem de
+-- sys.availability_databases_cluster por group_database_id. E o lag deixa de ser DATEDIFF ate
+-- GETDATE() (media "tempo desde a ultima escrita": base ociosa ficava vermelha): passa a ser o
+-- delta entre o last_commit_time da primaria e o da replica. NULL quando a linha da primaria
+-- nao e' visivel (numa secundaria a DMV so' devolve a linha local -- facto medido a 11/09).
 SELECT
     ag.name AS ag_name,
     ar.replica_server_name,
     ars.role_desc,
     ars.connected_state_desc,
     ars.synchronization_health_desc,
-    drs.database_name,
+    adc.database_name,
     drs.synchronization_state_desc,
     drs.log_send_queue_size AS send_queue_kb,
     drs.redo_queue_size AS redo_queue_kb,
     drs.log_send_rate AS send_rate_kb_sec,
     drs.redo_rate AS redo_rate_kb_sec,
     drs.last_commit_time,
-    DATEDIFF(SECOND, drs.last_commit_time, GETDATE()) AS commit_lag_sec,
+    CASE WHEN ars.role = 1 THEN 0
+         WHEN drs.last_commit_time IS NULL OR pc.primary_commit IS NULL THEN NULL
+         ELSE DATEDIFF(SECOND, drs.last_commit_time, pc.primary_commit) END AS commit_lag_sec,
     drs.is_suspended,
     drs.suspend_reason_desc
 FROM sys.availability_groups ag WITH (NOLOCK)
 JOIN sys.availability_replicas ar WITH (NOLOCK) ON ag.group_id = ar.group_id
 JOIN sys.dm_hadr_availability_replica_states ars WITH (NOLOCK) ON ar.replica_id = ars.replica_id
 LEFT JOIN sys.dm_hadr_database_replica_states drs WITH (NOLOCK) ON ar.replica_id = drs.replica_id
-ORDER BY ag.name, ar.replica_server_name, drs.database_name;
+LEFT JOIN sys.availability_databases_cluster adc WITH (NOLOCK) ON adc.group_database_id = drs.group_database_id
+OUTER APPLY (SELECT MAX(p.last_commit_time) AS primary_commit
+             FROM sys.dm_hadr_database_replica_states p WITH (NOLOCK)
+             JOIN sys.dm_hadr_availability_replica_states pa WITH (NOLOCK) ON pa.replica_id = p.replica_id AND pa.role = 1
+             WHERE p.group_database_id = drs.group_database_id) pc  -- ars.role/pa.role: 2012-safe (is_primary_replica e' 2014+; ha' 4 x 2012 na frota)
+ORDER BY ag.name, ar.replica_server_name, adc.database_name;
 """
 
 
@@ -801,7 +825,7 @@ async def get_alwayson_live(instance: str):
     for r in (rows or []):
         if r.get("last_commit_time") and hasattr(r["last_commit_time"], "isoformat"):
             r["last_commit_time"] = r["last_commit_time"].isoformat()
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance, "timestamp": time.time(),
         "replicas": rows or [],
     })
@@ -813,16 +837,21 @@ async def get_alwayson_live(instance: str):
 
 TLOG_SQL = """
 SET NOCOUNT ON;
+-- 2026-09-11: sem WITH (NOLOCK) na TVF (erro 319/102) e por CROSS APPLY em sys.databases:
+-- dm_db_log_stats(NULL) devolve 0 linhas em 2016 SP2 (medido em CAGENPRD06). So' bases ONLINE e
+-- sem snapshots. O 319 escondia um 207: dm_db_log_stats NAO tem log_reuse_wait_desc (vem de
+-- sys.databases) nem log_space_in_bytes_since_last_backup (a coluna e' log_since_last_log_backup_mb).
 SELECT
-    DB_NAME(database_id) AS database_name,
-    total_vlf_count AS vlf_count,
-    active_vlf_count AS active_vlfs,
-    CAST(log_space_in_bytes_since_last_backup / 1048576.0 AS DECIMAL(18,1)) AS log_since_backup_mb,
-    log_truncation_holdup_reason AS truncation_reason,
-    log_reuse_wait_desc AS reuse_wait
-FROM sys.dm_db_log_stats(NULL) WITH (NOLOCK)
-WHERE database_id > 4
-ORDER BY total_vlf_count DESC;
+    d.name AS database_name,
+    ls.total_vlf_count AS vlf_count,
+    ls.active_vlf_count AS active_vlfs,
+    CAST(ls.log_since_last_log_backup_mb AS FLOAT) AS log_since_backup_mb,
+    ls.log_truncation_holdup_reason AS truncation_reason,
+    d.log_reuse_wait_desc AS reuse_wait
+FROM sys.databases d WITH (NOLOCK)
+CROSS APPLY sys.dm_db_log_stats(d.database_id) ls
+WHERE d.database_id > 4 AND d.state = 0 AND d.source_database_id IS NULL
+ORDER BY ls.total_vlf_count DESC;
 """
 
 # Fallback para SQL 2014 (dm_db_log_stats é 2016+)
@@ -848,7 +877,7 @@ async def get_tlog_live(instance: str):
         rows, err = _query_instance(instance, TLOG_SQL_LEGACY)
     if err:
         raise HTTPException(status_code=503, detail=err)
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance, "timestamp": time.time(),
         "databases": rows or [],
     })
@@ -888,7 +917,7 @@ async def get_plan_cache(instance: str):
     for r in (rows or []):
         if r.get("plan_created") and hasattr(r["plan_created"], "isoformat"):
             r["plan_created"] = r["plan_created"].isoformat()
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance, "timestamp": time.time(),
         "queries": rows or [],
     })
@@ -935,7 +964,7 @@ async def get_error_log(instance: str):
             if row.get("LogDate") and hasattr(row["LogDate"], "isoformat"):
                 row["LogDate"] = row["LogDate"].isoformat()
             rows.append(row)
-        return JSONResponse(content={
+        return _live_json({
             "instance": instance, "timestamp": time.time(),
             "entries": rows,
         })
@@ -975,7 +1004,7 @@ async def get_scheduler_health(instance: str):
     rows, err = _query_instance(instance, SCHEDULER_SQL)
     if err:
         raise HTTPException(status_code=503, detail=err)
-    return JSONResponse(content={
+    return _live_json({
         "instance": instance, "timestamp": time.time(),
         "schedulers": rows or [],
         "total_runnable": sum(r.get("runnable_tasks_count", 0) or 0 for r in (rows or [])),
@@ -1218,7 +1247,7 @@ async def get_fleet_dashboard():
             try:
                 cur.execute("""SET NOCOUNT ON;
                     SELECT ag.name AS ag_name, ar.replica_server_name,
-                        drs.database_name, drs.synchronization_state_desc,
+                        adc.database_name, drs.synchronization_state_desc,
                         drs.log_send_queue_size AS send_queue_kb,
                         drs.redo_queue_size AS redo_queue_kb,
                         drs.log_send_rate AS send_rate_kb_sec,
@@ -1226,6 +1255,7 @@ async def get_fleet_dashboard():
                     FROM sys.availability_groups ag WITH (NOLOCK)
                     JOIN sys.availability_replicas ar WITH (NOLOCK) ON ag.group_id = ar.group_id
                     JOIN sys.dm_hadr_database_replica_states drs WITH (NOLOCK) ON ar.replica_id = drs.replica_id
+                    LEFT JOIN sys.availability_databases_cluster adc WITH (NOLOCK) ON adc.group_database_id = drs.group_database_id
                     WHERE drs.log_send_queue_size > 1024 OR drs.redo_queue_size > 1024
                     ORDER BY (drs.log_send_queue_size + drs.redo_queue_size) DESC""")
                 if cur.description:
@@ -1330,7 +1360,7 @@ async def get_fleet_dashboard():
     live_ag_queues.sort(key=lambda x: -((x.get("send_queue_kb") or 0) + (x.get("redo_queue_kb") or 0)))
     live_idle.sort(key=lambda x: -(x.get("idle_minutes") or 0))
 
-    return JSONResponse(content={
+    return _live_json({
         "timestamp": time.time(),
         "total": len(instances),
         "online": len(online),
@@ -1373,7 +1403,7 @@ async def get_available_channels():
             "description": r.get("Description", ""),
         })
 
-    return JSONResponse(content={
+    return _live_json({
         "total": len(rows),
         "by_environment": by_env,
         "environments": list(by_env.keys()),

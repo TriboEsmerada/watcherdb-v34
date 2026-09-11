@@ -50914,13 +50914,28 @@ window.showDiskDrilldown = async function(drive, label) {
             </div>`;
         }
 
+        // 2026-09-11: sem instancia, um programa por instancia NAO pode mostrar o render anterior
+        // (podia ser um check verde "No running queries" sem pedido nenhum) nem manter o carimbo
+        // do ultimo refresh. Estado neutro, status '--', sem intervalo.
+        function _liveShowNoInstance(tabId, program) {
+            if (_liveInterval) { clearInterval(_liveInterval); _liveInterval = null; }
+            const screen = document.getElementById('live-screen-' + tabId);
+            if (screen) screen.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
+                <i class="fas fa-satellite-dish" style="font-size:48px;margin-bottom:16px;color:var(--color-border);display:block;"></i>
+                <div style="font-size:16px;margin-bottom:8px;">${_diagEsc(program ? _kpiTp('live.select_instance_for_program', 'Selecione uma instância para ver {program}', { program }) : t('live.select_channel'))}</div>
+            </div>`;
+            const status = document.getElementById('live-status-' + tabId);
+            if (status) { status.textContent = '--'; status.style.color = 'var(--color-text-disabled)'; }
+            ['cpu','mem','ple','batch','sess','qry','blk'].forEach(g => { const el = document.getElementById('lg-' + g + '-' + tabId); if (el) { el.textContent = '--'; el.style.color = 'var(--color-text-bright)'; } });
+        }
+
         function liveChangeChannel(tabId, instance) {
             _liveInstance = instance;
             localStorage.setItem('live-last-channel', instance);
             if (_liveInterval) { clearInterval(_liveInterval); _liveInterval = null; }
             _liveWaitsPrev = null;
             for (const k in _liveGaugeHistory) delete _liveGaugeHistory[k];
-            if (!instance) return;
+            if (!instance) { if (_liveProgram !== 'fleet') _liveShowNoInstance(tabId, null); return; }
             _livePaused = false;
             const pauseBtn = document.getElementById('live-pause-' + tabId);
             if (pauseBtn) pauseBtn.innerHTML = '⏸';
@@ -50949,6 +50964,8 @@ window.showDiskDrilldown = async function(drive, label) {
                 if (!_liveInterval) {
                     _liveInterval = setInterval(() => { if (!_livePaused) _liveRefresh(tabId); }, _liveRefreshRate);
                 }
+            } else {
+                _liveShowNoInstance(tabId, program);  // 2026-09-11: nunca deixar o render anterior no ecrã
             }
         }
 
@@ -50973,6 +50990,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const screen = document.getElementById('live-screen-' + tabId);
             const status = document.getElementById('live-status-' + tabId);
             if (!screen) return;
+            const _instAtCall = _liveInstance, _progAtCall = _liveProgram;  // 2026-09-11: guarda de corrida
             try {
                 const isFleet = _liveProgram === 'fleet';
                 const progUrl = isFleet
@@ -50984,6 +51002,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 const promises = [fetch(progUrl).catch(() => null)];
                 if (gaugesUrl && !isFleet) promises.unshift(fetch(gaugesUrl).catch(() => null));
                 const responses = await Promise.all(promises);
+                if (_instAtCall !== _liveInstance || _progAtCall !== _liveProgram) return;  // canal/programa mudou entretanto
                 const gaugesResp = (!isFleet && gaugesUrl) ? responses[0] : null;
                 const progResp = (!isFleet && gaugesUrl) ? responses[1] : responses[0];
                 if (gaugesResp && gaugesResp.ok) {
@@ -51027,6 +51046,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     const errCode = progResp.status;
                     let errMsg = t('live.no_data');
                     if (errCode === 503) errMsg = t('live.instance_unavailable');
+                    if (status) { status.textContent = _kpiTp('live.error_http', 'Erro HTTP {code}', { code: errCode }); status.style.color = '#ef4444'; }  // 2026-09-11
                     screen.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-text-disabled);">
                         <i class="fas fa-tv" style="font-size:36px;margin-bottom:12px;color:var(--color-border);display:block;"></i>
                         <div style="font-size:14px;margin-bottom:6px;color:var(--color-text-tertiary);">${errMsg}</div>
@@ -51650,7 +51670,9 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:4px 8px;text-align:right;color:${sqc};">${formatSizeMB(sq/1024)}</td>`;
                 h += `<td style="padding:4px 8px;text-align:right;color:${rqc};">${formatSizeMB(rq/1024)}</td>`;
                 h += `<td style="padding:4px 8px;text-align:right;">${(r.send_rate_kb_sec||0).toLocaleString()}</td>`;
-                h += `<td style="padding:4px 8px;text-align:right;color:${(r.commit_lag_sec||0)>30?'#ef4444':'#10b981'};">${r.commit_lag_sec||0}</td></tr>`;
+                const _lag = (r.commit_lag_sec === null || r.commit_lag_sec === undefined) ? null : Number(r.commit_lag_sec);  // 2026-09-11: NULL = sem linha da primária
+                // suspensa: o lag so' cresce quando a primária commita -- a cor sai primeiro do estado, depois do lag
+                h += `<td style="padding:4px 8px;text-align:right;color:${_lag === null ? 'var(--color-text-disabled)' : r.is_suspended ? '#f59e0b' : _lag > 30 ? '#ef4444' : '#10b981'};">${_lag === null ? 'n/d' : _lag}</td></tr>`;
             });
             return h + '</tbody></table>';
         }
