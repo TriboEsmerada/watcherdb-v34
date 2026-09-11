@@ -3571,6 +3571,17 @@
            Free MB / Free %) e liam-se Growth como Free e Disk Avail como
            Free % — dai o falso "used > max". Fullscreen mantem scroll proprio. */
         .space-datafiles-scroll { overflow: visible; }
+        /* 2026-09-11 (owner: "Disk Avail GB" cortada a meio, "Status" invisivel): a regra
+           global `td { overflow: hidden; max-width: 400px; white-space: nowrap }` (~2717)
+           tambem apanhava as celulas que HOSPEDAM os paineis de expansao (filegroups de
+           uma base; datafiles de um filegroup) e cortava o painel na borda da celula.
+           Estas celulas sao contentores, nao dados: saem da regra. A largura do painel
+           passa a propagar-se a tabela-mae e, se nao couber, .table-container rola. */
+        .space-fg-expansion > td, .space-files-expansion > td {
+            overflow: visible; max-width: none; white-space: normal; min-width: 0;
+        }
+        /* Painel de datafiles mais denso (9 colunas): 8/10 em vez do 12/16 global. */
+        .space-datafiles-panel .nested-table th, .space-datafiles-panel .nested-table td { padding: 8px 10px; }
 
         .space-fg-max-btn {
             background: var(--color-bg-panel); color: var(--color-text-tertiary);
@@ -28523,8 +28534,8 @@
                                 }
                             </td>
                         </tr>
-                        <tr id="files-row-${fgId}" style="display: none;">
-                            <td colspan="8" style="padding: 0; background: var(--color-bg-sunken);">
+                        <tr id="files-row-${fgId}" class="space-files-expansion" style="display: none;">
+                            <td colspan="9" style="padding: 0; background: var(--color-bg-sunken);">
                                 <div id="files-content-${fgId}" style="padding: 16px;">
                                     Carregando filegroups...
                                 </div>
@@ -28684,7 +28695,7 @@
                         <table class="nested-table" style="font-size: 12px;">
                             <thead style="position: sticky; top: 34px; background: var(--color-bg-sunken); z-index: 9;">
                                 <tr>
-                                    <th onclick="sortNestedTable(this,0)" style="cursor: pointer; user-select: none; padding-left: 48px; min-width: 420px; word-break: break-all; background: var(--color-bg-sunken);">Logical Name</th>
+                                    <th onclick="sortNestedTable(this,0)" style="cursor: pointer; user-select: none; padding-left: 48px; min-width: 260px; max-width: 420px; white-space: normal; word-break: break-all; background: var(--color-bg-sunken);">Logical Name</th>
                                     <th onclick="sortNestedTable(this,1)" style="cursor: pointer; user-select: none; text-align: right; background: var(--color-bg-sunken);">Current MB</th>
                                     <th onclick="sortNestedTable(this,2)" style="cursor: pointer; user-select: none; text-align: right; background: var(--color-bg-sunken);">Used MB</th>
                                     <th onclick="sortNestedTable(this,3)" style="cursor: pointer; user-select: none; text-align: right; background: var(--color-bg-sunken);">Max MB</th>
@@ -28747,7 +28758,7 @@
 
                     html += `
                         <tr style="${rowStyle}">
-                            <td style="padding-left: 48px; min-width: 420px; word-break: break-all;" title="${file.physical_name}">
+                            <td style="padding-left: 48px; min-width: 260px; max-width: 420px; white-space: normal; word-break: break-all;" title="${file.physical_name}">
                                 <i class="fas fa-file-alt" style="color: var(--color-text-link); margin-right: 6px;"></i>
                                 <span style="font-family: monospace; font-size: 11px;">${file.logical_name}</span>
                             </td>
