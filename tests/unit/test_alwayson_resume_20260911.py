@@ -154,3 +154,21 @@ def test_i18n_keys_present_in_three_locales():
         res = data["alwayson"]["resume"]
         for k in ("title", "button", "state_SUSPENDED", "state_ASYNC_HEALTHY", "stalled_note", "completed_async"):
             assert res.get(k), f"{loc}: falta alwayson.resume.{k}"
+
+def test_lot2_suspended_is_not_stalled_and_tiles_have_help():
+    portal = (ROOT / "templates" / "watcherdb_portal.html").read_text(encoding="utf-8")
+    assert "const suspended = last.code === 'SUSPENDED';" in portal
+    assert "['SYNCING', 'NOT_SYNC', 'INITIALIZING', 'REVERTING'].indexOf(last.code) >= 0" in portal
+    assert "slope < -1 ? 'draining' : (slope > 1 ? 'growing' : 'stable')" in portal
+    assert "function _agResumeSpark(" in portal and "createDiskSparklineSVG(vals, 560" not in portal
+    assert "toLocaleString('pt-PT'" not in portal.split("function _agResumeIngest")[1].split("// ---- Vista Avancada RICA")[0]
+    assert "${r.operational_state ?? 'N/A'}" in portal and "Redo Queue (KB)" in portal
+    for hk in ("help_state", "help_send", "help_redo", "help_rate", "help_eta", "help_progress", "help_chart", "help_resume_cmd"):
+        assert "'" + hk + "'" in portal, f"falta o ? de ajuda {hk}"
+    assert "SET HADR RESUME;" in portal
+    import json
+    for loc in ("pt", "en", "es"):
+        res = json.loads((ROOT / "static" / "i18n" / f"{loc}.json").read_text(encoding="utf-8"))["alwayson"]["resume"]
+        for k in ("trend_stable", "help_rate", "reason_SUSPEND_FROM_REDO", "resume_cmd_note", "progress_suspended"):
+            assert res.get(k), f"{loc}: falta alwayson.resume.{k}"
+

@@ -3618,6 +3618,9 @@
         .ag-resume-table td { font-variant-numeric: tabular-nums; }
         .ag-resume-target td { background: var(--color-bg-sunken); }
         .ag-resume-btn { padding: 4px 8px; font-size: 11px; }
+        .ag-resume-cmd { display: grid; gap: 6px; }
+        .ag-resume-cmd .diag-copy-btn { justify-self: start; }
+        .ag-resume-tiles .dg2-help { margin-left: 2px; }
         @container (max-width: 760px) { .ag-resume-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
         /* Report content - DARK MODE */
@@ -30494,7 +30497,7 @@
                             <div style="margin-top: 12px; overflow-x: auto;">
                                 <table>
                                     <thead>
-                                        <tr><th>Base</th><th>Sync State</th><th>Health</th><th>DB State</th><th>Suspensa</th><th>Log Send Queue</th><th>Redo Queue</th><th></th></tr>
+                                        <tr><th>Base</th><th>Sync State</th><th>Health</th><th>DB State</th><th>Suspensa</th><th>Log Send Queue (KB)</th><th>Redo Queue (KB)</th><th></th></tr>
                                     </thead>
                                     <tbody>
                                         ${dbs.map(d => `
@@ -31495,7 +31498,7 @@
                                                         ${r.server_name}
                                                     </td>
                                                     <td><span class="badge ${r.role === 'PRIMARY' ? 'ok' : ''}" style="${r.role === 'PRIMARY' ? '' : 'background: var(--color-border);'}">${r.role}</span></td>
-                                                    <td>${r.operational_state}</td>
+                                                    <td>${r.operational_state ?? 'N/A'}</td>
                                                     <td><span class="badge ${r.connected_state === 'CONNECTED' ? 'ok' : 'badge-error'}">${r.connected_state}</span></td>
                                                     <td><span class="badge ${r.synchronization_health === 'HEALTHY' ? 'ok' : 'badge-warning'}">${r.synchronization_health}</span></td>
                                                     <td>${r.availability_mode}</td>
@@ -31622,8 +31625,8 @@
                                                         <th style="padding: 12px; border-bottom: 2px solid ${borderColor}; color: ${borderColor};">Health</th>
                                                         <th style="padding: 12px; border-bottom: 2px solid ${borderColor}; color: ${borderColor};">DB State</th>
                                                         <th style="padding: 12px; border-bottom: 2px solid ${borderColor}; color: ${borderColor};">Suspensa</th>
-                                                        <th style="padding: 12px; border-bottom: 2px solid ${borderColor}; color: ${borderColor};">Log Send Queue</th>
-                                                        <th style="padding: 12px; border-bottom: 2px solid ${borderColor}; color: ${borderColor};">Redo Queue</th>
+                                                        <th style="padding: 12px; border-bottom: 2px solid ${borderColor}; color: ${borderColor};">Log Send Queue (KB)</th>
+                                                        <th style="padding: 12px; border-bottom: 2px solid ${borderColor}; color: ${borderColor};">Redo Queue (KB)</th>
                                                         <th style="padding: 12px; border-bottom: 2px solid ${borderColor};"></th>
                                                     </tr>
                                                 </thead>
@@ -36004,7 +36007,12 @@
             ov.addEventListener('click', function (e) {
                 if (e.target === ov || (e.target.closest && e.target.closest('[data-ag-resume-close]'))) { _agResumeStop(ov); ov.classList.remove('show'); return; }
                 if (e.target.closest && e.target.closest('[data-ag-resume-refresh]') && ov._ctx) { _agResumeTick(ov, true); return; }
-                if (e.target.closest && e.target.closest('[data-ag-resume-max]')) { if (typeof toggleMaximizeModal === 'function') toggleMaximizeModal('ag-resume-overlay'); return; }
+                if (e.target.closest && e.target.closest('[data-ag-resume-max]')) {
+                    if (typeof toggleMaximizeModal === 'function') toggleMaximizeModal('ag-resume-overlay');
+                    // o grafico e' medido do contentor: re-render com a nova largura
+                    setTimeout(function () { if (ov._ctx && ov._lastJ && window._agResumeRuns[ov._ctx.key]) _agResumeRender(ov, window._agResumeRuns[ov._ctx.key], ov._lastJ); }, 60);
+                    return;
+                }
             });
             document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ov.classList.contains('show')) { _agResumeStop(ov); ov.classList.remove('show'); } });
             return ov;
@@ -36013,6 +36021,7 @@
         async function openAgResume(primary, ag, db) {
             const ov = _agResumeModal();
             const key = (ag || '') + '|' + (db || '');
+            _agResumeStop(ov);  // defensivo: nunca dois timers no mesmo overlay
             ov._ctx = { primary: primary, ag: ag, db: db, key: key };
             if (!window._agResumeRuns[key]) window._agResumeRuns[key] = { samples: [], baseline: null, target: null, done: false };
             ov.classList.add('show');
@@ -36045,6 +36054,7 @@
                     throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
                 }
                 _agResumeIngest(run, j);
+                ov._lastJ = j;
                 _agResumeRender(ov, run, j);
                 const n = ov.querySelector('[data-ag-resume-n]'); if (n) n.textContent = String(run.samples.length);
             } catch (e) {
@@ -36064,13 +36074,15 @@
         }
         function _agResumeIngest(run, j) {
             const tgt = _agResumePickTarget(j);
-            const lsq = tgt ? (tgt.log_send_queue_kb || 0) : 0, rq = tgt ? (tgt.redo_queue_kb || 0) : 0;
-            const s = { t: Date.now(), lsq: lsq, rq: rq, total: lsq + rq, code: tgt ? tgt.state_code : 'UNKNOWN', mode: tgt ? String(tgt.mode || '') : '' };
+            const lsqRaw = tgt ? tgt.log_send_queue_kb : null, rqRaw = tgt ? tgt.redo_queue_kb : null;
+            const total = (lsqRaw || 0) + (rqRaw || 0);
+            const s = { t: Date.now(), lsq: lsqRaw, rq: rqRaw, total: total, code: tgt ? tgt.state_code : 'UNKNOWN', mode: tgt ? String(tgt.mode || '') : '',
+                        reason: tgt ? (tgt.suspend_reason || '') : '', lastRedone: tgt ? tgt.last_redone_time : null, lastCommit: tgt ? tgt.last_commit_time : null };
             if (run.target && tgt && run.target !== tgt.replica_server) { run.samples = []; run.baseline = null; run.done = false; }  // mudou a replica-alvo: recomeca
             run.target = tgt ? tgt.replica_server : null;
             run.samples.push(s);
             if (run.samples.length > 720) run.samples.shift();  // 2 h
-            if (run.baseline === null || run.baseline < s.total) run.baseline = run.baseline === null ? s.total : Math.max(run.baseline, s.total);
+            run.baseline = (run.baseline === null) ? total : Math.max(run.baseline, total);  // maior fila vista = ponto de partida do progresso
         }
         function _agResumeSlope(samples, n) {
             const k = samples.slice(-Math.min(n || 6, samples.length));
@@ -36085,21 +36097,32 @@
             const doneKb = d.done_queue_kb || 64, doneN = d.done_samples || 3, stallN = d.stall_samples || 18;
             const s = run.samples, last = s[s.length - 1];
             const slope = _agResumeSlope(s, 6);
-            const eta = (slope !== null && slope < -0.001 && last.total > doneKb) ? last.total / (-slope) : null;
-            const progress = (run.baseline && run.baseline > 0) ? Math.max(0, Math.min(100, 100 * (1 - last.total / run.baseline))) : null;
+            // epsilon 1 KB/s: declive ~0 nao e' "a drenar" nem "a crescer"
+            const trend = slope === null ? 'none' : (slope < -1 ? 'draining' : (slope > 1 ? 'growing' : 'stable'));
+            const suspended = last.code === 'SUSPENDED';
+            const eta = (trend === 'draining' && last.total > doneKb) ? last.total / (-slope) : null;
+            const progress = (!suspended && run.baseline && run.baseline > 0) ? Math.max(0, Math.min(100, 100 * (1 - last.total / run.baseline))) : null;
             const isAsync = /^ASYNC/i.test(last.mode);
             const okCode = isAsync ? 'ASYNC_HEALTHY' : 'SYNCED';
             const tail = s.slice(-doneN);
             const done = tail.length >= doneN && tail.every(function (p) { return p.code === okCode; });
+            // estagnacao so' faz sentido com um resume EM CURSO (nao suspensa, nao concluida)
             let stalled = false;
-            if (!done && s.length >= stallN && last.total > doneKb) {
+            if (!done && !suspended && ['SYNCING', 'NOT_SYNC', 'INITIALIZING', 'REVERTING'].indexOf(last.code) >= 0 && s.length >= stallN && last.total > doneKb) {
                 const w = s.slice(-stallN);
                 stalled = w[w.length - 1].total >= w[0].total * 0.98;  // nao desceu 2% em 3 min
             }
             run.done = done;
-            return { slope: slope, eta: eta, progress: progress, done: done, stalled: stalled, isAsync: isAsync, last: last, doneKb: doneKb };
+            return { slope: slope, trend: trend, eta: eta, progress: progress, done: done, stalled: stalled, suspended: suspended, isAsync: isAsync, last: last, doneKb: doneKb };
         }
-        function _agResumeFmtMb(kb) { return (kb === null || kb === undefined) ? '—' : (kb / 1024).toLocaleString('pt-PT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' MB'; }
+        // numeros no idioma ACTIVO do portal (o motor i18n poe o codigo em <html lang>), nao pt-PT fixo
+        function _agResumeLocale() { return (document.documentElement && document.documentElement.lang) || 'pt-PT'; }
+        function _agResumeFmtSize(kb) {
+            if (kb === null || kb === undefined || isNaN(kb)) return '—';
+            const mb = kb / 1024, loc = _agResumeLocale();
+            if (mb >= 1024) return (mb / 1024).toLocaleString(loc, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' GB';
+            return mb.toLocaleString(loc, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' MB';
+        }
         function _agResumeFmtDur(sec) {
             if (sec === null || sec === undefined || !isFinite(sec)) return '—';
             sec = Math.round(sec); const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60), s2 = sec % 60;
@@ -36111,47 +36134,107 @@
             if (code === 'SYNCED' || code === 'ASYNC_HEALTHY' || code === 'PRIMARY') return 'OK';
             return 'INFO';
         }
+        function _agResumeReason(reason) {
+            const r = String(reason || '').toUpperCase();
+            if (!r) return '';
+            const k = 'alwayson.resume.reason_' + r;
+            const txt = t(k);
+            return (txt && txt !== k) ? txt : r;
+        }
+        // Sparkline propria (revisao externa 11/09: a generica virava um bloco com serie constante e ficava
+        // a 560 px no modal maximizado). Largura MEDIDA do contentor, eixo 0..max*1,15, area leve, rotulos
+        // de hora inicial/final, maximo e minimo; serie constante = linha fina a meio com "estavel em X".
+        function _agResumeSpark(samples, color) {
+            if (!samples || samples.length < 2) return '<div class="diag-empty">' + _diagEsc(t('alwayson.resume.waiting_samples')) + '</div>';
+            const body = document.getElementById('ag-resume-body');
+            const W = Math.max(320, ((body && body.clientWidth) || 640) - 44), H = 96, padL = 8, padR = 8, padT = 16, padB = 18;
+            const w = W - padL - padR, h = H - padT - padB;
+            const vals = samples.map(function (p) { return p.total / 1024; });
+            const vmax = Math.max.apply(null, vals), vmin = Math.min.apply(null, vals);
+            const fmtT = function (ms) { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0'); };
+            const axis = '<line x1="' + padL + '" y1="' + (padT + h) + '" x2="' + (padL + w) + '" y2="' + (padT + h) + '" stroke="var(--color-border)" stroke-width="1"/>' +
+                '<text x="' + padL + '" y="' + (H - 4) + '" font-size="10" fill="var(--color-text-tertiary)">' + fmtT(samples[0].t) + '</text>' +
+                '<text x="' + (padL + w) + '" y="' + (H - 4) + '" font-size="10" text-anchor="end" fill="var(--color-text-tertiary)">' + fmtT(samples[samples.length - 1].t) + '</text>';
+            const open = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="display:block; max-width:100%;" role="img" aria-label="' + _diagEsc(t('alwayson.resume.chart_title')) + '">';
+            if (vmax - vmin < 0.05) {  // constante: linha fina a meio + rotulo, nunca area
+                const y = (padT + h / 2).toFixed(1);
+                return open + axis +
+                    '<line x1="' + padL + '" y1="' + y + '" x2="' + (padL + w) + '" y2="' + y + '" stroke="' + color + '" stroke-width="1.5" stroke-dasharray="4 3"/>' +
+                    '<circle cx="' + (padL + w).toFixed(1) + '" cy="' + y + '" r="3.5" fill="' + color + '"/>' +
+                    '<text x="' + (padL + 4) + '" y="' + (padT + h / 2 - 6).toFixed(1) + '" font-size="11" fill="var(--color-text-secondary)">' + _diagEsc(t('alwayson.resume.chart_flat')) + ' ' + _agResumeFmtSize(vmax * 1024) + '</text></svg>';
+            }
+            const max = vmax * 1.15;
+            const pts = vals.map(function (v, i) { return { x: padL + (i / (vals.length - 1)) * w, y: padT + h - (v / max) * h }; });
+            let line = ''; pts.forEach(function (c, i) { line += (i === 0 ? 'M' : 'L') + c.x.toFixed(1) + ',' + c.y.toFixed(1) + ' '; });
+            const area = line + 'L' + (padL + w).toFixed(1) + ',' + (padT + h).toFixed(1) + ' L' + padL + ',' + (padT + h).toFixed(1) + ' Z';
+            const last = pts[pts.length - 1];
+            return open + axis +
+                '<path d="' + area + '" fill="' + color + '" fill-opacity="0.10"/>' +
+                '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round"/>' +
+                '<circle cx="' + last.x.toFixed(1) + '" cy="' + last.y.toFixed(1) + '" r="3.5" fill="' + color + '"/>' +
+                '<text x="' + (padL + w) + '" y="11" font-size="10" text-anchor="end" fill="var(--color-text-tertiary)">' + _diagEsc(t('alwayson.resume.chart_max')) + ' ' + _agResumeFmtSize(vmax * 1024) + '</text>' +
+                '<text x="' + padL + '" y="11" font-size="10" fill="var(--color-text-tertiary)">' + _diagEsc(t('alwayson.resume.chart_min')) + ' ' + _agResumeFmtSize(vmin * 1024) + '</text>' +
+                '</svg>';
+        }
         function _agResumeRender(ov, run, j) {
             const m = _agResumeMetrics(run, j);
             const T = function (k) { return _diagEsc(t('alwayson.resume.' + k)); };
-            const tok = getSevTokens(m.done ? 'OK' : (m.stalled ? 'CRITICAL' : _agResumeSev(m.last.code)));
-            const tile = function (label, value, sub, cls) {
-                return '<div class="stat-card ' + (cls || 'gray') + '"><div class="label">' + label + '</div><div class="value" style="font-variant-numeric:tabular-nums;">' + value + '</div>' + (sub ? '<div class="diag-sub">' + sub + '</div>' : '') + '</div>';
-            };
+            const help = function (k) { return '<span class="dg2-help" tabindex="0" title="' + T(k) + '" aria-label="' + T(k) + '">?</span>'; };
             const sevCls = { CRITICAL: 'red', WARNING: 'yellow', OK: 'green', INFO: 'gray' };
+            const stateSev = m.done ? 'OK' : (m.stalled ? 'CRITICAL' : _agResumeSev(m.last.code));
+            const tok = getSevTokens(stateSev);
+            const tile = function (label, value, sub, cls, helpKey) {
+                return '<div class="stat-card ' + (cls || 'gray') + '"><div class="label">' + label + (helpKey ? ' ' + help(helpKey) : '') + '</div><div class="value" style="font-variant-numeric:tabular-nums;">' + value + '</div>' + (sub ? '<div class="diag-sub">' + sub + '</div>' : '') + '</div>';
+            };
             const stateLbl = m.done ? T('completed') : (m.stalled ? T('stalled') : T('state_' + m.last.code));
-            const rate = m.slope === null ? '—' : (Math.abs(m.slope) / 1024).toLocaleString('pt-PT', { maximumFractionDigits: 2 }) + ' MB/s';
-            const rateSub = m.slope === null ? T('waiting_samples') : (m.slope < 0 ? T('rate_draining') : T('rate_growing'));
-            const banner = m.done ? '<div class="dg2-note" style="border-color:var(--sev-ok-solid);"><i class="fas fa-check-circle" aria-hidden="true"></i><span>' + T(m.isAsync ? 'completed_async' : 'completed_sync') + '</span></div>'
-                : (m.stalled ? '<div class="dg2-note" style="border-color:var(--sev-critical-solid);"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i><span>' + T('stalled_note') + '</span></div>' : '');
-            const vals = run.samples.map(function (p) { return p.total / 1024; });
-            const spark = vals.length >= 2 ? createDiskSparklineSVG(vals, 560, 64, Math.max.apply(null, vals) || 1, tok.fill) : '<div class="diag-empty">' + T('waiting_samples') + '</div>';
+            const stateSub = m.suspended ? _diagEsc(_agResumeReason(m.last.reason)) : (m.done ? '' : T('trend_' + m.trend));
+            const rateVal = m.slope === null ? '—' : (Math.abs(m.slope) / 1024).toLocaleString(_agResumeLocale(), { maximumFractionDigits: 2 }) + ' MB/s';
+            const rateCls = m.trend === 'draining' ? 'green' : (m.trend === 'growing' ? 'red' : 'gray');
+            const etaSub = m.suspended ? T('eta_suspended') : (m.trend === 'growing' ? T('eta_growing') : (m.eta === null ? T('eta_unknown') : T('eta_by_slope')));
+            const progVal = m.progress === null ? '—' : Math.round(m.progress) + '%';
+            const progSub = m.suspended ? T('progress_suspended') : (T('progress_baseline') + ' ' + _agResumeFmtSize(run.baseline));
+            let banner = '';
+            if (m.done) {
+                banner = '<div class="dg2-note" style="border-color:var(--sev-ok-solid);"><i class="fas fa-check-circle" aria-hidden="true"></i><span>' + T(m.isAsync ? 'completed_async' : 'completed_sync') + '</span></div>';
+            } else if (m.suspended) {
+                const secName = run.target || '';
+                const cmd = '-- ' + t('alwayson.resume.resume_cmd_where') + ' ' + secName + '\nALTER DATABASE [' + String(ov._ctx.db || '').replace(/]/g, ']]') + '] SET HADR RESUME;';
+                banner = '<div class="dg2-note" style="border-color:var(--sev-critical-solid);"><i class="fas fa-pause-circle" aria-hidden="true"></i><span>' + T('suspended_note') + ' <strong>' + _diagEsc(_agResumeReason(m.last.reason)) + '</strong> ' + T('suspended_note_2') + '</span></div>' +
+                    '<div class="ag-resume-cmd"><div class="diag-section-title">' + T('resume_cmd_title') + ' ' + help('help_resume_cmd') + '</div>' +
+                    '<button type="button" class="diag-copy-btn" data-diag-copy="agresume"><i class="fas fa-copy" aria-hidden="true"></i> ' + T('copy_cmd') + '</button>' +
+                    '<pre class="diag-sql" data-diag-sql="agresume" style="display:block;">' + _diagEsc(cmd) + '</pre>' +
+                    '<div class="dg2-subtle">' + T('resume_cmd_note') + '</div></div>';
+            } else if (m.stalled) {
+                banner = '<div class="dg2-note" style="border-color:var(--sev-critical-solid);"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i><span>' + T('stalled_note') + '</span></div>';
+            }
             const head = '<div class="ag-resume-head"><span>' + T('sampled_on') + ' <strong>' + _diagEsc(j.sampled_on || '') + '</strong></span>' +
                 (run.target ? '<span>' + T('target_replica') + ' <strong>' + _diagEsc(run.target) + '</strong> · ' + T(m.isAsync ? 'mode_async' : 'mode_sync') + '</span>' : '') +
+                (m.last.lastRedone ? '<span>' + T('last_redone') + ' <strong>' + _diagEsc(m.last.lastRedone) + '</strong></span>' : '') +
+                (m.last.lastCommit ? '<span>' + T('last_commit') + ' <strong>' + _diagEsc(m.last.lastCommit) + '</strong></span>' : '') +
                 (j.server_now ? '<span>' + T('server_time') + ' ' + _diagEsc(j.server_now) + '</span>' : '') + '</div>';
             const tiles = '<div class="diag-summary-grid ag-resume-tiles">' +
-                tile(T('tile_state'), stateLbl, T('samples_count') + ' ' + run.samples.length, sevCls[m.done ? 'OK' : (m.stalled ? 'CRITICAL' : _agResumeSev(m.last.code))]) +
-                tile(T('tile_send_queue'), _agResumeFmtMb(m.last.lsq), '', m.last.lsq > (window._AG_QUEUE_WARN_KB) ? 'yellow' : 'gray') +
-                tile(T('tile_redo_queue'), _agResumeFmtMb(m.last.rq), '', m.last.rq > (window._AG_QUEUE_WARN_KB) ? 'yellow' : 'gray') +
-                tile(T('tile_rate'), rate, rateSub, m.slope !== null && m.slope < 0 ? 'green' : 'gray') +
-                tile(T('tile_eta'), _agResumeFmtDur(m.eta), m.eta === null ? T('eta_unknown') : T('eta_by_slope'), 'gray') +
-                tile(T('tile_progress'), m.progress === null ? '—' : Math.round(m.progress) + '%', T('progress_baseline') + ' ' + _agResumeFmtMb(run.baseline), 'gray') +
+                tile(T('tile_state'), stateLbl, stateSub, sevCls[stateSev], 'help_state') +
+                tile(T('tile_send_queue'), _agResumeFmtSize(m.last.lsq), m.last.lsq === null ? T('not_reported') : '', (m.last.lsq || 0) > (window._AG_QUEUE_WARN_KB) ? 'yellow' : 'gray', 'help_send') +
+                tile(T('tile_redo_queue'), _agResumeFmtSize(m.last.rq), m.last.rq === null ? T('not_reported') : '', (m.last.rq || 0) > (window._AG_QUEUE_WARN_KB) ? 'yellow' : 'gray', 'help_redo') +
+                tile(T('tile_rate'), rateVal, T('trend_' + m.trend), rateCls, 'help_rate') +
+                tile(T('tile_eta'), _agResumeFmtDur(m.eta), etaSub, 'gray', 'help_eta') +
+                tile(T('tile_progress'), progVal, progSub, 'gray', 'help_progress') +
                 '</div>';
-            const chart = '<div class="ag-resume-chart"><div class="diag-section-title">' + T('chart_title') + '</div>' + spark + '</div>';
+            const chart = '<div class="ag-resume-chart"><div class="diag-section-title">' + T('chart_title') + ' ' + help('help_chart') + '</div>' + _agResumeSpark(run.samples, tok.fill) + '</div>';
             const cols = [['col_replica', function (r) { return _diagEsc(r.replica_server || ''); }],
                           ['col_role', function (r) { return _diagEsc(r.role || ''); }],
                           ['col_mode', function (r) { return _diagEsc(String(r.mode || '').replace('_COMMIT', '')); }],
                           ['col_connected', function (r) { return _diagEsc(r.connected || ''); }],
                           ['col_sync_state', function (r) { const sv = _agResumeSev(r.state_code); return '<span class="gap-pill ' + (sv === 'CRITICAL' ? 'crit' : sv === 'WARNING' ? 'warn' : sv === 'OK' ? 'ok' : 'muted') + '">' + T('state_' + r.state_code) + '</span>'; }],
                           ['col_health', function (r) { return _diagEsc(r.sync_health || ''); }],
-                          ['col_suspended', function (r) { return r.is_suspended ? '<strong style="color:var(--sev-critical-text)">' + T('yes') + '</strong>' + (r.suspend_reason ? ' <span class="dg2-subtle">' + _diagEsc(r.suspend_reason) + '</span>' : '') : T('no'); }],
-                          ['col_send_queue', function (r) { return _agResumeFmtMb(r.log_send_queue_kb); }],
-                          ['col_redo_queue', function (r) { return _agResumeFmtMb(r.redo_queue_kb) + (r.source === 'secondary_fallback' ? ' <span class="dg2-subtle" title="' + T('fallback_note') + '">*</span>' : ''); }],
+                          ['col_suspended', function (r) { return r.is_suspended ? '<strong style="color:var(--sev-critical-text)">' + T('yes') + '</strong>' + (r.suspend_reason ? ' <span class="dg2-subtle" title="' + _diagEsc(_agResumeReason(r.suspend_reason)) + '">' + _diagEsc(r.suspend_reason) + '</span>' : '') : T('no'); }],
+                          ['col_send_queue', function (r) { return _agResumeFmtSize(r.log_send_queue_kb); }],
+                          ['col_redo_queue', function (r) { return _agResumeFmtSize(r.redo_queue_kb) + (r.source === 'secondary_fallback' ? ' <span class="dg2-subtle" title="' + T('fallback_note') + '">*</span>' : ''); }],
                           ['col_lag', function (r) { return r.state_code === 'PRIMARY' ? '—' : _agResumeFmtDur(r.lag_seconds); }]];
             const table = '<div class="ag-resume-table"><table><thead><tr>' + cols.map(function (c) { return '<th>' + T(c[0]) + '</th>'; }).join('') + '</tr></thead><tbody>' +
                 (j.replicas || []).map(function (r) { return '<tr' + (r.replica_server === run.target ? ' class="ag-resume-target"' : '') + '>' + cols.map(function (c) { return '<td>' + c[1](r) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
             const notes = (j.notes && j.notes.length) ? '<div class="dg2-subtle" style="margin-top:8px;">' + _diagEsc(j.notes.join(' · ')) + '</div>' : '';
-            document.getElementById('ag-resume-body').innerHTML = '<div class="ag-resume-wrap">' + head + banner + tiles + chart + table + notes + '</div>';
+            document.getElementById('ag-resume-body').innerHTML = '<div class="ag-resume-wrap" data-diag-root="1">' + head + banner + tiles + chart + table + notes + '</div>';
         }
 
         // ---- Vista Avancada RICA (topo polido + cards ricos + Resumo Executivo) ----
@@ -48791,42 +48874,31 @@ ORDER BY SizeMB DESC;`,
             // Se for Always On, buscar a instância correta no inventory primeiro
             let resolvedServerId = null;
             if (kpiType === 'always-on') {
-                try {
-                    debugLog(`[DBG] Buscando instância no inventory para AG: ${instanceName}`, 'info');
-                    const response = await fetch(`/api/alwayson/instance-by-ag/${encodeURIComponent(instanceName)}`);
-
-                    // Verificar se a resposta é OK
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-                        debugLog(`[DBG] Erro HTTP ${response.status}: ${errorData.error || 'N/A'}`, 'warning');
-                        alert(`AG "${instanceName}" não foi encontrado na configuração.\n\n` +
-                              `Erro: ${errorData.error || 'AG não configurado'}\n\n` +
-                              `Sugestão: ${errorData.suggestion || 'Verifique se o AG está configurado no alwayson_inventory.json ou sql_servers.json'}`);
-                        closeInstancesModal();
-                        return;
+                // 2026-09-11: desde a regra unica TC-011 as linhas desta modal passam a INSTANCIA
+                // (ex.: SQLHDSPRD405_I01), nao o nome do AG. So' se pergunta ao resolvedor de AG
+                // quando o valor NAO e' uma instancia conhecida; e se o resolvedor falhar, cai-se no
+                // lookup generico abaixo (que ja' explica quando o servidor e' mesmo desconhecido),
+                // em vez de um alert que chamava "AG" a uma instancia.
+                const _aoNorm = String(instanceName).replace(/\\\\/g, '\\').replace(/\\/g, '_').split('.')[0].toUpperCase();
+                const _aoKnown = Array.isArray(allServers) && allServers.some(s => String(s.server_id || s.id || '').replace(/\\/g, '_').split('.')[0].toUpperCase() === _aoNorm);
+                const _aoLooksInstance = _aoKnown || /_I\d+$/i.test(_aoNorm);
+                if (_aoLooksInstance) {
+                    debugLog(`[DBG] always-on: "${instanceName}" ja' e' instancia (conhecida=${_aoKnown}); resolvedor de AG dispensado`, 'info');
+                } else {
+                    try {
+                        debugLog(`[DBG] Buscando instância no inventory para AG: ${instanceName}`, 'info');
+                        const response = await fetch(`/api/alwayson/instance-by-ag/${encodeURIComponent(instanceName)}`);
+                        const result = response.ok ? await response.json().catch(() => ({})) : {};
+                        if (result.success && result.server_id) {
+                            debugLog(`? Instância encontrada no inventory: ${result.server_id} (${result.server}\\\\${result.instance || 'DEFAULT'})`, 'success');
+                            resolvedServerId = result.server_id;
+                            instanceName = result.server_id;
+                        } else {
+                            debugLog(`[DBG] resolvedor de AG sem resposta util (HTTP ${response.status}); segue o lookup generico com "${instanceName}"`, 'warning');
+                        }
+                    } catch (error) {
+                        debugLog(`[DBG] resolvedor de AG falhou (${error.message}); segue o lookup generico`, 'warning');
                     }
-
-                    const result = await response.json();
-
-                    if (result.success && result.server_id) {
-                        debugLog(`? Instância encontrada no inventory: ${result.server_id} (${result.server}\\${result.instance || 'DEFAULT'})`, 'success');
-                        debugLog(`[DBG] Source: ${result.source || 'unknown'}`, 'info');
-                        // Usar o server_id encontrado no inventory
-                        resolvedServerId = result.server_id;
-                        instanceName = result.server_id;
-                    } else {
-                        debugLog(`[DBG] AG não encontrado no inventory: ${result.error || 'N/A'}`, 'warning');
-                        alert(`AG "${instanceName}" não foi encontrado na configuração.\n\n` +
-                              `Erro: ${result.error || 'AG não configurado'}\n\n` +
-                              `Sugestão: ${result.suggestion || 'Verifique se o AG está configurado no alwayson_inventory.json ou sql_servers.json'}`);
-                        closeInstancesModal();
-                        return;
-                    }
-                } catch (error) {
-                    debugLog(`[DBG] Erro ao buscar instância no inventory: ${error.message}`, 'error');
-                    alert(`Erro ao buscar instância para o AG "${instanceName}":\n${error.message}\n\nTente buscar manualmente na barra de pesquisa.`);
-                    closeInstancesModal();
-                    return;
                 }
             }
             
