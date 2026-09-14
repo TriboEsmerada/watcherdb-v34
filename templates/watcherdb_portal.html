@@ -51681,8 +51681,14 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderAlwaysOn(data) {
             const replicas = data.replicas || [];
+            // 2026-09-11: numa secundaria as linhas vem da primaria -- dizer de onde vieram
+            const _hops = Array.isArray(data.hops) ? data.hops : [];
+            const _prims = [...new Set(_hops.map(x => x.primary))];
+            const _hopNote = _prims.length
+                ? `<div style="margin-bottom:8px;padding:6px 10px;border-left:3px solid #3b82f6;background:var(--color-bg-sunken);color:var(--color-text-tertiary);font-size:12px;">${_diagEsc(_kpiTp('live.ag_from_primary', 'Dados lidos na primária {primary} — esta instância é secundária', { primary: _prims.join(', ') }))}</div>`
+                : '';
             if (!replicas.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_ags') + '</div>';
-            let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">AG</th><th>Replica</th><th>Role</th><th>Sync Health</th><th>DB</th><th>Sync State</th><th>Send Queue</th><th>Redo Queue</th><th>Send KB/s</th><th>Lag sec</th></tr></thead><tbody>';
+            let h = _hopNote + '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">AG</th><th>Replica</th><th>Role</th><th>Sync Health</th><th>DB</th><th>Sync State</th><th>Send Queue</th><th>Redo Queue</th><th>Send KB/s</th><th>Lag sec</th></tr></thead><tbody>';
             replicas.forEach(r => {
                 const hc = (r.synchronization_health_desc||'').includes('HEALTHY') ? '#10b981' : '#ef4444';
                 const sq = r.send_queue_kb || 0, rq = r.redo_queue_kb || 0;

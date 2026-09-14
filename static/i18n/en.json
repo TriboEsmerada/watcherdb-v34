@@ -3008,6 +3008,7 @@
     "no_ags": "No AGs configured",
     "select_instance_for_program": "Select an instance in Channel to view {program}",
     "error_http": "HTTP error {code}",
+    "ag_from_primary": "Data read on primary {primary} — this instance is a secondary",
     "drag_to_move": "Drag to move",
     "off_tip": "Close LIVE and stop polling",
     "nav_aria": "Open real-time monitoring (LIVE)",

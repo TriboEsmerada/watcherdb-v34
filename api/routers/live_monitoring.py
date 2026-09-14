@@ -816,18 +816,92 @@ ORDER BY ag.name, ar.replica_server_name, adc.database_name;
 """
 
 
+# 2026-09-11: quem e' a primaria de cada AG -- estado do grupo replicado pelo cluster, visivel em
+# qualquer no' (ao contrario de dm_hadr_database_replica_states, que numa secundaria so' tem a linha local).
+ALWAYSON_PRIMARIES_SQL = """
+SET NOCOUNT ON;
+SELECT ag.name AS ag_name,
+       ags.primary_replica,
+       CAST(@@SERVERNAME AS NVARCHAR(256)) AS local_server  -- @@SERVERNAME: e' o par de replica_server_name (host renomeado sem sp_dropserver: ServerName difere)
+FROM sys.availability_groups ag WITH (NOLOCK)
+JOIN sys.dm_hadr_availability_group_states ags WITH (NOLOCK) ON ags.group_id = ag.group_id;
+"""
+
+AG_HOP_MAX = 2        # primarias distintas por pedido
+AG_HOP_TIMEOUT_S = 5  # por salto; o canal faz polling de 5 s
+
+
+def _ag_norm(name) -> str:
+    """'host\\inst' / 'HOST\\INST,1433' / 'host.dom\\inst' -> 'HOST\\INST' (comparacao entre primary_replica e ServerName)."""
+    s = str(name or "").strip().upper().split(",")[0]
+    host, _, inst = s.partition("\\")
+    return host.split(".")[0] + (("\\" + inst) if inst else "")
+
+
+def _ag_sid(name) -> str:
+    """'HOST\\INST' -> 'HOST_INST' (formato server_id do pool)."""
+    return _ag_norm(name).replace("\\", "_")
+
+
+def _alwayson_hop(instance: str, rows: list) -> tuple[list, list, list]:
+    """Substitui as linhas dos AGs cuja primaria e' outra instancia pelas linhas lidas nessa primaria.
+    Nunca levanta: qualquer falha mantem as linhas locais e regista uma nota."""
+    hops, notes = [], []
+    prim_rows, err = _query_instance(instance, ALWAYSON_PRIMARIES_SQL, timeout=AG_HOP_TIMEOUT_S)
+    if err or not prim_rows:
+        if err:
+            notes.append(f"primary_replica: {str(err)[:120]}")
+        return rows, hops, notes
+    local = _ag_norm(prim_rows[0].get("local_server"))
+    by_primary: dict = {}
+    for p in prim_rows:
+        prim = p.get("primary_replica")
+        if not prim:
+            notes.append(f"{p.get('ag_name')}: primaria desconhecida (AG offline ou sem quorum)")
+            continue
+        if _ag_norm(prim) == local:
+            continue
+        by_primary.setdefault(_ag_norm(prim), set()).add(str(p.get("ag_name") or ""))
+    if not by_primary:
+        return rows, hops, notes
+    out = list(rows)
+    for prim, ags in list(by_primary.items())[:AG_HOP_MAX]:
+        sid = _ag_sid(prim)
+        if sid.upper() == str(instance or "").upper():
+            continue
+        prows, perr = _query_instance(sid, ALWAYSON_SQL, timeout=AG_HOP_TIMEOUT_S)
+        if perr or prows is None:
+            notes.append(f"{sid}: {str(perr or 'sem conexao')[:120]}")
+            continue
+        fetched = [r for r in prows if str(r.get("ag_name") or "") in ags]
+        out = [r for r in out if str(r.get("ag_name") or "") not in ags] + fetched
+        for ag in sorted(ags):
+            hops.append({"ag": ag, "primary": prim, "server_id": sid})
+    if len(by_primary) > AG_HOP_MAX:
+        notes.append(f"{len(by_primary) - AG_HOP_MAX} primaria(s) nao consultada(s) (limite {AG_HOP_MAX})")
+    return out, hops, notes
+
+
 @router.get("/{instance}/alwayson")
-async def get_alwayson_live(instance: str):
-    """AlwaysOn AG status + queues em tempo real."""
+def get_alwayson_live(instance: str):
+    """AlwaysOn AG status + queues em tempo real. Numa secundaria, as linhas dos AGs vem da primaria
+    (2026-09-11): so' la' existem as linhas de todas as replicas e o lag por delta de commits.
+
+    `def` e nao `async def` (parecer sql-deep-reviewer 11/09): pyodbc e' sincrono e o salto pode
+    fazer ate' 3 round-trips; num `async def` isso bloqueava o event loop para todos os utilizadores.
+    Como `def`, o FastAPI corre-o no threadpool. Os restantes endpoints do LIVE tem o mesmo padrao
+    (1 round-trip cada) -- lote proprio, registado no CONTEXT.md."""
     rows, err = _query_instance(instance, ALWAYSON_SQL)
     if err:
         raise HTTPException(status_code=503, detail=err)
-    for r in (rows or []):
+    rows, hops, notes = _alwayson_hop(instance, rows or [])
+    for r in rows:
         if r.get("last_commit_time") and hasattr(r["last_commit_time"], "isoformat"):
             r["last_commit_time"] = r["last_commit_time"].isoformat()
     return _live_json({
         "instance": instance, "timestamp": time.time(),
-        "replicas": rows or [],
+        "replicas": rows,
+        "hops": hops, "notes": notes,
     })
 
 

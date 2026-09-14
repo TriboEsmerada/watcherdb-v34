@@ -3008,6 +3008,7 @@
     "no_ags": "Sem AGs configurados",
     "select_instance_for_program": "Selecione uma instância no Canal para ver {program}",
     "error_http": "Erro HTTP {code}",
+    "ag_from_primary": "Dados lidos na primária {primary} — esta instância é secundária",
     "drag_to_move": "Arraste para mover",
     "off_tip": "Fechar o LIVE e parar a recolha",
     "nav_aria": "Abrir monitorização em tempo real (LIVE)",

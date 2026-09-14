@@ -3008,6 +3008,7 @@
     "no_ags": "Sin AGs configurados",
     "select_instance_for_program": "Seleccione una instancia en Canal para ver {program}",
     "error_http": "Error HTTP {code}",
+    "ag_from_primary": "Datos leídos en la primaria {primary} — esta instancia es secundaria",
     "drag_to_move": "Arrastre para mover",
     "off_tip": "Cerrar LIVE y detener el sondeo",
     "nav_aria": "Abrir monitorización en tiempo real (LIVE)",

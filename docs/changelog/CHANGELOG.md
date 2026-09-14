@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **LIVE › AlwaysOn: aberto numa secundária, o canal mostra a visão da primária** (GO do owner 11/09).
+  Numa secundária a DMV só devolve a linha local, e o lag saía "n/d" em todas as linhas. O endpoint pergunta
+  ao estado do grupo quem é a primária de cada AG (visível em qualquer nó), salta até ela (máx. 2 primárias,
+  5 s cada) e devolve todas as réplicas com filas e lag por delta de commits; se o salto falhar, ficam as
+  linhas locais com nota, nunca 503. A tabela diz de onde vieram os dados. [tier: Std]
+
 - **LIVE F9b: nomes de instância completos no Fleet dashboard e os tooltips que faltavam** — as células
   de 70–75 px cortavam "SQLMDMQLT…" e o nome já vinha sem o sufixo da instância (duas instâncias no mesmo
   host eram indistinguíveis); passa a id completo em 130 px. Botão LIVE da navbar, "Arraste para mover",
