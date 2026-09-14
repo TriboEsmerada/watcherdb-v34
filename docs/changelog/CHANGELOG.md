@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Avisos críticos com disciplina, e um sino com histórico** (A2, pedido do owner a 14/09). O aviso de KPI
+  crítico já existia mas tinha três defeitos: a primeira leitura era silenciosa (quem abria o portal com
+  condições críticas activas nunca via aviso), a deduplicação era por valor (um valor a oscilar disparava a
+  cada subida) e no ecrã de KPIs o aviso era descartado sem registo. Agora a primeira leitura mostra um aviso
+  consolidado, cada condição só volta a disparar se agravar, e tudo fica num sino ao lado do idioma, com os
+  avisos vistos no ecrã de KPIs já marcados como lidos. O badge pulsa quando há um aviso por ler há mais de
+  30 minutos, e dados desactualizados persistentes deixam registo de que a vigilância parou. [tier: Std]
+
 - **Disponibilidade: o cartão deixa de dizer "Offline 0" com servidores em baixo** (A1, migration 010 do
   V1). As três vistas de eventos de offline só contavam eventos confirmados nos últimos 15 minutos, e
   quando o recolhedor saltava ciclos um servidor em baixo desaparecia (10/09: 6h30 com Offline 0). A hora

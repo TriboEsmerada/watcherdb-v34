@@ -1635,6 +1635,15 @@
     "filter_idle_title": "Click to filter sessions with idle =30 min",
     "open_diag_title": "Click to open TempDB in SQL Diagnostics"
   },
+  "crit_bell": {
+    "title": "Critical alerts",
+    "empty": "No critical alerts recorded",
+    "clear": "Clear",
+    "aria": "Critical alerts, {n} unread",
+    "summary": "{n} active critical conditions",
+    "suppressed": "seen on the KPIs screen",
+    "monitoring_down": "Critical monitoring stalled (stale data)"
+  },
   "toast": {
     "alwayson_unhealthy": "AlwaysOn Unhealthy",
     "blocked_sessions": "Blocked Sessions",

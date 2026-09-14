@@ -48,7 +48,7 @@ blocking porque é o único cujo contador se mexe.
   aviso dispara. Sem instância em baixo, provar em ambiente de teste desligando a recolha de uma.
 - **Esforço:** meio dia, com a medição prévia das quatro causas na base viva.
 
-### A2 — disciplina dos avisos
+### A2 — disciplina dos avisos — **PRONTO 14/09 (aguarda aplicação)**
 
 Sem isto, ligar 15 KPI transforma uma manhã má numa parede de avisos, e o DBA aprende a ignorar o
 vermelho. É a mesma doutrina que levou o alarme de backup de 469 para 75.

@@ -1635,6 +1635,15 @@
     "filter_idle_title": "Clic para filtrar sesiones con idle =30 min",
     "open_diag_title": "Clic para abrir TempDB en SQL Diagnostics"
   },
+  "crit_bell": {
+    "title": "Alertas críticas",
+    "empty": "Sin alertas críticas registradas",
+    "clear": "Limpiar",
+    "aria": "Alertas críticas, {n} sin leer",
+    "summary": "{n} condiciones críticas activas",
+    "suppressed": "vista en la pantalla de KPIs",
+    "monitoring_down": "Monitorización de críticos detenida (datos obsoletos)"
+  },
   "toast": {
     "alwayson_unhealthy": "AlwaysOn No Saludable",
     "blocked_sessions": "Sesiones Bloqueadas",
