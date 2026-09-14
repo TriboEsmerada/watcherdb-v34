@@ -1122,7 +1122,7 @@ class SQLQueries:
         -- MINIMUM SIZE = Espaço usado dentro do arquivo (SpaceUsed)
         -- Este é o MÍNIMO até onde DBCC SHRINKFILE consegue reduzir!
         -- SHRINK não pode reduzir abaixo do último extent alocado.
-        -- Se MinSize ≈ CurrentSize, SHRINK não vai reduzir nada significativo.
+        -- Se MinSize ~= CurrentSize, SHRINK nao vai reduzir nada significativo. (FIX API 500 2026-09-11: sem U+2248, o driver rejeitava)
         -- =====================================================================
         CAST(FILEPROPERTY(mf.name, 'SpaceUsed') * 8.0 / 1024 AS DECIMAL(12,2)) as minimum_size_mb,
         -- Uso interno real (o que está REALMENTE sendo usado dentro do arquivo)
@@ -1602,7 +1602,7 @@ class SQLQueries:
             WHEN SUM(num_of_writes) * 100.0 / NULLIF(SUM(num_of_reads + num_of_writes), 0) > 70 THEN 'WRITE-HEAVY'
             ELSE 'BALANCED'
         END AS io_profile
-    FROM sys.dm_io_virtual_file_stats(NULL, NULL) WITH(NOLOCK)
+    FROM sys.dm_io_virtual_file_stats(NULL, NULL)  -- FIX API 500 2026-09-11: hint de tabela numa TVF e' erro de sintaxe
     WHERE database_id > 4  -- Excluir system databases
     GROUP BY database_id
     HAVING SUM(num_of_reads + num_of_writes) > 0

@@ -217,7 +217,10 @@ class BackupPatternAnalyzer:
         ORDER BY backup_finish_date;
         """
         
-        result = await self.sql_monitoring.execute_query(server_id, query, params=[database_name])
+        # FIX API 500 2026-09-11: execute_query nao aceita params (assinatura: server_id, query, database);
+        # a chamada rebentava em TypeError e os padroes de backup nunca eram calculados. Literal escapado.
+        query = query.replace("database_name = ?", "database_name = N'" + str(database_name).replace("'", "''") + "'")
+        result = await self.sql_monitoring.execute_query(server_id, query)
         
         if not result or not result.get('success'):
             return {'success': False}
@@ -365,7 +368,10 @@ class BackupPatternAnalyzer:
         ORDER BY backup_type, expected_interval_hours;
         """
 
-        result = await self.sql_monitoring.execute_query(server_id, query, params=[database_name])
+        # FIX API 500 2026-09-11: execute_query nao aceita params (assinatura: server_id, query, database);
+        # a chamada rebentava em TypeError e os padroes de backup nunca eram calculados. Literal escapado.
+        query = query.replace("database_name = ?", "database_name = N'" + str(database_name).replace("'", "''") + "'")
+        result = await self.sql_monitoring.execute_query(server_id, query)
 
         if not result or not result.get('success'):
             logger.debug(f"Não foi possível buscar schedules para {database_name}")

@@ -6,6 +6,7 @@ Handles all security monitoring and vulnerability assessment endpoints
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from typing import Dict, Any, List, Optional
+import json
 import logging
 import time
 
@@ -173,6 +174,9 @@ async def get_critical_issues(server_id: str, request: Request):
     try:
         # Obter análise completa
         result = await get_server_security_analysis(server_id, request, use_cache=True)
+        # FIX API 500 2026-09-11: a analise devolve JSONResponse; aqui precisamos do dict (era AttributeError .get).
+        if isinstance(result, JSONResponse):
+            result = json.loads(bytes(result.body).decode("utf-8"))
 
         if not result.get("success"):
             return JSONResponse(content=result)

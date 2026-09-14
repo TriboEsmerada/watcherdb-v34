@@ -26,7 +26,18 @@ Version: 1.0.0
 """
 
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse as _StarletteJSONResponse
+from fastapi.encoders import jsonable_encoder as _jsonable_encoder
+import json as _json
+
+
+class JSONResponse(_StarletteJSONResponse):
+    """FIX API 500 2026-09-11: o servico devolve Decimal/datetime e 5 endpoints deste router rebentavam com
+    'Object of type Decimal is not JSON serializable' (TestSukita api_smoke). Serializa via jsonable_encoder."""
+
+    def render(self, content) -> bytes:
+        return _json.dumps(_jsonable_encoder(content), ensure_ascii=False, allow_nan=False,
+                           separators=(",", ":")).encode("utf-8")
 from typing import Optional
 import logging
 
