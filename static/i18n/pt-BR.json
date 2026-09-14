@@ -1,4 +1,10 @@
 {
+  "profile_menu": {
+    "aria": "Menu do usuário {name}",
+    "menu_label": "Opções do usuário",
+    "change_password": "Alterar senha",
+    "logout": "Sair"
+  },
   "kpi_report": {
     "desc_backups": "Status e problemas relacionados a backups"
   },

@@ -1644,6 +1644,13 @@
     "suppressed": "vista en la pantalla de KPIs",
     "monitoring_down": "Monitorización de críticos detenida (datos obsoletos)"
   },
+  "profile_menu": {
+    "aria": "Menú del usuario {name}",
+    "menu_label": "Opciones del usuario",
+    "change_password": "Cambiar contraseña",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
+  },
   "toast": {
     "alwayson_unhealthy": "AlwaysOn No Saludable",
     "blocked_sessions": "Sesiones Bloqueadas",

@@ -3893,6 +3893,10 @@
             display: flex; align-items: center; gap: 12px; padding: 11px 20px;
             cursor: pointer; transition: all 0.15s; color: var(--color-text-secondary); font-size: 13px;
         }
+        /* 2026-09-14: as opcoes passaram de <div> a <button>; repor o aspecto e dar foco visivel */
+        button.profile-menu-item { width: 100%; background: none; border: none; text-align: left; font-family: inherit; }
+        .profile-menu-item:focus-visible { outline: 2px solid #3b82f6; outline-offset: -2px; background: rgba(59,130,246,0.08); color: var(--color-text-primary); }
+        .user-badge:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
         .profile-menu-item:hover { background: rgba(59,130,246,0.08); color: var(--color-text-primary); }
         .profile-menu-item i { width: 18px; text-align: center; color: var(--color-text-disabled); font-size: 14px; }
         .profile-menu-item:hover i { color: var(--color-text-link); }
@@ -4296,7 +4300,7 @@
                 <div id="headerLangSelector"></div><!-- dropdown montado por WatcherI18N.createLanguageSelector (pedido owner 03/09: drill-down em vez de ciclo) -->
                 <!-- User Badge (auth) + Profile Dropdown -->
                 <div style="position: relative;">
-                    <div id="userBadge" class="user-badge" style="display: none;"></div>
+                    <div id="userBadge" class="user-badge" style="display: none;" role="button" tabindex="0" aria-haspopup="menu" aria-expanded="false" aria-controls="userProfileDropdown"></div>
                     <div id="userProfileDropdown" class="user-profile-dropdown"></div>
                 </div>
                 <button data-dba-gated="1" onclick="openSettingsModal()"
@@ -5162,67 +5166,73 @@
             const badge = document.getElementById('userBadge');
             const dropdown = document.getElementById('userProfileDropdown');
             if (badge && user) {
-                const initials = (user.full_name || user.username || '?').substring(0, 2).toUpperCase();
+                // 2026-09-14: tudo o que vem do utilizador (e do Active Directory) passa por _pmEsc
+                const initials = _pmEsc((user.full_name || user.username || '?').substring(0, 2).toUpperCase());
                 badge.innerHTML = `
                     <div class="user-avatar">${initials}</div>
                     <div>
-                        <div class="user-name">${user.full_name || user.username}</div>
-                        <div class="user-role">${user.role}</div>
+                        <div class="user-name">${_pmEsc(user.full_name || user.username)}</div>
+                        <div class="user-role">${_pmEsc(user.role)}</div>
                     </div>
-                    <i class="fas fa-chevron-down" style="color: var(--color-border-strong); margin-left: 2px; font-size: 10px;"></i>
+                    <i class="fas fa-chevron-down" aria-hidden="true" style="color: var(--color-border-strong); margin-left: 2px; font-size: 10px;"></i>
                 `;
                 badge.style.display = 'flex';
                 badge.onclick = function(e) { e.stopPropagation(); toggleProfileDropdown(); };
+                badge.setAttribute('aria-label', _kpiTp('profile_menu.aria', 'Menu do utilizador {name}', { name: user.full_name || user.username || '' }));
+                badge.onkeydown = function(e) {
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); openProfileDropdown('first'); }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); openProfileDropdown('last'); }
+                };
 
                 // Build dropdown
                 if (dropdown) {
                     const authIcon = user.auth_method === 'ldap' ? 'fab fa-windows' : 'fas fa-user-shield';
                     const authLabel = user.auth_method === 'ldap' ? 'Active Directory' : 'Local';
-                    const roleCss = 'profile-role-' + (user.role || 'viewer');
-                    const dept = user.department ? `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:2px;"><i class="fas fa-building" style="margin-right:4px;"></i>${user.department}</div>` : '';
-                    const title = user.title ? `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:1px;"><i class="fas fa-id-badge" style="margin-right:4px;"></i>${user.title}</div>` : '';
+                    const roleCss = 'profile-role-' + String(user.role || 'viewer').replace(/[^a-z0-9_-]/gi, '');
+                    const dept = user.department ? `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:2px;"><i class="fas fa-building" style="margin-right:4px;"></i>${_pmEsc(user.department)}</div>` : '';
+                    const title = user.title ? `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:1px;"><i class="fas fa-id-badge" style="margin-right:4px;"></i>${_pmEsc(user.title)}</div>` : '';
                     dropdown.innerHTML = `
                         <div class="profile-header">
                             <div class="profile-avatar">${initials}</div>
                             <div class="profile-info">
-                                <div class="profile-name">${user.full_name || user.username}</div>
-                                <div class="profile-email">${user.email || user.username}</div>
+                                <div class="profile-name">${_pmEsc(user.full_name || user.username)}</div>
+                                <div class="profile-email">${_pmEsc(user.email || user.username)}</div>
                                 ${dept}${title}
                                 <div style="margin-top:6px;">
-                                    <span class="profile-role-badge ${roleCss}">${user.role}</span>
-                                    <span class="profile-auth-badge"><i class="${authIcon}"></i> ${authLabel}</span>
+                                    <span class="profile-role-badge ${roleCss}">${_pmEsc(user.role)}</span>
+                                    <span class="profile-auth-badge"><i class="${authIcon}" aria-hidden="true"></i> ${authLabel}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="profile-menu">
+                        <div class="profile-menu" role="menu" aria-label="${_pmEsc(t('profile_menu.menu_label'))}">
                             ${user.role === 'admin' ? `
-                            <div class="profile-menu-item" onclick="window.open('/watcherdb/control','_blank'); closeProfileDropdown();">
-                                <i class="fas fa-shield-alt"></i> WatcherDB Control
-                            </div>` : ''}
+                            <button type="button" role="menuitem" class="profile-menu-item" onclick="window.open('/watcherdb/control','_blank'); closeProfileDropdown();">
+                                <i class="fas fa-shield-alt" aria-hidden="true"></i> WatcherDB Control
+                            </button>` : ''}
                             <!-- KPIs removido do dropdown 2026-08-21 (pedido owner):
                                  redundante com o botao KPIs da navbar. -->
                             ${(user.role === 'admin' || user.role === 'dba') ? `
-                            <div class="profile-menu-item" onclick="openCollectorsModal(); closeProfileDropdown();"
+                            <button type="button" role="menuitem" class="profile-menu-item" onclick="openCollectorsModal(); closeProfileDropdown();"
                                  title="Collector Health Monitoring (dba/admin)">
-                                <i class="fas fa-tower-broadcast"></i> Collectors
-                            </div>
-                            <div class="profile-menu-item" onclick="openKpiMuteModal(); closeProfileDropdown();"
+                                <i class="fas fa-tower-broadcast" aria-hidden="true"></i> Collectors
+                            </button>
+                            <button type="button" role="menuitem" class="profile-menu-item" onclick="openKpiMuteModal(); closeProfileDropdown();"
                                  title="KPI Mute List - Smart Defaults camada 1 (dba/admin)">
-                                <i class="fas fa-bell-slash"></i> Mutes
-                            </div>` : ''}
-                            <div class="profile-menu-item" onclick="openChangePasswordModal(); closeProfileDropdown();">
-                                <i class="fas fa-key" style="color:#f59e0b;"></i> Alterar Senha
-                            </div>
-                            <div class="profile-menu-item" onclick="openSettingsModal(); closeProfileDropdown();">
-                                <i class="fas fa-cog"></i> Configuracoes
-                            </div>
-                            <div class="profile-menu-divider"></div>
-                            <div class="profile-menu-item danger" onclick="handleLogout();">
-                                <i class="fas fa-sign-out-alt"></i> Sair
-                            </div>
+                                <i class="fas fa-bell-slash" aria-hidden="true"></i> Mutes
+                            </button>` : ''}
+                            <button type="button" role="menuitem" class="profile-menu-item" onclick="openChangePasswordModal(); closeProfileDropdown();">
+                                <i class="fas fa-key" aria-hidden="true" style="color:#f59e0b;"></i> ${_pmEsc(t('profile_menu.change_password'))}
+                            </button>
+                            <button type="button" role="menuitem" class="profile-menu-item" onclick="openSettingsModal(); closeProfileDropdown();">
+                                <i class="fas fa-cog" aria-hidden="true"></i> ${_pmEsc(t('profile_menu.settings'))}
+                            </button>
+                            <div class="profile-menu-divider" role="separator"></div>
+                            <button type="button" role="menuitem" class="profile-menu-item danger" onclick="handleLogout();">
+                                <i class="fas fa-sign-out-alt" aria-hidden="true"></i> ${_pmEsc(t('profile_menu.logout'))}
+                            </button>
                         </div>
                         <div class="profile-footer">
-                            <span>WatcherDB V3.3</span>
+                            <span>WatcherDB V3.4</span>
                         </div>
                     `;
                 }
@@ -5255,15 +5265,63 @@
             }
         }
 
+        // Menu de perfil (2026-09-14): padrao de botao de menu. Antes o gatilho e as opcoes eram <div> sem
+        // foco nem papel, e quem usava so teclado nem conseguia abrir o menu. O mesmo padrao do sino (A2).
+        function _pmEsc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function _pmItens() {
+            const dd = document.getElementById('userProfileDropdown');
+            return dd ? Array.from(dd.querySelectorAll('[role="menuitem"]')) : [];
+        }
+        function openProfileDropdown(foco) {
+            const dd = document.getElementById('userProfileDropdown');
+            const badge = document.getElementById('userBadge');
+            if (!dd) return;
+            dd.classList.add('show');
+            if (badge) badge.setAttribute('aria-expanded', 'true');
+            const itens = _pmItens();
+            if (itens.length) (foco === 'last' ? itens[itens.length - 1] : itens[0]).focus();
+        }
         function toggleProfileDropdown() {
             const dd = document.getElementById('userProfileDropdown');
-            if (dd) dd.classList.toggle('show');
+            if (!dd) return;
+            if (dd.classList.contains('show')) closeProfileDropdown(false);
+            else openProfileDropdown('first');
         }
-
-        function closeProfileDropdown() {
+        function closeProfileDropdown(devolverFoco) {
             const dd = document.getElementById('userProfileDropdown');
+            const badge = document.getElementById('userBadge');
             if (dd) dd.classList.remove('show');
+            if (badge) {
+                badge.setAttribute('aria-expanded', 'false');
+                // so no Escape: ao clicar numa opcao abre-se uma modal, e e ela que tem de ficar com o foco
+                if (devolverFoco === true) badge.focus();
+            }
         }
+        function _pmKeydown(e) {
+            const dd = document.getElementById('userProfileDropdown');
+            if (!dd || !dd.classList.contains('show')) return;
+            const itens = _pmItens();
+            const i = itens.indexOf(document.activeElement);
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeProfileDropdown(true);          // fecha e devolve o foco ao gatilho
+            } else if (e.key === 'Tab') {
+                closeProfileDropdown(false);         // o Tab segue o seu caminho natural
+            } else if (!itens.length) {
+                return;
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault(); itens[(i + 1) % itens.length].focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault(); itens[(i - 1 + itens.length) % itens.length].focus();
+            } else if (e.key === 'Home') {
+                e.preventDefault(); itens[0].focus();
+            } else if (e.key === 'End') {
+                e.preventDefault(); itens[itens.length - 1].focus();
+            }
+        }
+        document.addEventListener('keydown', _pmKeydown);
 
         // ══════ CHANGE PASSWORD ══════
         function openChangePasswordModal() {
@@ -5342,7 +5400,7 @@
             const dd = document.getElementById('userProfileDropdown');
             const badge = document.getElementById('userBadge');
             if (dd && dd.classList.contains('show') && !dd.contains(e.target) && !badge.contains(e.target)) {
-                dd.classList.remove('show');
+                closeProfileDropdown(false);
             }
         });
 

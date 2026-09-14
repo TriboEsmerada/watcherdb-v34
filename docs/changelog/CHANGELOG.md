@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Menu do perfil: segurança, teclado e texto** (owner 14/09). O nome, o e-mail, o papel, o departamento e o
+  cargo entravam no HTML sem escapar; departamento e cargo vêm do Active Directory, logo um atributo com HTML
+  corria no portal de quem abrisse o menu. Passam todos por escape. O gatilho e as opções eram `div` sem foco,
+  e o menu não se abria com teclado: segue agora o padrão de botão de menu, com setas, Home e End, e o Escape
+  fecha e devolve o foco ao gatilho. "Alterar Senha", "Sair" e "Configuracoes" passam a chaves em pt-PT,
+  en e es, com as formas brasileiras no overlay pt-BR, e o rodapé deixa de dizer V3.3. [tier: Std]
+
 - **Avisos críticos com disciplina, e um sino com histórico** (A2, pedido do owner a 14/09). O aviso de KPI
   crítico já existia mas tinha três defeitos: a primeira leitura era silenciosa (quem abria o portal com
   condições críticas activas nunca via aviso), a deduplicação era por valor (um valor a oscilar disparava a

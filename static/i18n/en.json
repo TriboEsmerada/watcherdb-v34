@@ -1644,6 +1644,13 @@
     "suppressed": "seen on the KPIs screen",
     "monitoring_down": "Critical monitoring stalled (stale data)"
   },
+  "profile_menu": {
+    "aria": "User menu {name}",
+    "menu_label": "User options",
+    "change_password": "Change password",
+    "settings": "Settings",
+    "logout": "Sign out"
+  },
   "toast": {
     "alwayson_unhealthy": "AlwaysOn Unhealthy",
     "blocked_sessions": "Blocked Sessions",
