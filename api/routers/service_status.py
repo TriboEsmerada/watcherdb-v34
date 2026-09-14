@@ -6,12 +6,24 @@ FastAPI Router para Status de Serviços SQL Server
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from typing import List, Optional, Dict
 import logging
 import time
 
 from modules.monitoring.service_monitor import SQLServiceMonitor
 from api.error_helpers import safe_http_error
+
+
+def _svc_json(payload, status_code: int = 200):
+    """JSONResponse com Decimal/datetime/bytes seguros (C0 2026-09-14).
+
+    /api/monitoring/services/overview dava 500 "Object of type Decimal is not JSON
+    serializable". Mesma classe do 500 do tempdb no LIVE: em vez de cacar coluna a
+    coluna, todas as respostas deste router passam por aqui.
+    """
+    return JSONResponse(status_code=status_code,
+                        content=jsonable_encoder(payload, custom_encoder={bytes: lambda b: b.hex()}))
 from api.models import ServiceStatusResponse, ServiceLogsResponse, ServicesOverviewResponse
 
 logger = logging.getLogger(__name__)
@@ -68,7 +80,7 @@ async def get_server_services(
             if cached:
                 logger.debug(f"✅ [Services] Cache HIT para {server_id}")
                 cached['from_cache'] = True
-                return JSONResponse(content=cached)
+                return _svc_json(cached)
 
         logger.debug(f"📡 [Services] Cache MISS para {server_id}, buscando dados...")
         monitor = SQLServiceMonitor()
@@ -78,7 +90,7 @@ async def get_server_services(
         _set_services_cache(server_id, result)
         result['from_cache'] = False
 
-        return JSONResponse(content=result)
+        return _svc_json(result)
     except Exception as e:
         raise safe_http_error(500, e, f"fetching services for {server_id}")
 
@@ -111,7 +123,7 @@ async def get_service_logs(server_id: str, service_name: str, hours: int = Query
         watcherdb_count = sum(1 for log in event_logs if log.get('SourceType') == 'WatcherDB')
         event_viewer_count = sum(1 for log in event_logs if log.get('SourceType') in ('EventLog', 'WinEvent', None))
 
-        return JSONResponse(content={
+        return _svc_json({
             'server_id': server_id,
             'service_name': service_name,
             'hours': hours,
@@ -156,7 +168,7 @@ async def get_all_services_overview(server_ids: Optional[str] = Query(None, desc
                 'servers': {}
             }
         
-        return JSONResponse(content=result)
+        return _svc_json(result)
     except Exception as e:
         raise safe_http_error(500, e, "fetching services overview")
 

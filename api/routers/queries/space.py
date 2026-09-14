@@ -256,7 +256,7 @@ async def get_disk_files(server_id: str, drive: str = Query(..., description="Vo
                     safe_db_str = db.replace("'", "''").replace("[", "[[").replace("]", "]]")
                     safe_db_bracket = db.replace("]", "]]")
                     union_parts.append(
-                        f"SELECT '{safe_db_str}' as db_name, data_space_id, name as fg_name "
+                        f"SELECT '{safe_db_str}' as db_name, data_space_id, name COLLATE DATABASE_DEFAULT as fg_name "
                         f"FROM [{safe_db_bracket}].sys.filegroups WITH(NOLOCK)"
                     )
                 fg_query = " UNION ALL ".join(union_parts)

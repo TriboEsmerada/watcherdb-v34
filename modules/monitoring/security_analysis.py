@@ -164,7 +164,7 @@ class SecurityAnalysisEngine:
                     WHEN SERVERPROPERTY('IsIntegratedSecurityOnly') = 1 THEN 'Windows Authentication apenas'
                     ELSE 'Mixed Mode (Windows + SQL Server Authentication)'
                 END AS auth_mode,
-                SERVERPROPERTY('IsIntegratedSecurityOnly') AS is_windows_only
+                CAST(SERVERPROPERTY('IsIntegratedSecurityOnly') AS INT) AS is_windows_only
             """
             
             result = await self.sql_monitoring.execute_query(server_id, query_auth)
@@ -577,8 +577,7 @@ class SecurityAnalysisEngine:
             query_tde = """
             SELECT 
                 d.name AS database_name,
-                d.is_encrypted,
-                d.encryption_state_desc
+                d.is_encrypted
             FROM sys.databases d WITH(NOLOCK)
             WHERE d.database_id > 4
                 AND d.state = 0
@@ -767,10 +766,10 @@ class SecurityAnalysisEngine:
             query_version = """
             SELECT 
                 @@VERSION AS version_string,
-                SERVERPROPERTY('ProductVersion') AS product_version,
-                SERVERPROPERTY('ProductLevel') AS product_level,
-                SERVERPROPERTY('Edition') AS edition,
-                SERVERPROPERTY('ProductUpdateLevel') AS update_level
+                CAST(SERVERPROPERTY('ProductVersion') AS NVARCHAR(128)) AS product_version,
+                CAST(SERVERPROPERTY('ProductLevel') AS NVARCHAR(128)) AS product_level,
+                CAST(SERVERPROPERTY('Edition') AS NVARCHAR(128)) AS edition,
+                CAST(SERVERPROPERTY('ProductUpdateLevel') AS NVARCHAR(128)) AS update_level
             """
             
             result = await self.sql_monitoring.execute_query(server_id, query_version)

@@ -1458,7 +1458,7 @@ class SQLQueries:
                         WHEN EXISTS (SELECT 1 FROM sys.indexes i WITH(NOLOCK) WHERE i.object_id = s.object_id AND i.name = s.name) THEN ''INDEX_STATS''
                         ELSE ''COLUMN_STATS''
                     END as stats_type,
-                    CASE WHEN sp.rows > 0 THEN CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(5,2)) ELSE 0 END as modification_percent,
+                    CASE WHEN sp.rows > 0 THEN CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(18,2)) ELSE 0 END as modification_percent,
                     CASE WHEN sp.last_updated IS NOT NULL THEN DATEDIFF(day, sp.last_updated, GETDATE()) ELSE NULL END as days_since_update,
                     CASE WHEN sp.last_updated IS NOT NULL THEN DATEDIFF(hour, sp.last_updated, GETDATE()) ELSE NULL END as hours_since_update,
                     CASE

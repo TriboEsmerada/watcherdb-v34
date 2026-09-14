@@ -9,6 +9,15 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **C0: as classes de defeito do LIVE, corrigidas nos outros routers** (medido no log de 14/09, ficheiro e
+  linha tirados dos frames do traceback). O KPI de estatísticas desactualizadas rebentava com overflow porque
+  a percentagem de modificações não cabe em `DECIMAL(5,2)`: o contador não é limitado pelo número de linhas.
+  O detalhe de ficheiros por disco partia quando duas bases tinham collation diferente, ao juntar nomes de
+  filegroup num `UNION ALL`. E o resumo de segurança estava partido de três maneiras ao mesmo tempo: uma
+  coluna que não existe em `sys.databases` e nunca era lida, cinco `SERVERPROPERTY` sem conversão (o driver
+  não transporta `sql_variant`), mais o defeito que o lote anterior já fechou. O resumo de serviços passa a
+  serializar Decimal como o LIVE. [tier: Std]
+
 - **LIVE › AlwaysOn: aberto numa secundária, o canal mostra a visão da primária** (GO do owner 11/09).
   Numa secundária a DMV só devolve a linha local, e o lag saía "n/d" em todas as linhas. O endpoint pergunta
   ao estado do grupo quem é a primária de cada AG (visível em qualquer nó), salta até ela (máx. 2 primárias,

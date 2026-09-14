@@ -264,7 +264,7 @@ async def diagnose_tempdb_villain(server_id: str, session_id: int):
                     DATEDIFF(day, STATS_DATE(s.object_id, s.stats_id), GETDATE()) as days_since_update,
                     sp.rows as table_rows,
                     sp.modification_counter as modifications,
-                    CASE WHEN sp.rows > 0 THEN CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(5,2)) ELSE 0 END as modification_percent
+                    CASE WHEN sp.rows > 0 THEN CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(18,2)) ELSE 0 END as modification_percent
                 FROM sys.stats s WITH(NOLOCK)
                 CROSS APPLY sys.dm_db_stats_properties(s.object_id, s.stats_id) sp
                 WHERE OBJECTPROPERTY(s.object_id, 'IsUserTable') = 1

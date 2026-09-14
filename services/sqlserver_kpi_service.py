@@ -750,7 +750,7 @@ class SQLServerKPIService:
             sp.last_updated,
             CASE
                 WHEN sp.rows > 0
-                THEN CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(5,2))
+                THEN CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(18,2))
                 ELSE 0
             END as modification_percent,
             CASE
@@ -763,7 +763,7 @@ class SQLServerKPIService:
         WHERE OBJECTPROPERTY(s.object_id, 'IsUserTable') = 1
           AND sp.rows >= 100
           AND sp.last_updated IS NOT NULL
-          AND CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(5,2)) >= ?
+          AND CAST((sp.modification_counter * 100.0 / sp.rows) AS DECIMAL(18,2)) >= ?
         ORDER BY modification_percent DESC;
         """
 
