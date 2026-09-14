@@ -152,7 +152,7 @@ class SecurityAnalysisEngine:
                     WHEN value = 2 THEN 'Mixed Mode (Windows + SQL)'
                     ELSE 'Windows Authentication apenas'
                 END AS auth_mode,
-                value AS auth_mode_value
+                CAST(value AS INT) AS auth_mode_value
             FROM sys.configurations WITH(NOLOCK)
             WHERE name = 'user options'
             """
@@ -412,8 +412,8 @@ class SecurityAnalysisEngine:
             query_config = """
             SELECT 
                 name,
-                value_in_use,
-                value,
+                CAST(value_in_use AS INT) AS value_in_use,
+                CAST(value AS INT) AS value,
                 description
             FROM sys.configurations WITH(NOLOCK)
             WHERE name IN (

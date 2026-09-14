@@ -1296,6 +1296,9 @@ class SQLQueries:
     -- =============================================================================
 
     -- Parte 1: Queries com maiores spills (hash/sort spills para TempDB)
+    -- C0b 2026-09-14: cada metade vai numa tabela derivada. ORDER BY num ramo do UNION ALL
+    -- e' erro 156 ('Incorrect syntax near UNION'); dentro da derivada, TOP+ORDER BY e' legal.
+    SELECT * FROM (
     SELECT TOP 20
         'Heavy_Spill_Query' as analysis_type,
         qs.creation_time as plan_created,
@@ -1322,10 +1325,12 @@ class SQLQueries:
     CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) qt
     WHERE qs.total_spills > 0  -- Apenas queries com spills
     ORDER BY qs.total_spills DESC
+    ) AS parte_spills
 
     UNION ALL
 
     -- Parte 2: Sessões com maior uso histórico de TempDB (desde restart)
+    SELECT * FROM (
     SELECT TOP 20
         'Session_Cumulative_Usage' as analysis_type,
         es.login_time as plan_created,
@@ -1346,6 +1351,7 @@ class SQLQueries:
     WHERE su.session_id > 50
       AND (su.user_objects_alloc_page_count + su.internal_objects_alloc_page_count) > 1000  -- Mais de ~8MB alocados total
     ORDER BY (su.user_objects_alloc_page_count + su.internal_objects_alloc_page_count) DESC
+    ) AS parte_sessoes
     """
 
     FILE_GROWTH_MONITORING = """

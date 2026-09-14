@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **C0b: os dois restos que o smoke de API apanhou depois do C0.** O resumo de segurança continuava a falhar
+  porque `sys.configurations` devolve `value` e `value_in_use` como `sql_variant`, um tipo que o driver não
+  transporta; o lote anterior só tinha convertido o `SERVERPROPERTY`. E o detalhe de culpados do TempDB dava
+  erro de sintaxe porque a primeira metade da consulta acaba com `ORDER BY` mesmo antes do `UNION ALL`, o que
+  o T-SQL não permite: cada metade passa a ir numa tabela derivada, onde `TOP` com `ORDER BY` é legal. [tier: Std]
+
 - **C0: as classes de defeito do LIVE, corrigidas nos outros routers** (medido no log de 14/09, ficheiro e
   linha tirados dos frames do traceback). O KPI de estatísticas desactualizadas rebentava com overflow porque
   a percentagem de modificações não cabe em `DECIMAL(5,2)`: o contador não é limitado pelo número de linhas.
