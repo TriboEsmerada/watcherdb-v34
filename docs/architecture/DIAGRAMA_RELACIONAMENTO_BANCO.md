@@ -96,8 +96,25 @@ A arquitetura do WatcherDB Intelligence segue o padrao Blue-Green para gerenciam
 - Diagnosis, Diagnosis_Desc
 - Ping_OK, Ping_Status, Ping_Message
 - Services_Down
-- First_Event_Time, Last_Event_Time
-- Minutes_Since_First_Event, Minutes_Since_Last_Event
+- First_Event_Time: hora em que o evento ABRIU (coluna propria desde a migration 010 (A1,
+  2026-09-14); antes era um alias de Event_Time e mentia. COALESCE com Event_Time para
+  eventos anteriores a migracao)
+- Last_Event_Time, Last_Seen_Time: ultima confirmacao do recolhedor (Event_Time, reescrito
+  pelo MERGE a cada ciclo)
+- Minutes_Since_First_Event: ha quanto tempo o servidor esta em baixo
+- Minutes_Since_Last_Event, Minutes_Since_Last_Seen: ha quanto tempo nao ha confirmacao.
+  E' o sinal de frescura: um valor alto quer dizer que o recolhedor deixou de ver o
+  servidor, NAO que o problema passou
+
+**Filtro (desde a migration 010):** as tres vistas contam eventos com `Is_Resolved = 0`,
+sem janela de tempo. Ate 2026-09-14 so contavam eventos confirmados nos ultimos 15 min, e
+quando o recolhedor saltava ciclos um servidor em baixo desaparecia do cartao (10/09:
+SQLHDSPRD407 em baixo 6h30 com "Offline 0"). As tres mudam sempre juntas: tinham a mesma
+CTE copiada, e mudar so uma faz o cartao e a modal discordarem.
+
+**Ambiente:** os eventos sao por HOST e o inventario por INSTANCIA, portanto o Env e
+resolvido por prefixo (`OUTER APPLY ... TOP 1`), preferindo o match exacto. Com igualdade
+simples o Env saia `Undefined` e o filtro de ambiente do portal escondia o servidor.
 - Severity, State
 
 ---

@@ -463,7 +463,9 @@ async def _initialize_last_known_values_from_db():
             (f"SELECT COUNT(DISTINCT Instance) AS v FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_INST_AVAILABILITY_ACTIVE WITH (NOLOCK) WHERE Is_Available = 1", 'instances_ok', 'v'),
             # 1.1 DB Not Availability - usar PROBLEM_VIEW (databases com problema)
             (f"SELECT COUNT(*) AS v FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_DB_AVAILABILITY_PROBLEM_VIEW WITH (NOLOCK)", 'last_abnormal_count', 'v'),
-            # Instances Off - servidores com PING FALHOU e evento nao resolvido (GROUPED_VIEW ja filtra Is_Resolved=0 e ultimos 7 dias)
+            # Instances Off - servidores com PING FALHOU e evento nao resolvido. A GROUPED_VIEW filtra so Is_Resolved=0,
+            # SEM janela de tempo desde a migration 010 (A1, 2026-09-14). O comentario anterior dizia
+            # "ultimos 7 dias", mas o filtro real era de 15 min -- e escondia servidores em baixo.
             (f"SELECT COUNT(DISTINCT Instance) AS v FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_SERVER_OFFLINE_GROUPED_VIEW WITH (NOLOCK) WHERE Ping_OK = 0", 'last_instances_off_count', 'v'),
         ]
 

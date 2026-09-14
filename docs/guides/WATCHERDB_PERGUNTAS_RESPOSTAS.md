@@ -601,7 +601,10 @@
 **P: Quais instancias estao offline?**
 - Caminho: Portal > KPI Dashboard > Card "Instances Off"
 - Endpoint: `GET /api/sqlserver-kpis/instance-availability`
-- Dados: Instancias que nao respondem a ping nos ultimos 15 minutos
+- Dados: Instancias com evento de offline aberto (ping ou SQL sem resposta), ate o recolhedor
+  confirmar que voltaram. Nao ha janela de tempo: um servidor em baixo continua a contar mesmo
+  que o recolhedor salte ciclos. A modal mostra ha quanto tempo esta em baixo e ha quanto tempo
+  nao ha confirmacao; este segundo valor alto indica que o recolhedor deixou de o ver
 
 **P: Quantas instancias tem problemas criticos em cada categoria?**
 - Caminho: Portal > KPI Dashboard > Cards vermelhos (Critical)

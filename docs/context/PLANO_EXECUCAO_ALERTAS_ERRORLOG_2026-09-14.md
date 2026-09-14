@@ -27,7 +27,13 @@ activos, que é o uso correcto.
 `tlog_critical`, `filegroup_critical`. Não é preciso construir popup novo. O owner só vê o de
 blocking porque é o único cujo contador se mexe.
 
-### A1 — o contador de instâncias offline (bloqueia tudo o resto)
+### A1 — o contador de instâncias offline (bloqueia tudo o resto) — **FECHADO 14/09**
+
+> **Estado:** aplicado na base viva e provado com evento sintético. A medição corrigiu o diagnóstico: o
+> contador não estava estruturalmente a zero; o defeito só aparece quando há servidor em baixo e o
+> recolhedor salta ciclos. Havia 5 órfãos que tornavam obrigatório fechá-los antes de retirar a janela, e
+> uma quinta causa (Env por host contra inventário por instância). Detalhe no CONTEXT.md de 14/09 e na
+> migration 010 do V1. Pendentes em lote próprio: P1b (auto-resolve de órfãos no recolhedor) e P4.
 
 - **Porquê primeiro:** o alerta de offline está ligado e nunca disparou, porque lê `off_count` da
   Disponibilidade, que é estruturalmente 0. Ligar mais avisos a contadores mortos não produz avisos.

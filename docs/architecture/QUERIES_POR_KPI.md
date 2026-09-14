@@ -306,10 +306,12 @@ SELECT
     Ping_Status, 
     Ping_Message, 
     Services_Down, 
-    First_Event_Time, 
+    First_Event_Time,          -- hora em que abriu (coluna propria desde a migration 010 (A1))
     Last_Event_Time, 
-    Minutes_Since_First_Event, 
+    Last_Seen_Time,            -- ultima confirmacao do recolhedor
+    Minutes_Since_First_Event, -- ha quanto tempo esta em baixo
     Minutes_Since_Last_Event, 
+    Minutes_Since_Last_Seen,   -- frescura: alto = o recolhedor deixou de o ver
     Severity, 
     [State]
 FROM WatcherDB_Intelligence.dbo.KPI_MSSQL_SERVER_OFFLINE_GROUPED_VIEW WITH (NOLOCK)

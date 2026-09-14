@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Disponibilidade: o cartão deixa de dizer "Offline 0" com servidores em baixo** (A1, migration 010 do
+  V1). As três vistas de eventos de offline só contavam eventos confirmados nos últimos 15 minutos, e
+  quando o recolhedor saltava ciclos um servidor em baixo desaparecia (10/09: 6h30 com Offline 0). A hora
+  de início passa a ser verdadeira em vez de repetir a última confirmação, o ambiente resolve por prefixo
+  (os eventos são por host e o inventário por instância, e o filtro de ambiente escondia o servidor), e
+  cinco eventos órfãos de servidores desactivados foram fechados. Provado com um evento sintético. A
+  resposta ao utilizador no guia de perguntas, que falava de "últimos 15 minutos", foi corrigida. [tier: Std]
+
 - **C0b: os dois restos que o smoke de API apanhou depois do C0.** O resumo de segurança continuava a falhar
   porque `sys.configurations` devolve `value` e `value_in_use` como `sql_variant`, um tipo que o driver não
   transporta; o lote anterior só tinha convertido o `SERVERPROPERTY`. E o detalhe de culpados do TempDB dava
