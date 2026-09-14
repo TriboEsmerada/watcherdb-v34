@@ -1,7 +1,6 @@
 """
 2026-09-11 -- LIVE alwayson: numa secundaria as linhas vem da primaria (hop), sem nunca dar 503 pelo salto.
 """
-import asyncio
 import json
 from pathlib import Path
 
@@ -40,7 +39,7 @@ def test_secondary_hops_to_primary(monkeypatch):
         return _local_rows(), None
 
     monkeypatch.setattr(lm, "_query_instance", fake)
-    body = json.loads(lm.get_alwayson_live("HOSTB_I01")).body)
+    body = json.loads(lm.get_alwayson_live("HOSTB_I01").body)
     assert body["hops"] == [{"ag": "AG1", "primary": "HOSTA\\I01", "server_id": "HOSTA_I01"}]
     names = sorted((r["replica_server_name"], r["role_desc"]) for r in body["replicas"])
     assert names == [("HOSTA\\I01", "PRIMARY"), ("HOSTB\\I01", "SECONDARY")]  # OTHER (AG nao local) fica de fora
@@ -55,7 +54,7 @@ def test_primary_does_not_hop(monkeypatch):
         return _primary_rows(), None
 
     monkeypatch.setattr(lm, "_query_instance", fake)
-    body = json.loads(lm.get_alwayson_live("HOSTA_I01")).body)
+    body = json.loads(lm.get_alwayson_live("HOSTA_I01").body)
     assert body["hops"] == [] and len(body["replicas"]) == 3
 
 
@@ -68,7 +67,7 @@ def test_hop_failure_keeps_local_rows_with_note(monkeypatch):
         return _local_rows(), None
 
     monkeypatch.setattr(lm, "_query_instance", fake)
-    resp = lm.get_alwayson_live("HOSTB_I01"))
+    resp = lm.get_alwayson_live("HOSTB_I01")
     body = json.loads(resp.body)
     assert resp.status_code == 200 and body["hops"] == []
     assert body["replicas"] == _local_rows() and any("HOSTA_I01" in n for n in body["notes"])
@@ -81,7 +80,7 @@ def test_unknown_primary_keeps_local_rows(monkeypatch):
         return _local_rows(), None
 
     monkeypatch.setattr(lm, "_query_instance", fake)
-    body = json.loads(lm.get_alwayson_live("HOSTB_I01")).body)
+    body = json.loads(lm.get_alwayson_live("HOSTB_I01").body)
     assert body["hops"] == [] and body["replicas"] == _local_rows() and body["notes"]
 
 
@@ -95,7 +94,7 @@ def test_local_query_error_still_503(monkeypatch):
     from fastapi import HTTPException
     monkeypatch.setattr(lm, "_query_instance", lambda *a, **k: (None, "boom"))
     with pytest.raises(HTTPException) as ei:
-        lm.get_alwayson_live("HOSTB_I01"))
+        lm.get_alwayson_live("HOSTB_I01")
     assert ei.value.status_code == 503
 
 
