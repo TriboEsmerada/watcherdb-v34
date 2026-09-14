@@ -1,0 +1,199 @@
+# Plano de execução — alertas críticos, histórico de errorlog e dívida do LIVE
+
+> Origem: sessão de 11–14/09 (LIVE 4 canais, F9, F9b, salto AG) e os dois pedidos do owner a 14/09:
+> (1) o ecrã de instância offline mostrar o errorlog à volta da queda; (2) qualquer KPI crítico novo
+> gerar um aviso no ecrã. Tudo o que segue foi verificado no código ou medido na frota; onde é
+> suposição, está escrito que é.
+
+## 0. Estado à entrada (não repetir)
+
+Fechado nesta sessão e em produção: os 4 canais do LIVE que davam 503/500 (`33a8c98`), os 5 acertos
+de UX do teste completo (`ca0a77d`), nomes e tooltips do Fleet (`dca254e`), o salto do canal AlwaysOn
+para a primária (`185a4ff`, teste corrigido em `8f9f995`).
+
+Pendente de outra sessão, já pronto a aplicar: `docs/context/FIX_API500_PASSO1_apply.py`
+(achados 1–4 de `FINDINGS_TESTSUKITA_2026-09-11`).
+
+Item que sai da fila por estar resolvido: o lag do painel LIVE medido por `DATEDIFF` até `GETDATE()`.
+Ficou corrigido em `33a8c98`; os `DATEDIFF` que restam no router medem tempo decorrido de pedidos
+activos, que é o uso correcto.
+
+---
+
+## Bloco A — o aviso de KPI crítico (pedido 2 do owner)
+
+**Facto de partida.** O mecanismo já existe. `TOAST_CRITICAL_CHECKS` tem 7 entradas:
+`instances_offline`, `blocked_sessions`, `db_unavailable`, `alwayson_unhealthy`, `disk_critical`,
+`tlog_critical`, `filegroup_critical`. Não é preciso construir popup novo. O owner só vê o de
+blocking porque é o único cujo contador se mexe.
+
+### A1 — o contador de instâncias offline (bloqueia tudo o resto)
+
+- **Porquê primeiro:** o alerta de offline está ligado e nunca disparou, porque lê `off_count` da
+  Disponibilidade, que é estruturalmente 0. Ligar mais avisos a contadores mortos não produz avisos.
+- **As quatro causas medidas a 10/09:** a vista agrupa eventos numa janela de 15 minutos; o MERGE
+  reescreve `Event_Time` a cada ciclo, logo o evento rejuvenesce e nunca envelhece; o travão do ping
+  e o ambiente `Undefined` tiram a instância da conta; não existe a linha "sem recolha".
+- **Toca em:** vista da família `SERVER_OFFLINE_EVENTS` (base partilhada), recolhedor de ping,
+  backend do KPI de disponibilidade, portal.
+- **Gate:** guardião do recolhedor (veto), porque mexe em família partilhada. Canónico + docs no
+  mesmo commit (regra 2).
+- **Prova:** com uma instância comprovadamente em baixo, o cartão passa a dizer o número certo e o
+  aviso dispara. Sem instância em baixo, provar em ambiente de teste desligando a recolha de uma.
+- **Esforço:** meio dia, com a medição prévia das quatro causas na base viva.
+
+### A2 — disciplina dos avisos
+
+Sem isto, ligar 15 KPI transforma uma manhã má numa parede de avisos, e o DBA aprende a ignorar o
+vermelho. É a mesma doutrina que levou o alarme de backup de 469 para 75.
+
+- **Primeira observação também dispara.** Hoje só dispara em subida face à leitura anterior; quem
+  abre o portal com 8 instâncias já em baixo não vê nada.
+- **Um aviso por condição, com arrefecimento.** Hoje um valor que oscila entre 3 e 4 dispara em cada
+  subida. A chave de deduplicação passa a ser a condição, não o valor.
+- **Sino com histórico.** Nenhum aviso desaparece em silêncio, incluindo os suprimidos enquanto o
+  utilizador está no ecrã de KPIs. Regra de 21/08 aplicada aos avisos.
+- **Toca em:** só portal. **Gate:** frontend-specialist. **Esforço:** 2 a 3 horas.
+
+### A3 — ligar os KPI críticos que faltam
+
+- Passar dos 7 actuais aos restantes críticos do registo, com o mesmo contrato: valor, valor
+  anterior, tipo de KPI para o clique abrir a modal certa.
+- **Pré-condição:** cada contador que se ligue tem de ter prova de que se mexe. Um contador que
+  ninguém verificou entra com nota, não com aviso.
+- **Toca em:** só portal. **Esforço:** 1 a 2 horas depois de A2.
+
+---
+
+## Bloco B — histórico de errorlog (pedido 1 do owner)
+
+**Factos medidos hoje, que mudam o desenho:**
+
+| Facto | Onde | Consequência |
+|---|---|---|
+| `cutoff = now - 60 min` | `collect_errorlog.py` | a tabela só tem a última hora |
+| `TRUNCATE TABLE` por ciclo (5 min) | `store_data` | uma instância que cai desaparece da tabela em menos de 5 min |
+| `xp_readerrorlog 0, 1, N'Error'` | leitura | reboots e shutdowns nunca são capturados; das duas linhas de um erro só sobra a do número |
+| `Log_Type='Error'`, `Severity=None` | escrita | não há por onde filtrar gravidade: as colunas existem e estão sempre vazias |
+| `abs(hash(texto))` | escrita | hash aleatorizado por processo: a mesma linha muda de chave a cada reinício do serviço |
+
+Volume actual, da consulta do owner a 14/09: 19.510 linhas, 33 instâncias, janela de 70 minutos,
+cerca de 590 linhas por instância por hora.
+
+**Critério do owner, aceite:** guardar só erros, eventos críticos, reboots e shutdowns. Fora
+avisos e informativos. Filtrar na origem é a doutrina que em 30/07 cortou 142 mil linhas por ciclo
+para 1.400.
+
+### B0 — medir antes de desenhar (leitura pura)
+
+- Ler o errorlog de uma instância de produção **sem** o filtro por palavra, durante um período, e
+  contar por categoria: erros por gravidade, ciclo de vida (arranque, encerramento, recuperação,
+  failover), tentativas de login, ruído informativo.
+- **Sem esta medição, qualquer política de retenção é um palpite.** É o passo que decide o volume
+  de B2.
+- **Identidade:** `sql_monitoring`, leitura. **Esforço:** 1 hora. **Corre:** a AI.
+
+### B1 — recolhedor: classificar em vez de filtrar por palavra
+
+- Ler sem o filtro `N'Error'`; classificar cada linha por número de erro, gravidade, estado e padrão
+  de ciclo de vida; juntar as duas linhas do mesmo erro; hash determinístico em vez do `hash()` do
+  Python.
+- **Verificar antes:** o canónico declara a coluna de hash como calculada e o recolhedor insere-a
+  explicitamente. Se a base viva a tiver como coluna normal, é desvio a corrigir no canónico.
+- **Gate:** guardião do recolhedor, com veto. **Esforço:** meio dia.
+
+### B2 — tabela de histórico com retenção
+
+- Ressuscitar `KPI_MSSQL_ERRORLOG_HIST`, hoje comentada no canónico como descontinuada, com a
+  política que sair de B0 e a deduplicação corrigida.
+- **Armadilha a não herdar:** a chave primária antiga inclui o carimbo de recolha, portanto a mesma
+  linha entrava até 12 vezes, uma por ciclo dentro da janela de 60 minutos. A deduplicação tem de
+  ignorar o carimbo.
+- **Toca em:** base partilhada. Canónico `INSTALACAO_COMPLETA_UNIFICADA.sql` + documentação no mesmo
+  bloco (regra 2). Entrada no purge diário.
+- **Corre o DDL:** o owner (regra 5). **Esforço:** 2 a 3 horas de preparação.
+
+### B3 — bloco no ecrã de instância offline
+
+- Endpoint só de leitura com as últimas mensagens da instância, e o bloco no ecrã com o rótulo
+  honesto: "últimas mensagens antes de perder contacto", nunca "o que aconteceu".
+- Mostra a idade da última recolha e avisa quando está velha.
+- **Esforço:** 2 horas. **Depende de:** B1 e B2, senão nasce vazio.
+
+---
+
+## Bloco C — dívida técnica destapada nesta sessão
+
+| # | Item | Onde | Esforço |
+|---|---|---|---|
+| C1 | Endpoints do LIVE são `async def` com pyodbc síncrono: bloqueiam o event loop a cada sondagem de 5 s. O canal AlwaysOn já passou a `def`; faltam os outros 13 | `live_monitoring.py` | 2 h + prova de carga |
+| C2 | Gauges congelam no último valor bom quando a leitura falha, sem sinal de idade. Mesma classe do carimbo de refresh | portal | 1 h |
+| C3 | Mensagens usam a chave interna do programa (`alwayson`, `plancache`) em vez do rótulo visível | portal | 1 h |
+| C4 | KPI de serviços estruturalmente 0 desde 13/05 (família de recolha desactivada). Passo A: N/D quando os dados estão velhos, cartão nunca escondido | backend + portal | meio dia |
+| C5 | `backup_pattern_analysis` com `params=` inválido: mais de 1.280 ocorrências no log | `modules/monitoring` | 1 h |
+| C6 | Resolvedor de AG lê ficheiros JSON legados em vez da base | `api/routers/alwayson.py` | 2 h |
+| C7 | Lote i18n F9: literais das tabelas do separador Always On | portal + i18n | 2 h |
+
+---
+
+## Bloco C0 — as classes do LIVE que estão vivas noutros routers
+
+Medido no log do serviço desde o arranque de 14/09, com o ficheiro e a linha tirados dos frames do
+traceback, não por adivinhação. São os mesmos defeitos que fechei no LIVE esta semana, noutros sítios.
+
+| Erro | Ocorrências | Sítio real | Estado |
+|---|---|---|---|
+| `Decimal` não serializável | 32 | `api/routers/sqlserver_kpis.py` (5 endpoints) e `service_status.py` (services/overview) | o primeiro está no `FIX_API500`; o segundo não |
+| Sintaxe 319 junto a "with" | 8 | `modules/monitoring/queries.py:1605`, hint numa função de tabela | coberto pelo `FIX_API500` |
+| `params=` inválido | 679 | `backup_pattern_analysis.py:220` e `:368` | coberto pelo `FIX_API500` |
+| `JSONResponse` tratado como dicionário | 4 | `watcherdb/api/routers/security.py:177` | coberto pelo `FIX_API500` |
+| Overflow 8115 | 18 | `sqlserver_kpis.py:381 get_filegroup_usage` e `:674 get_statistics_outdated` | **por corrigir** |
+| Conflito de collation em UNION ALL, coluna 3 | 16 | `api/routers/queries/space.py:211 get_disk_files` | **por corrigir** |
+| Tipo ODBC -16 não suportado | 40 | `security_analysis.py:167` e `:770`, `SERVERPROPERTY` sem `CAST` (devolve `sql_variant`) | **por corrigir** |
+| Coluna `encryption_state_desc` inexistente | 20 | `security_analysis.py:581` | **por corrigir** |
+
+**Nota sobre o endpoint de segurança:** `/api/monitoring/security/server/{id}/summary` está partido de
+três maneiras ao mesmo tempo. O `FIX_API500` fecha uma. As outras duas, a coluna inexistente e o
+`sql_variant` sem conversão, ficam para este lote. Corrigir só uma delas não põe o ecrã a funcionar.
+
+**Detalhe que poupa trabalho:** a coluna `encryption_state_desc` não existe em `sys.databases`, e o
+código que a pede nunca a lê, porque só usa `is_encrypted`. Removê-la é a correcção completa.
+
+**Ordem:** aplicar primeiro o `FIX_API500`, que já está preparado e validado, e só depois este lote,
+para as provas não se misturarem. Um restart entre os dois.
+
+## Bloco D — infra e decisões que são do owner
+
+- **D1. O recolhedor corre no portátil do owner.** Com a máquina desligada não se recolhe nada, e o
+  histórico de B2 terá buracos ao fim de semana. É o mesmo padrão que a 04/08 levou o motor de
+  baselines para um trabalho no servidor. **Sem isto, o Bloco B entrega menos do que promete.**
+- **D2. Erro 18456 estado 8 no errorlog do 405, vindo de 10.89.0.171.** Parte são as sondas da AI de
+  11/09 entre as 18:30 e as 19:10 (o pool do processo carrega a password cifrada). Confirmar se há
+  ocorrências fora dessa janela: se houver, há um recolhedor ou script com credencial velha.
+- **D3. MYBAGP2 em SQLHDSPRD405.** Redo passou de 65 GB para 111 GB numa hora, sem drenar. O drill
+  "Acompanhar" diz em 3 minutos se drena ou estagna. Verificar o espaço livre no volume do t-log da
+  primária. Decisão de DBA, não do produto.
+- **D4. Repositório público.** Purga do histórico, privacidade e rotação da credencial continuam por
+  decidir desde 04/09.
+- **D5. Duas decisões de produto em aberto:** os limiares do drill de resume entram no registo de
+  thresholds? O relatório preditivo fica com gate de admin ou de dba?
+
+---
+
+## Ordem recomendada
+
+1. **A1** (contador de offline) — desbloqueia o pedido do owner e é o maior ganho isolado.
+2. **A2 + A3** (disciplina e cobertura dos avisos) — fecham o pedido 2.
+3. **B0** (medição) — pode correr em paralelo com A, é leitura pura.
+4. **B1 → B2 → B3** — a wave do errorlog, com o gate do guardião entre B0 e B1.
+5. **C1, C4** — a dívida com impacto em produção.
+6. **C2, C3, C5, C6, C7** — por ordem de incómodo.
+
+D1 é transversal: enquanto o recolhedor viver no portátil, A1 e B2 entregam menos do que prometem.
+
+## Regras aplicadas a todos os lotes
+
+Script de aplicação em `docs/context/` com `--check` e `--preview`, prova numa cópia isolada antes
+de o owner aplicar, testes no mesmo commit, entrada no CHANGELOG, episódio em `SOLUCOES.md` quando
+for defeito, prompt de propagação V6 (regra 3), e parecer do especialista antes de escrever código
+quando toca em base partilhada ou recolhedor (regra 0).
