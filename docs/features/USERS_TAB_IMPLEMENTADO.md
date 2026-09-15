@@ -73,7 +73,12 @@ Identifica usuários e logins com permissões administrativas críticas.
 
 ### 3. **Usuários Inativos**
 
-Lista logins sem atividade recente (30+ dias).
+> **Corrigido a 2026-09-15.** O SQL Server não guarda a data do último login. Esta secção usa
+> `sys.dm_exec_sessions`, portanto lista logins **sem sessão ligada no momento da leitura**, não
+> inatividade de 30 dias. Em SQLHDSPRD212 eram 136 de 158 logins. No portal chama-se agora "Logins sem
+> sessão ligada agora"; os dias contam desde a criação quando não há sessão. A secção nova "Sessões
+> ativas agora" mostra quem está ligado, do pedido mais recente para o mais antigo (hosts e programas só
+> no ecrã, nunca no relatório).
 
 **O que detecta:**
 - Logins que nunca fizeram login desde criação
@@ -503,6 +508,9 @@ EXEC sp_change_users_login 'Auto_Fix', 'app_user'
 **Cenário:** Reduzir superfície de ataque desabilitando logins inativos.
 
 **Política:** Logins sem uso por 90+ dias devem ser desabilitados.
+
+> **Atenção (2026-09-15):** a lista do WatcherDB não prova 90 dias sem uso: mostra logins sem sessão
+> ligada no momento da leitura. Confirmar com auditoria de logins (Server Audit) antes de desabilitar.
 
 **Ação com WatcherDB:**
 1. Abrir aba Users

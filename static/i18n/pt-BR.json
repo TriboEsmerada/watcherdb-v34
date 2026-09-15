@@ -141,6 +141,13 @@
     "status": "Status"
   },
   "users": {
+    "no_session_now_title": "Logins sem sessão conectada agora",
+    "no_session_now_desc": "O SQL Server não guarda a data do último login. Estes logins não têm sessão conectada neste momento; isso não prova que estejam inativos.",
+    "all_have_session": "Todos os logins têm sessão conectada neste momento.",
+    "current_session_since": "Sessão conectada desde",
+    "active_sessions_desc": "Logins com sessão conectada neste momento, da requisição mais recente para a mais antiga. O SQL Server não guarda histórico de logins.",
+    "connected_since": "Conectado desde",
+    "last_request": "Última requisição",
     "group_members": "Usuários do Grupo",
     "inactive_users": "Usuários Inativos",
     "loading": "Carregando análise de usuários...",

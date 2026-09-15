@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Aba Users: sessões ativas agora, e o fim do falso "inativo"** (owner 15/09). O SQL Server não guarda a
+  data do último login; a lista de inativos usava só as sessões ligadas no momento, portanto "Nunca" queria
+  dizer "sem sessão agora" e os dias contavam desde a criação, ao lado de um texto que prometia 30+ dias.
+  A secção passa a chamar-se "Logins sem sessão ligada agora", com o número igual e o texto honesto, e o
+  relatório deixa de recomendar desabilitar essas contas. Secção nova "Sessões ativas agora", do pedido
+  mais recente para o mais antigo, com sessões, hora de ligação, hosts e programas (só no ecrã). Datas e
+  sim/não traduzidos. [tier: Std]
+
 - **Mais sete condições críticas no aviso e no sino, com a classificação aprovada** (A3, owner 15/09).
   Backups falhados e mirroring não saudável avisam logo. CPU, memória, latência de disco e tempdb só avisam
   depois de sustentados (10 min, memória 5), e voltar a zero por menos de 15 min conta como o mesmo

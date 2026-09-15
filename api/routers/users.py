@@ -5,6 +5,7 @@ Handles all user security monitoring endpoints
 
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, Any, List
+from datetime import datetime
 import logging
 import re
 import pyodbc
@@ -44,6 +45,51 @@ def get_pooled_connection(server_id: str, pool: SQLServerConnectionPool, databas
     return conn, pool
 
 
+def _aggregate_active_sessions(rows, limit: int = 200) -> List[Dict[str, Any]]:
+    """Sessoes de utilizador ligadas AGORA, agregadas por login, do pedido mais recente para o mais antigo.
+
+    2026-09-15 (pedido do owner). O SQL Server nao guarda data de ultimo login: isto e' o estado de
+    sys.dm_exec_sessions no momento da leitura, nunca historico. Cada linha de entrada e' um grupo
+    (login_name, host_name, program_name) com sessions, connected_since e last_request.
+    """
+    por_login: Dict[str, Dict[str, Any]] = {}
+    for r in rows:
+        login = (getattr(r, "login_name", None) or "").strip()
+        if not login:
+            continue
+        e = por_login.setdefault(login, {"login_name": login, "sessions": 0, "connected_since": None,
+                                         "last_request": None, "_hosts": {}, "_programs": {}})
+        n = int(getattr(r, "sessions", 0) or 0)
+        e["sessions"] += n
+        cs, lr = getattr(r, "connected_since", None), getattr(r, "last_request", None)
+        if cs is not None and (e["connected_since"] is None or cs < e["connected_since"]):
+            e["connected_since"] = cs
+        if lr is not None and (e["last_request"] is None or lr > e["last_request"]):
+            e["last_request"] = lr
+        host = (getattr(r, "host_name", None) or "").strip()
+        prog = (getattr(r, "program_name", None) or "").strip()
+        if host:
+            e["_hosts"][host] = e["_hosts"].get(host, 0) + n
+        if prog:
+            e["_programs"][prog] = e["_programs"].get(prog, 0) + n
+    saida = []
+    for e in por_login.values():
+        hosts = sorted(e.pop("_hosts").items(), key=lambda kv: (-kv[1], kv[0]))
+        progs = sorted(e.pop("_programs").items(), key=lambda kv: (-kv[1], kv[0]))
+        e["hosts"] = [h for h, _ in hosts[:3]]
+        e["host_count"] = len(hosts)
+        e["programs"] = [p for p, _ in progs[:2]]
+        saida.append(e)
+    # pedido mais recente primeiro; sem data vai para o fim
+    saida.sort(key=lambda e: e["last_request"] or datetime.min, reverse=True)
+    saida = saida[:limit]
+    for e in saida:
+        for k in ("connected_since", "last_request"):
+            if e[k] is not None:
+                e[k] = e[k].isoformat()
+    return saida
+
+
 @router.get("/server/{server_id}", response_model=GenericResponse)
 async def get_users_analysis(server_id: str, pool: SQLServerConnectionPool = Depends(get_pool)):
     """
@@ -52,7 +98,8 @@ async def get_users_analysis(server_id: str, pool: SQLServerConnectionPool = Dep
     Returns:
     - orphaned_users: Usuários órfãos (sem login correspondente)
     - excessive_permissions: Usuários com permissões excessivas
-    - inactive_users: Usuários inativos (30+ dias)
+    - inactive_users: logins SEM SESSAO LIGADA AGORA (o SQL Server nao guarda o ultimo login; nao e' inatividade provada)
+    - active_sessions: logins com sessao ligada agora, do pedido mais recente para o mais antigo
     - weak_passwords: Logins com políticas de senha fracas
     - critical_roles: Membros de roles críticos
     - total_users: Total de usuários/logins no servidor
@@ -285,6 +332,25 @@ async def get_users_analysis(server_id: str, pool: SQLServerConnectionPool = Dep
                 'is_disabled': row.is_disabled
             })
 
+        # 3b. SESSOES ATIVAS AGORA (2026-09-15, pedido do owner). O SQL Server nao guarda o ultimo login:
+        # isto e' so' o que esta ligado no momento da leitura. A propria sessao desta leitura fica de fora.
+        active_query = """
+        SELECT
+            s.login_name,
+            s.host_name,
+            s.program_name,
+            COUNT(*) AS sessions,
+            MIN(s.login_time) AS connected_since,
+            MAX(s.last_request_start_time) AS last_request
+        FROM sys.dm_exec_sessions s
+        WHERE s.is_user_process = 1
+            AND s.session_id <> @@SPID
+        GROUP BY s.login_name, s.host_name, s.program_name
+        """
+
+        cursor.execute(active_query)
+        active_sessions = _aggregate_active_sessions(cursor.fetchall())
+
         # 4. SENHAS FRACAS (Políticas desabilitadas)
         weak_pwd_query = """
         SELECT
@@ -415,6 +481,7 @@ async def get_users_analysis(server_id: str, pool: SQLServerConnectionPool = Dep
             'orphaned_users': orphaned_users,
             'excessive_permissions': excessive_permissions,
             'inactive_users': inactive_users,
+            'active_sessions': active_sessions,
             'weak_passwords': weak_passwords,
             'critical_roles': critical_roles,
             'total_users': total_users
