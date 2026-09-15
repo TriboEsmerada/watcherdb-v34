@@ -2803,6 +2803,17 @@ async def get_server_offline_history(days: int = 7, include_resolved: bool = Tru
 _ERRORLOG_SIGNALS_INSTANCE_RE = re.compile(r"^[A-Za-z0-9_$.\-]{1,128}$")
 _ERRORLOG_SIGNALS_STALE_MIN = 15
 
+# B3c 2026-09-15: estado de leitura por instancia (B2a-2a, migration 014). Sem o texto do driver (persona: nomes de
+# servidor e login). IF OBJECT_ID: sem a migration nao ha conjunto de resultados e o bloco fica como no B3.
+_ERRORLOG_SIGNALS_FAILURE_CLASSES = ("connect", "login_failed", "permission", "query_timeout", "other")
+_ERRORLOG_SIGNALS_STATE_SQL = """
+SET NOCOUNT ON;
+DECLARE @inst VARCHAR(128) = ?;
+IF OBJECT_ID('dbo.WDB_ERRORLOG_READ_STATE', 'U') IS NOT NULL
+    SELECT s.Last_Success_TS, s.Consecutive_Failures, s.First_Failure_TS, s.Last_Failure_Class
+    FROM dbo.WDB_ERRORLOG_READ_STATE s WITH (NOLOCK) WHERE s.Instance = @inst;
+"""
+
 _ERRORLOG_SIGNALS_CONTEXT_SQL = """
 SET NOCOUNT ON;
 DECLARE @inst VARCHAR(128) = ?;
@@ -2854,7 +2865,7 @@ def _errorlog_signals_iso(v):
     return v.isoformat() if isinstance(v, datetime) else v
 
 
-def _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linha, rows):
+def _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linha, rows, estado=None):
     """Monta a resposta a partir das duas leituras. Sem BD (testada em unidade)."""
     iso = _errorlog_signals_iso
     eventos, contagem, pico = [], {"E": 0, "S": 0, "O": 0}, None
@@ -2867,7 +2878,16 @@ def _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linh
         elif r[0] == "P" and r[6]:
             pico = {"minute": iso(r[1]), "count": int(r[6])}
     ciclo_min = None if ciclo is None else max(0, int((agora - ciclo).total_seconds() // 60))
-    if ciclo_min is None or ciclo_min > _ERRORLOG_SIGNALS_STALE_MIN:
+    # B3c: estado da instancia (Last_Success_TS, Consecutive_Failures, First_Failure_TS, Last_Failure_Class)
+    leitura = None
+    if estado is not None:
+        falhas = int(estado[1] or 0)
+        classe = estado[3] if estado[3] in _ERRORLOG_SIGNALS_FAILURE_CLASSES else "other"
+        leitura = {"last_success": iso(estado[0]), "consecutive_failures": falhas,
+                   "failing_since": iso(estado[2]) if falhas else None, "failure_class": classe if falhas else None}
+    if leitura and leitura["consecutive_failures"] > 0:
+        vazio = "instance_unreadable"
+    elif ciclo_min is None or ciclo_min > _ERRORLOG_SIGNALS_STALE_MIN:
         vazio = "collector_stale"
     elif ultima_linha is None:
         vazio = "instance_never"
@@ -2887,8 +2907,9 @@ def _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linh
         "omitted_count": contagem["O"],
         "collector_last_cycle": iso(ciclo),
         "collector_cycle_minutes": ciclo_min,
-        "collector_stale": vazio == "collector_stale",
+        "collector_stale": ciclo_min is None or ciclo_min > _ERRORLOG_SIGNALS_STALE_MIN,
         "instance_last_row": iso(ultima_linha),
+        "read_state": leitura,
         "empty_reason": None if eventos else vazio,
     }
 
@@ -2902,7 +2923,13 @@ def _errorlog_recent_signals_sync(instance: str, hours: int) -> dict:
         agora, ancora, ciclo, ultima_linha = cur.fetchone()
         cur.execute(_ERRORLOG_SIGNALS_ROWS_SQL, instance, (ancora or agora) - timedelta(hours=hours))
         rows = cur.fetchall()
-        return _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linha, rows)
+        estado = None
+        try:  # B3c: fail-open (migration 014 por correr, GRANT em falta)
+            cur.execute(_ERRORLOG_SIGNALS_STATE_SQL, instance)
+            estado = cur.fetchone() if cur.description else None
+        except Exception as e:
+            logger.debug(f"recent-signals: estado de leitura indisponivel: {e}")
+        return _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linha, rows, estado)
     finally:
         if cur is not None:
             try:

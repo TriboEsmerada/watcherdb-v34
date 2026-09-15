@@ -165,6 +165,10 @@
     "loading": "Carregando sessões..."
   },
   "overview": {
+    "offline_errorlog_last_read_none": "nenhuma registrada",
+    "offline_errorlog_unreadable": "O coletor não consegue ler o errorlog desta instância desde {since} ({class}, {n} ciclos seguidos).",
+    "offline_errorlog_empty_instance_unreadable": "Nenhuma linha nesta janela, e o coletor não consegue ler esta instância: a ausência de linhas não diz nada sobre o servidor.",
+    "offline_errorlog_failure_connect": "conexão",
     "offline_errorlog_loading": "Lendo o errorlog salvo na Intelligence…",
     "offline_errorlog_window_now": "Linhas das últimas {h} h (sem evento offline ativo registrado).",
     "offline_errorlog_collector": "Último ciclo do coletor do errorlog: {when}",

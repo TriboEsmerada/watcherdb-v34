@@ -37753,6 +37753,16 @@
             const ciclo = d.collector_cycle_minutes == null
                 ? _kpiTp('overview.offline_errorlog_collector_never', 'sem registo', {})
                 : _kpiTp('overview.offline_errorlog_collector_ago', 'há {n} min ({time})', { n: d.collector_cycle_minutes, time: _oelHora(d.collector_last_cycle) });
+            // B3c 2026-09-15: estado de leitura da instancia (B2a-2a). Sem ele, o bloco fica como no B3.
+            const rs = d.read_state || null;
+            const falhaLeitura = !!(rs && +rs.consecutive_failures > 0);
+            const classeFalha = {
+                connect: _kpiTp('overview.offline_errorlog_failure_connect', 'ligação', {}),
+                login_failed: _kpiTp('overview.offline_errorlog_failure_login_failed', 'login recusado', {}),
+                permission: _kpiTp('overview.offline_errorlog_failure_permission', 'sem permissão', {}),
+                query_timeout: _kpiTp('overview.offline_errorlog_failure_query_timeout', 'timeout de consulta', {}),
+                other: _kpiTp('overview.offline_errorlog_failure_other', 'outro erro', {}),
+            };
             const ultima = d.instance_last_row ? _oelHora(d.instance_last_row, true)
                 : _kpiTp('overview.offline_errorlog_instance_none', 'nenhuma nos últimos 7 dias', {});
             let html = `
@@ -37765,7 +37775,15 @@
                 <div style="font-size: 12px; color: ${d.collector_stale ? getSevTokens('WARNING').text : suave}; margin-top: 4px;">
                     ${_oelT('collector', 'Último ciclo do recolhedor do errorlog: {when}', { when: ciclo })}${d.collector_stale ? ' · ' + _oelT('collector_stale', 'recolha atrasada') : ''}
                     · ${_oelT('instance_last', 'Última linha recebida desta instância: {when}', { when: ultima })}
+                    ${rs ? ' · ' + _oelT('last_read', 'Última leitura bem-sucedida desta instância: {when}', { when: rs.last_success ? _oelHora(rs.last_success, true) : _kpiTp('overview.offline_errorlog_last_read_none', 'nenhuma registada', {}) }) : ''}
                 </div>`;
+            if (falhaLeitura) {
+                // B3c (persona): aviso com prioridade, tambem com linhas listadas (sao anteriores a falha); sem texto do driver
+                html += `<div style="font-size: 13px; color: ${getSevTokens('WARNING').text}; margin-top: 8px;"><i class="fas fa-plug-circle-xmark" aria-hidden="true"></i>
+                    ${_oelT('unreadable', 'O recolhedor não consegue ler o errorlog desta instância desde {since} ({class}, {n} ciclos seguidos).',
+                            { since: _oelHora(rs.failing_since, true), class: classeFalha[rs.failure_class] || classeFalha.other, n: +rs.consecutive_failures })}
+                    ${(Array.isArray(d.events) && d.events.length) ? _oelT('unreadable_rows_note', 'As linhas listadas são anteriores à falha.') : ''}</div>`;
+            }
             const sec = d.security || {};
             if (+sec.count > 0) {
                 html += `<div style="font-size: 13px; color: ${neutro}; margin-top: 10px;"><i class="fas fa-user-lock" aria-hidden="true"></i>
@@ -37795,7 +37813,9 @@
                 html += `<div style="font-size: 12px; color: ${suave}; margin-top: 10px;">${_oelT('shown', '{shown} de {total} linhas, da mais recente para a mais antiga.', { shown: ev.length, total: Math.max(+d.events_total || 0, ev.length) })}</div>
                     <ul aria-label="${_oelT('list_label', 'Linhas do errorlog')}" style="list-style: none; margin: 6px 0 0; padding: 0;">${itens}</ul>`;
             } else {
-                const motivo = d.empty_reason === 'collector_stale'
+                const motivo = d.empty_reason === 'instance_unreadable'
+                    ? ['empty_instance_unreadable', 'Nenhuma linha nesta janela, e o recolhedor não consegue ler esta instância: a ausência de linhas não diz nada sobre o servidor.']
+                    : d.empty_reason === 'collector_stale'
                     ? ['empty_collector_stale', 'Nenhuma linha nesta janela, mas a recolha do errorlog está atrasada: a ausência de linhas não diz nada sobre o servidor.']
                     : d.empty_reason === 'instance_never'
                     ? ['empty_instance_never', 'Esta instância não enviou linhas do errorlog nos últimos 7 dias. O recolhedor pode não a ler, ou não conseguir ligar-se a ela.']

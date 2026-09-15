@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Errorlog no ecrã offline e no banner diz se a recolha desta instância está viva** (B3c, owner 15/09). Com o
+  estado de leitura por instância do recolhedor (B2a-2a), o bloco mostra a última leitura bem-sucedida ao lado da
+  última linha recebida e, quando o recolhedor falha seguidamente, avisa desde quando e porquê (ligação, login
+  recusado, sem permissão, timeout de consulta, outro erro), mesmo com linhas listadas. Nunca mostra o texto do
+  driver. Sem a tabela nova, o bloco fica como antes. [tier: Std]
+
 - **Banner de diagnóstico da visão geral com o errorlog recente** (B3b, owner 15/09). Quando o host responde
   mas as verificações da WatcherDB falham (o caso dos reinícios de SQL), o bloco do B3 aparece por baixo do
   banner, recolhido, com a contagem no resumo. Carrega sozinho só quando todas as verificações falharam ou há

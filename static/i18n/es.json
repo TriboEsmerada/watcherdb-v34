@@ -1205,6 +1205,16 @@
     "server_details": "Detalles del Servidor"
   },
   "overview": {
+    "offline_errorlog_last_read": "Última lectura correcta de esta instancia: {when}",
+    "offline_errorlog_last_read_none": "ninguna registrada",
+    "offline_errorlog_unreadable": "El colector no consigue leer el errorlog de esta instancia desde {since} ({class}, {n} ciclos seguidos).",
+    "offline_errorlog_unreadable_rows_note": "Las líneas listadas son anteriores al fallo.",
+    "offline_errorlog_empty_instance_unreadable": "Ninguna línea en esta ventana, y el colector no consigue leer esta instancia: la ausencia de líneas no dice nada sobre el servidor.",
+    "offline_errorlog_failure_connect": "conexión",
+    "offline_errorlog_failure_login_failed": "inicio de sesión rechazado",
+    "offline_errorlog_failure_permission": "sin permiso",
+    "offline_errorlog_failure_query_timeout": "timeout de consulta",
+    "offline_errorlog_failure_other": "otro error",
     "offline_errorlog_banner_title": "Errorlog reciente de la instancia",
     "offline_errorlog_banner_link": "Ver errorlog reciente de esta instancia",
     "offline_errorlog_banner_on_demand": "abrir para leer a petición",

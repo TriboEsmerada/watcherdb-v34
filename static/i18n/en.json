@@ -1205,6 +1205,16 @@
     "server_details": "Server Details"
   },
   "overview": {
+    "offline_errorlog_last_read": "Last successful read of this instance: {when}",
+    "offline_errorlog_last_read_none": "none recorded",
+    "offline_errorlog_unreadable": "The collector has been unable to read this instance's error log since {since} ({class}, {n} consecutive cycles).",
+    "offline_errorlog_unreadable_rows_note": "The lines listed predate the failure.",
+    "offline_errorlog_empty_instance_unreadable": "No lines in this window, and the collector cannot read this instance: the absence of lines says nothing about the server.",
+    "offline_errorlog_failure_connect": "connection",
+    "offline_errorlog_failure_login_failed": "login refused",
+    "offline_errorlog_failure_permission": "no permission",
+    "offline_errorlog_failure_query_timeout": "query timeout",
+    "offline_errorlog_failure_other": "other error",
     "offline_errorlog_banner_title": "Recent error log for this instance",
     "offline_errorlog_banner_link": "View recent error log for this instance",
     "offline_errorlog_banner_on_demand": "open to read on demand",
