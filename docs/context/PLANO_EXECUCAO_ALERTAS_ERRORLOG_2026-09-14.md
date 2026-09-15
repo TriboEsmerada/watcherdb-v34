@@ -120,7 +120,13 @@ para 1.400.
   de B2.
 - **Identidade:** `sql_monitoring`, leitura. **Esforço:** 1 hora. **Corre:** a AI.
 
-### B1 — recolhedor: classificar em vez de filtrar por palavra — **B1a FECHADO, B1b PRONTO 15/09**
+### B1 — recolhedor: classificar em vez de filtrar por palavra — **FECHADO 15/09**
+
+- **Em produção desde as 12:39 de 15/09** (V1 b198d54, bb4024a, 9ea79ff). Dois incidentes pelo caminho, corrigidos: NaN do
+  pandas nas colunas inteiras mistas (8023) e inserção linha a linha (PRD parado das 11:26 às 12:02). Com a inserção em bloco,
+  PRD grava 10.857 linhas em 19,7 s (antes 4 min 38 s). Primeira verificação: seis tipos, zero cabeçalhos sem severidade,
+  e 24 eventos de ciclo de vida reais entre as 12:34 e as 12:48 (reinícios de PRD412, PRD403, QLT103, QLT023, QLT401) que o
+  recolhedor antigo não registava.
 
 - **B1b pronto em três lotes, consenso do guardião na revisão final:** leitor do V3.4 conta pelo Log_Type (aplicar
   primeiro, senão o 33208 de severidade 17 pinta cerca de dez instâncias de vermelho), recolhedor por janela de 65 min
@@ -148,6 +154,17 @@ para 1.400.
 - **Gate:** guardião do recolhedor, com veto. **Esforço:** meio dia.
 
 ### B2 — tabela de histórico com retenção
+
+- **Veto do guardião ao primeiro desenho do B2a (15/09), com razão:** usp_archive_errorlog não existe em nenhum ficheiro do
+  repositório; o usp_archive_all_kpis vivo difere das cópias do repo; o bloco comentado da STG e da HIST no canónico é
+  obsoleto (taxonomia e chave antigas) e não deve ser descomentado. Numa instalação nova o canónico não cria as
+  _BLUE/_GREEN do errorlog.
+- **Ordem revista:** B2a-0 baseline da família viva no repositório (lote B2A0_BASELINE_ERRORLOG, sem mudança de BD);
+  B2a-1 procedure nova só para eventos (Lifecycle, AvailabilityGroup, Critical, Error) com applock de transacção e
+  timeout curto, chamada pelo recolhedor depois de cada swap, e applock por ambiente no store_data (padrão do
+  base_collector); lote separado para a DDL da família no canónico alinhada à baseline; B2a-2 marca de água por
+  instância. Para o B3 falta ainda uma vista que junte a STG activa e a HIST recente, e a correlação com a janela de
+  indisponibilidade.
 
 - **Revisto a 15/09:** a tabela vive e tem deduplicação correcta. O defeito é o momento do arquivo:
   uma vez por dia, às 05:00, só apanha o que estiver na STG, que é truncada a cada ciclo. Passar o
