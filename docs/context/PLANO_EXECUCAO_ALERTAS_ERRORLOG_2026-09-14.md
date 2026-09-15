@@ -173,6 +173,10 @@ para 1.400.
   instância. Para o B3 falta ainda uma vista que junte a STG activa e a HIST recente, e a correlação com a janela de
   indisponibilidade.
 
+- **B2a-2a PRONTO 15/09** (lote B2A2A_ESTADO_LEITURA_ERRORLOG, migration 014; desenho B2A2_DESENHO_MARCA_AGUA_ERRORLOG):
+  WDB_ERRORLOG_READ_STATE por instância (tentativa, leitura boa, marca de água no relógio do servidor, série de falhas
+  com classe e texto sem PWD); heartbeat do ciclo vazio corrigido no adapter do serviço. Guardião: GO com 5 ajustes no
+  desenho e consenso no código (1 ajuste, feito). B2a-2b (recuperar a janela perdida) em migration própria, depois.
 - **Revisto a 15/09:** a tabela vive e tem deduplicação correcta. O defeito é o momento do arquivo:
   uma vez por dia, às 05:00, só apanha o que estiver na STG, que é truncada a cada ciclo. Passar o
   arquivo para cada ciclo do recolhedor, ou gravar o histórico directamente no recolhedor, com os
