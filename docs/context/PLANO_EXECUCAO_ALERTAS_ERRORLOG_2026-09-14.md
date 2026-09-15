@@ -187,6 +187,10 @@ para 1.400.
 
 ### Política de retenção e expurgo (decidida para B2, parecer de conformidade de 15/09)
 
+- **B2b-1 PRONTO 15/09** (lote B2B1_RETENCAO_ERRORLOG, migration 013): política por camada com mínimo e máximo e
+  histórico de alterações, legal hold por instância, expurgo por Log_Date com registo por camada; consenso do guardião
+  no desenho e no código (predicados complementares com ISNULL). Simulação: nada a apagar hoje. Agregados: B2b-2.
+
 | Camada | Por omissão | Mínimo | Máximo | Fundamento |
 |---|---|---|---|---|
 | Texto com login e IP (falhas de login, contas bloqueadas) | 90 dias | 30 dias | 90 dias | RGPD art. 5.º(1)(e), minimização |
