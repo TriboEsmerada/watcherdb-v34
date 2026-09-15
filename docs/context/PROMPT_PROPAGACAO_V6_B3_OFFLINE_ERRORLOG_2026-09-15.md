@@ -41,6 +41,13 @@ nas falhas parciais fica um link que lê a pedido, um só pedido por bloco. Cham
 `${kpis}` (sem await desde o banner). Verificar no V6 que a cache da visão geral guarda dados e não HTML, como no V3.4.
 +5 chaves (28 no total). Teste: `tests/unit/test_b3b_banner_errorlog_20260915.py` (4).
 
+## B3c (lote B3C_ESTADO_LEITURA_PORTAL_2026-09-15_apply.py)
+
+Depende do B2a-2a no V1 (migration 014, `WDB_ERRORLOG_READ_STATE`). O endpoint faz uma terceira leitura (IF OBJECT_ID,
+try próprio, fail-open) e devolve `read_state` sem o texto do driver. O bloco acrescenta "Última leitura bem-sucedida"
+e, com falhas seguidas, avisa desde quando e a classe traduzida, com prioridade sobre os outros motivos e mesmo com
+linhas listadas. +10 chaves (38 no total). Teste: `tests/unit/test_b3c_estado_leitura_20260915.py` (5).
+
 ## Fora destes lotes (não portar como feito)
 
 Marca de água por instância no recolhedor: B2a-2.

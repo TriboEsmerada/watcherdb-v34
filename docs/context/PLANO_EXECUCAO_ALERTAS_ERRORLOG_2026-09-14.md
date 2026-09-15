@@ -220,6 +220,9 @@ para 1.400.
 - **B3b PRONTO 15/09** (lote B3B_BANNER_ERRORLOG): o mesmo bloco por baixo do banner de diagnóstico, recolhido, com
   contagem no resumo; carrega sozinho só com todas as verificações falhadas ou evento offline activo, senão a pedido
   (persona). A cache da aba guarda dados e não HTML, portanto nada fica preso (frontend). Sem backend novo.
+- **B3c PRONTO 15/09** (lote B3C_ESTADO_LEITURA_PORTAL): o bloco lê WDB_ERRORLOG_READ_STATE (B2a-2a) com fail-open;
+  acrescenta a última leitura bem-sucedida e avisa com prioridade quando o recolhedor falha seguidamente (classe
+  traduzida, nunca o texto do driver), mesmo com linhas listadas. Prova real: OATXP01 sem permissão, 2 ciclos.
 
 - Endpoint só de leitura com as últimas mensagens da instância, e o bloco no ecrã com o rótulo
   honesto: "últimas mensagens antes de perder contacto", nunca "o que aconteceu".
