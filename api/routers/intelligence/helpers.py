@@ -1948,6 +1948,24 @@ async def collect_service_status(results: Dict[str, Any]) -> None:
         logger.error(f"Erro ao buscar Service Status: {e}")
 
 
+# 2026-09-15 (antes do B1b): o recolhedor passa a classificar o errorlog (Log_Type) e a preencher Severity. Contar pela
+# severidade punha o 33208 de auditoria (sev 17, repetitivo) a vermelho em cerca de dez instancias. Conta-se pelo tipo:
+# Critical e' critico; Error, AvailabilityGroup e Lifecycle sao aviso; Security, Repetitive e Info nao entram no cartao.
+# Linhas antigas (Log_Type 'Error', Severity NULL) continuam aviso, como antes.
+ERRORLOG_CRITICAL_TYPES = frozenset({"CRITICAL"})
+ERRORLOG_WARNING_TYPES = frozenset({"ERROR", "AVAILABILITYGROUP", "LIFECYCLE", ""})
+
+
+def errorlog_bucket(row: Dict[str, Any]) -> Optional[str]:
+    """'critical', 'warning' ou None quando a linha nao conta no cartao de errorlog."""
+    tipo = str(row.get("Log_Type") or "").strip().upper()
+    if tipo in ERRORLOG_CRITICAL_TYPES:
+        return "critical"
+    if tipo in ERRORLOG_WARNING_TYPES:
+        return "warning"
+    return None
+
+
 async def collect_error_log(results: Dict[str, Any]) -> None:
     """Collect Error Log KPIs from STG table."""
     try:
@@ -2008,6 +2026,9 @@ async def collect_error_log(results: Dict[str, Any]) -> None:
             instance = row.get('Instance', '')
             if not instance:
                 continue
+            bucket = errorlog_bucket(row)
+            if bucket is None:
+                continue
 
             if instance not in instance_errors:
                 instance_errors[instance] = {
@@ -2019,18 +2040,8 @@ async def collect_error_log(results: Dict[str, Any]) -> None:
                 }
 
             instance_errors[instance]['Error_Count'] += 1
-
-            row_keys_upper = [k.upper() for k in row.keys()]
-            severity = None
-            for key in ['SEVERITY', 'SEVERITY_LEVEL', 'LEVEL', 'ERROR_LEVEL']:
-                if key in row_keys_upper:
-                    severity = str(row.get(key, '')).upper()
-                    break
-
-            if severity and severity in ['ERROR', 'CRITICAL', 'FATAL', '16', '17', '18', '19', '20', '21', '22', '23', '24']:
+            if bucket == 'critical':
                 instance_errors[instance]['Critical_Count'] += 1
-            elif severity and severity in ['WARNING', 'WARN', '14', '15']:
-                instance_errors[instance]['Warning_Count'] += 1
             else:
                 instance_errors[instance]['Warning_Count'] += 1
 

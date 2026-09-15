@@ -2120,11 +2120,16 @@ async def get_problematic_instances(kpi_type: str, all: bool = Query(False, desc
             
             # Agrupar por instância e contar por severidade
             instance_errors = {}
+            # 2026-09-15: mesma regra do cartao (helpers.errorlog_bucket): conta pelo tipo classificado, nao pela severidade
+            from api.routers.intelligence.helpers import errorlog_bucket
             for row in all_errors:
                 instance = row.get('Instance', '')
                 if not instance:
                     continue
-                
+                bucket = errorlog_bucket(row)
+                if bucket is None:
+                    continue
+
                 if instance not in instance_errors:
                     instance_errors[instance] = {
                         'Instance': instance,
@@ -2133,21 +2138,10 @@ async def get_problematic_instances(kpi_type: str, all: bool = Query(False, desc
                         'Warning_Count': 0,
                         'Last_Error_Date': None
                     }
-                
+
                 instance_errors[instance]['Error_Count'] += 1
-                
-                # Verificar severidade
-                row_keys_upper = [k.upper() for k in row.keys()]
-                severity = None
-                for key in ['SEVERITY', 'SEVERITY_LEVEL', 'LEVEL', 'ERROR_LEVEL']:
-                    if key in row_keys_upper:
-                        severity = str(row.get(key, '')).upper()
-                        break
-                
-                if severity and severity in ['ERROR', 'CRITICAL', 'FATAL', '16', '17', '18', '19', '20', '21', '22', '23', '24']:
+                if bucket == 'critical':
                     instance_errors[instance]['Critical_Count'] += 1
-                elif severity and severity in ['WARNING', 'WARN', '14', '15']:
-                    instance_errors[instance]['Warning_Count'] += 1
                 else:
                     instance_errors[instance]['Warning_Count'] += 1
                 

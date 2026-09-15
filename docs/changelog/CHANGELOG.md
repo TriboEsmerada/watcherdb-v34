@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Cartão de errorlog conta pelo tipo classificado, não pela severidade** (15/09, preparação do B1b). O
+  recolhedor vai passar a preencher a severidade; contar por ela punha o erro 33208 de auditoria
+  (severidade 17, repetitivo) a vermelho em cerca de dez instâncias. Crítico passa a ser o tipo Critical;
+  aviso são Error, AvailabilityGroup e Lifecycle; falhas de login e repetitivos não entram no cartão. Com
+  os dados de hoje o cartão fica igual. [tier: Std]
+
 - **Aba Users: sessões ativas agora, e o fim do falso "inativo"** (owner 15/09). O SQL Server não guarda a
   data do último login; a lista de inativos usava só as sessões ligadas no momento, portanto "Nunca" queria
   dizer "sem sessão agora" e os dias contavam desde a criação, ao lado de um texto que prometia 30+ dias.
