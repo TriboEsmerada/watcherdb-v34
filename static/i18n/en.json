@@ -1205,6 +1205,11 @@
     "server_details": "Server Details"
   },
   "overview": {
+    "offline_errorlog_banner_title": "Recent error log for this instance",
+    "offline_errorlog_banner_link": "View recent error log for this instance",
+    "offline_errorlog_banner_on_demand": "open to read on demand",
+    "offline_errorlog_summary": "{n} classified lines · {s} security events",
+    "offline_errorlog_failed_short": "read failed",
     "offline_errorlog_title": "Error log before the failure",
     "offline_errorlog_badge": "Signal, not cause",
     "offline_errorlog_loading": "Reading the error log stored in Intelligence…",

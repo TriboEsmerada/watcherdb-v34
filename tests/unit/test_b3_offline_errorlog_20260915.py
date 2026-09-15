@@ -115,7 +115,7 @@ def test_chaves_nos_idiomas_sem_prometer_ausencia_de_erros():
         ov = json.loads((ROOT / "static" / "i18n" / f"{loc}.json").read_text(encoding="utf-8"))["overview"]
         novas = {k: v for k, v in ov.items() if k.startswith("offline_errorlog_")}
         chaves = chaves or set(novas)
-        assert set(novas) == chaves and len(chaves) == 23, loc
+        assert set(novas) == chaves and len(chaves) == 28, loc  # B3b: +5 chaves do banner
         for k in chaves:
             assert novas[k].strip(), (loc, k)
             curta = k[len("offline_errorlog_"):]

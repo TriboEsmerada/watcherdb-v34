@@ -16495,6 +16495,7 @@
                 // pronto a copiar as 3h e' meio caminho para o executar sem
                 // verificar). GRANT/comandos ficam para fase propria.
                 let diagBanner = '';
+                let _oelBannerAuto = false;  // B3b 2026-09-15
                 if (_probeFailed.length > 0) {
                     const _evt = _offlineEvt;
                     const _hard = _probeFailed.length === _probeTotal;
@@ -16529,7 +16530,10 @@
                                 <span style="color:var(--color-text-disabled); font-size:12px;">${t('overview.diag_which')}: ${_probeFailed.join(', ')}</span>
                             </div>
                             <div style="color:var(--color-text-disabled); font-size:11px; margin-top:6px; font-style:italic;">${t('overview.diag_perspective')}</div>
-                        </div>`;
+                        </div>
+                        ${offlineErrorlogBannerBlock(serverId, _hard || !!_evt)}`;
+                    // B3b 2026-09-15: errorlog recente so carrega sozinho com todas as verificacoes falhadas ou evento offline
+                    _oelBannerAuto = _hard || !!_evt;
                 }
 
                 const kpis = cacheIndicator + diagBanner + `
@@ -16797,6 +16801,9 @@
                     ${databasesHtml}
                     </div>
                 `;
+
+                // B3b 2026-09-15: o bloco do errorlog no banner ja esta no DOM (nenhum await desde o banner)
+                if (diagBanner && _oelBannerAuto) loadOfflineErrorlog(offlineErrorlogId(serverId), 2);
 
                 // Carregar card "Reboot SO" async (fonte: INST_AVAILABILITY_ACTIVE via coletor V1)
                 fetch(`/api/v1/overview/os-boot/${encodeURIComponent(serverId.replace(/\\/g, '_'))}`)
@@ -37688,12 +37695,33 @@
             return `<div id="${offlineErrorlogId(inst)}" data-inst="${_oelEsc(inst)}" role="status" aria-live="polite" aria-atomic="true"
                          style="background: var(--color-bg-sunken); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; text-align: left; color: var(--color-text-secondary);">${_oelLoading()}</div>`;
         }
+        // B3b 2026-09-15: o mesmo bloco no banner de diagnostico (host responde, verificacoes falham). Persona: carrega
+        // sozinho so com todas as verificacoes falhadas ou evento offline activo; nos parciais so a pedido; recolhido por
+        // omissao; titulo proprio. Frontend: irmao do banner, nunca dentro da cor de severidade.
+        function offlineErrorlogBannerBlock(instance, auto) {
+            const inst = String(instance || '').replace(/\\/g, '_');
+            const id = offlineErrorlogId(inst);
+            return `<details id="${id}-wrap" ontoggle="_oelBannerToggle(this)"
+                         style="background: var(--color-bg-sunken); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 14px; margin: -8px 0 16px; text-align: left; color: var(--color-text-secondary);">
+                    <summary style="cursor: pointer; font-size: 13px;">
+                        <i class="fas fa-file-lines" aria-hidden="true"></i>
+                        <strong style="color: var(--color-text-primary);">${auto ? _oelT('banner_title', 'Errorlog recente da instância') : _oelT('banner_link', 'Ver errorlog recente desta instância')}</strong>
+                        · <span id="${id}-resumo">${auto ? _oelT('loading', 'A ler o errorlog guardado na Intelligence…') : _oelT('banner_on_demand', 'abrir para ler a pedido')}</span>
+                    </summary>
+                    <div id="${id}" data-inst="${_oelEsc(inst)}" role="status" aria-live="polite" aria-atomic="true" style="margin-top: 10px;">${auto ? _oelLoading() : ''}</div>
+                </details>`;
+        }
+        function _oelBannerToggle(det) {
+            const el = det.open ? det.querySelector('[data-inst]') : null;
+            if (el && !el.dataset.pedido) loadOfflineErrorlog(el.id, 2);
+        }
         const _OEL_BTN = 'background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px;';
         async function loadOfflineErrorlog(elId, hours) {
             const el = document.getElementById(elId);
             if (!el) return;
             const h = hours === 6 ? 6 : 2;
             el.setAttribute('aria-busy', 'true');
+            el.dataset.pedido = '1';
             el.innerHTML = _oelLoading();
             let d = null;
             try {
@@ -37706,11 +37734,17 @@
             el.innerHTML = (d && d.success) ? _oelRender(elId, d)
                 : `<i class="fas fa-circle-info" aria-hidden="true"></i> ${_oelT('failed', 'Não foi possível ler o errorlog na Intelligence. O diagnóstico acima continua válido.')}
                    <button type="button" onclick="loadOfflineErrorlog('${elId}', ${h})" style="${_OEL_BTN} margin-left: 10px;">${_oelT('retry', 'Tentar outra vez')}</button>`;
+            const resumo = document.getElementById(elId + '-resumo');
+            if (resumo) resumo.textContent = !(d && d.success)
+                ? _kpiTp('overview.offline_errorlog_failed_short', 'leitura falhou', {})
+                : _kpiTp('overview.offline_errorlog_summary', '{n} linhas classificadas · {s} eventos de segurança',
+                         { n: +d.events_total || 0, s: +(d.security && d.security.count) || 0 });
         }
         function _oelRender(elId, d) {
             const neutro = 'var(--color-text-secondary)';
             const suave = 'var(--color-text-tertiary)';
             const h = d.hours === 6 ? 6 : 2;
+            const embutido = !!document.getElementById(elId + '-wrap');
             const tipoCor = tp => tp === 'Critical' ? getSevTokens('CRITICAL') : tp === 'Error' ? getSevTokens('WARNING')
                 : (tp === 'AvailabilityGroup' || tp === 'Lifecycle') ? getSevTokens('INFO') : null;
             const janela = d.anchor_source === 'offline_event'
@@ -37723,8 +37757,8 @@
                 : _kpiTp('overview.offline_errorlog_instance_none', 'nenhuma nos últimos 7 dias', {});
             let html = `
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px;">
-                    <i class="fas fa-file-lines" aria-hidden="true" style="color: ${neutro};"></i>
-                    <strong style="color: var(--color-text-primary); font-size: 15px;">${_oelT('title', 'Errorlog antes da falha')}</strong>
+                    ${embutido ? '' : `<i class="fas fa-file-lines" aria-hidden="true" style="color: ${neutro};"></i>
+                    <strong style="color: var(--color-text-primary); font-size: 15px;">${_oelT('title', 'Errorlog antes da falha')}</strong>`}
                     <span style="border: 1px solid var(--color-border); color: ${neutro}; border-radius: 999px; padding: 1px 10px; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;">${_oelT('badge', 'Sinal, não causa')}</span>
                 </div>
                 <div style="font-size: 13px; color: ${neutro};">${janela}</div>

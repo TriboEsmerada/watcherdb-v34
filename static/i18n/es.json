@@ -1205,6 +1205,11 @@
     "server_details": "Detalles del Servidor"
   },
   "overview": {
+    "offline_errorlog_banner_title": "Errorlog reciente de la instancia",
+    "offline_errorlog_banner_link": "Ver errorlog reciente de esta instancia",
+    "offline_errorlog_banner_on_demand": "abrir para leer a petición",
+    "offline_errorlog_summary": "{n} líneas clasificadas · {s} eventos de seguridad",
+    "offline_errorlog_failed_short": "la lectura falló",
     "offline_errorlog_title": "Errorlog antes del fallo",
     "offline_errorlog_badge": "Señal, no causa",
     "offline_errorlog_loading": "Leyendo el errorlog guardado en Intelligence…",
