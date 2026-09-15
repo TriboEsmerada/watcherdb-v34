@@ -159,6 +159,10 @@ para 1.400.
   repositório; o usp_archive_all_kpis vivo difere das cópias do repo; o bloco comentado da STG e da HIST no canónico é
   obsoleto (taxonomia e chave antigas) e não deve ser descomentado. Numa instalação nova o canónico não cria as
   _BLUE/_GREEN do errorlog.
+- **B2a-0 FECHADO 15/09** (V1 521abdc). **B2a-1 PRONTO 15/09**, consenso do guardião sem veto: lote
+  B2A1_ARQUIVO_EVENTOS_ERRORLOG (procedure nova usp_archive_errorlog_events, migration 012, secção 36 do canónico,
+  applock por ambiente e chamada ao arquivo no recolhedor; 27 testes; simulação só-leitura: 130 AG, 22 Critical,
+  17 Error). Achado menor do guardião: o lock do arquivo não tem sufixo de ambiente, um ambiente pode saltar um ciclo.
 - **Ordem revista:** B2a-0 baseline da família viva no repositório (lote B2A0_BASELINE_ERRORLOG, sem mudança de BD);
   B2a-1 procedure nova só para eventos (Lifecycle, AvailabilityGroup, Critical, Error) com applock de transacção e
   timeout curto, chamada pelo recolhedor depois de cada swap, e applock por ambiente no store_data (padrão do
