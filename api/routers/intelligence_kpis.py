@@ -2794,6 +2794,149 @@ async def get_server_offline_history(days: int = 7, include_resolved: bool = Tru
         raise safe_http_error(500, e, "fetching server offline event history")
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# B3 2026-09-15: errorlog antes da falha, no ecra de servidor offline. Identidade na BD: sql_monitoring (pool da
+# Intelligence), so SELECT com parametros. Le a Intelligence, nunca a instancia monitorizada: responde com o alvo mudo.
+# Persona DBA: sinal, nao causa; Security so em contagem com pico; lista vazia sempre explicada; idade da recolha
+# sempre visivel. So ha linhas ate a ultima leitura bem sucedida desta instancia (dito no ecra).
+# ---------------------------------------------------------------------------------------------------------------
+_ERRORLOG_SIGNALS_INSTANCE_RE = re.compile(r"^[A-Za-z0-9_$.\-]{1,128}$")
+_ERRORLOG_SIGNALS_STALE_MIN = 15
+
+_ERRORLOG_SIGNALS_CONTEXT_SQL = """
+SET NOCOUNT ON;
+DECLARE @inst VARCHAR(128) = ?;
+SELECT GETDATE() AS agora,
+       (SELECT TOP 1 ISNULL(e.First_Event_Time, e.Event_Time) FROM dbo.KPI_MSSQL_SERVER_OFFLINE_EVENTS e WITH (NOLOCK)
+        WHERE e.Server_Name = @inst AND e.Is_Resolved = 0 ORDER BY e.Event_Time DESC) AS ancora,
+       (SELECT m.Last_Success_TS FROM dbo.WDB_COLLECTION_SCHEDULE_META m WITH (NOLOCK)
+        WHERE m.Table_Name = 'KPI_MSSQL_ERRORLOG_STG') AS ciclo_recolhedor,
+       (SELECT MAX(x.Update_TS) FROM (
+            SELECT h.Update_TS FROM dbo.KPI_MSSQL_ERRORLOG_HIST h WITH (NOLOCK)
+            WHERE h.Instance = @inst AND h.Log_Date >= DATEADD(DAY, -7, GETDATE())
+            UNION ALL
+            SELECT s.Update_TS FROM dbo.KPI_MSSQL_ERRORLOG_STG s WITH (NOLOCK) WHERE s.Instance = @inst) x) AS ultima_linha_instancia;
+"""
+
+# HIST e STG juntas: o arquivo (B2a-1) copia eventos da STG para a HIST, por isso a mesma linha pode estar nas duas.
+# Deduplicacao pela regra do guardiao (Log_Date e CHECKSUM do texto). Grupos: E = listadas; S = Security (so contagem);
+# O = Repetitive e Info (so contagem).
+_ERRORLOG_SIGNALS_ROWS_SQL = """
+SET NOCOUNT ON;
+DECLARE @inst VARCHAR(128) = ?, @desde DATETIME2 = ?;
+WITH u AS (
+    SELECT h.Log_Date, h.Log_Type, h.Error_Number, h.Severity, h.Log_Text, CHECKSUM(h.Log_Text) AS hsh, h.Update_TS
+    FROM dbo.KPI_MSSQL_ERRORLOG_HIST h WITH (NOLOCK) WHERE h.Instance = @inst AND h.Log_Date >= @desde
+    UNION ALL
+    SELECT s.Log_Date, s.Log_Type, s.Error_Number, s.Severity, s.Log_Text, CHECKSUM(s.Log_Text), s.Update_TS
+    FROM dbo.KPI_MSSQL_ERRORLOG_STG s WITH (NOLOCK) WHERE s.Instance = @inst AND s.Log_Date >= @desde
+), d AS (
+    SELECT Log_Date, ISNULL(Log_Type, '') AS Tipo, Error_Number, Severity, Log_Text,
+           CASE WHEN ISNULL(Log_Type, '') = 'Security' THEN 'S'
+                WHEN ISNULL(Log_Type, '') IN ('Repetitive', 'Info') THEN 'O' ELSE 'E' END AS Grupo,
+           ROW_NUMBER() OVER (PARTITION BY Log_Date, hsh ORDER BY Update_TS) AS rn
+    FROM u
+)
+SELECT 'E' AS Linha, Log_Date, Tipo, Error_Number, Severity, Log_Text, CAST(NULL AS INT) AS n
+FROM (SELECT TOP (15) Log_Date, Tipo, Error_Number, Severity, LEFT(Log_Text, 1000) AS Log_Text
+      FROM d WHERE rn = 1 AND Grupo = 'E' ORDER BY Log_Date DESC) ev
+UNION ALL
+SELECT 'C', MAX(Log_Date), Grupo, NULL, NULL, NULL, COUNT(*) FROM d WHERE rn = 1 GROUP BY Grupo
+UNION ALL
+SELECT 'P', Minuto, 'Security', NULL, NULL, NULL, n
+FROM (SELECT TOP (1) DATEADD(MINUTE, DATEDIFF(MINUTE, 0, Log_Date), 0) AS Minuto, COUNT(*) AS n
+      FROM d WHERE rn = 1 AND Grupo = 'S'
+      GROUP BY DATEADD(MINUTE, DATEDIFF(MINUTE, 0, Log_Date), 0) ORDER BY COUNT(*) DESC, Minuto DESC) pk;
+"""
+
+
+def _errorlog_signals_iso(v):
+    return v.isoformat() if isinstance(v, datetime) else v
+
+
+def _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linha, rows):
+    """Monta a resposta a partir das duas leituras. Sem BD (testada em unidade)."""
+    iso = _errorlog_signals_iso
+    eventos, contagem, pico = [], {"E": 0, "S": 0, "O": 0}, None
+    for r in rows:
+        if r[0] == "E":
+            eventos.append({"log_date": iso(r[1]), "log_type": r[2] or "", "error_number": r[3],
+                            "severity": r[4], "text": (r[5] or "").strip()})
+        elif r[0] == "C" and r[2] in contagem:
+            contagem[r[2]] = int(r[6] or 0)
+        elif r[0] == "P" and r[6]:
+            pico = {"minute": iso(r[1]), "count": int(r[6])}
+    ciclo_min = None if ciclo is None else max(0, int((agora - ciclo).total_seconds() // 60))
+    if ciclo_min is None or ciclo_min > _ERRORLOG_SIGNALS_STALE_MIN:
+        vazio = "collector_stale"
+    elif ultima_linha is None:
+        vazio = "instance_never"
+    else:
+        vazio = "window_quiet"
+    return {
+        "success": True,
+        "instance": instance,
+        "hours": hours,
+        "anchor": iso(ancora),
+        "anchor_source": "offline_event" if ancora is not None else "now",
+        "since": iso((ancora or agora) - timedelta(hours=hours)),
+        "now": iso(agora),
+        "events": eventos,
+        "events_total": max(contagem["E"], len(eventos)),
+        "security": {"count": contagem["S"], "peak": pico},
+        "omitted_count": contagem["O"],
+        "collector_last_cycle": iso(ciclo),
+        "collector_cycle_minutes": ciclo_min,
+        "collector_stale": vazio == "collector_stale",
+        "instance_last_row": iso(ultima_linha),
+        "empty_reason": None if eventos else vazio,
+    }
+
+
+def _errorlog_recent_signals_sync(instance: str, hours: int) -> dict:
+    conn = get_intelligence_connection()
+    cur = None
+    try:
+        cur = conn.cursor()
+        cur.execute(_ERRORLOG_SIGNALS_CONTEXT_SQL, instance)
+        agora, ancora, ciclo, ultima_linha = cur.fetchone()
+        cur.execute(_ERRORLOG_SIGNALS_ROWS_SQL, instance, (ancora or agora) - timedelta(hours=hours))
+        rows = cur.fetchall()
+        return _errorlog_signals_payload(instance, hours, agora, ancora, ciclo, ultima_linha, rows)
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                pass
+        try:
+            get_intelligence_pool().return_connection(conn)
+        except Exception:
+            pass
+
+
+@router.get("/errorlog/recent-signals", response_model=GenericResponse)
+async def get_errorlog_recent_signals(request: Request, instance: str = Query(...), hours: int = Query(2)):
+    """Linhas classificadas do errorlog antes do evento offline activo (ou das ultimas horas, sem evento).
+
+    B3 2026-09-15. Janela de 2 h por omissao, 6 h a pedido (so estes dois valores). Security e Repetitive/Info
+    so em contagem. Sinal, nao causa.
+    """
+    await _require_auth(request)
+    if not _ERRORLOG_SIGNALS_INSTANCE_RE.match(instance or ""):
+        raise HTTPException(status_code=400, detail="Nome de instancia invalido")
+    if hours not in (2, 6):
+        raise HTTPException(status_code=400, detail="hours tem de ser 2 ou 6")
+    try:
+        loop = asyncio.get_event_loop()
+        payload = await loop.run_in_executor(_query_executor, _errorlog_recent_signals_sync, instance, hours)
+        return JSONResponse(content=payload)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise safe_http_error(500, e, "fetching recent errorlog signals")
+
+
 @router.get("/server-offline/summary", response_model=GenericResponse)
 async def get_server_offline_summary():
     """

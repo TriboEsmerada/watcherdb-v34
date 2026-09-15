@@ -165,6 +165,17 @@
     "loading": "Carregando sessões..."
   },
   "overview": {
+    "offline_errorlog_loading": "Lendo o errorlog salvo na Intelligence…",
+    "offline_errorlog_window_now": "Linhas das últimas {h} h (sem evento offline ativo registrado).",
+    "offline_errorlog_collector": "Último ciclo do coletor do errorlog: {when}",
+    "offline_errorlog_collector_never": "sem registro",
+    "offline_errorlog_collector_stale": "coleta atrasada",
+    "offline_errorlog_empty_collector_stale": "Nenhuma linha nesta janela, mas a coleta do errorlog está atrasada: a ausência de linhas não diz nada sobre o servidor.",
+    "offline_errorlog_empty_instance_never": "Esta instância não enviou linhas do errorlog nos últimos 7 dias. O coletor pode não lê-la, ou não conseguir se conectar a ela.",
+    "offline_errorlog_empty_window_quiet": "Nenhuma linha classificada nesta janela. Isso não prova que não houve problemas: a instância pode ter parado antes que o coletor voltasse a ler o log.",
+    "offline_errorlog_widen": "Ampliar para 6 h",
+    "offline_errorlog_retry": "Tentar novamente",
+    "offline_errorlog_footnote": "O coletor só vê o que conseguiu ler antes de perder a conexão com a instância. Use estas linhas como pista para investigar, não como causa confirmada.",
     "precheck_status": "Status"
   },
   "tde": {

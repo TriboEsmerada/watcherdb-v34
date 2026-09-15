@@ -15851,8 +15851,11 @@
                                         </button>
                                     </div>
                                 </div>
+                                ${offlineErrorlogBlock(serverId)}
                             </div>
                         `;
+                        // B3 2026-09-15: errorlog antes da falha, lido da Intelligence depois de o cartao estar no ecra
+                        loadOfflineErrorlog(offlineErrorlogId(serverId), 2);
                         return;
                     } else {
                         debugLog(`[PRECHECK] Servidor ${precheckHostname} ONLINE (${pingResult.response_time_ms?.toFixed(1)}ms)`, 'info');
@@ -37657,6 +37660,124 @@
         }
         
         // Função auxiliar para extrair hostname (sem instância e sem domínio)
+        // B3 2026-09-15: errorlog antes da falha, no ecra de servidor offline (precheck de renderOverview).
+        // Le o que ja esta na Intelligence (o alvo pode estar mudo). Persona DBA: sinal, nao causa, em cor neutra;
+        // Security so em contagem com pico; lista vazia sempre explicada, nunca "sem erros"; idade da recolha sempre
+        // visivel. Frontend: createFetchWithAbort (fetchWithTimeout nao existe no precheck), role=status, <details>.
+        function _oelEsc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function _oelHora(iso, comData) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            const lang = document.documentElement.lang || undefined;
+            return comData
+                ? d.toLocaleString(lang, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+                : d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+        }
+        function _oelT(k, fb, p) { return _oelEsc(_kpiTp('overview.offline_errorlog_' + k, fb, p || {})); }
+        function offlineErrorlogId(instance) {
+            return 'offline-errorlog-' + String(instance || '').replace(/[^A-Za-z0-9_-]/g, '_');
+        }
+        function _oelLoading() {
+            return `<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ${_oelT('loading', 'A ler o errorlog guardado na Intelligence…')}`;
+        }
+        function offlineErrorlogBlock(instance) {
+            const inst = String(instance || '').replace(/\\/g, '_');
+            return `<div id="${offlineErrorlogId(inst)}" data-inst="${_oelEsc(inst)}" role="status" aria-live="polite" aria-atomic="true"
+                         style="background: var(--color-bg-sunken); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; text-align: left; color: var(--color-text-secondary);">${_oelLoading()}</div>`;
+        }
+        const _OEL_BTN = 'background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px;';
+        async function loadOfflineErrorlog(elId, hours) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const h = hours === 6 ? 6 : 2;
+            el.setAttribute('aria-busy', 'true');
+            el.innerHTML = _oelLoading();
+            let d = null;
+            try {
+                const r = await createFetchWithAbort(
+                    `/api/intelligence-kpis/errorlog/recent-signals?instance=${encodeURIComponent(el.dataset.inst || '')}&hours=${h}`, { timeout: 8000 });
+                d = (r && r.ok) ? await r.json() : null;
+            } catch (e) { d = null; /* fail-open: o ecra de offline continua valido */ }
+            if (!el.isConnected) return;
+            el.removeAttribute('aria-busy');
+            el.innerHTML = (d && d.success) ? _oelRender(elId, d)
+                : `<i class="fas fa-circle-info" aria-hidden="true"></i> ${_oelT('failed', 'Não foi possível ler o errorlog na Intelligence. O diagnóstico acima continua válido.')}
+                   <button type="button" onclick="loadOfflineErrorlog('${elId}', ${h})" style="${_OEL_BTN} margin-left: 10px;">${_oelT('retry', 'Tentar outra vez')}</button>`;
+        }
+        function _oelRender(elId, d) {
+            const neutro = 'var(--color-text-secondary)';
+            const suave = 'var(--color-text-tertiary)';
+            const h = d.hours === 6 ? 6 : 2;
+            const tipoCor = tp => tp === 'Critical' ? getSevTokens('CRITICAL') : tp === 'Error' ? getSevTokens('WARNING')
+                : (tp === 'AvailabilityGroup' || tp === 'Lifecycle') ? getSevTokens('INFO') : null;
+            const janela = d.anchor_source === 'offline_event'
+                ? _oelT('window_event', 'Linhas desde {since}: {h} h antes do evento offline das {anchor}.', { since: _oelHora(d.since, true), h, anchor: _oelHora(d.anchor, true) })
+                : _oelT('window_now', 'Linhas das últimas {h} h (sem evento offline ativo registado).', { h });
+            const ciclo = d.collector_cycle_minutes == null
+                ? _kpiTp('overview.offline_errorlog_collector_never', 'sem registo', {})
+                : _kpiTp('overview.offline_errorlog_collector_ago', 'há {n} min ({time})', { n: d.collector_cycle_minutes, time: _oelHora(d.collector_last_cycle) });
+            const ultima = d.instance_last_row ? _oelHora(d.instance_last_row, true)
+                : _kpiTp('overview.offline_errorlog_instance_none', 'nenhuma nos últimos 7 dias', {});
+            let html = `
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px;">
+                    <i class="fas fa-file-lines" aria-hidden="true" style="color: ${neutro};"></i>
+                    <strong style="color: var(--color-text-primary); font-size: 15px;">${_oelT('title', 'Errorlog antes da falha')}</strong>
+                    <span style="border: 1px solid var(--color-border); color: ${neutro}; border-radius: 999px; padding: 1px 10px; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;">${_oelT('badge', 'Sinal, não causa')}</span>
+                </div>
+                <div style="font-size: 13px; color: ${neutro};">${janela}</div>
+                <div style="font-size: 12px; color: ${d.collector_stale ? getSevTokens('WARNING').text : suave}; margin-top: 4px;">
+                    ${_oelT('collector', 'Último ciclo do recolhedor do errorlog: {when}', { when: ciclo })}${d.collector_stale ? ' · ' + _oelT('collector_stale', 'recolha atrasada') : ''}
+                    · ${_oelT('instance_last', 'Última linha recebida desta instância: {when}', { when: ultima })}
+                </div>`;
+            const sec = d.security || {};
+            if (+sec.count > 0) {
+                html += `<div style="font-size: 13px; color: ${neutro}; margin-top: 10px;"><i class="fas fa-user-lock" aria-hidden="true"></i>
+                    ${_oelT('security', 'Falhas de login e outros eventos de segurança: {n}, com pico de {p} às {time}. Não são listados aqui.',
+                            { n: sec.count, p: sec.peak ? sec.peak.count : sec.count, time: sec.peak ? _oelHora(sec.peak.minute) : '' })}</div>`;
+            }
+            const ev = Array.isArray(d.events) ? d.events : [];
+            if (ev.length) {
+                const itens = ev.map(e => {
+                    const tk = tipoCor(e.log_type);
+                    const chip = tk ? `background: ${tk.bg}; color: ${tk.text};` : `border: 1px solid var(--color-border); color: ${neutro};`;
+                    const num = e.error_number != null
+                        ? _oelT('error_sev', 'Erro {n}, severidade {s}', { n: e.error_number, s: e.severity == null ? '—' : e.severity }) + ' · ' : '';
+                    const texto = String(e.text || '');
+                    const resumo = texto.length > 140 ? texto.slice(0, 140) + '…' : texto;
+                    return `<li style="border-top: 1px solid var(--color-border); padding: 6px 0;">
+                        <details>
+                            <summary style="cursor: pointer; font-size: 13px; color: ${neutro};">
+                                <span style="font-variant-numeric: tabular-nums;">${_oelEsc(_oelHora(e.log_date, true))}</span>
+                                <span style="${chip} border-radius: 4px; padding: 0 6px; font-size: 11px; margin: 0 6px;">${_oelEsc(e.log_type || '—')}</span>
+                                <span style="color: ${suave}; font-size: 12px;">${num}</span>${_oelEsc(resumo)}
+                            </summary>
+                            <pre style="white-space: pre-wrap; word-break: break-word; font-size: 12px; margin: 6px 0 0; padding: 8px; background: var(--color-bg-primary); border-radius: 6px; color: ${neutro};">${_oelEsc(texto)}</pre>
+                        </details>
+                    </li>`;
+                }).join('');
+                html += `<div style="font-size: 12px; color: ${suave}; margin-top: 10px;">${_oelT('shown', '{shown} de {total} linhas, da mais recente para a mais antiga.', { shown: ev.length, total: Math.max(+d.events_total || 0, ev.length) })}</div>
+                    <ul aria-label="${_oelT('list_label', 'Linhas do errorlog')}" style="list-style: none; margin: 6px 0 0; padding: 0;">${itens}</ul>`;
+            } else {
+                const motivo = d.empty_reason === 'collector_stale'
+                    ? ['empty_collector_stale', 'Nenhuma linha nesta janela, mas a recolha do errorlog está atrasada: a ausência de linhas não diz nada sobre o servidor.']
+                    : d.empty_reason === 'instance_never'
+                    ? ['empty_instance_never', 'Esta instância não enviou linhas do errorlog nos últimos 7 dias. O recolhedor pode não a ler, ou não conseguir ligar-se a ela.']
+                    : ['empty_window_quiet', 'Nenhuma linha classificada nesta janela. Isto não prova que não houve problemas: a instância pode ter parado antes de o recolhedor voltar a ler o log.'];
+                html += `<div style="font-size: 13px; color: ${neutro}; margin-top: 10px;"><i class="fas fa-circle-info" aria-hidden="true"></i> ${_oelT(motivo[0], motivo[1])}</div>`;
+            }
+            if (+d.omitted_count > 0) {
+                html += `<div style="font-size: 12px; color: ${suave}; margin-top: 6px;">${_oelT('omitted', '{n} linhas repetitivas ou informativas não listadas.', { n: d.omitted_count })}</div>`;
+            }
+            html += `<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+                    ${h === 2 ? `<button type="button" onclick="loadOfflineErrorlog('${elId}', 6)" style="${_OEL_BTN}">${_oelT('widen', 'Alargar para 6 h')}</button>` : ''}
+                    <span style="font-size: 11px; font-style: italic; color: ${suave};">${_oelT('footnote', 'O recolhedor só vê o que conseguiu ler antes de perder a ligação à instância. Use estas linhas como pista para investigar, não como causa confirmada.')}</span>
+                </div>`;
+            return html;
+        }
+
         function extractHostname(serverIdOrName) {
             let hostname = serverIdOrName;
             

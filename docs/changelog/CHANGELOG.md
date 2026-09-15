@@ -9,6 +9,15 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Ecrã de servidor offline mostra o errorlog antes da falha** (B3, owner 15/09). Quando o ping falha, o
+  portal lê da Intelligence até 15 linhas classificadas (Critical, Error, AvailabilityGroup, Lifecycle) das
+  2 h antes do evento offline, com opção de alargar a 6 h. Falhas de login e outros eventos de segurança só
+  em contagem, com o minuto de pico; linhas repetitivas e informativas só em contagem. Mostra sempre o último
+  ciclo do recolhedor e a última linha recebida da instância, e explica a lista vazia em vez de dizer que
+  não houve erros. Marcado como sinal, não causa. Endpoint novo GET
+  /api/intelligence-kpis/errorlog/recent-signals (sessão obrigatória; leitura na BD como sql_monitoring).
+  [tier: Std]
+
 - **Cartão de errorlog conta pelo tipo classificado, não pela severidade** (15/09, preparação do B1b). O
   recolhedor vai passar a preencher a severidade; contar por ela punha o erro 33208 de auditoria
   (severidade 17, repetitivo) a vermelho em cerca de dez instâncias. Crítico passa a ser o tipo Critical;
