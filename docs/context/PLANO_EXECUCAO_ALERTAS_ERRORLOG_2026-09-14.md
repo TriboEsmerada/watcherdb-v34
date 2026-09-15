@@ -173,6 +173,11 @@ para 1.400.
   instância. Para o B3 falta ainda uma vista que junte a STG activa e a HIST recente, e a correlação com a janela de
   indisponibilidade.
 
+- **B2a-2b + B2b-2 PRONTOS 15/09** (lote B2A2B_B2B2_RECUPERACAO_AGREGADOS_ERRORLOG, migration 015; desenho B2A2B_B2B2_DESENHO):
+  recuperação da janela a partir da marca de água (24 h, 5 min de sobreposição, 10 instâncias por ciclo, só eventos na
+  parte recuperada, arquivo a 2 dias) e KPI_MSSQL_ERRORLOG_AGG_HIST (Security e Repetitive por hora, sem texto pessoal
+  por CHECK, camada AGREGADOS 395 dias, purga própria depois da HIST). Guardião: consenso no desenho (4 ajustes) e no
+  código. **Pendente (achado do guardião):** Security KEEP (18486 conta bloqueada) não é arquivado nem agregado.
 - **B2a-2a PRONTO 15/09** (lote B2A2A_ESTADO_LEITURA_ERRORLOG, migration 014; desenho B2A2_DESENHO_MARCA_AGUA_ERRORLOG):
   WDB_ERRORLOG_READ_STATE por instância (tentativa, leitura boa, marca de água no relógio do servidor, série de falhas
   com classe e texto sem PWD); heartbeat do ciclo vazio corrigido no adapter do serviço. Guardião: GO com 5 ajustes no
