@@ -61,13 +61,18 @@ vermelho. É a mesma doutrina que levou o alarme de backup de 469 para 75.
   utilizador está no ecrã de KPIs. Regra de 21/08 aplicada aos avisos.
 - **Toca em:** só portal. **Gate:** frontend-specialist. **Esforço:** 2 a 3 horas.
 
-### A3 — ligar os KPI críticos que faltam
+### A3 — ligar os KPI críticos que faltam — **classificação aprovada 15/09, lote em preparação**
 
 - Passar dos 7 actuais aos restantes críticos do registo, com o mesmo contrato: valor, valor
   anterior, tipo de KPI para o clique abrir a modal certa.
 - **Pré-condição:** cada contador que se ligue tem de ter prova de que se mexe. Um contador que
   ninguém verificou entra com nota, não com aviso.
 - **Toca em:** só portal. **Esforço:** 1 a 2 horas depois de A2.
+- **Classificação aprovada pelo owner a 15/09**, do parecer da persona DBA cliente: ligar backup e
+  mirroring sem condição; CPU, memória, latência de disco e tempdb só com duração mínima e
+  histerese; jobs só os críticos; locks longos e utilizadores bloqueados dentro do aviso de sessões
+  bloqueadas, processos em espera dentro do de CPU; não ligar deadlocks, errorlog nem serviços.
+  A linha de serviços deixa de mostrar 0 verde, porque a recolha está parada desde 13/05.
 
 ---
 
@@ -85,6 +90,18 @@ vermelho. É a mesma doutrina que levou o alarme de backup de 469 para 75.
 
 Volume actual, da consulta do owner a 14/09: 19.510 linhas, 33 instâncias, janela de 70 minutos,
 cerca de 590 linhas por instância por hora.
+
+**Factos medidos a 15/09 na base viva (corrigem este plano):**
+
+| Facto | Medida | Consequência |
+|---|---|---|
+| `KPI_MSSQL_ERRORLOG_HIST` está viva | 2,7 milhões de linhas, 59 instâncias, desde 24/06 | não há nada a "ressuscitar"; o canónico é que a dá como descontinuada |
+| Quem escreve é `usp_archive_errorlog`, chamada por `usp_archive_all_kpis` no job diário das 05:00 | 14/09 tem só a hora 18 (20.357 linhas); 11/09 tem as horas 3, 4 e 20 | o histórico é uma fotografia por dia da janela que estiver na STG às 05:00; o resto do dia perde-se |
+| As duas procedures não existem no canónico nem no código do V1 | procura no repositório sem resultados | desvio da base viva face ao canónico, a resolver no mesmo lote de B2 (regra 2) |
+| O job `WatcherDB_Collect_ErrorLogs` corre de 5 em 5 min e diz "sucesso" | escreve em `raw.sql_error_logs`, que tem 0 linhas; o TRY/CATCH só faz PRINT | falso verde no SQL Agent; o canónico ainda o cria. Decisão do owner em D |
+| Conteúdo do HIST | `Log_Type` sempre 'Error', gravidade e número sempre nulos, 0 mensagens de arranque ou encerramento em 30 dias | confirma B1: reboots e shutdowns nunca chegam ao histórico |
+| Quatro erros dominam o volume em 30 dias | 1105: 491 mil; 18456: 511 mil somando estados; 33208: 267 mil; 9002: 90 mil | a retenção tem de agregar repetições, não guardar cada linha |
+| Duplicados | 0 grupos em 10 e 11/09 | a deduplicação da procedure já ignora o carimbo de recolha |
 
 **Critério do owner, aceite:** guardar só erros, eventos críticos, reboots e shutdowns. Fora
 avisos e informativos. Filtrar na origem é a doutrina que em 30/07 cortou 142 mil linhas por ciclo
@@ -110,11 +127,14 @@ para 1.400.
 
 ### B2 — tabela de histórico com retenção
 
-- Ressuscitar `KPI_MSSQL_ERRORLOG_HIST`, hoje comentada no canónico como descontinuada, com a
-  política que sair de B0 e a deduplicação corrigida.
-- **Armadilha a não herdar:** a chave primária antiga inclui o carimbo de recolha, portanto a mesma
-  linha entrava até 12 vezes, uma por ciclo dentro da janela de 60 minutos. A deduplicação tem de
-  ignorar o carimbo.
+- **Revisto a 15/09:** a tabela vive e tem deduplicação correcta. O defeito é o momento do arquivo:
+  uma vez por dia, às 05:00, só apanha o que estiver na STG, que é truncada a cada ciclo. Passar o
+  arquivo para cada ciclo do recolhedor, ou gravar o histórico directamente no recolhedor, com os
+  critérios de B0 e B1.
+- Trazer `usp_archive_errorlog` e `usp_archive_all_kpis` para o canónico, com a forma que sair
+  daqui, e retirar do canónico o job que escreve em `raw.sql_error_logs`.
+- Agregar repetições: os quatro erros que dominam o volume entram como contagem por hora, não
+  como meio milhão de linhas.
 - **Toca em:** base partilhada. Canónico `INSTALACAO_COMPLETA_UNIFICADA.sql` + documentação no mesmo
   bloco (regra 2). Entrada no purge diário.
 - **Corre o DDL:** o owner (regra 5). **Esforço:** 2 a 3 horas de preparação.
@@ -124,7 +144,8 @@ para 1.400.
 - Endpoint só de leitura com as últimas mensagens da instância, e o bloco no ecrã com o rótulo
   honesto: "últimas mensagens antes de perder contacto", nunca "o que aconteceu".
 - Mostra a idade da última recolha e avisa quando está velha.
-- **Esforço:** 2 horas. **Depende de:** B1 e B2, senão nasce vazio.
+- **Esforço:** 2 horas. **Depende de:** B1 e B2. Hoje o histórico existe, mas com uma janela por
+  dia a hora de uma queda raramente lá está: o bloco nasceria quase sempre vazio.
 
 ---
 
