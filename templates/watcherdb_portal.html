@@ -51327,6 +51327,10 @@ window.showDiskDrilldown = async function(drive, label) {
         // Per [[js-string-quoting-apostrophes]]: zero apostrofes em strings JS.
         const _liveSortState = {};
         const _liveLastData = {};
+        // 2026-09-15 (owner): ordenacao generica, Batch/s por diferenca e taxas do Sched (estado fora do DOM)
+        const _liveDomSort = {};
+        const _liveBatchPrev = {};
+        const _liveSchedMemo = {};
 
         function openLiveMonitoringModal() {
             const tabId = 'live_' + Date.now();
@@ -51694,17 +51698,44 @@ window.showDiskDrilldown = async function(drive, label) {
                 const progResp = (!isFleet && gaugesUrl) ? responses[1] : responses[0];
                 if (gaugesResp && gaugesResp.ok) {
                     const gd = (await gaugesResp.json()).gauges || {};
-                    const _gc = (id, val, unit, warnAt, critAt) => {
+                    const _gc = (id, val, unit, warnAt, critAt, menorPior) => {
                         const el = document.getElementById(id);
                         if (!el) return;
                         const v = parseFloat(val) || 0;
                         el.textContent = v.toFixed(0) + (unit || '');
-                        el.style.color = v >= (critAt||999) ? '#ef4444' : v >= (warnAt||999) ? '#f59e0b' : '#10b981';
+                        // 2026-09-15: menorPior (PLE) -- abaixo do limite e que e mau; antes 2467 s aparecia vermelho
+                        el.style.color = menorPior
+                            ? (v <= critAt ? '#ef4444' : v <= warnAt ? '#f59e0b' : '#10b981')
+                            : (v >= (critAt||999) ? '#ef4444' : v >= (warnAt||999) ? '#f59e0b' : '#10b981');
                     };
                     _gc('lg-cpu-'+tabId, gd.cpu_pct, '%', 70, 90);
-                    _gc('lg-mem-'+tabId, gd.memory_pct, '%', 85, 95);
-                    _gc('lg-ple-'+tabId, gd.ple_seconds, 's', 600, 300);
-                    _gc('lg-batch-'+tabId, gd.batch_requests_sec, '', 999999, 999999);
+                    _gc('lg-mem-'+tabId, gd.memory_pct, '%', 101, 101);
+                    (function () {
+                        // 2026-09-15 (owner): num servidor SQL a memoria do SO fica alta por desenho (o SQL reserva-a). Cor pela
+                        // memoria DISPONIVEL do SO; a memoria do SQL face ao max server memory vai na dica.
+                        const el = document.getElementById('lg-mem-' + tabId);
+                        if (!el) return;
+                        const livre = +gd.available_memory_mb || 0, total = +gd.total_memory_mb || 0;
+                        const pctLivre = total > 0 ? livre / total * 100 : 100;
+                        el.style.color = (livre < 512 || pctLivre < 2) ? '#ef4444' : (livre < 1024 || pctLivre < 5) ? '#f59e0b' : '#10b981';
+                        el.title = _kpiTp('live.mem_tip_detail', 'SQL Server: {sql} MB (max server memory: {max} MB) · disponível no sistema operativo: {avail} MB',
+                            { sql: (+gd.sql_memory_mb || 0).toLocaleString(), max: (+gd.max_server_memory_mb || 0).toLocaleString(), avail: livre.toLocaleString() });
+                    })();
+                    _gc('lg-ple-'+tabId, gd.ple_seconds, 's', 600, 300, true);
+                    (function () {
+                        // 2026-09-15 (owner): 'Batch Requests/sec' e um contador acumulado; a taxa e a diferenca entre leituras
+                        const el = document.getElementById('lg-batch-' + tabId);
+                        if (!el) return;
+                        const chave = tabId + '|' + (_instAtCall || '');
+                        const antes = _liveBatchPrev[chave];
+                        const agora = { v: parseFloat(gd.batch_requests_sec) || 0, t: Date.now() };
+                        _liveBatchPrev[chave] = agora;
+                        const dt = antes ? (agora.t - antes.t) / 1000 : 0;
+                        const taxa = (antes && dt > 0 && agora.v >= antes.v) ? (agora.v - antes.v) / dt : null;
+                        el.textContent = taxa == null ? '…' : Math.round(taxa).toLocaleString();
+                        el.style.color = 'var(--color-text-bright)';
+                        el.title = taxa == null ? t('live.measuring') : '';
+                    })();
                     _gc('lg-sess-'+tabId, gd.active_sessions, '', 200, 500);
                     _gc('lg-qry-'+tabId, gd.running_queries, '', 50, 100);
                     _gc('lg-blk-'+tabId, gd.blocked_count, '', 1, 5);
@@ -51723,7 +51754,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     // Wave S (2026-05-29): cache last payload per programa para re-render
                     // imediato em sort click sem network round-trip.
                     _liveLastData[_liveProgram] = pd;
-                    screen.innerHTML = _liveRenderProgram(_liveProgram, pd, tabId);
+                    _liveRenderAndSet(screen, _liveProgram, pd, tabId);
                     if (status) {
                         const now = new Date().toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
                         status.textContent = now;
@@ -51783,7 +51814,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const cached = _liveLastData[program];
             if (cached) {
                 const screen = document.getElementById('live-screen-' + tabId);
-                if (screen) screen.innerHTML = _liveRenderProgram(program, cached, tabId);
+                if (screen) _liveRenderAndSet(screen, program, cached, tabId);
             }
         }
         window._liveSortClick = _liveSortClick;
@@ -51812,6 +51843,94 @@ window.showDiskDrilldown = async function(drive, label) {
             const arrow = _liveArrow(program, col);
             const styleAttr = extraStyle ? ' style="cursor:pointer;user-select:none;' + extraStyle + '"' : ' style="cursor:pointer;user-select:none;"';
             return '<th scope="col" ' + aria + ' onclick="' + onClick + '"' + styleAttr + '>' + label + arrow + '</th>';
+        }
+
+        // 2026-09-15 (owner): "order by em todas as colunas das tabelas do live". Ordenacao generica no DOM depois de cada
+        // render. Queries e Waits mantem o sort Wave S (th com aria-sort); tabelas com linhas clicaveis (Fleet) ficam de fora.
+        // Estado em _liveDomSort (fora do DOM), reaplicado a cada refresh. Parecer do frontend: addEventListener, Enter/Espaco.
+        function _liveRenderAndSet(screen, program, data, tabId) {
+            screen.innerHTML = _liveRenderProgram(program, data, tabId);
+            _liveEnhanceTables(screen, program);
+        }
+
+        function _liveSortValue(td) {
+            const dv = td.getAttribute('data-sort-value');
+            const raw = (dv != null ? dv : (td.textContent || '')).trim();
+            if (!raw || raw === '-' || raw === '—' || raw === '…') return { n: null, s: '' };
+            if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+                const tt = Date.parse(raw);
+                if (!isNaN(tt)) return { n: tt, s: raw };
+            }
+            const m = raw.replace(/[\u00a0\u202f ]/g, '').match(/^~?(-?[\d.,]+)(%|ms|s|min|h|d|kb|mb|gb|tb)?$/i);
+            if (m) {
+                let num = m[1];
+                if (num.indexOf(',') >= 0 && num.indexOf('.') >= 0) {
+                    num = num.lastIndexOf(',') > num.lastIndexOf('.') ? num.replace(/\./g, '').replace(',', '.') : num.replace(/,/g, '');
+                } else if (num.indexOf(',') >= 0) {
+                    num = /,\d{3}(,|$)/.test(num) ? num.replace(/,/g, '') : num.replace(',', '.');
+                } else if ((num.match(/\./g) || []).length > 1) {
+                    num = num.replace(/\./g, '');
+                }
+                const mult = { ms: 0.001, s: 1, min: 60, h: 3600, d: 86400, kb: 1 / 1024, mb: 1, gb: 1024, tb: 1048576 }[(m[2] || '').toLowerCase()] || 1;
+                const v = parseFloat(num);
+                if (!isNaN(v)) return { n: v * mult, s: raw };
+            }
+            return { n: null, s: raw.toLowerCase() };
+        }
+
+        function _liveApplyDomSort(table, key) {
+            const st = _liveDomSort[key];
+            Array.from(table.tHead.rows[0].cells).forEach((th, i) => {
+                const activa = !!(st && st.col === i);
+                th.setAttribute('aria-sort', activa ? (st.asc ? 'ascending' : 'descending') : 'none');
+                const ic = th.querySelector('.live-dom-sort-ic');
+                if (ic) {
+                    ic.className = 'fas ' + (activa ? (st.asc ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort') + ' live-dom-sort-ic';
+                    ic.style.opacity = activa ? '1' : '0.35';
+                }
+            });
+            if (!st || !table.tBodies[0]) return;
+            const tb = table.tBodies[0];
+            Array.from(tb.rows)
+                .map((tr, idx) => ({ tr, idx, v: tr.cells[st.col] ? _liveSortValue(tr.cells[st.col]) : { n: null, s: '' } }))
+                .sort((a, b) => {
+                    const va = a.v, vb = b.v;
+                    const vazioA = va.n == null && !va.s, vazioB = vb.n == null && !vb.s;
+                    if (vazioA !== vazioB) return vazioA ? 1 : -1;          // vazios sempre no fim
+                    let c;
+                    if (va.n != null && vb.n != null) c = va.n - vb.n;
+                    else if (va.n != null || vb.n != null) c = va.n != null ? -1 : 1;
+                    else c = va.s.localeCompare(vb.s);
+                    return (st.asc ? c : -c) || (a.idx - b.idx);
+                })
+                .forEach(x => tb.appendChild(x.tr));
+        }
+
+        function _liveEnhanceTables(screen, program) {
+            if (!screen) return;
+            screen.querySelectorAll('table').forEach((table, ti) => {
+                if (!table.tHead || !table.tHead.rows[0] || !table.tBodies[0] || table.tBodies[0].rows.length < 2) return;
+                if (table.querySelector('th[aria-sort]') || table.querySelector('tbody tr[onclick]')
+                    || table.querySelector('tbody td[colspan], tbody td[rowspan]')) return;
+                const key = program + '#' + ti;
+                Array.from(table.tHead.rows[0].cells).forEach((th, i) => {
+                    th.setAttribute('scope', 'col');
+                    th.setAttribute('tabindex', '0');
+                    th.style.cursor = 'pointer';
+                    th.style.userSelect = 'none';
+                    th.insertAdjacentHTML('beforeend', ' <i class="fas fa-sort live-dom-sort-ic" aria-hidden="true" style="opacity:0.35;font-size:12px;margin-left:2px;"></i>');
+                    const ordenar = () => {
+                        const s = _liveDomSort[key];
+                        _liveDomSort[key] = { col: i, asc: s && s.col === i ? !s.asc : false };
+                        _liveApplyDomSort(table, key);
+                    };
+                    th.addEventListener('click', ordenar);
+                    th.addEventListener('keydown', ev => {
+                        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ordenar(); }
+                    });
+                });
+                _liveApplyDomSort(table, key);
+            });
         }
 
         function _liveRenderProgram(program, data, tabId) {
@@ -52267,21 +52386,63 @@ window.showDiskDrilldown = async function(drive, label) {
         }
 
         function _liveRenderJobs(data) {
+            // 2026-09-15 (owner: "o started e o progress parecem estranhos"). Passo em curso (antes: ultimo passo terminado,
+            // "(starting) (0/1)" ate ao fim), progresso do pedido do passo quando o SQL Server o expoe, data local, e as
+            // operacoes com progresso real da instancia por baixo (um job que chama o TSM fica a 0% e o backup esta noutra sessao).
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const quando = iso => {
+                if (!iso) return '';
+                const d = new Date(iso);
+                return isNaN(d.getTime()) ? esc(iso) : d.toLocaleString(document.documentElement.lang || undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            };
+            const barra = pct => `<div style="background:var(--color-bg-sunken);border-radius:4px;height:8px;width:80px;display:inline-block;vertical-align:middle;overflow:hidden;"><div style="background:#3b82f6;height:100%;width:${Math.min(100, pct)}%;"></div></div> ${pct.toFixed(1)}%`;
+            const TH = 'padding:6px 8px;text-align:left;';
             const jobs = data.jobs || [];
-            if (!jobs.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_jobs') + '</div>';
-            let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:6px 8px;text-align:left;">Job</th><th>Step</th><th>Progress</th><th>Running</th><th>Category</th><th>Started</th></tr></thead><tbody>';
-            jobs.forEach(j => {
-                const mins = j.running_minutes || 0;
-                const mc = mins > 120 ? '#ef4444' : mins > 30 ? '#f59e0b' : '#10b981';
-                const pct = j.total_steps > 0 ? Math.round((j.current_step_id||0)/j.total_steps*100) : 0;
-                h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:5px 8px;color:var(--color-text-bright);font-weight:500;">${j.job_name||''}</td>`;
-                h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${j.current_step||''} (${j.current_step_id||0}/${j.total_steps||0})</td>`;
-                h += `<td style="padding:5px 8px;"><div style="background:var(--color-bg-sunken);border-radius:4px;height:8px;width:80px;display:inline-block;vertical-align:middle;overflow:hidden;"><div style="background:#3b82f6;height:100%;width:${pct}%;"></div></div> ${pct}%</td>`;
-                h += `<td style="padding:5px 8px;color:${mc};font-weight:600;">${mins} min</td>`;
-                h += `<td style="padding:5px 8px;color:var(--color-text-disabled);font-size:12px;">${j.category_name||''}</td>`;
-                h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;">${j.start_execution_date||''}</td></tr>`;
-            });
-            return h + '</tbody></table>';
+            const ops = data.operations || [];
+            let h = '';
+            if (!jobs.length) {
+                h += '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_jobs') + '</div>';
+            } else {
+                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="${TH}">Job</th><th style="${TH}">Step</th><th style="${TH}">Progress</th><th style="${TH}">Running</th><th style="${TH}">Wait</th><th style="${TH}">Category</th><th style="${TH}">Started</th></tr></thead><tbody>`;
+                jobs.forEach(j => {
+                    const mins = +j.running_minutes || 0;
+                    const mc = mins > 120 ? '#ef4444' : mins > 30 ? '#f59e0b' : '#10b981';
+                    const pct = (j.step_percent != null && +j.step_percent > 0) ? +j.step_percent : null;
+                    const passo = _kpiTp('live.job_step', 'Passo {i} de {n}: {name}', { i: j.current_step_id || 1, n: j.total_steps || 1, name: j.current_step || '' });
+                    const prog = pct == null ? `<span style="color:var(--color-text-disabled);" title="${esc(t('live.job_no_progress_tip'))}">—</span>` : barra(pct);
+                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:5px 8px;color:var(--color-text-bright);font-weight:500;">${esc(j.job_name)}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${esc(passo)}</td>`;
+                    h += `<td style="padding:5px 8px;" data-sort-value="${pct == null ? '' : pct}">${prog}</td>`;
+                    h += `<td style="padding:5px 8px;color:${mc};font-weight:600;" data-sort-value="${mins}">${mins} min</td>`;
+                    h += `<td style="padding:5px 8px;color:#f59e0b;font-size:12px;">${esc(j.step_wait_type || '-')}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-disabled);font-size:12px;">${esc(j.category_name)}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;" data-sort-value="${esc(j.start_execution_date || '')}">${quando(j.start_execution_date)}</td></tr>`;
+                });
+                h += '</tbody></table>';
+            }
+            h += `<div style="margin:18px 0 6px;color:var(--color-text-tertiary);font-weight:600;">${esc(t('live.ops_title'))}</div>`;
+            if (data.operations_error) {
+                h += `<div style="color:var(--color-text-disabled);font-size:12px;">${esc(t('live.ops_unavailable'))}</div>`;
+            } else if (!ops.length) {
+                h += `<div style="color:var(--color-text-disabled);font-size:12px;">${esc(t('live.ops_none'))}</div>`;
+            } else {
+                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="${TH}">Command</th><th style="${TH}">DB</th><th style="${TH}">Progress</th><th style="${TH}">Running</th><th style="${TH}" title="${esc(t('live.ops_eta_note'))}">ETA</th><th style="${TH}">Wait</th><th style="${TH}">Program</th><th style="${TH}">SPID</th></tr></thead><tbody>`;
+                ops.forEach(o => {
+                    const pct = +o.percent_complete || 0;
+                    const eta = +o.eta_minutes || 0;
+                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:5px 8px;color:var(--color-text-bright);font-weight:500;">${esc(o.command)}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${esc(o.database_name)}</td>`;
+                    h += `<td style="padding:5px 8px;" data-sort-value="${pct}">${barra(pct)}</td>`;
+                    h += `<td style="padding:5px 8px;" data-sort-value="${+o.running_minutes || 0}">${+o.running_minutes || 0} min</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);" data-sort-value="${eta > 0 ? eta : ''}" title="${esc(t('live.ops_eta_note'))}">${eta > 0 ? '~' + eta + ' min' : '—'}</td>`;
+                    h += `<td style="padding:5px 8px;color:#f59e0b;font-size:12px;">${esc(o.wait_type || '-')}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-disabled);font-size:12px;">${esc(o.program_name)}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-link);">${esc(o.session_id)}</td></tr>`;
+                });
+                h += '</tbody></table>';
+                h += `<div style="font-size:12px;color:var(--color-text-disabled);margin-top:4px;font-style:italic;">${esc(t('live.ops_eta_note'))}</div>`;
+            }
+            return h;
         }
 
         function _liveRenderMemory(data) {
@@ -52432,28 +52593,77 @@ window.showDiskDrilldown = async function(drive, label) {
         }
 
         function _liveRenderSchedulers(data) {
+            // 2026-09-15 (owner: "dificil de entender"). Frase de leitura no topo; Runnable com o mesmo limiar da frase (> 1 por
+            // scheduler); Yields e Ctx Switches por segundo pela diferenca entre leituras; ajuda por coluna. Persona: pressao de
+            // CPU so quando a media de pedidos a espera por scheduler passa de 1 em leituras seguidas (um pico nao alarma).
             const scheds = data.schedulers || [];
             if (!scheds.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_scheduler_data') + '</div>';
-            const totalRunnable = data.total_runnable || 0;
-            const totalPendingIO = data.total_pending_io || 0;
-            let h = `<div style="display:flex;gap:20px;margin-bottom:12px;font-size:13px;">`;
-            h += `<span>Total Runnable: <b style="color:${totalRunnable>scheds.length?'#ef4444':'#10b981'};">${totalRunnable}</b></span>`;
-            h += `<span>Total Pending I/O: <b style="color:${totalPendingIO>50?'#f59e0b':'#10b981'};">${totalPendingIO}</b></span>`;
-            h += `<span>Schedulers: <b>${scheds.length}</b></span></div>`;
-            h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">Sched#</th><th>CPU#</th><th>Current Tasks</th><th>Runnable</th><th>Workers</th><th>Active</th><th>Pending I/O</th><th>Yields</th><th>Ctx Switches</th></tr></thead><tbody>';
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const totalRunnable = +data.total_runnable || 0;
+            const totalPendingIO = +data.total_pending_io || 0;
+            const porSched = totalRunnable / scheds.length;
+            const inst = data.instance || '';
+            let memo = _liveSchedMemo[inst];
+            if (!memo || memo.ts !== data.timestamp) {
+                const antes = memo || null;
+                const dt = antes ? (data.timestamp - antes.ts) : 0;
+                const taxas = {};
+                if (antes && dt > 0) {
+                    scheds.forEach(s => {
+                        const p = antes.snap[s.scheduler_id];
+                        if (!p) return;
+                        const dy = (s.yield_count || 0) - p.y, dc = (s.context_switches_count || 0) - p.c;
+                        if (dy >= 0 && dc >= 0) taxas[s.scheduler_id] = { y: dy / dt, c: dc / dt };
+                    });
+                }
+                const snap = {};
+                scheds.forEach(s => { snap[s.scheduler_id] = { y: s.yield_count || 0, c: s.context_switches_count || 0 }; });
+                const hist = ((antes && dt > 0 && dt < 120) ? antes.hist : []).concat([porSched]).slice(-3);
+                memo = _liveSchedMemo[inst] = { ts: data.timestamp, snap: snap, rates: taxas, hist: hist };
+            }
+            let k = 0;
+            for (let i = memo.hist.length - 1; i >= 0 && memo.hist[i] > 1; i--) k++;     // leituras seguidas acima de 1, da mais recente
+            const seguidas = k >= 2;
+            const r1 = porSched.toLocaleString(undefined, { maximumFractionDigits: 1 });
+            let frase, cor;
+            if (seguidas) {
+                frase = _kpiTp('live.sched_pressure', 'Pressão de CPU: {n} pedidos à espera de CPU ({r} por scheduler) em {k} leituras seguidas.', { n: totalRunnable, r: r1, k: k });
+                cor = getSevTokens('WARNING').text;
+            } else if (porSched > 1) {
+                frase = _kpiTp('live.sched_spike', 'Pico de espera por CPU nesta leitura: {n} pedidos ({r} por scheduler). Ainda não é sustentado.', { n: totalRunnable, r: r1 });
+                cor = 'var(--color-text-secondary)';
+            } else {
+                frase = _kpiTp('live.sched_ok', 'Sem pressão de CPU: {n} pedido(s) à espera de CPU em {s} schedulers.', { n: totalRunnable, s: scheds.length });
+                cor = getSevTokens('OK').text;
+            }
+            const io = totalPendingIO > 0
+                ? _kpiTp('live.sched_io_wait', '{n} pedido(s) de I/O pendente(s) nos schedulers.', { n: totalPendingIO })
+                : _kpiTp('live.sched_io_ok', 'Sem espera de disco nos schedulers.', {});
+            let h = `<div style="margin-bottom:12px;font-size:13px;"><div style="color:${cor};font-weight:600;">${esc(frase)}</div><div style="color:var(--color-text-tertiary);margin-top:2px;">${esc(io)}</div></div>`;
+            const th = (label, dica, extra) => `<th style="padding:4px 8px;${extra || ''}"${dica ? ` title="${esc(dica)}"` : ''}>${label}</th>`;
+            const R = 'text-align:right;';
+            h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);">'
+                + th('Sched#') + th('CPU#') + th('Current Tasks', t('live.sched_tip_tasks'), R) + th('Runnable', t('live.sched_tip_runnable'), R)
+                + th('Workers', t('live.sched_tip_workers'), R) + th('Active', t('live.sched_tip_workers'), R) + th('Pending I/O', t('live.sched_tip_io'), R)
+                + th('Yields/s', t('live.sched_tip_rates'), R) + th('Ctx Switches/s', t('live.sched_tip_rates'), R) + '</tr></thead><tbody>';
+            const taxa = v => v == null ? `<span title="${esc(t('live.measuring'))}">…</span>` : Math.round(v).toLocaleString();
             scheds.forEach(s => {
-                const rc = (s.runnable_tasks_count||0) > 2 ? '#ef4444' : '#10b981';
-                h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-link);">${s.scheduler_id}</td>`;
-                h += `<td style="padding:3px 8px;">${s.cpu_id}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${s.current_tasks_count||0}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;color:${rc};font-weight:600;">${s.runnable_tasks_count||0}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${s.current_workers_count||0}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${s.active_workers_count||0}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${s.pending_disk_io_count||0}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${(s.yield_count||0).toLocaleString()}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${(s.context_switches_count||0).toLocaleString()}</td></tr>`;
+                const run = +s.runnable_tasks_count || 0;
+                const rc = run > 1 ? getSevTokens('WARNING').text : 'var(--color-text-bright)';
+                const tx = memo.rates[s.scheduler_id];
+                h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-link);">${esc(s.scheduler_id)}</td>`;
+                h += `<td style="padding:3px 8px;">${esc(s.cpu_id)}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.current_tasks_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;color:${rc};font-weight:600;">${run}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.current_workers_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.active_workers_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.pending_disk_io_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;" data-sort-value="${tx ? tx.y : ''}">${taxa(tx ? tx.y : null)}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;" data-sort-value="${tx ? tx.c : ''}">${taxa(tx ? tx.c : null)}</td></tr>`;
             });
-            return h + '</tbody></table>';
+            h += '</tbody></table>';
+            h += `<div style="font-size:12px;color:var(--color-text-disabled);margin-top:6px;font-style:italic;">${esc(t('live.sched_rates_note'))}</div>`;
+            return h;
         }
 
         // Auto-open via URL param ?autoLive=1 (segundo monitor)

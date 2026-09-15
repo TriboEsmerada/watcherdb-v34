@@ -616,22 +616,49 @@ async def get_io_stats(instance: str):
 
 JOBS_RUNNING_SQL = """
 SET NOCOUNT ON;
+-- 2026-09-15 (owner): last_executed_step_id e o ultimo passo TERMINADO (NULL durante o 1.o passo), por isso um job de 1
+-- passo aparecia "(starting) (0/1)" e 0% ate ao fim. Passo em curso = seguinte ao ultimo terminado (limitado ao total).
+-- Progresso: percent_complete do pedido do passo (sessao "SQLAgent - TSQL JobStep (Job 0x... : Step N)"), quando existe.
 SELECT
     j.name AS job_name,
     ja.start_execution_date,
     DATEDIFF(MINUTE, ja.start_execution_date, GETDATE()) AS running_minutes,
-    ISNULL(js.step_name, '(starting)') AS current_step,
-    js.step_id AS current_step_id,
-    (SELECT COUNT(*) FROM msdb.dbo.sysjobsteps s2 WHERE s2.job_id = j.job_id) AS total_steps,
-    jc.name AS category_name
+    st.total_steps,
+    cs.current_step_id,
+    js.step_name AS current_step,
+    jc.name AS category_name,
+    CAST(r.percent_complete AS DECIMAL(5, 1)) AS step_percent,
+    r.wait_type AS step_wait_type
 FROM msdb.dbo.sysjobactivity ja WITH (NOLOCK)
 JOIN msdb.dbo.sysjobs j WITH (NOLOCK) ON ja.job_id = j.job_id
-LEFT JOIN msdb.dbo.sysjobsteps js WITH (NOLOCK) ON ja.job_id = js.job_id AND ja.last_executed_step_id = js.step_id
+CROSS APPLY (SELECT COUNT(*) AS total_steps FROM msdb.dbo.sysjobsteps s2 WITH (NOLOCK) WHERE s2.job_id = j.job_id) st
+CROSS APPLY (SELECT CASE WHEN ISNULL(ja.last_executed_step_id, 0) + 1 > st.total_steps THEN st.total_steps
+                         ELSE ISNULL(ja.last_executed_step_id, 0) + 1 END AS current_step_id) cs
+LEFT JOIN msdb.dbo.sysjobsteps js WITH (NOLOCK) ON js.job_id = j.job_id AND js.step_id = cs.current_step_id
 LEFT JOIN msdb.dbo.syscategories jc WITH (NOLOCK) ON j.category_id = jc.category_id
+OUTER APPLY (SELECT TOP 1 rq.percent_complete, rq.wait_type
+             FROM sys.dm_exec_sessions es WITH (NOLOCK)
+             JOIN sys.dm_exec_requests rq WITH (NOLOCK) ON rq.session_id = es.session_id
+             WHERE es.program_name LIKE 'SQLAgent - TSQL JobStep (Job ' + CONVERT(VARCHAR(34), CONVERT(BINARY(16), j.job_id), 1) + ' : Step %') r
 WHERE ja.session_id = (SELECT MAX(session_id) FROM msdb.dbo.syssessions WITH (NOLOCK))
   AND ja.start_execution_date IS NOT NULL
   AND ja.stop_execution_date IS NULL
 ORDER BY ja.start_execution_date;
+"""
+
+# 2026-09-15 (owner): operacoes com progresso real na instancia (BACKUP, RESTORE, DBCC, ...). Um job que chama um programa
+# externo (ex.: TSM) fica em PREEMPTIVE_OS_PIPEOPS com 0%; o progresso esta noutra sessao.
+PROGRESS_OPS_SQL = """
+SET NOCOUNT ON;
+SELECT r.session_id, r.command, DB_NAME(r.database_id) AS database_name,
+       CAST(r.percent_complete AS DECIMAL(5, 1)) AS percent_complete,
+       DATEDIFF(MINUTE, r.start_time, GETDATE()) AS running_minutes,
+       CAST(r.estimated_completion_time / 60000 AS INT) AS eta_minutes,
+       r.wait_type, s.program_name
+FROM sys.dm_exec_requests r WITH (NOLOCK)
+JOIN sys.dm_exec_sessions s WITH (NOLOCK) ON s.session_id = r.session_id
+WHERE r.percent_complete > 0
+ORDER BY r.start_time;
 """
 
 
@@ -644,9 +671,12 @@ async def get_jobs_running(instance: str):
     for r in (rows or []):
         if r.get("start_execution_date") and hasattr(r["start_execution_date"], "isoformat"):
             r["start_execution_date"] = r["start_execution_date"].isoformat()
+    ops, ops_err = _query_instance(instance, PROGRESS_OPS_SQL)   # 2026-09-15: fail-open, a lista de jobs vale sozinha
     return _live_json({
         "instance": instance, "timestamp": time.time(),
         "count": len(rows or []), "jobs": rows or [],
+        "operations": [] if ops_err else (ops or []),
+        "operations_error": bool(ops_err),
     })
 
 

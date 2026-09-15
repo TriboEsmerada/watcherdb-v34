@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **LIVE mais legível e com números certos** (owner 15/09). Todas as colunas das tabelas do LIVE ordenam por
+  clique (teclado incluído) e a ordem mantém-se entre refreshes. Batch/s passa a ser a taxa real (antes mostrava o
+  contador acumulado desde o arranque, a vermelho). PLE deixa de ficar vermelho quando está saudável e Mem só avisa
+  quando o sistema operativo fica sem memória disponível. Sched tem uma frase de leitura (pressão de CPU só quando é
+  sustentada) e Yields/Ctx Switches por segundo. Jobs mostra o passo em curso e o progresso real, e uma tabela nova
+  com as operações em curso (BACKUP, RESTORE, DBCC) com percentagem e estimativa. [tier: Std]
+
 - **Errorlog no ecrã offline e no banner diz se a recolha desta instância está viva** (B3c, owner 15/09). Com o
   estado de leitura por instância do recolhedor (B2a-2a), o bloco mostra a última leitura bem-sucedida ao lado da
   última linha recebida e, quando o recolhedor falha seguidamente, avisa desde quando e porquê (ligação, login

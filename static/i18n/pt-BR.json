@@ -230,6 +230,10 @@
   },
 
   "live": {
+    "measuring": "medindo…",
+    "mem_tip_detail": "SQL Server: {sql} MB (max server memory: {max} MB) · disponível no sistema operacional: {avail} MB",
+    "sched_tip_workers": "Threads associadas a este scheduler; Active são as que estão trabalhando agora.",
+    "sched_tip_runnable": "Pedidos prontos para rodar esperando CPU neste scheduler. Acima de 1 de forma sustentada indica pressão de CPU.",
     "loading_files": "Carregando arquivos...",
     "no_db_files_drive": "Nenhum arquivo de banco de dados encontrado neste drive",
     "loading": "Carregando...",
