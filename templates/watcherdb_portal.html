@@ -51322,6 +51322,7 @@ window.showDiskDrilldown = async function(drive, label) {
         let _liveRefreshRate = 5000;
         let _livePaused = false;
         let _liveWaitsPrev = null;
+        let _liveWaitsMemo = null;   // 2026-09-15: delta dos Waits por leitura (o sort reutiliza)
         // Wave S (2026-05-29) -- sort state per programa + cache last payload
         // para re-render imediato em sort click sem network round-trip.
         // Per [[js-string-quoting-apostrophes]]: zero apostrofes em strings JS.
@@ -51623,6 +51624,7 @@ window.showDiskDrilldown = async function(drive, label) {
             localStorage.setItem('live-last-channel', instance);
             if (_liveInterval) { clearInterval(_liveInterval); _liveInterval = null; }
             _liveWaitsPrev = null;
+            _liveWaitsMemo = null;
             for (const k in _liveGaugeHistory) delete _liveGaugeHistory[k];
             if (!instance) { if (_liveProgram !== 'fleet') _liveShowNoInstance(tabId, null); return; }
             _livePaused = false;
@@ -51641,6 +51643,7 @@ window.showDiskDrilldown = async function(drive, label) {
             _liveProgram = program;
             try { localStorage.setItem('live-last-program', program); } catch (e) {}  // 2026-09-11 F9
             _liveWaitsPrev = null;
+            _liveWaitsMemo = null;
             document.querySelectorAll('.live-prog-btn').forEach(b => {
                 const active = b.dataset.prog === program;
                 b.style.background = active ? '#3b82f6' : 'var(--color-bg-panel)';
@@ -52078,15 +52081,22 @@ window.showDiskDrilldown = async function(drive, label) {
             const waits = data.waits || [];
             if (!waits.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_wait_stats') + '</div>';
             let deltaWaits = waits;
-            if (_liveWaitsPrev) {
-                const prevMap = {};
-                _liveWaitsPrev.forEach(w => { prevMap[w.wait_type] = w; });
-                deltaWaits = waits.map(w => {
-                    const prev = prevMap[w.wait_type];
-                    return { ...w, delta_tasks: prev ? (w.waiting_tasks_count - prev.waiting_tasks_count) : 0, delta_ms: prev ? (w.wait_time_ms - prev.wait_time_ms) : 0 };
-                }).filter(w => w.delta_tasks > 0 || !_liveWaitsPrev).sort((a,b) => (b.delta_ms||0) - (a.delta_ms||0));
+            // 2026-09-15 (owner: "order by demora muito"): o clique no cabecalho re-renderiza o MESMO payload; recalcular o
+            // delta contra ele proprio dava 0 em tudo e a tabela ficava vazia ate ao refresh seguinte. Delta uma vez por leitura.
+            if (_liveWaitsMemo && _liveWaitsMemo.ts === data.timestamp && _liveWaitsMemo.inst === data.instance) {
+                deltaWaits = _liveWaitsMemo.rows;
+            } else {
+                if (_liveWaitsPrev) {
+                    const prevMap = {};
+                    _liveWaitsPrev.forEach(w => { prevMap[w.wait_type] = w; });
+                    deltaWaits = waits.map(w => {
+                        const prev = prevMap[w.wait_type];
+                        return { ...w, delta_tasks: prev ? (w.waiting_tasks_count - prev.waiting_tasks_count) : 0, delta_ms: prev ? (w.wait_time_ms - prev.wait_time_ms) : 0 };
+                    }).filter(w => w.delta_tasks > 0 || !_liveWaitsPrev).sort((a,b) => (b.delta_ms||0) - (a.delta_ms||0));
+                }
+                _liveWaitsPrev = waits;
+                _liveWaitsMemo = { ts: data.timestamp, inst: data.instance, rows: deltaWaits };
             }
-            _liveWaitsPrev = waits;
             const hasDelta = deltaWaits.some(w => w.delta_ms !== undefined);
             // Wave S (2026-05-29): sort APOS delta computation, antes do slice(0, 20)
             const NUMERIC_COLS_W = ['delta_tasks', 'delta_ms', 'waiting_tasks_count', 'wait_time_ms', 'signal_wait_time_ms'];

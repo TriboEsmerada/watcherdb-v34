@@ -9,6 +9,10 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **LIVE Waits: ordenar deixa de esvaziar a tabela** (owner 15/09). O clique no cabeçalho recalculava a diferença
+  contra a própria leitura, todas as linhas davam zero e desapareciam até ao refresh seguinte (15 s), o que parecia
+  uma ordenação lenta. A diferença passa a ser calculada uma vez por leitura e a ordenação é imediata. [tier: Std]
+
 - **LIVE mais legível e com números certos** (owner 15/09). Todas as colunas das tabelas do LIVE ordenam por
   clique (teclado incluído) e a ordem mantém-se entre refreshes. Batch/s passa a ser a taxa real (antes mostrava o
   contador acumulado desde o arranque, a vermelho). PLE deixa de ficar vermelho quando está saudável e Mem só avisa
