@@ -32,10 +32,18 @@ anteriores já está na Intelligence e responde com o alvo mudo. Grep no V6: o c
 - Contentor `role="status" aria-live="polite"`; cada linha em `<details>` nativo; botão real para alargar a 6 h.
 - O caminho offline não grava na cache da aba. Chaves `overview.offline_errorlog_*` (23 em pt/en/es, 11 em pt-BR).
 
-## Fora deste lote (não portar como feito)
+## B3b (lote B3B_BANNER_ERRORLOG_2026-09-15_apply.py)
 
-B3b: o mesmo bloco no banner de diagnóstico (host responde, SQL mudo), que passa pela cache da aba. Marca de água
-por instância no recolhedor: B2a-2.
+O mesmo bloco por baixo do banner de diagnóstico (host responde, verificações falham; foi o caso dos reinícios de SQL
+de 15/09, todos com Ping_OK=1). `<details>` recolhido, irmão do banner (nunca dentro da cor de severidade), com título
+próprio e contagem no resumo. Carrega sozinho só quando todas as verificações falharam ou há evento offline activo;
+nas falhas parciais fica um link que lê a pedido, um só pedido por bloco. Chamada logo depois do único innerHTML com
+`${kpis}` (sem await desde o banner). Verificar no V6 que a cache da visão geral guarda dados e não HTML, como no V3.4.
++5 chaves (28 no total). Teste: `tests/unit/test_b3b_banner_errorlog_20260915.py` (4).
+
+## Fora destes lotes (não portar como feito)
+
+Marca de água por instância no recolhedor: B2a-2.
 
 ## Testes a portar
 

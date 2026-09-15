@@ -213,6 +213,9 @@ para 1.400.
   offline com os pareceres da persona (sinal, não causa; segurança só em contagem com pico; 3 motivos de vazio; idade
   da recolha sempre visível; 2 h e 6 h) e do frontend (createFetchWithAbort 8 s, role=status, details nativo).
   Fica para o B3b: o banner de diagnóstico (host responde, SQL mudo), que passa pela cache da aba.
+- **B3b PRONTO 15/09** (lote B3B_BANNER_ERRORLOG): o mesmo bloco por baixo do banner de diagnóstico, recolhido, com
+  contagem no resumo; carrega sozinho só com todas as verificações falhadas ou evento offline activo, senão a pedido
+  (persona). A cache da aba guarda dados e não HTML, portanto nada fica preso (frontend). Sem backend novo.
 
 - Endpoint só de leitura com as últimas mensagens da instância, e o bloco no ecrã com o rótulo
   honesto: "últimas mensagens antes de perder contacto", nunca "o que aconteceu".
