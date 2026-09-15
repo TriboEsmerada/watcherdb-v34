@@ -107,7 +107,11 @@ cerca de 590 linhas por instância por hora.
 avisos e informativos. Filtrar na origem é a doutrina que em 30/07 cortou 142 mil linhas por ciclo
 para 1.400.
 
-### B0 — medir antes de desenhar (leitura pura)
+### B0 — medir antes de desenhar (leitura pura) — **FECHADO 15/09**
+
+- **Resultado** em `B0_MEDICAO_ERRORLOG_2026-09-15.md`: 14 instâncias PRD, cerca de 724 linhas por dia com a
+  política (336 guardadas, 388 agregadas) contra 71.508 com o filtro de hoje. O erro 33208 (severidade 17)
+  domina, portanto a severidade sozinha não filtra. Nove instâncias PRD reiniciaram na madrugada de 15/09.
 
 - Ler o errorlog de uma instância de produção **sem** o filtro por palavra, durante um período, e
   contar por categoria: erros por gravidade, ciclo de vida (arranque, encerramento, recuperação,
