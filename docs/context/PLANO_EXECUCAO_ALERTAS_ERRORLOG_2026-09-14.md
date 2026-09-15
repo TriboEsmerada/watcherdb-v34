@@ -159,6 +159,9 @@ para 1.400.
   repositório; o usp_archive_all_kpis vivo difere das cópias do repo; o bloco comentado da STG e da HIST no canónico é
   obsoleto (taxonomia e chave antigas) e não deve ser descomentado. Numa instalação nova o canónico não cria as
   _BLUE/_GREEN do errorlog.
+- **B2a-1 FECHADO 15/09** (V1 f93d928, migration 012 corrida às 14:28): primeiro ciclo de PRD arquivou 163 eventos,
+  0 duplicados. **B2a-1c PRONTO** (lote B2A1C_CANONICO_DDL_ERRORLOG, consenso do guardião): o canónico passa a criar
+  as bases _BLUE/_GREEN e a HIST do errorlog com a estrutura viva; a Wave C do canónico já registra os slots por ambiente.
 - **B2a-0 FECHADO 15/09** (V1 521abdc). **B2a-1 PRONTO 15/09**, consenso do guardião sem veto: lote
   B2A1_ARQUIVO_EVENTOS_ERRORLOG (procedure nova usp_archive_errorlog_events, migration 012, secção 36 do canónico,
   applock por ambiente e chamada ao arquivo no recolhedor; 27 testes; simulação só-leitura: 130 AG, 22 Critical,
