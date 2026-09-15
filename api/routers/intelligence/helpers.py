@@ -580,7 +580,9 @@ def init_dashboard_results() -> Dict[str, Any]:
         },
         "service_status": {
             "down_count": 0,
-            "instances": []
+            "instances": [],
+            "collector_last_update": None,
+            "collector_stale": None
         },
         "error_log": {
             "critical_count": 0,
@@ -1845,6 +1847,39 @@ async def collect_backup_status(results: Dict[str, Any]) -> None:
     # inflado por silent corruption findings). Ver helpers.py:classify_backup_type.
 
 
+# A3 2026-09-15: a recolha de servicos pode estar parada (ultima escrita a 13/05) e, sem este sinal,
+# "0 instancias com servicos em baixo" era indistinguivel de saudavel.
+SERVICE_COLLECTOR_STALE_MINUTES = 60
+
+
+async def _service_collector_freshness(results: Dict[str, Any]) -> None:
+    """Ultima escrita da recolha de servicos. Identidade: sql_monitoring (ligacao da Intelligence), so leitura.
+
+    collector_stale: True sem escrita ha mais de SERVICE_COLLECTOR_STALE_MINUTES ou tabela vazia;
+    False com escrita recente; None quando nao foi possivel medir (o portal so reage a True).
+    """
+    svc = results.setdefault("service_status", {})
+    svc["collector_last_update"] = None
+    svc["collector_stale"] = None
+    try:
+        rows = await execute_intelligence_query_async(
+            f"SELECT MAX(Update_TS) AS last_update FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_SERVICE_STATUS_STG WITH (NOLOCK)",
+            raise_on_error=False,
+        )
+        if rows is None:
+            return
+        last = rows[0].get("last_update") if rows else None
+        if last is None:
+            svc["collector_stale"] = True
+            return
+        if isinstance(last, str):
+            last = datetime.fromisoformat(last)
+        svc["collector_last_update"] = last.isoformat(timespec="seconds")
+        svc["collector_stale"] = (datetime.now() - last) > timedelta(minutes=SERVICE_COLLECTOR_STALE_MINUTES)
+    except Exception as e:
+        logger.warning(f"Service Status: nao foi possivel medir a ultima recolha: {e}")
+
+
 async def collect_service_status(results: Dict[str, Any]) -> None:
     """Collect Service Status KPIs and integrate with Instance Availability."""
     try:
@@ -1870,6 +1905,7 @@ async def collect_service_status(results: Dict[str, Any]) -> None:
         results["service_status"]["by_env"] = _count_by_env(fresh_service_data)
         # 2026-08-18: alias para o filtro por ambiente do dashboard (ev(ss,'down_count')->down_by_env)
         results["service_status"]["down_by_env"] = results["service_status"]["by_env"]
+        await _service_collector_freshness(results)   # A3 2026-09-15: sinal de recolha parada
 
         # Integrate critical services down in Instance Availability
         try:

@@ -6506,6 +6506,61 @@
         const TOAST_STALE_STREAK_WARN = 10;           // ~5 min de dados stale seguidos
         const TOAST_POLL_INTERVAL = 30000; // 30s
         const TOAST_AUTO_DISMISS = 15000;  // 15s
+        // A3 2026-09-15: duracao minima (sustainMs) e histerese (holdMs) por condicao, em TEMPO DE RELOGIO.
+        // A resposta do dashboard nao traz carimbo do instantaneo, portanto contar leituras media o polling.
+        const TOAST_MIN = 60 * 1000;
+        const TOAST_GAP_MS = 15 * TOAST_MIN;          // sem leitura fresca ha mais do que isto: a prova reinicia
+        const TOAST_SINCE_KEY = 'watcherdb-crit-since-v1';
+        let _toastSince = _toastSinceLoad();          // { key: { since, seen } } persiste entre F5 (especialista)
+        let _toastZeroSince = {};
+        // Backup e Log ficam de fora (sao o aviso backup_failed); Index/Statistics/Shrink/Cleanup/Other nao acordam ninguem
+        const TOAST_JOB_TYPES_CRITICOS = ['DBCC', 'Replication', 'AlwaysOn'];
+
+        function _toastSinceLoad() {
+            try {
+                const v = JSON.parse(localStorage.getItem(TOAST_SINCE_KEY) || '{}');
+                return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+            } catch (e) { return {}; }
+        }
+        function _toastSinceSave() {
+            try { localStorage.setItem(TOAST_SINCE_KEY, JSON.stringify(_toastSince)); } catch (e) { /* modo privado ou quota */ }
+        }
+        // O backend devolve Instance/Server_Name com maiuscula; ate' 15/09 o detalhe lia i.instance e saia vazio
+        function _toastNome(i) {
+            return (i && (i.Instance || i.instance || i.Server_Name || i.server_name || i.ag_name || i.Hostname)) || '';
+        }
+        function _toastNomes(listas, filtro) {
+            const vistos = [];
+            [].concat(listas || []).forEach(lista => (lista || []).forEach(i => {
+                if (filtro && !filtro(i)) return;
+                const n = _toastNome(i);
+                if (n && !vistos.includes(n)) vistos.push(n);
+            }));
+            return vistos.slice(0, 3).join(', ') + (vistos.length > 3 ? '…' : '');
+        }
+        function _toastExtras(base, partes) {
+            // contadores agrupados entram no detalhe da familia, so' quando acima de zero
+            const extra = partes.filter(p => (+p.n || 0) > 0).map(p => _kpiTp(p.chave, p.fb, { n: p.n }));
+            return [base].concat(extra).filter(Boolean).join(' · ');
+        }
+        function _toastSustentado(check, valor, agora) {
+            const k = check.key;
+            if (valor > 0) {
+                delete _toastZeroSince[k];
+                const e = _toastSince[k];
+                if (!e || (agora - (e.seen || 0)) > TOAST_GAP_MS) _toastSince[k] = { since: agora, seen: agora };
+                else e.seen = agora;
+                if (check.sustainMs) _toastSinceSave();
+                return !check.sustainMs || (agora - _toastSince[k].since) >= check.sustainMs;
+            }
+            if (_toastSince[k]) { delete _toastSince[k]; if (check.sustainMs) _toastSinceSave(); }
+            if (_toastZeroSince[k] === undefined) _toastZeroSince[k] = agora;
+            return false;
+        }
+        function _toastEpisodioAcabou(check, agora) {
+            // sem holdMs voltar a 0 fecha o episodio logo (regra A2); com holdMs so' depois de estavel a 0
+            return !check.holdMs || (agora - _toastZeroSince[check.key]) >= check.holdMs;
+        }
 
         const TOAST_CRITICAL_CHECKS = [
             {
@@ -6518,10 +6573,7 @@
                 kpiType: 'instance-availability',
                 modalTitle: 'Instances Off',
                 getValue: (d) => d.instance_availability?.off_count || 0,
-                getDetail: (d) => {
-                    const items = d.instance_availability?.instances || [];
-                    return items.filter(i => i.ping_ok === 0 || i.status === 'OFFLINE').slice(0, 3).map(i => i.instance || i.server_name).join(', ');
-                }
+                getDetail: (d) => _toastNomes([d.instance_availability?.instances], i => i.ping_ok === 0 || i.status === 'OFFLINE')
             },
             {
                 key: 'blocked_sessions',
@@ -6529,11 +6581,14 @@
                 icon: 'fa-lock',
                 kpiType: 'blocked-sessions',
                 modalTitle: 'Blocked Sessions',
-                getValue: (d) => d.blocked_sessions?.count || 0,
-                getDetail: (d) => {
-                    const items = d.blocked_sessions?.instances || [];
-                    return items.slice(0, 3).map(i => i.instance).join(', ');
-                }
+                // A3 2026-09-15: familia do bloqueio. Locks longos e utilizadores bloqueados sao fontes
+                // independentes (views proprias): o valor e' o maximo, para um lock longo sem sessao bloqueada
+                // nao ficar mudo, e o detalhe mostra de onde veio.
+                getValue: (d) => Math.max(d.blocked_sessions?.count || 0, d.lock_count?.critical_count || 0, d.blocked_users?.count || 0),
+                getDetail: (d) => _toastExtras(_toastNomes([d.blocked_sessions?.instances, d.lock_count?.instances, d.blocked_users?.instances]), [
+                    { n: d.lock_count?.critical_count, chave: 'toast.detail_long_locks', fb: '{n} locks longos' },
+                    { n: d.blocked_users?.count, chave: 'toast.detail_blocked_users', fb: '{n} utilizadores bloqueados' }
+                ])
             },
             {
                 key: 'db_unavailable',
@@ -6542,10 +6597,7 @@
                 kpiType: 'db-availability',
                 modalTitle: 'DB Not Availability',
                 getValue: (d) => d.db_availability?.abnormal_count || 0,
-                getDetail: (d) => {
-                    const items = d.db_availability?.instances || [];
-                    return items.slice(0, 3).map(i => `${i.instance}: ${i.database_name} (${i.state_desc})`).join(', ');
-                }
+                getDetail: (d) => _toastNomes([d.db_availability?.instances])
             },
             {
                 key: 'alwayson_unhealthy',
@@ -6554,10 +6606,7 @@
                 kpiType: 'always-on',
                 modalTitle: 'DB Always On - Não Saudável',
                 getValue: (d) => d.always_on?.unhealthy_count || 0,
-                getDetail: (d) => {
-                    const items = d.always_on?.instances || [];
-                    return items.slice(0, 3).map(i => i.instance || i.ag_name).join(', ');
-                }
+                getDetail: (d) => _toastNomes([d.always_on?.instances])
             },
             {
                 key: 'disk_critical',
@@ -6566,10 +6615,7 @@
                 kpiType: 'disk-file-system-critical',
                 modalTitle: 'DB Disk File System - Crítico',
                 getValue: (d) => d.db_disk_file_system?.critical_count || 0,
-                getDetail: (d) => {
-                    const items = d.db_disk_file_system?.instances || [];
-                    return items.filter(i => (i.Critical || 0) > 0).slice(0, 3).map(i => i.instance).join(', ');
-                }
+                getDetail: (d) => _toastNomes([d.db_disk_file_system?.instances], i => (i.Critical || 0) > 0)
             },
             {
                 key: 'tlog_critical',
@@ -6578,10 +6624,7 @@
                 kpiType: 'transaction-logs-critical',
                 modalTitle: 'DB Transaction Logs - Crítico',
                 getValue: (d) => d.db_transaction_logs?.critical_count || 0,
-                getDetail: (d) => {
-                    const items = d.db_transaction_logs?.instances || [];
-                    return items.filter(i => (i.Critical || 0) > 0).slice(0, 3).map(i => i.instance).join(', ');
-                }
+                getDetail: (d) => _toastNomes([d.db_transaction_logs?.instances], i => (i.Critical || 0) > 0)
             },
             {
                 key: 'filegroup_critical',
@@ -6590,10 +6633,84 @@
                 kpiType: 'filegroup-usage-critical',
                 modalTitle: 'FileGroups Usage - Critical',
                 getValue: (d) => d.filegroup_usage?.critical_count || 0,
-                getDetail: (d) => {
-                    const items = d.filegroup_usage?.instances || [];
-                    return items.filter(i => (i.Critical || 0) > 0).slice(0, 3).map(i => i.instance).join(', ');
-                }
+                getDetail: (d) => _toastNomes([d.filegroup_usage?.instances], i => (i.Critical || 0) > 0)
+            },
+            // ---- A3 2026-09-15: classificacao aprovada pelo owner (parecer da persona DBA cliente) ----
+            {
+                key: 'backup_failed',
+                label: 'Backup Failed',
+                icon: 'fa-database',
+                kpiType: 'backup-failed',
+                get modalTitle() { return _kpiT('kpi_meta.backup-failed.modal_title', 'Backup Failed'); },
+                getValue: (d) => d.backup_status?.failed_count || 0,
+                getDetail: (d) => _toastNomes([d.backup_status?.failed_instances])
+            },
+            {
+                key: 'mirroring_unhealthy',
+                label: 'Mirroring Unhealthy',
+                icon: 'fa-clone',
+                kpiType: 'mirroring',
+                get modalTitle() { return _kpiT('kpi_meta.mirroring-unhealthy.modal_title', 'DB Mirroring - Não Saudável'); },
+                getValue: (d) => d.mirroring_status?.unhealthy_count || 0,
+                getDetail: (d) => _toastNomes([d.mirroring_status?.instances])
+            },
+            {
+                key: 'cpu_critical',
+                label: 'CPU Critical',
+                icon: 'fa-microchip',
+                kpiType: 'cpu-critical',
+                get modalTitle() { return t('kpi.cpu_critical_modal'); },
+                sustainMs: 10 * TOAST_MIN,
+                holdMs: 15 * TOAST_MIN,
+                // processos em fila de CPU sao a mesma familia: entram no valor (maximo) e no detalhe
+                getValue: (d) => Math.max(d.cpu_critical?.count || 0, d.processes_alarm?.count || 0),
+                getDetail: (d) => _toastExtras(_toastNomes([d.cpu_critical?.instances, d.processes_alarm?.instances]), [
+                    { n: d.processes_alarm?.count, chave: 'toast.detail_runnable', fb: '{n} com fila de CPU' }
+                ])
+            },
+            {
+                key: 'memory_critical',
+                label: 'Memory Critical',
+                icon: 'fa-memory',
+                kpiType: 'memory-critical',
+                get modalTitle() { return t('kpi.memory_critical_modal'); },
+                sustainMs: 5 * TOAST_MIN,      // a view ja e' tendencia de 30 min
+                holdMs: 15 * TOAST_MIN,
+                getValue: (d) => d.memory_critical?.count || 0,
+                getDetail: (d) => _toastNomes([d.memory_critical?.instances])
+            },
+            {
+                key: 'disk_latency_critical',
+                label: 'Disk Latency Critical',
+                icon: 'fa-tachometer-alt',
+                kpiType: 'disk-latency-critical',
+                get modalTitle() { return _kpiT('kpi_meta.disk-latency-critical.modal_title', 'Disk Latency Critical'); },
+                sustainMs: 10 * TOAST_MIN,     // checkpoint e backup fazem picos
+                holdMs: 15 * TOAST_MIN,
+                getValue: (d) => d.disk_latency?.critical_count || 0,
+                getDetail: (d) => _toastNomes([(d.disk_latency?.instances || [])
+                    .filter(i => i.Latency_Status === 'CRITICAL')
+                    .map(i => ({ Instance: [i.Hostname, i.Drive].filter(Boolean).join(' ') }))])
+            },
+            {
+                key: 'tempdb_critical',
+                label: 'TempDB Critical',
+                icon: 'fa-database',
+                kpiType: 'tempdb-status-critical',
+                get modalTitle() { return _kpiT('kpi_meta.tempdb-critical.modal_title', 'TempDB - Disco Crítico'); },
+                sustainMs: 10 * TOAST_MIN,     // um spill pontual nao e' incidente
+                holdMs: 15 * TOAST_MIN,
+                getValue: (d) => d.tempdb_status?.critical_count || 0,
+                getDetail: (d) => _toastNomes([d.tempdb_status?.instances], i => (i.Critical || 0) > 0 || i.status === 'CRITICAL')
+            },
+            {
+                key: 'jobs_critical_failed',
+                label: 'Critical Jobs Failed',
+                icon: 'fa-exclamation-circle',
+                kpiType: 'jobs-failed',
+                get modalTitle() { return t('kpi.jobs_failed_modal'); },
+                getValue: (d) => (d.jobs_status?.instances || []).filter(i => TOAST_JOB_TYPES_CRITICOS.includes(i.Job_Type)).length,
+                getDetail: (d) => _toastNomes([d.jobs_status?.instances], i => TOAST_JOB_TYPES_CRITICOS.includes(i.Job_Type))
             }
         ];
 
@@ -6633,16 +6750,20 @@
 
                 _toastStaleStreak = 0;
                 const _activosNoArranque = [];
+                const _agora = Date.now();
                 TOAST_CRITICAL_CHECKS.forEach(check => {
                     const currentValue = check.getValue(data);
-                    const previousValue = _toastPreviousState[check.key] || 0;
+                    // A3 2026-09-15: nos avisos com duracao o "anterior" do texto e' o ultimo valor que disparou;
+                    // a leitura anterior daria "3 -> 3" ao fim dos 10 minutos
+                    const previousValue = check.sustainMs ? (_toastLastFired[check.key] || 0) : (_toastPreviousState[check.key] || 0);
+                    const _sustentado = _toastSustentado(check, currentValue, _agora);
 
-                    // A2 2026-09-14: estado por CONDICAO. Limpa SEMPRE que volta a 0 (fora do ramo de
-                    // disparo), para a proxima subida disparar. So' dispara se agravou face ao ultimo
-                    // valor que JA disparou: 3->4->3->4 dispara uma vez, nao a cada subida.
+                    // A2 2026-09-14: estado por CONDICAO. So' dispara se agravou face ao ultimo valor que JA
+                    // disparou: 3->4->3->4 dispara uma vez. A3 2026-09-15: com holdMs, voltar a 0 so' fecha o
+                    // episodio depois de 15 min estavel a 0; sem holdMs fecha logo, como no A2.
                     if (currentValue === 0) {
-                        delete _toastLastFired[check.key];
-                    } else if (currentValue > (_toastLastFired[check.key] || 0)) {
+                        if (_toastEpisodioAcabou(check, _agora)) delete _toastLastFired[check.key];
+                    } else if (_sustentado && currentValue > (_toastLastFired[check.key] || 0)) {
                         const detail = check.getDetail(data);
                         if (_toastBaselineDone) {
                             showCriticalToast(check, currentValue, previousValue, detail);
@@ -6703,7 +6824,7 @@
                     </button>
                 </div>
                 <div class="toast-body">${t('toast.' + check.key)}: ${changeText}</div>
-                ${detail ? `<div class="toast-detail">${detail}</div>` : ''}
+                ${detail ? `<div class="toast-detail">${_bellEsc(detail)}</div>` : ''}
                 <div class="toast-progress"></div>
             `;
 
@@ -36521,6 +36642,13 @@
         function _advCard(icon, title, sub, body, foot) {
             return `<div class="kpiadv-card"><div class="h"><i class="fas ${icon}" aria-hidden="true"></i><span class="t">${title}</span></div>${sub ? `<div class="sub">${sub}</div>` : ''}<div class="kpiadv-body">${body}</div>${foot ? `<div class="kpiadv-foot">${foot}</div>` : ''}</div>`;
         }
+        function _svcSemRecolha(ss) {
+            // A3 2026-09-15: badge honesto quando a recolha de servicos esta parada
+            const dt = ss && ss.collector_last_update ? new Date(ss.collector_last_update) : null;
+            if (!dt || isNaN(dt.getTime())) return _kpiT('kpi_adv.services_no_collection_never', 'sem recolha');
+            const quando = dt.toLocaleDateString(document.documentElement.lang || undefined, { day: '2-digit', month: '2-digit' });
+            return _kpiTp('kpi_adv.services_no_collection', 'sem recolha desde {d}', { d: quando });
+        }
         function _advRow(color, lbl, val, badge, kpi, title) {
             // 2026-07-25 (owner): o filtro de severidade tem de valer DENTRO dos
             // cards -- com "Criticos" activo so ficam rows em estado critico
@@ -36707,7 +36835,11 @@
                 // FIND-20260811-103: o drill abria 'sql-services-down' (SERVER_OFFLINE_
                 // GROUPED_VIEW, Diagnosis='sql_down') — fonte DIFERENTE da que o card
                 // conta (SERVICE_STATUS_AGG_VIEW). 'service-status' le a mesma view.
-                _advRow(ev(ss, 'down_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.services_down_label', 'Instâncias c/ serviços em baixo'), ev(ss, 'down_count'), '', 'service-status', _kpiT('kpi_adv.services_down_modal_title', 'Serviços SQL em Baixo')) + `</div>`));
+                // A3 2026-09-15: recolha de servicos parada (ultima escrita 13/05). O 0 verde era falso verde:
+                // a linha fica cinzenta, sem numero, com a data da ultima recolha. So' com collector_stale === true.
+                (ss.collector_stale === true
+                    ? _advRow(C.gray, _kpiT('kpi_adv.services_down_label', 'Instâncias c/ serviços em baixo'), '—', _svcSemRecolha(ss), 'service-status', _kpiT('kpi_adv.services_down_modal_title', 'Serviços SQL em Baixo'))
+                    : _advRow(ev(ss, 'down_count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.services_down_label', 'Instâncias c/ serviços em baixo'), ev(ss, 'down_count'), '', 'service-status', _kpiT('kpi_adv.services_down_modal_title', 'Serviços SQL em Baixo'))) + `</div>`));
             add('performance', _advCard('fa-gauge-high', _kpiT('kpi_report.cat_performance', 'Performance'), _kpiT('kpi_adv.performance_card_subtitle', 'Carga e contenção'),
                 `<div class="kpiadv-list">` +
                 _advRow(ev(cpu, 'count') > 0 ? C.crit : C.ok, _kpiT('kpi_adv.cpu_critical_label', 'CPU crítico'), ev(cpu, 'count'), '', 'cpu-critical', _kpiT('kpi_adv.cpu_critical_modal_title', 'CPU Crítico - Instâncias com CPU Alto')) +

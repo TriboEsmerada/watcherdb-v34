@@ -19,7 +19,9 @@ def test_d2_estado_por_condicao_e_nao_por_valor():
     assert "let _toastLastFired = {};" in PORTAL
     assert "toastKey = `${check.key}_${currentValue}`" not in POLL
     # limpa sempre que volta a 0, fora do ramo de disparo
-    assert "if (currentValue === 0) {\n                        delete _toastLastFired[check.key];" in POLL
+    # A3 2026-09-15: o fecho do episodio passou a respeitar a histerese (holdMs); sem holdMs fecha logo
+    assert "if (currentValue === 0) {\n                        if (_toastEpisodioAcabou(check, _agora)) delete _toastLastFired[check.key];" in POLL
+    assert "return !check.holdMs ||" in PORTAL
     assert "currentValue > (_toastLastFired[check.key] || 0)" in POLL
 
 

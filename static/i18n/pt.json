@@ -1652,6 +1652,16 @@
     "logout": "Terminar sessão"
   },
   "toast": {
+    "backup_failed": "Backups Falhados",
+    "mirroring_unhealthy": "Mirroring Não Saudável",
+    "cpu_critical": "CPU Crítico (sustentado)",
+    "memory_critical": "Memória Crítica (sustentada)",
+    "disk_latency_critical": "Latência de Disco Crítica",
+    "tempdb_critical": "TempDB Crítico",
+    "jobs_critical_failed": "Jobs Críticos Falhados",
+    "detail_long_locks": "{n} locks longos",
+    "detail_blocked_users": "{n} utilizadores bloqueados",
+    "detail_runnable": "{n} com fila de CPU",
     "alwayson_unhealthy": "AlwaysOn Unhealthy",
     "blocked_sessions": "Blocked Sessions",
     "critical": "CRÍTICO",
@@ -1989,6 +1999,8 @@
     }
   },
   "kpi_adv": {
+    "services_no_collection": "sem recolha desde {d}",
+    "services_no_collection_never": "sem recolha",
     "availability_card_subtitle": "Estado das instâncias do ambiente",
     "performance_card_subtitle": "Carga e contenção",
     "disk_space_card_subtitle": "Utilização e latência",

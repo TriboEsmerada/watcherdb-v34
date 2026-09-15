@@ -1652,6 +1652,16 @@
     "logout": "Sign out"
   },
   "toast": {
+    "backup_failed": "Failed Backups",
+    "mirroring_unhealthy": "Mirroring Unhealthy",
+    "cpu_critical": "Critical CPU (sustained)",
+    "memory_critical": "Critical Memory (sustained)",
+    "disk_latency_critical": "Critical Disk Latency",
+    "tempdb_critical": "Critical TempDB",
+    "jobs_critical_failed": "Critical Jobs Failed",
+    "detail_long_locks": "{n} long locks",
+    "detail_blocked_users": "{n} blocked users",
+    "detail_runnable": "{n} with CPU queue",
     "alwayson_unhealthy": "AlwaysOn Unhealthy",
     "blocked_sessions": "Blocked Sessions",
     "critical": "CRITICAL",
@@ -1989,6 +1999,8 @@
     }
   },
   "kpi_adv": {
+    "services_no_collection": "no collection since {d}",
+    "services_no_collection_never": "no collection",
     "availability_card_subtitle": "Instance status across the environment",
     "performance_card_subtitle": "Load and contention",
     "disk_space_card_subtitle": "Usage and latency",

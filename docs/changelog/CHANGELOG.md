@@ -9,6 +9,15 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Mais sete condições críticas no aviso e no sino, com a classificação aprovada** (A3, owner 15/09).
+  Backups falhados e mirroring não saudável avisam logo. CPU, memória, latência de disco e tempdb só avisam
+  depois de sustentados (10 min, memória 5), e voltar a zero por menos de 15 min conta como o mesmo
+  episódio; o relógio sobrevive a um F5 e reinicia depois de 15 min sem dados frescos. Jobs só avisam para
+  DBCC, replicação e AlwaysOn. Locks longos e utilizadores bloqueados juntam-se ao aviso de sessões
+  bloqueadas, e a fila de CPU ao de CPU. Deadlocks, errorlog e serviços ficam de fora. O detalhe dos avisos
+  vinha sempre vazio (lia o nome da instância com minúscula) e agora mostra as instâncias, com escape. A
+  linha de serviços em baixo deixa de mostrar 0 verde quando a recolha está parada. [tier: Std]
+
 - **Menu do perfil: segurança, teclado e texto** (owner 14/09). O nome, o e-mail, o papel, o departamento e o
   cargo entravam no HTML sem escapar; departamento e cargo vêm do Active Directory, logo um atributo com HTML
   corria no portal de quem abrisse o menu. Passam todos por escape. O gatilho e as opções eram `div` sem foco,

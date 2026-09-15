@@ -5,6 +5,9 @@
     "change_password": "Alterar senha",
     "logout": "Sair"
   },
+  "toast": {
+    "detail_blocked_users": "{n} usuários bloqueados"
+  },
   "kpi_report": {
     "desc_backups": "Status e problemas relacionados a backups"
   },
@@ -168,6 +171,8 @@
     "cat_fetch_error": "Não foi possível buscar esta categoria. Tenta novamente."
   },
   "kpi_adv": {
+    "services_no_collection": "sem coleta desde {d}",
+    "services_no_collection_never": "sem coleta",
     "blocked_users_label": "Usuários bloqueados",
     "blocked_users_modal_title": "Usuários Bloqueados",
     "integrity_unmeasurable_label": "Não mensurável (coleta falhou)",
