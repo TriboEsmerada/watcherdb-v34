@@ -208,6 +208,12 @@ para 1.400.
 
 ### B3 — bloco no ecrã de instância offline
 
+- **B3 PRONTO 15/09** (lote B3_OFFLINE_ERRORLOG): endpoint GET errorlog/recent-signals (sessão obrigatória,
+  sql_monitoring só SELECT com parâmetros, HIST e STG deduplicadas, 0,05 a 0,2 s medido) e bloco no ecrã do precheck
+  offline com os pareceres da persona (sinal, não causa; segurança só em contagem com pico; 3 motivos de vazio; idade
+  da recolha sempre visível; 2 h e 6 h) e do frontend (createFetchWithAbort 8 s, role=status, details nativo).
+  Fica para o B3b: o banner de diagnóstico (host responde, SQL mudo), que passa pela cache da aba.
+
 - Endpoint só de leitura com as últimas mensagens da instância, e o bloco no ecrã com o rótulo
   honesto: "últimas mensagens antes de perder contacto", nunca "o que aconteceu".
 - Mostra a idade da última recolha e avisa quando está velha.
