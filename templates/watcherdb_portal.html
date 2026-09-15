@@ -51367,6 +51367,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     <button onclick="liveSetProgram('${tabId}','alwayson')" class="live-prog-btn" data-prog="alwayson" style="${_pb}">AG</button>
                     <button onclick="liveSetProgram('${tabId}','schedulers')" class="live-prog-btn" data-prog="schedulers" style="${_pb}">Sched</button>
                     <button onclick="liveSetProgram('${tabId}','errorlog')" class="live-prog-btn" data-prog="errorlog" style="${_pb}">ErrLog</button>
+                    <button type="button" id="live-help-btn-${tabId}" class="live-help-btn" aria-expanded="false" aria-controls="live-help-${tabId}" onclick="liveToggleHelp('${tabId}')" title="${t('live.help_tip')}" style="${_pb};font-weight:700;">?</button>
                     <div style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
                         <select id="live-rate-${tabId}" onchange="liveChangeRate('${tabId}', this.value)"
                                 style="padding:3px 6px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-tertiary);font-size:12px;width:50px;">
@@ -51387,6 +51388,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     <span title="${t('live.blocked_sessions')}">Blk: <b id="lg-blk-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span id="live-status-${tabId}" style="margin-left:auto;color:var(--color-text-disabled);font-size:12px;">--</span>
                 </div>
+                <div id="live-help-${tabId}" role="region" aria-label="${t('live.help_region')}" style="display:none;flex-shrink:0;max-height:220px;overflow-y:auto;padding:10px 14px;background:var(--color-bg-panel);border-bottom:1px solid var(--color-border);font-size:13px;line-height:1.5;color:var(--color-text-secondary);"></div>
                 <div id="live-screen-${tabId}" style="flex:1;overflow:auto;padding:12px;font-family:var(--font-mono);font-size:var(--font-sm);color:var(--color-text-bright);">
                     <div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
                         <i class="fas fa-satellite-dish" style="font-size:48px;margin-bottom:16px;color:var(--color-border);"></i>
@@ -51527,6 +51529,9 @@ window.showDiskDrilldown = async function(drive, label) {
 
             const escHandler = (e) => {
                 if (e.key === 'Escape') {
+                    // 2026-09-15: com a ajuda aberta, Escape fecha so a ajuda (antes fechava sempre o LIVE inteiro)
+                    const ajuda = document.getElementById('live-help-' + tabId);
+                    if (ajuda && ajuda.style.display !== 'none') { liveToggleHelp(tabId, false); return; }
                     const m = document.getElementById('live-tv-modal');
                     if (m) { m.remove(); if(_liveInterval){clearInterval(_liveInterval);_liveInterval=null;} }
                     document.removeEventListener('keydown', escHandler);
@@ -51639,11 +51644,46 @@ window.showDiskDrilldown = async function(drive, label) {
             _liveInterval = setInterval(() => { if (!_livePaused) _liveRefresh(tabId); }, _liveRefreshRate);
         }
 
+        // 2026-09-15 (owner: "se por em um tem que por nos outros"): ajuda "?" do separador activo em todo o LIVE. Um so botao
+        // no fim da barra; painel fora do live-screen (o refresh de 15 s nao o apaga); segue o separador. Parecer do frontend.
+        const _LIVE_HELP_PROGS = ['fleet', 'queries', 'waits', 'blocking', 'plancache', 'memory', 'tempdb', 'io', 'tlog', 'connections', 'jobs', 'alwayson', 'schedulers', 'errorlog'];
+        let _liveSchedDetailsOpen = false;   // 2026-09-15: <details> do Sched aberto entre refreshes
+        function _liveSchedToggle(el) { _liveSchedDetailsOpen = !!el.open; }
+        function _liveHelpHtml(program, tabId) {
+            const p = _LIVE_HELP_PROGS.indexOf(program) >= 0 ? program : 'queries';
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const linha = (k) => `<div style="margin-top:6px;"><b style="color:var(--color-text-bright);">${esc(t('live.help_label_' + k))}</b> ${esc(t('live.help_' + p + '_' + k))}</div>`;
+            return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;">`
+                + `<b style="color:var(--color-text-link);font-size:14px;">${esc(t('live.help_' + p + '_title'))}</b>`
+                + `<button type="button" onclick="liveToggleHelp('${tabId}', false)" aria-label="${esc(t('live.help_close'))}" title="${esc(t('live.help_close'))}" style="background:transparent;border:1px solid var(--color-border);color:var(--color-text-tertiary);border-radius:4px;cursor:pointer;font-size:12px;padding:0 8px;">✕</button></div>`
+                + linha('what') + linha('how') + linha('when') + linha('next');
+        }
+        function liveToggleHelp(tabId, abrir) {
+            const painel = document.getElementById('live-help-' + tabId);
+            const btn = document.getElementById('live-help-btn-' + tabId);
+            if (!painel) return;
+            const aberto = painel.style.display !== 'none';
+            const novo = typeof abrir === 'boolean' ? abrir : !aberto;
+            if (novo) painel.innerHTML = _liveHelpHtml(_liveProgram, tabId);
+            painel.style.display = novo ? 'block' : 'none';
+            if (btn) {
+                btn.setAttribute('aria-expanded', novo ? 'true' : 'false');
+                btn.style.color = novo ? '#fff' : 'var(--color-text-tertiary)';          // inactivo: igual aos botoes da barra
+                btn.style.background = novo ? 'var(--color-text-link)' : 'var(--color-bg-panel)';
+                if (!novo) btn.focus();
+            }
+        }
+        function _liveHelpRefresh(tabId) {
+            const painel = document.getElementById('live-help-' + tabId);
+            if (painel && painel.style.display !== 'none') painel.innerHTML = _liveHelpHtml(_liveProgram, tabId);
+        }
+
         function liveSetProgram(tabId, program) {
             _liveProgram = program;
             try { localStorage.setItem('live-last-program', program); } catch (e) {}  // 2026-09-11 F9
             _liveWaitsPrev = null;
             _liveWaitsMemo = null;
+            _liveHelpRefresh(tabId);   // 2026-09-15: a ajuda aberta segue o separador
             document.querySelectorAll('.live-prog-btn').forEach(b => {
                 const active = b.dataset.prog === program;
                 b.style.background = active ? '#3b82f6' : 'var(--color-bg-panel)';
@@ -52603,11 +52643,12 @@ window.showDiskDrilldown = async function(drive, label) {
         }
 
         function _liveRenderSchedulers(data) {
-            // 2026-09-15 (owner: "dificil de entender"). Frase de leitura no topo; Runnable com o mesmo limiar da frase (> 1 por
-            // scheduler); Yields e Ctx Switches por segundo pela diferenca entre leituras; ajuda por coluna. Persona: pressao de
-            // CPU so quando a media de pedidos a espera por scheduler passa de 1 em leituras seguidas (um pico nao alarma).
+            // 2026-09-15 (owner: "nao poderia ser apresentado de forma mais amigavel?"). Estado em linguagem simples, caixas
+            // (uma por CPU logico) com o selo da fila, tabela tecnica recolhida. Parecer do ux-design-reviewer: sem barra
+            // Active/Workers (active conta tambem suspensos), selo "sem worker" (work_queue_count), modo compacto > 48,
+            // passo seguinte I/O so com espera de disco sustentada. Persona: pressao so com media > 1 em leituras seguidas.
             const scheds = data.schedulers || [];
-            if (!scheds.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_scheduler_data') + '</div>';
+            if (!scheds.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.no_scheduler_data') + '</div>';
             const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
             const totalRunnable = +data.total_runnable || 0;
             const totalPendingIO = +data.total_pending_io || 0;
@@ -52628,51 +52669,90 @@ window.showDiskDrilldown = async function(drive, label) {
                 }
                 const snap = {};
                 scheds.forEach(s => { snap[s.scheduler_id] = { y: s.yield_count || 0, c: s.context_switches_count || 0 }; });
-                const hist = ((antes && dt > 0 && dt < 120) ? antes.hist : []).concat([porSched]).slice(-3);
-                memo = _liveSchedMemo[inst] = { ts: data.timestamp, snap: snap, rates: taxas, hist: hist };
+                const continua = antes && dt > 0 && dt < 120;
+                const hist = (continua ? antes.hist : []).concat([porSched]).slice(-3);
+                const ioHist = (continua ? (antes.ioHist || []) : []).concat([totalPendingIO]).slice(-3);
+                memo = _liveSchedMemo[inst] = { ts: data.timestamp, snap: snap, rates: taxas, hist: hist, ioHist: ioHist };
             }
             let k = 0;
             for (let i = memo.hist.length - 1; i >= 0 && memo.hist[i] > 1; i--) k++;     // leituras seguidas acima de 1, da mais recente
             const seguidas = k >= 2;
+            let kio = 0;
+            for (let i = memo.ioHist.length - 1; i >= 0 && memo.ioHist[i] > 0; i--) kio++;
             const r1 = porSched.toLocaleString(undefined, { maximumFractionDigits: 1 });
-            let frase, cor;
+            let estado, frase, cor;
             if (seguidas) {
+                estado = t('live.sched_state_pressure'); cor = getSevTokens('WARNING').text;
                 frase = _kpiTp('live.sched_pressure', 'Pressão de CPU: {n} pedidos à espera de CPU ({r} por scheduler) em {k} leituras seguidas.', { n: totalRunnable, r: r1, k: k });
-                cor = getSevTokens('WARNING').text;
             } else if (porSched > 1) {
+                estado = t('live.sched_state_spike'); cor = 'var(--color-text-bright)';
                 frase = _kpiTp('live.sched_spike', 'Pico de espera por CPU nesta leitura: {n} pedidos ({r} por scheduler). Ainda não é sustentado.', { n: totalRunnable, r: r1 });
-                cor = 'var(--color-text-secondary)';
             } else {
+                estado = t('live.sched_state_ok'); cor = getSevTokens('OK').text;
                 frase = _kpiTp('live.sched_ok', 'Sem pressão de CPU: {n} pedido(s) à espera de CPU em {s} schedulers.', { n: totalRunnable, s: scheds.length });
-                cor = getSevTokens('OK').text;
             }
             const io = totalPendingIO > 0
                 ? _kpiTp('live.sched_io_wait', '{n} pedido(s) de I/O pendente(s) nos schedulers.', { n: totalPendingIO })
                 : _kpiTp('live.sched_io_ok', 'Sem espera de disco nos schedulers.', {});
-            let h = `<div style="margin-bottom:12px;font-size:13px;"><div style="color:${cor};font-weight:600;">${esc(frase)}</div><div style="color:var(--color-text-tertiary);margin-top:2px;">${esc(io)}</div></div>`;
+            const passos = [];
+            if (seguidas) passos.push(t('live.sched_next_queries'));
+            if (kio >= 2) passos.push(t('live.sched_next_io'));
+            let h = `<div style="margin-bottom:12px;">`
+                + `<div style="font-size:16px;font-weight:700;color:${cor};">${esc(estado)}</div>`
+                + `<div style="font-size:13px;color:var(--color-text-secondary);margin-top:2px;">${esc(frase)} ${esc(io)}</div>`
+                + passos.map(p => `<div style="font-size:13px;color:var(--color-text-bright);margin-top:4px;">➜ ${esc(p)}</div>`).join('')
+                + `</div>`;
+            // caixas: uma por scheduler, sempre por scheduler_id; compacto acima de 48
+            const compacto = scheds.length > 48;
+            const ordem = [...scheds].sort((a, b) => (+a.scheduler_id) - (+b.scheduler_id));
+            const warn = getSevTokens('WARNING');
+            h += `<div role="list" aria-label="${esc(t('live.sched_legend'))}" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(${compacto ? 36 : 76}px,1fr));gap:4px;max-height:40vh;overflow-y:auto;">`;
+            ordem.forEach(s => {
+                const run = +s.runnable_tasks_count || 0;
+                const wq = +s.work_queue_count || 0;
+                const pio = +s.pending_disk_io_count || 0;
+                const act = +s.active_workers_count || 0;
+                const selo = run === 0 ? ''
+                    : `<span style="font-size:12px;border-radius:4px;padding:0 4px;${run > 1 ? `background:${warn.bg};color:${warn.text};font-weight:700;` : 'border:1px solid var(--color-border-strong);color:var(--color-text-bright);'}">${compacto ? run : esc(_kpiTp('live.sched_badge_queue', 'fila {n}', { n: run }))}</span>`;
+                const semWorker = (wq > 0 && !compacto) ? `<span style="font-size:12px;border-radius:4px;padding:0 4px;background:${warn.bg};color:${warn.text};font-weight:700;">${esc(_kpiTp('live.sched_badge_noworker', 'sem worker {n}', { n: wq }))}</span>` : '';
+                const disco = (pio > 0 && !compacto) ? `<span style="font-size:12px;color:var(--color-text-bright);"><i class="fas fa-hard-drive" aria-hidden="true"></i> ${pio}</span>` : '';
+                const dica = _kpiTp('live.sched_card_tip', 'Scheduler {id} (CPU {cpu}): fila {run}, sem worker {wq}, a trabalhar {act}, I/O pendente {io}', { id: s.scheduler_id, cpu: s.cpu_id, run: run, wq: wq, act: act, io: pio });
+                const destaque = (run > 1 || wq > 0) ? `border-color:${warn.text};` : '';
+                h += `<div role="listitem" title="${esc(dica)}" style="border:1px solid var(--color-border);${destaque}border-radius:6px;padding:4px 6px;min-height:${compacto ? 30 : 48}px;background:var(--color-bg-sunken);display:flex;flex-direction:column;gap:2px;">`
+                    + `<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap;"><span style="font-size:12px;color:var(--color-text-tertiary);">${compacto ? '' : '#'}${esc(s.scheduler_id)}</span>${selo}</div>`
+                    + (compacto ? '' : `<div style="font-size:12px;color:var(--color-text-tertiary);">${esc(_kpiTp('live.sched_working', 'a trabalhar {n}', { n: act }))}</div>`)
+                    + ((semWorker || disco) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">${semWorker}${disco}</div>` : '')
+                    + `</div>`;
+            });
+            h += '</div>';
+            h += `<div style="font-size:12px;color:var(--color-text-tertiary);margin-top:6px;">${esc(t('live.sched_legend'))}</div>`;
+            // detalhe tecnico recolhido; colunas de fila primeiro; ordenavel pelo enhancer generico
             const th = (label, dica, extra) => `<th style="padding:4px 8px;${extra || ''}"${dica ? ` title="${esc(dica)}"` : ''}>${label}</th>`;
             const R = 'text-align:right;';
-            h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);">'
-                + th('Sched#') + th('CPU#') + th('Current Tasks', t('live.sched_tip_tasks'), R) + th('Runnable', t('live.sched_tip_runnable'), R)
-                + th('Workers', t('live.sched_tip_workers'), R) + th('Active', t('live.sched_tip_workers'), R) + th('Pending I/O', t('live.sched_tip_io'), R)
-                + th('Yields/s', t('live.sched_tip_rates'), R) + th('Ctx Switches/s', t('live.sched_tip_rates'), R) + '</tr></thead><tbody>';
             const taxa = v => v == null ? `<span title="${esc(t('live.measuring'))}">…</span>` : Math.round(v).toLocaleString();
-            scheds.forEach(s => {
+            h += `<details ${_liveSchedDetailsOpen ? 'open' : ''} ontoggle="_liveSchedToggle(this)" style="margin-top:12px;"><summary style="cursor:pointer;color:var(--color-text-tertiary);font-size:13px;">${esc(t('live.sched_details'))}</summary>`;
+            h += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);">'
+                + th('Sched#') + th('Runnable', t('live.sched_tip_runnable'), R) + th('Work Queue', t('live.sched_tip_workqueue'), R)
+                + th('Pending I/O', t('live.sched_tip_io'), R) + th('Active', t('live.sched_tip_workers'), R) + th('Workers', t('live.sched_tip_workers'), R)
+                + th('Current Tasks', t('live.sched_tip_tasks'), R) + th('CPU#')
+                + th('Yields/s', t('live.sched_tip_rates'), R) + th('Ctx Switches/s', t('live.sched_tip_rates'), R) + '</tr></thead><tbody>';
+            ordem.forEach(s => {
                 const run = +s.runnable_tasks_count || 0;
-                const rc = run > 1 ? getSevTokens('WARNING').text : 'var(--color-text-bright)';
+                const rc = run > 1 ? warn.text : 'var(--color-text-bright)';
                 const tx = memo.rates[s.scheduler_id];
                 h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-link);">${esc(s.scheduler_id)}</td>`;
-                h += `<td style="padding:3px 8px;">${esc(s.cpu_id)}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${+s.current_tasks_count || 0}</td>`;
                 h += `<td style="padding:3px 8px;text-align:right;color:${rc};font-weight:600;">${run}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${+s.current_workers_count || 0}</td>`;
-                h += `<td style="padding:3px 8px;text-align:right;">${+s.active_workers_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.work_queue_count || 0}</td>`;
                 h += `<td style="padding:3px 8px;text-align:right;">${+s.pending_disk_io_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.active_workers_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.current_workers_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;text-align:right;">${+s.current_tasks_count || 0}</td>`;
+                h += `<td style="padding:3px 8px;">${esc(s.cpu_id)}</td>`;
                 h += `<td style="padding:3px 8px;text-align:right;" data-sort-value="${tx ? tx.y : ''}">${taxa(tx ? tx.y : null)}</td>`;
                 h += `<td style="padding:3px 8px;text-align:right;" data-sort-value="${tx ? tx.c : ''}">${taxa(tx ? tx.c : null)}</td></tr>`;
             });
             h += '</tbody></table>';
-            h += `<div style="font-size:12px;color:var(--color-text-disabled);margin-top:6px;font-style:italic;">${esc(t('live.sched_rates_note'))}</div>`;
+            h += `<div style="font-size:12px;color:var(--color-text-tertiary);margin-top:6px;font-style:italic;">${esc(t('live.sched_rates_note'))}</div></details>`;
             return h;
         }
 

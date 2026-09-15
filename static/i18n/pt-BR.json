@@ -230,6 +230,18 @@
   },
 
   "live": {
+    "help_region": "Ajuda da aba ativa",
+    "help_tip": "Ajuda desta aba",
+    "help_connections_title": "Conn — sessões conectadas",
+    "help_connections_what": "As sessões conectadas agora, por login, host e programa.",
+    "help_connections_how": "Mostra quem está conectado e de onde. Muitas sessões ociosas de uma aplicação são normais com pools de conexões.",
+    "help_io_title": "I/O — arquivos de dados e de log",
+    "help_io_what": "Leituras, gravações e latência média de cada arquivo de dados e de log.",
+    "help_io_next": "Confirme em Waits se há PAGEIOLATCH ou WRITELOG agora e leve o arquivo e o disco à equipe de armazenamento.",
+    "help_tempdb_what": "O espaço do tempdb por tipo (objetos de usuário, internos, version store, livre), os arquivos e as sessões que mais o usam agora.",
+    "help_errorlog_how": "Inclui mensagens informativas. O histórico classificado fica na Intelligence e aparece na tela de servidor offline e no banner de diagnóstico.",
+    "help_fleet_what": "O estado das instâncias a partir dos KPIs e, em tempo real, só as instâncias com problema: queries pesadas, bloqueios, erros recentes e TempDB.",
+    "sched_state_spike": "Fila de CPU se formando",
     "measuring": "medindo…",
     "mem_tip_detail": "SQL Server: {sql} MB (max server memory: {max} MB) · disponível no sistema operacional: {avail} MB",
     "sched_tip_workers": "Threads associadas a este scheduler; Active são as que estão trabalhando agora.",

@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **LIVE com ajuda em todos os separadores e Sched em linguagem simples** (owner 15/09). Um botão "?" no fim
+  da barra abre a ajuda do separador activo (o que mostra, como ler, quando preocupar, passo seguinte) e segue
+  a troca de separador; Escape fecha primeiro a ajuda. O Sched passa a mostrar o estado (CPU com folga, fila a
+  formar-se, CPU sob pressão), uma caixa por CPU com o selo da fila e "sem worker", o passo seguinte, e a tabela
+  técnica recolhida. [tier: Std]
+
 - **LIVE Waits: ordenar deixa de esvaziar a tabela** (owner 15/09). O clique no cabeçalho recalculava a diferença
   contra a própria leitura, todas as linhas davam zero e desapareciam até ao refresh seguinte (15 s), o que parecia
   uma ordenação lenta. A diferença passa a ser calculada uma vez por leitura e a ordenação é imediata. [tier: Std]
