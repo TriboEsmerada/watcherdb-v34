@@ -120,7 +120,17 @@ para 1.400.
   de B2.
 - **Identidade:** `sql_monitoring`, leitura. **Esforço:** 1 hora. **Corre:** a AI.
 
-### B1 — recolhedor: classificar em vez de filtrar por palavra
+### B1 — recolhedor: classificar em vez de filtrar por palavra — **B1a PRONTO 15/09**
+
+- **Parecer do guardião do recolhedor (15/09, sem veto).** Ordem: B1a classificador puro, B1b janela temporal e
+  timeout de consulta, B2a marca de água por instância e MERGE por ciclo na HIST, B2b colunas de agregação só na
+  HIST (nunca nas STG BLUE/GREEN), B3. Segurança (18456) na coluna Log_Type, sem tabela nova.
+- **Condição do guardião resolvida por medição:** nas 8 STG BLUE/GREEN o Log_Text_Hash é int normal sem chave
+  primária; na HIST é calculado (CHECKSUM) e a proc de arquivo recalcula-o.
+- **Janela temporal provada** em SQL 2012, 2016, 2019 e 2022: SQLRPAPRD02 passa de 261.843 linhas em 20,9 s para
+  2.150 em 0,31 s. Datas em texto; resultado vazio não é conjunto de resultados; usar o relógio do servidor.
+- **B1a provado em dados reais:** 12 h de 6 instâncias PRD, 38.045 linhas dão 77 eventos guardados e 84 grupos
+  horários; os três arranques da madrugada apanhados. Lote `B1A_CLASSIFICADOR_ERRORLOG_2026-09-15_apply.py`.
 
 - Ler sem o filtro `N'Error'`; classificar cada linha por número de erro, gravidade, estado e padrão
   de ciclo de vida; juntar as duas linhas do mesmo erro; hash determinístico em vez do `hash()` do
@@ -142,6 +152,23 @@ para 1.400.
 - **Toca em:** base partilhada. Canónico `INSTALACAO_COMPLETA_UNIFICADA.sql` + documentação no mesmo
   bloco (regra 2). Entrada no purge diário.
 - **Corre o DDL:** o owner (regra 5). **Esforço:** 2 a 3 horas de preparação.
+
+### Política de retenção e expurgo (decidida para B2, parecer de conformidade de 15/09)
+
+| Camada | Por omissão | Mínimo | Máximo | Fundamento |
+|---|---|---|---|---|
+| Texto com login e IP (falhas de login, contas bloqueadas) | 90 dias | 30 dias | 90 dias | RGPD art. 5.º(1)(e), minimização |
+| Eventos guardados um a um, sem login e IP depois dos 90 dias | 12 meses | 12 meses | 36 meses | PCI DSS 10.5.1 quando o servidor está no âmbito de cartões; DORA RTS art. 12; ISO 27001 A.8.15 |
+| Agregados horários sem texto de exemplo pessoal | 13 meses | 12 meses | decisão do cliente | já não é dado pessoal; comparação ano a ano |
+| Legal hold por instância | suspende o expurgo | | | preservação para investigação de incidente |
+
+- Política por cliente numa tabela, com mínimo e máximo, e histórico de alterações (quem, quando).
+- Expurgo sobre **Log_Date** (hoje é Update_TS, a data de recolha), em lotes, com registo append-only do que
+  apagou e alerta quando o job falha. Até lá, o expurgo actual de 90 dias continua.
+- Documentar em contrato e no guia de segurança que o histórico do WatcherDB **não substitui** SQL Server Audit
+  nem SIEM: descarta informativos por desenho.
+- Estimativa com a política nova, 59 instâncias: cerca de 1,2 milhões de linhas e 320 MB no total. Hoje: 726 MB
+  para 83 dias de uma fotografia diária.
 
 ### B3 — bloco no ecrã de instância offline
 
