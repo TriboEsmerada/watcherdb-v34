@@ -120,7 +120,15 @@ para 1.400.
   de B2.
 - **Identidade:** `sql_monitoring`, leitura. **Esforço:** 1 hora. **Corre:** a AI.
 
-### B1 — recolhedor: classificar em vez de filtrar por palavra — **B1a PRONTO 15/09**
+### B1 — recolhedor: classificar em vez de filtrar por palavra — **B1a FECHADO, B1b PRONTO 15/09**
+
+- **B1b pronto em três lotes, consenso do guardião na revisão final:** leitor do V3.4 conta pelo Log_Type (aplicar
+  primeiro, senão o 33208 de severidade 17 pinta cerca de dez instâncias de vermelho), recolhedor por janela de 65 min
+  com timeout de consulta e classificação, e migration 011 que desabilita o job WatcherDB_Collect_ErrorLogs e põe o
+  manifesto da Wave D a 0. Prova real com ligações sql_monitoring em 5 PRD: 1 a 1.140 linhas por janela, 0,10 a 0,73 s.
+- **Condição para o B2b (guardião):** a deduplicação da HIST por CHECKSUM(Log_Text), sem Update_TS, passa a ser
+  pré-condição de correcção. Com rotação na janela o log anterior é relido em ciclos seguidos; nunca incluir o
+  Update_TS na chave de deduplicação.
 
 - **Parecer do guardião do recolhedor (15/09, sem veto).** Ordem: B1a classificador puro, B1b janela temporal e
   timeout de consulta, B2a marca de água por instância e MERGE por ciclo na HIST, B2b colunas de agregação só na
