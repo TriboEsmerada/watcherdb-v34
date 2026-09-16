@@ -3235,6 +3235,48 @@
     "no_scheduler_data": "Sin datos de schedulers"
   },
   "coll": {
+    "run": {
+      "need_enable": "Para ejecutar esta tarea, active primero la recolección con el botón Activar.",
+      "confirm": "¿Ejecutar \"{nome}\" ahora?",
+      "st_registering": "Registrando la solicitud",
+      "st_pending": "Esperando ejecución",
+      "st_running": "En ejecución",
+      "st_done": "Terminó con éxito",
+      "st_error": "Error",
+      "st_timeout": "Tiempo agotado",
+      "registering": "Registrando la solicitud...",
+      "err_register": "No se pudo registrar la solicitud:",
+      "queued": "Solicitud #{id} registrada. Esperando a que el servicio de recolección la ejecute...",
+      "queued_dots": "Solicitud #{id} en cola{p} ({s} s)",
+      "running": "Solicitud #{id} en ejecución...",
+      "done": "Terminó con éxito. Tardó {ms} ms y recolectó {n} filas.",
+      "failed": "Falló: {err}",
+      "unknown_error": "Error desconocido",
+      "timeout_queue": "Tiempo agotado tras {s} s. La solicitud #{id} sigue en cola.",
+      "timeout_poller": "Tiempo agotado tras {s} s. La solicitud #{id} sigue esperando. El servicio de recolección puede no estar consumiendo la cola.",
+      "close": "Cerrar"
+    },
+    "bulk": {
+      "none": "Ninguna tarea activa entre las visibles. Ajuste los filtros, o active las tareas primero.",
+      "confirm_title": "Volver a ejecutar las tareas filtradas",
+      "confirm_count": "Se lanzarán {n} tareas a la vez:",
+      "confirm_more": "... y {n} tareas más",
+      "confirm_skipped": "({n} tareas desactivadas quedan fuera)",
+      "confirm_ask": "¿Confirma?",
+      "dispatching": "Lanzando {n}...",
+      "done_title": "Re-ejecución terminada:",
+      "done_ok": "Lanzadas: {ok} de {n}",
+      "done_failed": "Fallaron al lanzarse: {n}",
+      "done_failed_list": "Tareas que fallaron (las 5 primeras):",
+      "done_note": "Las tareas lanzadas quedaron en cola. Pulse Actualizar dentro de un minuto para ver el progreso."
+    },
+    "toggle": {
+      "word_on": "ACTIVAR",
+      "word_off": "DESACTIVAR",
+      "prompt": "{accao} \"{nome}\"?\n\nMotivo (obligatorio, al menos 20 caracteres):\nEjemplo: Reactivar para validar la corrección en el colector de páginas sospechosas",
+      "too_short": "Motivo demasiado corto ({n} caracteres). Hacen falta al menos 20.\n\nEsto es lo que deja rastro de quién cambió qué, y por qué.",
+      "processing": "Procesando..."
+    },
     "det": {
       "tab_overview": "Resumen",
       "tab_logs": "Errores",

@@ -253,6 +253,27 @@
     "loading_program": "Carregando {program}..."
   },
   "coll": {
+    "run": {
+      "need_enable": "Para executar esta tarefa, ative primeiro a coleta no botão Ativar.",
+      "queued": "Pedido #{id} registrado. Esperando que o serviço de coleta o execute...",
+      "timeout_queue": "Tempo esgotado depois de {s} s. O pedido #{id} continua na fila.",
+      "timeout_poller": "Tempo esgotado depois de {s} s. O pedido #{id} continua esperando. O serviço de coleta pode não estar consumindo a fila.",
+      "err_register": "Não foi possível registrar o pedido:",
+      "registering": "A registrar o pedido...",
+      "st_registering": "A registrar o pedido",
+      "st_pending": "Esperando execução"
+    },
+    "bulk": {
+      "none": "Nenhuma tarefa ativa entre as visíveis. Ajuste os filtros, ou ative as tarefas primeiro.",
+      "confirm_skipped": "({n} tarefas desativadas ficam de fora)",
+      "done_note": "As tarefas disparadas ficaram em fila. Clique em Atualizar daqui a um minuto para ver o progresso."
+    },
+    "toggle": {
+      "word_on": "ATIVAR",
+      "word_off": "DESATIVAR",
+      "prompt": "{accao} \"{nome}\"?\n\nMotivo (obrigatório, pelo menos 20 caracteres):\nExemplo: Reativar para validar a correção no coletor de páginas suspeitas",
+      "too_short": "Motivo curto demais ({n} caracteres). São precisos pelo menos 20.\n\nÉ isto que deixa rastro de quem mudou o quê, e por quê."
+    },
     "det": {
       "last_run": "Última execução",
       "ds_max": "MAX(Update_TS) direto da tabela (sem Blue/Green)",

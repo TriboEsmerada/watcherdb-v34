@@ -3235,6 +3235,48 @@
     "no_scheduler_data": "No scheduler data"
   },
   "coll": {
+    "run": {
+      "need_enable": "To run this task, enable collection first with the Enable button.",
+      "confirm": "Run \"{nome}\" now?",
+      "st_registering": "Registering the request",
+      "st_pending": "Waiting to run",
+      "st_running": "Running",
+      "st_done": "Finished successfully",
+      "st_error": "Error",
+      "st_timeout": "Timed out",
+      "registering": "Registering the request...",
+      "err_register": "Could not register the request:",
+      "queued": "Request #{id} registered. Waiting for the collector service to run it...",
+      "queued_dots": "Request #{id} queued{p} ({s} s)",
+      "running": "Request #{id} running...",
+      "done": "Finished successfully. Took {ms} ms and collected {n} rows.",
+      "failed": "Failed: {err}",
+      "unknown_error": "Unknown error",
+      "timeout_queue": "Timed out after {s} s. Request #{id} is still queued.",
+      "timeout_poller": "Timed out after {s} s. Request #{id} is still waiting. The collector service may not be consuming the queue.",
+      "close": "Close"
+    },
+    "bulk": {
+      "none": "No enabled task among the visible ones. Adjust the filters, or enable the tasks first.",
+      "confirm_title": "Re-run the filtered tasks",
+      "confirm_count": "{n} tasks will be started at once:",
+      "confirm_more": "... and {n} more tasks",
+      "confirm_skipped": "({n} disabled tasks are left out)",
+      "confirm_ask": "Go ahead?",
+      "dispatching": "Starting {n}...",
+      "done_title": "Re-run finished:",
+      "done_ok": "Started: {ok} of {n}",
+      "done_failed": "Failed to start: {n}",
+      "done_failed_list": "Tasks that failed (first 5):",
+      "done_note": "The tasks that started are queued. Click Refresh in about a minute to see progress."
+    },
+    "toggle": {
+      "word_on": "ENABLE",
+      "word_off": "DISABLE",
+      "prompt": "{accao} \"{nome}\"?\n\nReason (required, at least 20 characters):\nExample: Re-enabling to verify the fix in the suspect pages collector",
+      "too_short": "Reason too short ({n} characters). At least 20 are needed.\n\nThis is what leaves a trail of who changed what, and why.",
+      "processing": "Working..."
+    },
     "det": {
       "tab_overview": "Overview",
       "tab_logs": "Errors",

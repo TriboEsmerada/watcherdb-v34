@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Collector Health: as acções traduzidas fecham o ecrã** (owner 16/09). Último lote: executar uma tarefa
+  agora e acompanhar o pedido até ao fim, re-correr em massa as tarefas filtradas, e activar ou desactivar
+  com motivo obrigatório. São quase todos textos de progresso e de erro — os que só se vêem quando algo
+  corre mal, e por isso os que mais facilmente ficavam por traduzir. O número do pedido, a duração, o nome
+  da tarefa e as contagens entram nas frases por marcadores, e não por concatenação, para cada idioma os
+  poder pôr onde precisa. O ecrã do Collector Health fica sem uma única frase escrita à mão. [tier: Std]
+
 - **Collector Health: janela de detalhe traduzida, e dois defeitos escondidos por trás disso** (owner 16/09).
   Separadores, lista de propriedades, tabelas de erros, execuções e alterações passam a falar o idioma
   escolhido. Pelo caminho: o separador activo era escolhido comparando o **texto visível** com o nome interno

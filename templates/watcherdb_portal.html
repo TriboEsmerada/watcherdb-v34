@@ -58223,17 +58223,17 @@ WHERE servicename LIKE '%Agent%'` }
         if (!task.enabled) {
             const statusEl = _getOrCreateRunStatus();
             _setRunState(document.getElementById('coll-run-btn'), statusEl, 'error',
-                'Para executar este task, active primeiro a coleta atraves do botao "Activar".');
+                _collT('coll.run.need_enable', 'Para executar este task, active primeiro a coleta atraves do botao Activar.'));
             return;
         }
 
-        if (!confirm(`Executar "${task.name}" agora?`)) return;
+        if (!confirm(_collTp('coll.run.confirm', 'Executar "{nome}" agora?', { nome: task.name }))) return;
 
         const btn = document.getElementById('coll-run-btn');
         const statusEl = _getOrCreateRunStatus();
 
         // Fase 1: Registar pedido
-        _setRunState(btn, statusEl, 'registering', 'A registar pedido...');
+        _setRunState(btn, statusEl, 'registering', _collT('coll.run.registering', 'A registar pedido...'));
         let requestId;
         try {
             const token = localStorage.getItem('watcherdb_token');
@@ -58249,12 +58249,13 @@ WHERE servicename LIKE '%Agent%'` }
             const d = await r.json();
             requestId = d.request_id;
         } catch (e) {
-            _setRunState(btn, statusEl, 'error', 'Erro ao registar: ' + e.message);
+            _setRunState(btn, statusEl, 'error', _collT('coll.run.err_register', 'Erro ao registar:') + ' ' + e.message);
             return;
         }
 
         // Fase 2: Polling automatico ate DONE/FAILED ou timeout
-        _setRunState(btn, statusEl, 'pending', `Pedido #${requestId} registado. A aguardar execucao pelo Collector Service...`);
+        _setRunState(btn, statusEl, 'pending', _collTp('coll.run.queued',
+            'Pedido #{id} registado. A aguardar execucao pelo servico de recolha...', { id: requestId }));
         const token = localStorage.getItem('watcherdb_token');
         const pollUrl = '/api/v1/collectors/runs/' + requestId;
         const maxPolls = 60; // 60 × 3s = 3min timeout
@@ -58267,40 +58268,45 @@ WHERE servicename LIKE '%Agent%'` }
                     headers: token ? { 'Authorization': 'Bearer ' + token } : {}
                 });
                 if (!r.ok) {
-                    if (polls >= maxPolls) { clearInterval(pollInterval); _setRunState(btn, statusEl, 'timeout', `Timeout apos ${maxPolls * 3}s. Pedido #${requestId} continua PENDING na fila.`); }
+                    if (polls >= maxPolls) {
+                        clearInterval(pollInterval);
+                        _setRunState(btn, statusEl, 'timeout', _collTp('coll.run.timeout_queue',
+                            'Tempo esgotado ao fim de {s} s. O pedido #{id} continua na fila.',
+                            { s: maxPolls * 3, id: requestId }));
+                    }
                     return;
                 }
                 const d = await r.json();
                 const st = (d.status || d.run?.status || '').toUpperCase();
 
                 if (st === 'RUNNING') {
-                    _setRunState(btn, statusEl, 'running', `#${requestId} em execucao...`);
+                    _setRunState(btn, statusEl, 'running', _collTp('coll.run.running', 'Pedido #{id} em execucao...', { id: requestId }));
                 } else if (st === 'DONE') {
                     clearInterval(pollInterval);
                     const dur = d.duration_ms || d.run?.duration_ms || '?';
                     const rows = d.rows_collected ?? d.run?.rows_collected ?? '?';
-                    _setRunState(btn, statusEl, 'done',
-                        `Concluido com sucesso. Duracao: ${dur}ms, Rows: ${rows}`);
+                    _setRunState(btn, statusEl, 'done', _collTp('coll.run.done',
+                        'Concluido com sucesso. Demorou {ms} ms e recolheu {n} linhas.', { ms: dur, n: rows }));
                     // Refresh principal para reflectir o novo estado
                     setTimeout(() => collRefresh(false), 2000);
                 } else if (st === 'FAILED') {
                     clearInterval(pollInterval);
-                    const err = d.error_message || d.run?.error_message || 'Erro desconhecido';
-                    _setRunState(btn, statusEl, 'error', `Falhou: ${err}`);
+                    const err = d.error_message || d.run?.error_message || _collT('coll.run.unknown_error', 'Erro desconhecido');
+                    _setRunState(btn, statusEl, 'error', _collTp('coll.run.failed', 'Falhou: {err}', { err }));
                 } else {
                     // PENDING — actualizar dots de progresso
                     const dots = '.'.repeat((polls % 3) + 1);
-                    _setRunState(btn, statusEl, 'pending',
-                        `Pedido #${requestId} na fila${dots} (${polls * 3}s)`);
+                    _setRunState(btn, statusEl, 'pending', _collTp('coll.run.queued_dots',
+                        'Pedido #{id} na fila{p} ({s} s)', { id: requestId, p: dots, s: polls * 3 }));
                 }
             } catch (e) {
                 // Network error no poll — continuar a tentar
             }
             if (polls >= maxPolls) {
                 clearInterval(pollInterval);
-                _setRunState(btn, statusEl, 'timeout',
-                    `Timeout apos ${maxPolls * 3}s. Pedido #${requestId} ainda PENDING. ` +
-                    `O Collector Service pode nao ter o poller activo (Fase 2).`);
+                _setRunState(btn, statusEl, 'timeout', _collTp('coll.run.timeout_poller',
+                    'Tempo esgotado ao fim de {s} s. O pedido #{id} continua a` espera. O servico de recolha pode nao estar a consumir a fila.',
+                    { s: maxPolls * 3, id: requestId }));
             }
         }, 3000);
     };
@@ -58327,23 +58333,23 @@ WHERE servicename LIKE '%Agent%'` }
         const disabledCount = filtered.length - runnable.length;
 
         if (runnable.length === 0) {
-            alert('Nenhum task enabled visivel para re-correr. Ajusta os filtros ou activa os tasks primeiro.');
+            alert(_collT('coll.bulk.none', 'Nenhuma tarefa activa entre as visiveis. Ajuste os filtros, ou active as tarefas primeiro.'));
             return;
         }
 
-        const confirmMsg = `Bulk Re-run\n\n` +
-            `Vai disparar ${runnable.length} tasks em paralelo:\n` +
+        const confirmMsg = _collT('coll.bulk.confirm_title', 'Re-correr as tarefas filtradas') + '\n\n' +
+            _collTp('coll.bulk.confirm_count', 'Vao ser disparadas {n} tarefas ao mesmo tempo:', { n: runnable.length }) + '\n' +
             `${runnable.slice(0, 10).map(t => '  - ' + t.name).join('\n')}` +
-            (runnable.length > 10 ? `\n  ... e mais ${runnable.length - 10} tasks` : '') +
-            `\n\n` +
-            (disabledCount > 0 ? `(${disabledCount} disabled task(s) skipped)\n\n` : '') +
-            `Confirma?`;
+            (runnable.length > 10 ? '\n  ' + _collTp('coll.bulk.confirm_more', '... e mais {n} tarefas', { n: runnable.length - 10 }) : '') +
+            '\n\n' +
+            (disabledCount > 0 ? _collTp('coll.bulk.confirm_skipped', '({n} tarefas desactivadas ficam de fora)', { n: disabledCount }) + '\n\n' : '') +
+            _collT('coll.bulk.confirm_ask', 'Confirma?');
         if (!confirm(confirmMsg)) return;
 
         const btn = document.getElementById('coll-bulk-run-btn');
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> A disparar ${runnable.length}...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${_collTp('coll.bulk.dispatching', 'A disparar {n}...', { n: runnable.length })}`;
         }
 
         const token = localStorage.getItem('watcherdb_token');
@@ -58369,14 +58375,17 @@ WHERE servicename LIKE '%Agent%'` }
 
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fas fa-bolt"></i> Re-run Filtrados`;
+            btn.innerHTML = `<i class="fas fa-bolt"></i> ${_collT('coll.bulk_run', 'Re-run Filtrados')}`;
         }
 
-        const summaryMsg = `Bulk Re-run concluido:\n\n` +
-            `  Dispatched: ${dispatched}/${runnable.length}\n` +
-            `  Failed dispatch: ${failed}\n\n` +
-            (failedTasks.length > 0 ? `Tasks falhados (top 5):\n${failedTasks.map(t => '  - ' + t).join('\n')}\n\n` : '') +
-            `Tasks dispatched estao agora em PENDING. Clique "Actualizar" em ~1min para ver progresso.`;
+        const summaryMsg = _collT('coll.bulk.done_title', 'Re-execucao terminada:') + '\n\n' +
+            '  ' + _collTp('coll.bulk.done_ok', 'Disparadas: {ok} de {n}', { ok: dispatched, n: runnable.length }) + '\n' +
+            '  ' + _collTp('coll.bulk.done_failed', 'Falharam ao disparar: {n}', { n: failed }) + '\n\n' +
+            (failedTasks.length > 0
+                ? _collT('coll.bulk.done_failed_list', 'Tarefas que falharam (as 5 primeiras):')
+                  + `\n${failedTasks.map(t => '  - ' + t).join('\n')}\n\n`
+                : '') +
+            _collT('coll.bulk.done_note', 'As tarefas disparadas ficaram em fila. Carregue em Actualizar daqui a um minuto para ver o progresso.');
         alert(summaryMsg);
 
         // Auto-refresh apos 5s para mostrar PENDING state inicial
@@ -58388,22 +58397,24 @@ WHERE servicename LIKE '%Agent%'` }
         const task = window._collDetailTask;
         if (!task) return;
         const newEnabled = !task.enabled;
-        const action = newEnabled ? 'ACTIVAR' : 'DESACTIVAR';
+        const action = newEnabled
+            ? _collT('coll.toggle.word_on', 'ACTIVAR')
+            : _collT('coll.toggle.word_off', 'DESACTIVAR');
         let reason = null;
         while (true) {
-            reason = prompt(
-                `${action} "${task.name}"?\n\n` +
-                `Motivo (obrigatorio, minimo 20 caracteres):\n` +
-                `Exemplo: "Reactivar para validacao de fix no collector de suspect pages"`
-            );
+            reason = prompt(_collTp('coll.toggle.prompt',
+                '{accao} "{nome}"?\n\nMotivo (obrigatorio, pelo menos 20 caracteres):\nExemplo: Reactivar para validar a correccao no recolhedor de paginas suspeitas',
+                { accao: action, nome: task.name }));
             if (reason === null) return; // cancelled
             reason = reason.trim();
             if (reason.length >= 20) break;
-            alert(`Motivo demasiado curto (${reason.length} caracteres). Minimo: 20 caracteres.\n\nIsto garante rastreabilidade adequada no historico de alteracoes.`);
+            alert(_collTp('coll.toggle.too_short',
+                'Motivo demasiado curto ({n} caracteres). Sao precisos pelo menos 20.\n\nE\' isto que deixa rasto de quem mudou o que, e porque.',
+                { n: reason.length }));
         }
 
         const toggleBtn = document.getElementById('coll-toggle-btn');
-        if (toggleBtn) { toggleBtn.disabled = true; toggleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...'; }
+        if (toggleBtn) { toggleBtn.disabled = true; toggleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + _collT('coll.toggle.processing', 'A processar...'); }
 
         try {
             const token = localStorage.getItem('watcherdb_token');
@@ -58422,7 +58433,7 @@ WHERE servicename LIKE '%Agent%'` }
             // Refresh tabela principal em background
             setTimeout(() => collRefresh(false), 1000);
         } catch (e) {
-            alert('Erro: ' + e.message);
+            alert(_collT('coll.det.error', 'Erro:') + ' ' + e.message);
         }
         // SEMPRE restaurar o botao (success ou erro)
         _collUpdateToggleUI(task);
@@ -58567,7 +58578,7 @@ WHERE servicename LIKE '%Agent%'` }
                         <button onclick="document.getElementById('coll-run-modal').style.display='none'"
                                 style="background:var(--color-border);color:var(--color-text-bright);border:none;padding:8px 18px;
                                        border-radius:6px;cursor:pointer;font-weight:600;">
-                            Fechar
+                            ${_collT('coll.run.close', 'Fechar')}
                         </button>
                     </div>
                 </div>`;
@@ -58578,12 +58589,12 @@ WHERE servicename LIKE '%Agent%'` }
 
     function _setRunState(btn, statusEl, state, message) {
         const config = {
-            registering: { icon: 'fa-spinner fa-spin',   color: '#3b82f6', title: 'A registar pedido',           terminal: false },
-            pending:     { icon: 'fa-clock fa-spin',      color: '#f59e0b', title: 'Aguardando execucao',         terminal: false },
-            running:     { icon: 'fa-cog fa-spin',        color: '#3b82f6', title: 'Em execucao',                 terminal: false },
-            done:        { icon: 'fa-check-circle',       color: '#10b981', title: 'Concluido com sucesso',       terminal: true },
-            error:       { icon: 'fa-exclamation-triangle',color:'#ef4444', title: 'Erro',                        terminal: true },
-            timeout:     { icon: 'fa-hourglass-end',      color: '#f59e0b', title: 'Timeout',                     terminal: true },
+            registering: { icon: 'fa-spinner fa-spin',   color: '#3b82f6', title: _collT('coll.run.st_registering', 'A registar pedido'),     terminal: false },
+            pending:     { icon: 'fa-clock fa-spin',      color: '#f59e0b', title: _collT('coll.run.st_pending', 'Aguardando execucao'),      terminal: false },
+            running:     { icon: 'fa-cog fa-spin',        color: '#3b82f6', title: _collT('coll.run.st_running', 'Em execucao'),              terminal: false },
+            done:        { icon: 'fa-check-circle',       color: '#10b981', title: _collT('coll.run.st_done', 'Concluido com sucesso'),       terminal: true },
+            error:       { icon: 'fa-exclamation-triangle',color:'#ef4444', title: _collT('coll.run.st_error', 'Erro'),                       terminal: true },
+            timeout:     { icon: 'fa-hourglass-end',      color: '#f59e0b', title: _collT('coll.run.st_timeout', 'Timeout'),                  terminal: true },
         };
         const c = config[state] || config.pending;
 
