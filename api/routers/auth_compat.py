@@ -353,13 +353,24 @@ async def login(request: Request, login_req: LoginRequest):
         raise HTTPException(status_code=401, detail=result.get("error", "Credenciais invalidas"))
 
     # Check must_change_password flag
+    # 2026-09-16: a obrigacao SO' se impoe a contas locais. Quem entra por AD ("ldap") nao tem password local
+    # para trocar; e numa conta de AD com recurso local ("local_fallback") o change_password reescreve o
+    # password_hash, que ali guarda o marcador ad_auth: -- obrigar converteria a conta em local sem ninguem
+    # pedir. Nesses casos a marca fica na base e nao se impoe.
+    _metodo = (result.get("user") or {}).get("auth_method")
     try:
         rows = _execute_query(
             "SELECT must_change_password FROM dbo.WatcherDB_Users WHERE username = ?",
             (login_req.username,),
         )
-        if rows and rows[0].get("must_change_password"):
+        if rows and rows[0].get("must_change_password") and _metodo == "local":
             result["must_change_password"] = True
+            # A marca viaja no token (claim mcp) para o middleware a ler sem ir a` base a cada pedido.
+            result["access_token"] = create_access_token({
+                "sub": login_req.username,
+                "role": (result.get("user") or {}).get("role", "viewer"),
+                "mcp": True,
+            })
     except Exception as exc:
         _avisar_coluna_em_falta("login", exc)
 

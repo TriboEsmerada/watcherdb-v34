@@ -682,6 +682,16 @@ _AUTH_PUBLIC_PREFIXES = (
     "/ws",  # WebSocket autentica via query param token (ver websocket_endpoint)
 )
 
+# 2026-09-16: unicos caminhos que uma sessao obrigada a trocar a password pode usar ate' a trocar.
+# O resto responde 403. Os caminhos do SPA (/watcherdb, /static/...) ja estao acima, portanto a pagina
+# carrega e mostra a caixa de troca; o que nao passa sao os pedidos de dados.
+_AUTH_MCP_ALLOWED = frozenset({
+    "/api/auth/change-password",
+    "/api/auth/me",
+    "/api/auth/logout",
+    "/api/auth/validate",
+})
+
 
 class AuthEnforcementMiddleware(BaseHTTPMiddleware):
     """Global auth enforcement for all non-public HTTP endpoints."""
@@ -712,6 +722,14 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             )
         # Attach user to request.state para endpoints que nao usam Depends(_require_auth)
         request.state.user = user
+        # 2026-09-16: sessao obrigada a trocar a password so' fala com os endpoints de autenticacao.
+        # A marca vem do token (claim mcp), por isso isto nao custa nenhuma ida a` base.
+        if user.get("must_change_password") and path not in _AUTH_MCP_ALLOWED:
+            return JSONResponse(
+                {"detail": "Tem de trocar a password antes de continuar",
+                 "code": "MUST_CHANGE_PASSWORD"},
+                status_code=403,
+            )
         return await call_next(request)
 
 

@@ -1337,7 +1337,10 @@ class AuthService:
             "username": username,
             "role": user.get("role", payload.get("role", "viewer")),
             "full_name": user.get("full_name", username),
-            "email": user.get("email")
+            "email": user.get("email"),
+            # 2026-09-16: vem do proprio token (claim mcp posto no login), nao da base -- o middleware
+            # decide sem custo. O token emitido depois da troca ja nao o traz.
+            "must_change_password": bool(payload.get("mcp")),
         }
 
     async def create_user(self, username: str, password: str, role: str = "viewer",

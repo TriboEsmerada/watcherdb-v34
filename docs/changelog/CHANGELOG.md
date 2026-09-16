@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **A obrigação de trocar a password passa a ser mesmo imposta** (16/09). De manhã ficou a marca a ser
+  gravada; faltava quem a fizesse valer — o ecrã nunca lia o campo e o servidor não travava ninguém. Agora,
+  quem tem a obrigação recebe a caixa de troca sem botão de fechar, e o servidor recusa todos os pedidos que
+  não sejam de autenticação até a troca estar feita (a marca viaja no próprio token, por isso não custa uma
+  ida à base por pedido). Só se aplica a contas locais: quem entra pelo domínio não tem password local para
+  trocar, e numa conta de domínio com senha local de recurso a troca converteria a conta. [tier: Std]
+
 - **Obrigar a trocar a password no próximo login volta a funcionar** (16/09). A coluna que guarda essa
   obrigação nunca chegou a ser criada na base: o script que a criava punha o UPDATE no mesmo bloco do ALTER,
   e o SQL Server recusa o bloco inteiro quando a coluna ainda não existe. Desde 08/09, o reset feito por um

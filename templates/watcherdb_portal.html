@@ -5032,6 +5032,13 @@
                     clearAuthData();
                     showLoginOverlay();
                 }
+                // 2026-09-16: sessao travada ate' trocar a password. Cobre a sessao que ja estava aberta
+                // quando um administrador fez o reset, nao so' o momento do login.
+                if (resp.status === 403 && typeof url === 'string' && url.startsWith('/api')) {
+                    resp.clone().json().then(corpo => {
+                        if (corpo && corpo.code === 'MUST_CHANGE_PASSWORD') _mcpForcarTroca();
+                    }).catch(() => {});
+                }
                 return resp;
             });
         };
@@ -5074,6 +5081,10 @@
 
                 const data = await resp.json();
                 setAuthData(data.access_token, data.user);
+
+                // 2026-09-16: password definida por outra pessoa -> troca antes de entrar. Sai aqui de
+                // proposito: qualquer pedido a seguir levaria 403 do middleware e sujaria o ecra de erros.
+                if (data.must_change_password) { _mcpForcarTroca(); return; }
 
                 // Load preferences from server
                 await loadPreferencesFromServer();
@@ -5323,6 +5334,28 @@
         }
         document.addEventListener('keydown', _pmKeydown);
 
+        // ══════ Troca obrigatoria (2026-09-16) ══════
+        // A caixa e' a mesma; o que muda e' que nao se pode fechar e que o portal nao abre por tras.
+        let _mcpAtivo = false;
+        function _mcpForcarTroca() {
+            if (_mcpAtivo) return;   // o 403 pode chegar de varios pedidos ao mesmo tempo
+            _mcpAtivo = true;
+            const modal = document.getElementById('changePasswordModal');
+            if (!modal) return;
+            const fechar = modal.querySelector('.modal-close');
+            if (fechar) fechar.style.display = 'none';
+            openChangePasswordModal();
+            const aviso = document.getElementById('cpwdMsg');
+            if (aviso) {
+                aviso.style.display = 'block';
+                aviso.style.background = 'rgba(245,158,11,0.15)';
+                aviso.style.color = '#f59e0b';
+                aviso.textContent = (typeof t === 'function' && t('msg.must_change_password') !== 'msg.must_change_password')
+                    ? t('msg.must_change_password')
+                    : 'Esta senha foi definida por outra pessoa. Escolhe uma nova para continuares.';
+            }
+        }
+
         // ══════ CHANGE PASSWORD ══════
         function openChangePasswordModal() {
             document.getElementById('cpwdCurrent').value = '';
@@ -5384,7 +5417,12 @@
                     if (data.access_token) { setAuthData(data.access_token, data.user || window._currentUser); }
                     msg.style.display = 'block'; msg.style.background = 'rgba(34,197,94,0.15)'; msg.style.color = '#22c55e';
                     msg.textContent = 'Senha alterada com sucesso!';
-                    setTimeout(() => { document.getElementById('changePasswordModal').style.display = 'none'; }, 1500);
+                    setTimeout(() => {
+                        document.getElementById('changePasswordModal').style.display = 'none';
+                        // 2026-09-16: se a troca era obrigatoria, o token novo ja nao traz a marca e o
+                        // cookie foi renovado -- recarregar entra no portal em vez de ficar tudo em 403.
+                        if (_mcpAtivo) { _mcpAtivo = false; location.reload(); }
+                    }, 1500);
                 } else {
                     msg.style.display = 'block'; msg.style.background = 'rgba(239,68,68,0.15)'; msg.style.color = '#ef4444';
                     msg.textContent = data.detail || data.error || 'Erro ao alterar senha.';
