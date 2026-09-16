@@ -251,5 +251,51 @@
     "loading": "Carregando...",
     "loading_fleet": "Carregando Fleet Dashboard...",
     "loading_program": "Carregando {program}..."
+  },
+  "coll": {
+    "state_info": {
+      "label": {
+        "action": "Ação recomendada"
+      },
+      "footer_esc": "Pressionar <code>Esc</code> ou clicar fora fecha esta janela."
+    },
+    "state": {
+      "FRESH": {
+        "meaning": "O coletor rodou há pouco, com sucesso, e a última passagem está dentro do intervalo configurado.",
+        "normal": "É o estado desejado — coletor saudável, rodando no horário.",
+        "action": "Nenhuma ação necessária."
+      },
+      "RECENT": {
+        "meaning": "O coletor já rodou antes, mas o atraso ultrapassa o intervalo configurado (ainda abaixo do dobro).",
+        "action": "Observe a tendência. Se persistir, abra o detalhe e veja o registro de erros."
+      },
+      "QUIET": {
+        "meaning": "Coletor movido a eventos (páginas suspeitas, deadlocks, mudanças de função em Always On, ping, bloqueios longos) sem nada de novo no parque.",
+        "normal": "Estado SAUDÁVEL — quer dizer \"nenhum problema detectado, parque funcionando\". A hora da última troca fica parada por design.",
+        "problem": "Nunca é problema. Não confunda com parado: aqui o coletor está ativo, apenas não tem o que registrar.",
+        "action": "Nenhuma ação. Para confirmar que está vivo, abra o detalhe e veja a hora da última troca e o estado do serviço."
+      },
+      "STALE": {
+        "meaning": "O coletor não roda há tempo demais (atraso acima do dobro do intervalo, sem falhas registradas).",
+        "problem": "Se durar mais de uma hora, o agendador está travado ou o coletor está sem recursos. Pode ser sinal de parada silenciosa.",
+        "action": "1) Veja o estado do serviço no topo da página. 2) Abra o detalhe e o registro de erros. 3) Se nada explicar, reinicie o serviço."
+      },
+      "FAILED": {
+        "meaning": "O coletor rodou e levantou um erro no último ciclo (falhas nas últimas 24 horas acima de zero).",
+        "problem": "Falhas repetidas (mais de três em 24 horas), ou sempre no mesmo servidor, são defeito ou problema de infraestrutura.",
+        "action": "Abra o detalhe e o registro de erros e identifique o erro. Se for infraestrutura, fale com quem a opera; se for código, abra um registro de defeito."
+      },
+      "DISABLED": {
+        "meaning": "Coletor marcado como desativado na configuração (antigo, substituído, ou em manutenção).",
+        "normal": "Estado declarado — esperado para coletores substituídos por outros mais recentes.",
+        "problem": "Se um coletor importante ficar desativado por engano, os indicadores dele deixam de ser alimentados.",
+        "action": "Reveja a lista de desativados de vez em quando e reative na configuração, se for preciso."
+      },
+      "NEVER_RAN": {
+        "meaning": "Coletor registrado que nunca rodou (sem nenhuma passagem no histórico).",
+        "normal": "Comum depois de instalar um coletor novo, até o agendador completar o primeiro ciclo.",
+        "action": "Veja os registros do agendador (APScheduler / Task Scheduler) para confirmar que a tarefa está registrada."
+      }
+    }
   }
 }

@@ -3233,5 +3233,65 @@
     "gauge_qry_tip": "Queries em execução",
     "no_tlog_data": "Sem dados de transaction log",
     "no_scheduler_data": "Sem dados de schedulers"
+  },
+  "coll": {
+    "help_icon": "Explicar os 7 estados",
+    "close": "Fechar",
+    "state_info": {
+      "title": "Os 7 estados do Collector Health",
+      "label": {
+        "meaning": "Significa",
+        "normal": "Quando é normal",
+        "problem": "Quando é problema",
+        "action": "Acção recomendada"
+      },
+      "footer_how": "Como decidimos o estado:",
+      "footer_order": "Ordem de avaliação:",
+      "footer_esc": "Premir <code>Esc</code> ou clicar fora fecha esta janela."
+    },
+    "state": {
+      "FRESH": {
+        "meaning": "O recolhedor correu há pouco, com sucesso, e a última passagem está dentro do intervalo configurado.",
+        "normal": "É o estado desejado — recolhedor saudável, a correr no horário.",
+        "problem": "Nunca é problema. Um atraso abaixo de 30 minutos ainda é tolerância normal.",
+        "action": "Nenhuma acção necessária."
+      },
+      "RECENT": {
+        "meaning": "O recolhedor já correu antes, mas o atraso ultrapassa o intervalo configurado (ainda abaixo do dobro).",
+        "normal": "Em sistemas com muito paralelismo, alguma latência entre passagens é esperada.",
+        "problem": "Se o atraso continuar a crescer ou passar o dobro do intervalo, investigue — está prestes a ficar parado.",
+        "action": "Observe a tendência. Se persistir, abra o detalhe e veja o registo de erros."
+      },
+      "QUIET": {
+        "meaning": "Recolhedor movido a acontecimentos (páginas suspeitas, deadlocks, mudanças de função em Always On, ping, bloqueios longos) sem nada de novo no parque.",
+        "normal": "Estado SAUDÁVEL — quer dizer \"nenhum problema detectado, parque a funcionar\". A hora da última troca fica parada por desenho.",
+        "problem": "Nunca é problema. Não confunda com parado: aqui o recolhedor está activo, apenas não tem o que registar.",
+        "action": "Nenhuma acção. Para confirmar que está vivo, abra o detalhe e veja a hora da última troca e o estado do serviço."
+      },
+      "STALE": {
+        "meaning": "O recolhedor não corre há demasiado tempo (atraso acima do dobro do intervalo, sem falhas registadas).",
+        "normal": "Pode acontecer por pouco tempo depois de reiniciar o serviço, ou em janelas de manutenção.",
+        "problem": "Se durar mais de uma hora, o agendador está bloqueado ou o recolhedor está sem recursos. Pode ser sinal de paragem silenciosa.",
+        "action": "1) Veja o estado do serviço no topo da página. 2) Abra o detalhe e o registo de erros. 3) Se nada explicar, reinicie o serviço."
+      },
+      "FAILED": {
+        "meaning": "O recolhedor correu e levantou um erro no último ciclo (falhas nas últimas 24 horas acima de zero).",
+        "normal": "Uma falha isolada pode ser passageira — rede, deadlock, tempo esgotado no SQL, ouvinte momentaneamente sem resposta.",
+        "problem": "Falhas repetidas (mais de três em 24 horas), ou sempre no mesmo servidor, são defeito ou problema de infra-estrutura.",
+        "action": "Abra o detalhe e o registo de erros e identifique o erro. Se for infra-estrutura, fale com quem a opera; se for código, abra um registo de defeito."
+      },
+      "DISABLED": {
+        "meaning": "Recolhedor marcado como desactivado na configuração (antigo, substituído, ou em manutenção).",
+        "normal": "Estado declarado — esperado para recolhedores substituídos por outros mais recentes.",
+        "problem": "Se um recolhedor importante ficar desactivado por engano, os indicadores dele deixam de ser alimentados.",
+        "action": "Reveja a lista de desactivados de vez em quando e reactive na configuração, se for preciso."
+      },
+      "NEVER_RAN": {
+        "meaning": "Recolhedor registado que nunca correu (sem qualquer passagem no histórico).",
+        "normal": "Comum depois de instalar um recolhedor novo, até o agendador completar o primeiro ciclo.",
+        "problem": "Se continuar assim depois do dobro do intervalo, o agendador não está a apanhar a tarefa.",
+        "action": "Veja os registos do agendador (APScheduler / Task Scheduler) para confirmar que a tarefa está registada."
+      }
+    }
   }
 }

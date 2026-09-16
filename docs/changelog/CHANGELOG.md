@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Collector Health: a explicação dos 7 estados passa a falar o idioma escolhido** (owner 16/09). O ecrã era
+  o único do portal sem tradução nenhuma — nem uma chave, nem uma chamada ao dicionário — por isso a janela de
+  ajuda aparecia sempre em português, mesmo com o portal em inglês. Os 7 estados, os rótulos, o título, o
+  rodapé e a dica do "?" passam a ter tradução nos quatro idiomas, e o texto português foi acentuado e
+  reescrito em linguagem simples. O resto do ecrã segue num segundo lote. [tier: Std]
+
 - **A obrigação de trocar a password passa a ser mesmo imposta** (16/09). De manhã ficou a marca a ser
   gravada; faltava quem a fizesse valer — o ecrã nunca lia o campo e o servidor não travava ninguém. Agora,
   quem tem a obrigação recebe a caixa de troca sem botão de fechar, e o servidor recusa todos os pedidos que

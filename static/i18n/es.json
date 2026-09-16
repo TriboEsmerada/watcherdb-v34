@@ -3233,5 +3233,65 @@
     "gauge_qry_tip": "Consultas en ejecución",
     "no_tlog_data": "Sin datos de transaction log",
     "no_scheduler_data": "Sin datos de schedulers"
+  },
+  "coll": {
+    "help_icon": "Explicar los 7 estados",
+    "close": "Cerrar",
+    "state_info": {
+      "title": "Los 7 estados de Collector Health",
+      "label": {
+        "meaning": "Qué significa",
+        "normal": "Cuándo es normal",
+        "problem": "Cuándo es problema",
+        "action": "Acción recomendada"
+      },
+      "footer_how": "Cómo se decide el estado:",
+      "footer_order": "Orden de evaluación:",
+      "footer_esc": "Pulsar <code>Esc</code> o hacer clic fuera cierra esta ventana."
+    },
+    "state": {
+      "FRESH": {
+        "meaning": "El colector se ejecutó hace poco y con éxito, y la última ejecución está dentro del intervalo configurado.",
+        "normal": "Es el estado deseado: colector sano, ejecutándose a horario.",
+        "problem": "Nunca es problema. Un retraso de menos de 30 minutos sigue siendo tolerancia normal.",
+        "action": "No se requiere ninguna acción."
+      },
+      "RECENT": {
+        "meaning": "El colector ya se ejecutó antes, pero el retraso supera el intervalo configurado (aún por debajo del doble).",
+        "normal": "En sistemas con mucho paralelismo se espera algo de latencia entre ejecuciones.",
+        "problem": "Si el retraso sigue creciendo o supera el doble del intervalo, investigue: está por quedar detenido.",
+        "action": "Observe la tendencia. Si persiste, abra el detalle y revise el registro de errores."
+      },
+      "QUIET": {
+        "meaning": "Colector basado en eventos (páginas sospechosas, bloqueos mutuos, conmutaciones de Always On, ping, bloqueos prolongados) sin eventos nuevos en el parque.",
+        "normal": "Estado SALUDABLE: significa \"no se detectó ningún problema, el parque funciona\". La hora del último cambio queda congelada por diseño.",
+        "problem": "Nunca es problema. No lo confunda con detenido: aquí el colector está activo, solo que no tiene nada que registrar.",
+        "action": "Ninguna acción. Para confirmar que está vivo, abra el detalle y vea la hora del último cambio y el estado del servicio."
+      },
+      "STALE": {
+        "meaning": "El colector no se ejecuta desde hace demasiado tiempo (retraso mayor al doble del intervalo, sin fallas registradas).",
+        "normal": "Puede ocurrir brevemente tras reiniciar el servicio, o en ventanas de mantenimiento.",
+        "problem": "Si dura más de una hora, el planificador está bloqueado o el colector no tiene recursos. Puede ser señal de una caída silenciosa.",
+        "action": "1) Vea el estado del servicio en la parte superior de la página. 2) Abra el detalle y el registro de errores. 3) Si nada lo explica, reinicie el servicio."
+      },
+      "FAILED": {
+        "meaning": "El colector se ejecutó y generó un error en el último ciclo (fallas en las últimas 24 horas por encima de cero).",
+        "normal": "Una falla aislada puede ser transitoria: red, bloqueo mutuo, tiempo de espera agotado en SQL, escucha momentáneamente sin respuesta.",
+        "problem": "Fallas repetidas (más de tres en 24 horas), o un patrón constante en un mismo servidor, indican un defecto o un problema de infraestructura.",
+        "action": "Abra el detalle y el registro de errores e identifique el error. Si es infraestructura, hable con quien la opera; si es código, abra un reporte."
+      },
+      "DISABLED": {
+        "meaning": "Colector marcado como deshabilitado en la configuración (heredado, reemplazado o en mantenimiento).",
+        "normal": "Estado declarado: esperado para colectores reemplazados por otros más recientes.",
+        "problem": "Si un colector importante queda deshabilitado por error, sus indicadores dejan de alimentarse.",
+        "action": "Revise la lista de deshabilitados de vez en cuando y vuelva a habilitarlo en la configuración si hace falta."
+      },
+      "NEVER_RAN": {
+        "meaning": "Colector registrado que nunca se ejecutó (sin ejecuciones en el historial).",
+        "normal": "Habitual después de instalar un colector nuevo, hasta que el planificador complete el primer ciclo.",
+        "problem": "Si sigue así pasado el doble del intervalo, el planificador no está tomando la tarea.",
+        "action": "Revise los registros del planificador (APScheduler / Task Scheduler) para confirmar que la tarea está registrada."
+      }
+    }
   }
 }

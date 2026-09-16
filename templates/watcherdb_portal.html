@@ -57194,7 +57194,7 @@ WHERE servicename LIKE '%Agent%'` }
             overlay.innerHTML = `
                 <div class="coll-modal">
                     <div class="coll-header">
-                        <h3><i class="fas fa-tower-broadcast" style="color:#ef4444;"></i> Collector Health Monitoring <span class="coll-info-icon" onclick="event.stopPropagation();collOpenStateInfo()" title="Explicar os 7 estados" role="button" tabindex="0">?</span> <span id="coll-service-state" style="margin-left:10px;font-size:11px;"></span></h3>
+                        <h3><i class="fas fa-tower-broadcast" style="color:#ef4444;"></i> Collector Health Monitoring <span class="coll-info-icon" onclick="event.stopPropagation();collOpenStateInfo()" title="Explicar os 7 estados" data-i18n-title="coll.help_icon" role="button" tabindex="0">?</span> <span id="coll-service-state" style="margin-left:10px;font-size:11px;"></span></h3>
                         <div style="display:flex;gap:8px;align-items:center;">
                             <button onclick="collRefresh(true)" class="coll-run-btn" style="background:var(--color-border);"><i class="fas fa-sync-alt"></i> Actualizar</button>
                             <button id="coll-bulk-run-btn" data-write-gated="1" onclick="collBulkRun()" class="coll-run-btn" style="background:#7c3aed;" title="Re-correr todos os tasks visiveis (apos filtros) em paralelo"><i class="fas fa-bolt"></i> Re-run Filtrados</button>
@@ -57897,6 +57897,14 @@ WHERE servicename LIKE '%Agent%'` }
         return _esc(task.last_run || 'Nunca');
     }
 
+    // 2026-09-16: este ecra era o unico do portal sem traducao nenhuma (zero data-i18n, zero t()).
+    // Mesmo padrao do _kpiT(key, fb) da linha ~35450: se a chave faltar, mostra-se o portugues,
+    // nunca a chave crua.
+    const _collT = (chave, pt) => {
+        try { const v = (typeof t === 'function') ? t(chave) : null; return (v && v !== chave) ? v : pt; }
+        catch (e) { return pt; }
+    };
+
     // === Phase 0c: Modal info 7 estados ===
     // 7 entries (FRESH/RECENT/QUIET/STALE/FAILED/DISABLED/NEVER_RAN), cada uma
     // com Significa / Quando e normal / Quando e problema / Accao recomendada.
@@ -57960,24 +57968,27 @@ WHERE servicename LIKE '%Agent%'` }
             m.className = 'coll-state-info-modal';
             m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
             let inner = '<div class="panel">'
-                + '<div class="panel-header"><h3>7 estados do Collector Health</h3>'
-                + '<button class="panel-close" onclick="document.getElementById(\'coll-state-info-modal\').classList.remove(\'show\')" aria-label="Fechar">&times;</button>'
+                + `<div class="panel-header"><h3>${_esc(_collT('coll.state_info.title', '7 estados do Collector Health'))}</h3>`
+                + '<button class="panel-close" onclick="document.getElementById(\'coll-state-info-modal\').classList.remove(\'show\')" aria-label="'
+                + _esc(_collT('coll.close', 'Fechar')) + '">&times;</button>'
                 + '</div><div class="panel-body">';
             COLL_STATE_INFO.forEach(s => {
                 inner += `<div class="coll-state-info-block ${s.cssCls}" id="csi-${s.key}">`
                     + `<span class="label">${s.key}</span>`
                     + `<dl>`
-                    + `<dt>Significa</dt><dd>${_esc(s.meaning)}</dd>`
-                    + `<dt>Quando e normal</dt><dd>${_esc(s.normal)}</dd>`
-                    + `<dt>Quando e problema</dt><dd>${_esc(s.problem)}</dd>`
-                    + `<dt>Accao recomendada</dt><dd>${_esc(s.action)}</dd>`
+                    + `<dt>${_esc(_collT('coll.state_info.label.meaning', 'Significa'))}</dt><dd>${_esc(_collT('coll.state.' + s.key + '.meaning', s.meaning))}</dd>`
+                    + `<dt>${_esc(_collT('coll.state_info.label.normal', 'Quando e normal'))}</dt><dd>${_esc(_collT('coll.state.' + s.key + '.normal', s.normal))}</dd>`
+                    + `<dt>${_esc(_collT('coll.state_info.label.problem', 'Quando e problema'))}</dt><dd>${_esc(_collT('coll.state.' + s.key + '.problem', s.problem))}</dd>`
+                    + `<dt>${_esc(_collT('coll.state_info.label.action', 'Accao recomendada'))}</dt><dd>${_esc(_collT('coll.state.' + s.key + '.action', s.action))}</dd>`
                     + `</dl></div>`;
             });
             inner += '</div>'
                 + '<div class="coll-state-info-footer">'
-                + 'Como decidimos o estado: <code>modules/collector_health/health_calculator.py</code>. '
-                + 'Ordem de avaliacao: NEVER_RAN -> DISABLED -> FAILED -> STALE -> QUIET -> RECENT -> FRESH. '
-                + 'Premir <code>Esc</code> ou clicar fora fecha este modal.'
+                + _esc(_collT('coll.state_info.footer_how', 'Como decidimos o estado:'))
+                + ' <code>modules/collector_health/health_calculator.py</code>. '
+                + _esc(_collT('coll.state_info.footer_order', 'Ordem de avaliacao:'))
+                + ' NEVER_RAN -> DISABLED -> FAILED -> STALE -> QUIET -> RECENT -> FRESH. '
+                + _collT('coll.state_info.footer_esc', 'Premir <code>Esc</code> ou clicar fora fecha este modal.')
                 + '</div></div>';
             m.innerHTML = inner;
             document.body.appendChild(m);

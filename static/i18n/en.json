@@ -3233,5 +3233,65 @@
     "gauge_qry_tip": "Running queries",
     "no_tlog_data": "No transaction log data",
     "no_scheduler_data": "No scheduler data"
+  },
+  "coll": {
+    "help_icon": "Explain the 7 states",
+    "close": "Close",
+    "state_info": {
+      "title": "The 7 Collector Health states",
+      "label": {
+        "meaning": "What it means",
+        "normal": "When it is normal",
+        "problem": "When it is a problem",
+        "action": "Recommended action"
+      },
+      "footer_how": "How the state is decided:",
+      "footer_order": "Evaluation order:",
+      "footer_esc": "Press <code>Esc</code> or click outside to close this window."
+    },
+    "state": {
+      "FRESH": {
+        "meaning": "The collector ran recently and succeeded, and the last run is within the configured interval.",
+        "normal": "This is the desired state — a healthy collector running on schedule.",
+        "problem": "Never a problem. A delay under 30 minutes is still normal tolerance.",
+        "action": "No action needed."
+      },
+      "RECENT": {
+        "meaning": "The collector has run before, but the delay already exceeds the configured interval (still under twice it).",
+        "normal": "On systems with heavy parallelism, some latency between runs is expected.",
+        "problem": "If the delay keeps growing or passes twice the interval, investigate — it is about to go stale.",
+        "action": "Watch the trend. If it persists, open the detail view and check the error log."
+      },
+      "QUIET": {
+        "meaning": "Event-driven collector (suspect pages, deadlocks, Always On failovers, server ping, blocking, long locks) with no new events across the estate.",
+        "normal": "A HEALTHY state — it means \"nothing wrong detected, the estate is working\". The last swap time stays frozen by design.",
+        "problem": "Never a problem. Not the same as stale: here the collector is running, it simply has nothing to record.",
+        "action": "No action. To confirm it is alive, open the detail view and check the last swap time and the service state."
+      },
+      "STALE": {
+        "meaning": "The collector has not run for too long (delay over twice the configured interval, with no failures recorded).",
+        "normal": "Can happen briefly after a service restart, or during maintenance windows.",
+        "problem": "If it lasts over an hour, the scheduler is blocked or the collector is out of resources. It can be a sign of a silent crash.",
+        "action": "1) Check the service state at the top of the page. 2) Open the detail view and the error log. 3) If nothing explains it, restart the service."
+      },
+      "FAILED": {
+        "meaning": "The collector ran and raised an error on the last cycle (failures in the last 24 hours above zero).",
+        "normal": "A single failure can be transient — network, deadlock, SQL timeout, listener briefly unresponsive.",
+        "problem": "Repeated failures (more than three in 24 hours), or a consistent pattern on one server, mean a bug or an infrastructure problem.",
+        "action": "Open the detail view and the error log and identify the error. If it is infrastructure, talk to whoever runs it; if it is code, raise a finding."
+      },
+      "DISABLED": {
+        "meaning": "Collector marked as disabled in the configuration (legacy, superseded, or under maintenance).",
+        "normal": "A declared state — expected for collectors replaced by newer ones.",
+        "problem": "If an important collector is disabled by mistake, its KPIs stop being populated.",
+        "action": "Review the disabled list from time to time and re-enable it in the configuration if needed."
+      },
+      "NEVER_RAN": {
+        "meaning": "Collector registered but never run (no run in the history).",
+        "normal": "Common after deploying a new collector, until the scheduler completes its first cycle.",
+        "problem": "If it stays this way past twice the interval, the scheduler is not picking the job up.",
+        "action": "Check the scheduler logs (APScheduler / Task Scheduler) to confirm the job is registered."
+      }
+    }
   }
 }
