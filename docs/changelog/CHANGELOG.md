@@ -9,6 +9,18 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Collector Health: a janela de silenciar alertas deixa de ser meio inglesa** (owner 16/09). Era a mais
+  misturada do ecrã — "KPI Mute List", "Created By", "Hrs Left" e "Unmute" ao lado de "Adicionar novo mute"
+  e das mensagens de erro em português, e nada disto mudava com o idioma. Passa a estar traduzida nos quatro
+  idiomas, o português deixa o jargão ("silenciar" em vez de "mute", "motivo" em vez de "reason"), e a
+  contagem deixa de ser "N mute(s) activo(s)": tem singular e plural a sério. [tier: Std]
+
+- **Collector Health: barra, filtros e eventos do recolhedor traduzidos** (owner 16/09). Segundo lote do ecrã:
+  botões, filtros de ambiente e estado, pesquisa, mensagem de carregamento e a caixa "Eventos do recolhedor"
+  inteira — título, legenda, colunas, marcas de estado e mensagens. As contagens deixam de ser montadas por
+  concatenação, que dava "1 ativos" em qualquer idioma que não o português. Falta o lote das janelas
+  (silenciar, detalhe e re-correr em massa). [tier: Std]
+
 - **Collector Health: a explicação dos 7 estados passa a falar o idioma escolhido** (owner 16/09). O ecrã era
   o único do portal sem tradução nenhuma — nem uma chave, nem uma chamada ao dicionário — por isso a janela de
   ajuda aparecia sempre em português, mesmo com o portal em inglês. Os 7 estados, os rótulos, o título, o

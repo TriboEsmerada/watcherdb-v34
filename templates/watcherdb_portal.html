@@ -57183,7 +57183,7 @@ WHERE servicename LIKE '%Agent%'` }
         // backend ja autorizava (apanhado pelo v33-modal-auth-gate-checker).
         const role = (window._currentUser && window._currentUser.role || '').toLowerCase();
         if (role !== 'admin' && role !== 'dba') {
-            alert('Acesso restrito a DBA/administradores.');
+            alert(_collT('coll.restricted', 'Acesso restrito a DBA/administradores.'));
             return;
         }
         let overlay = document.getElementById('coll-overlay');
@@ -57196,25 +57196,25 @@ WHERE servicename LIKE '%Agent%'` }
                     <div class="coll-header">
                         <h3><i class="fas fa-tower-broadcast" style="color:#ef4444;"></i> Collector Health Monitoring <span class="coll-info-icon" onclick="event.stopPropagation();collOpenStateInfo()" title="Explicar os 7 estados" data-i18n-title="coll.help_icon" role="button" tabindex="0">?</span> <span id="coll-service-state" style="margin-left:10px;font-size:11px;"></span></h3>
                         <div style="display:flex;gap:8px;align-items:center;">
-                            <button onclick="collRefresh(true)" class="coll-run-btn" style="background:var(--color-border);"><i class="fas fa-sync-alt"></i> Actualizar</button>
-                            <button id="coll-bulk-run-btn" data-write-gated="1" onclick="collBulkRun()" class="coll-run-btn" style="background:#7c3aed;" title="Re-correr todos os tasks visiveis (apos filtros) em paralelo"><i class="fas fa-bolt"></i> Re-run Filtrados</button>
-                            <button class="coll-run-btn" onclick="collToggleMaximize()" title="Expandir/contrair" style="background:var(--color-border);padding:6px 10px;"><i class="fas fa-expand-alt" id="collMaxIcon" aria-hidden="true"></i></button>
+                            <button onclick="collRefresh(true)" class="coll-run-btn" style="background:var(--color-border);"><i class="fas fa-sync-alt"></i> ${_collT('coll.refresh', 'Actualizar')}</button>
+                            <button id="coll-bulk-run-btn" data-write-gated="1" onclick="collBulkRun()" class="coll-run-btn" style="background:#7c3aed;" title="${_collT('coll.bulk_run_title', 'Re-correr todos os tasks visiveis (apos filtros) em paralelo')}"><i class="fas fa-bolt"></i> ${_collT('coll.bulk_run', 'Re-run Filtrados')}</button>
+                            <button class="coll-run-btn" onclick="collToggleMaximize()" title="${_collT('coll.toggle_max', 'Expandir/contrair')}" style="background:var(--color-border);padding:6px 10px;"><i class="fas fa-expand-alt" id="collMaxIcon" aria-hidden="true"></i></button>
                             <button class="coll-close" onclick="collCloseModal()">×</button>
                         </div>
                     </div>
                     <div class="coll-summary" id="coll-summary"></div>
                     <div id="coll-offline-events"></div>
                     <div class="coll-filters">
-                        <label style="color:var(--color-text-tertiary);font-size:11px;">Ambiente:</label>
+                        <label style="color:var(--color-text-tertiary);font-size:11px;">${_collT('coll.filter_env', 'Ambiente:')}</label>
                         <select id="coll-filter-env" onchange="collApplyFilters()">
-                            <option value="">Todos</option>
+                            <option value="">${_collT('coll.all', 'Todos')}</option>
                             <option value="PRD">PRD</option><option value="QA">QA</option>
                             <option value="QLT">QLT</option><option value="TST">TST</option>
                             <option value="SCOM">SCOM</option>
                         </select>
-                        <label style="color:var(--color-text-tertiary);font-size:11px;">Estado:</label>
+                        <label style="color:var(--color-text-tertiary);font-size:11px;">${_collT('coll.filter_state', 'Estado:')}</label>
                         <select id="coll-filter-status" onchange="collApplyFilters()">
-                            <option value="">Todos</option>
+                            <option value="">${_collT('coll.all', 'Todos')}</option>
                             <option value="FRESH">FRESH</option>
                             <option value="RECENT">RECENT</option>
                             <option value="QUIET">QUIET</option>
@@ -57223,11 +57223,11 @@ WHERE servicename LIKE '%Agent%'` }
                             <option value="DISABLED">DISABLED</option>
                             <option value="NEVER_RAN">NEVER_RAN</option>
                         </select>
-                        <input type="text" id="coll-filter-search" placeholder="Pesquisar por nome..." oninput="collDebounceFilter()"/>
+                        <input type="text" id="coll-filter-search" placeholder="${_collT('coll.search_ph', 'Pesquisar por nome...')}" oninput="collDebounceFilter()"/>
                         <span style="margin-left:auto;color:var(--color-text-tertiary);font-size:11px;" id="coll-result-count"></span>
                     </div>
                     <div class="coll-body" id="coll-body">
-                        <div style="padding:40px;text-align:center;color:var(--color-text-tertiary);">A carregar...</div>
+                        <div style="padding:40px;text-align:center;color:var(--color-text-tertiary);">${_collT('coll.loading', 'A carregar...')}</div>
                     </div>
                 </div>`;
             document.body.appendChild(overlay);
@@ -57312,8 +57312,14 @@ WHERE servicename LIKE '%Agent%'` }
         const active = events.filter(e => !e.Is_Resolved);
         const oldCount = active.filter(isOld).length;
         const badgeColor = active.length === 0 ? '#10b981' : (active.length === oldCount ? '#f59e0b' : '#ef4444');
-        const badgeText = active.length === 0 ? 'sem eventos ativos'
-            : active.length + ' ativo' + (active.length > 1 ? 's' : '') + (oldCount > 0 ? ' (' + oldCount + ' antigo' + (oldCount > 1 ? 's' : '') + ')' : '');
+        const badgeText = active.length === 0
+            ? _collT('coll.events.none_active', 'sem eventos ativos')
+            : _collTp(active.length > 1 ? 'coll.events.active_many' : 'coll.events.active_one',
+                      active.length > 1 ? '{n} ativos' : '{n} ativo', { n: active.length })
+              + (oldCount > 0
+                    ? ' ' + _collTp(oldCount > 1 ? 'coll.events.old_many' : 'coll.events.old_one',
+                                    oldCount > 1 ? '({n} antigos)' : '({n} antigo)', { n: oldCount })
+                    : '');
         const chev = _collOfflineExpanded ? 'fa-chevron-up' : 'fa-chevron-down';
         let html = `
             <div style="margin:0 16px 8px 16px;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg-sunken);">
@@ -57321,14 +57327,14 @@ WHERE servicename LIKE '%Agent%'` }
                      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
                      style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;">
                     <i class="fas fa-satellite-dish" style="color:var(--color-text-tertiary);font-size:12px;"></i>
-                    <span style="font-size:12px;color:var(--color-text-secondary);font-weight:600;">Eventos do collector</span>
-                    <span style="font-size:10px;color:var(--color-text-disabled);">timeouts / SQL down vistos pelo collector central no momento da coleta (auto-monitoria, nao frota)</span>
+                    <span style="font-size:12px;color:var(--color-text-secondary);font-weight:600;">${_collT('coll.events.title', 'Eventos do collector')}</span>
+                    <span style="font-size:10px;color:var(--color-text-disabled);">${_collT('coll.events.subtitle', 'timeouts / SQL down vistos pelo collector central no momento da coleta (auto-monitoria, nao frota)')}</span>
                     <span class="coll-badge" style="margin-left:auto;background:${badgeColor}22;color:${badgeColor};">${badgeText}</span>
                     <i class="fas ${chev}" style="color:var(--color-text-tertiary);font-size:11px;"></i>
                 </div>`;
         if (_collOfflineExpanded) {
             if (!events.length) {
-                html += `<div style="padding:12px 16px;color:var(--color-text-tertiary);font-size:12px;border-top:1px solid var(--color-border);">Sem eventos nos ultimos 7 dias.</div>`;
+                html += `<div style="padding:12px 16px;color:var(--color-text-tertiary);font-size:12px;border-top:1px solid var(--color-border);">${_collT('coll.events.empty_7d', 'Sem eventos nos ultimos 7 dias.')}</div>`;
             } else {
                 const fmtDur = (m) => { m = m || 0; return m > 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'min' : m + ' min'; };
                 const th = 'padding:6px 10px;font-size:10px;color:var(--color-text-disabled);text-transform:uppercase;';
@@ -57336,18 +57342,18 @@ WHERE servicename LIKE '%Agent%'` }
                     const resolved = !!ev.Is_Resolved;
                     const old = !resolved && isOld(ev);
                     const st = resolved
-                        ? '<span class="coll-badge" style="background:#10b98122;color:#10b981;">resolvido</span>'
+                        ? '<span class="coll-badge" style="background:#10b98122;color:#10b981;">' + _collT('coll.events.resolved', 'resolvido') + '</span>'
                         : old
-                            ? '<span class="coll-badge" style="background:#f59e0b22;color:#f59e0b;" title="Evento com mais de 24h por resolver — pode ja nao estar ativo. Confirmar na aba Services do servidor antes de agir.">antigo — confirmar</span>'
-                            : '<span class="coll-badge" style="background:#ef444422;color:#ef4444;">ativo</span>';
+                            ? '<span class="coll-badge" style="background:#f59e0b22;color:#f59e0b;" title="' + _collT('coll.events.old_title', 'Evento com mais de 24h por resolver — pode ja nao estar ativo. Confirmar na aba Services do servidor antes de agir.') + '">' + _collT('coll.events.old_badge', 'antigo — confirmar') + '</span>'
+                            : '<span class="coll-badge" style="background:#ef444422;color:#ef4444;">' + _collT('coll.events.active_badge', 'ativo') + '</span>';
                     const when = ev.Event_Time ? String(ev.Event_Time).replace('T', ' ').substring(0, 19) : '—';
-                    const act = resolved ? '—' : '<button onclick="collOfflineResolve(' + (Number(ev.Event_ID) || 0) + ')" style="background:#10b981;color:white;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;">Resolver</button>';
+                    const act = resolved ? '—' : '<button onclick="collOfflineResolve(' + (Number(ev.Event_ID) || 0) + ')" style="background:#10b981;color:white;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;">' + _collT('coll.events.resolve', 'Resolver') + '</button>';
                     const instName = _collOffEsc(ev.Instance || ev.Server_Name || '');
                     return `<tr style="border-top:1px solid var(--color-border);">
                         <td style="padding:6px 10px;font-size:12px;font-weight:600;"><a href="javascript:void(0)"
                             onclick="collOfflineGoTo('${instName}','${_collOffEsc(ev.Diagnosis || '')}')"
                             style="color:var(--color-text-link);text-decoration:none;"
-                            title="Abrir a aba adequada ao diagnostico">${instName || 'N/A'}</a></td>
+                            title="${_collT('coll.events.goto_title', 'Abrir a aba adequada ao diagnostico')}">${instName || 'N/A'}</a></td>
                         <td style="padding:6px 10px;font-size:11px;color:var(--color-text-tertiary);">${_collOffEsc(ev.Env || '—')}</td>
                         <td style="padding:6px 10px;font-size:11px;color:var(--color-text-secondary);">${_collOffEsc(ev.Diagnosis_Desc || ev.Diagnosis || '—')}</td>
                         <td style="padding:6px 10px;font-size:11px;color:var(--color-text-tertiary);white-space:nowrap;">${when}</td>
@@ -57359,19 +57365,19 @@ WHERE servicename LIKE '%Agent%'` }
                 html += `<div style="border-top:1px solid var(--color-border);max-height:260px;overflow-y:auto;">
                     <table style="width:100%;border-collapse:collapse;">
                         <thead><tr>
-                            <th style="${th}text-align:left;">Instancia</th>
-                            <th style="${th}text-align:left;">Env</th>
-                            <th style="${th}text-align:left;">Diagnostico</th>
-                            <th style="${th}text-align:left;">Inicio</th>
-                            <th style="${th}text-align:left;">Duracao</th>
-                            <th style="${th}text-align:center;">Estado</th>
-                            <th style="${th}text-align:center;">Acao</th>
+                            <th style="${th}text-align:left;">${_collT('coll.col.instance', 'Instancia')}</th>
+                            <th style="${th}text-align:left;">${_collT('coll.col.env', 'Env')}</th>
+                            <th style="${th}text-align:left;">${_collT('coll.col.diagnosis', 'Diagnostico')}</th>
+                            <th style="${th}text-align:left;">${_collT('coll.col.start', 'Inicio')}</th>
+                            <th style="${th}text-align:left;">${_collT('coll.col.duration', 'Duracao')}</th>
+                            <th style="${th}text-align:center;">${_collT('coll.col.state', 'Estado')}</th>
+                            <th style="${th}text-align:center;">${_collT('coll.col.action', 'Acao')}</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>
                 </div>`;
                 if (events.length > 50) {
-                    html += `<div style="padding:6px 12px;font-size:10px;color:var(--color-text-disabled);border-top:1px solid var(--color-border);">A mostrar 50 de ${events.length} eventos (7 dias).</div>`;
+                    html += `<div style="padding:6px 12px;font-size:10px;color:var(--color-text-disabled);border-top:1px solid var(--color-border);">${_collTp('coll.events.showing', 'A mostrar 50 de {n} eventos (7 dias).', { n: events.length })}</div>`;
                 }
             }
         }
@@ -57387,7 +57393,7 @@ WHERE servicename LIKE '%Agent%'` }
 
     window.collOfflineResolve = async function(eventId) {
         if (!eventId) return;
-        if (!confirm('Marcar este evento do collector como resolvido?')) return;
+        if (!confirm(_collT('coll.events.confirm_resolve', 'Marcar este evento do collector como resolvido?'))) return;
         try {
             const base = await _collOfflineBase();
             const r = await fetch(base.replace('/dashboard', '/server-offline/resolve/' + eventId), { method: 'POST' });
@@ -57395,7 +57401,7 @@ WHERE servicename LIKE '%Agent%'` }
             if (!r.ok || d.success === false) throw new Error(d.error || ('HTTP ' + r.status));
             collFetchOfflineEvents();
         } catch (e) {
-            alert('Erro ao resolver evento: ' + e.message);
+            alert(_collT('coll.events.resolve_error', 'Erro ao resolver evento:') + ' ' + e.message);
         }
     };
 
@@ -57418,7 +57424,7 @@ WHERE servicename LIKE '%Agent%'` }
         // 2026-08-21: dba||admin — alinhado ao backend _require_dba (kpi_mute.py:42,
         // decisao owner 2026-08-16); estava admin-only (v33-modal-auth-gate-checker).
         if (role !== 'admin' && role !== 'dba') {
-            alert('Acesso restrito a DBA/administradores.');
+            alert(_collT('coll.restricted', 'Acesso restrito a DBA/administradores.'));
             return;
         }
         let overlay = document.getElementById('kpi-mute-overlay');
@@ -57430,47 +57436,47 @@ WHERE servicename LIKE '%Agent%'` }
                 <div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;width:90%;max-width:1100px;max-height:85vh;display:flex;flex-direction:column;">
                     <div style="padding:16px 20px;border-bottom:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:center;">
                         <h3 style="margin:0;color:var(--color-text-primary);">
-                            <i class="fas fa-bell-slash" style="color:#f59e0b;"></i> KPI Mute List
-                            <span style="font-size:12px;color:var(--color-text-tertiary);font-weight:normal;margin-left:8px;">Smart Defaults Initiative camada 1 -- silenciar alertas por instance</span>
+                            <i class="fas fa-bell-slash" style="color:#f59e0b;"></i> ${_collT('coll.mute.title', 'KPI Mute List')}
+                            <span style="font-size:12px;color:var(--color-text-tertiary);font-weight:normal;margin-left:8px;">${_collT('coll.mute.subtitle', 'silenciar alertas por instance')}</span>
                         </h3>
                         <div style="display:flex;gap:8px;">
                             <button onclick="kpiMuteRefresh()" style="background:var(--color-border);color:var(--color-text-secondary);border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;">
-                                <i class="fas fa-sync-alt"></i> Refresh
+                                <i class="fas fa-sync-alt"></i> ${_collT('coll.refresh', 'Actualizar')}
                             </button>
                             <button onclick="kpiMuteCloseModal()" style="background:transparent;color:var(--color-text-tertiary);border:none;font-size:24px;cursor:pointer;">&times;</button>
                         </div>
                     </div>
                     <div style="padding:16px 20px;background:rgba(245,158,11,0.05);border-bottom:1px solid var(--color-border);">
                         <h4 style="margin:0 0 10px 0;color:#fbbf24;font-size:13px;">
-                            <i class="fas fa-plus-circle"></i> Adicionar novo mute
+                            <i class="fas fa-plus-circle"></i> ${_collT('coll.mute.add', 'Adicionar novo mute')}
                         </h4>
                         <div style="display:grid;grid-template-columns:180px 220px 1fr 100px 100px;gap:8px;align-items:end;">
                             <div>
-                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">KPI Type</label>
-                                <input type="text" id="kpi-mute-input-type" placeholder="ex: backup-failed" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;font-family:monospace;"/>
+                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">${_collT('coll.mute.f_kpi', 'KPI Type')}</label>
+                                <input type="text" id="kpi-mute-input-type" placeholder="${_collT('coll.mute.ph_kpi', 'ex: backup-failed')}" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;font-family:monospace;"/>
                             </div>
                             <div>
-                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">Instance</label>
-                                <input type="text" id="kpi-mute-input-instance" placeholder="ex: SQLHDSPRD302_I01" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;font-family:monospace;"/>
+                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">${_collT('coll.mute.f_instance', 'Instance')}</label>
+                                <input type="text" id="kpi-mute-input-instance" placeholder="${_collT('coll.mute.ph_instance', 'ex: SQLHDSPRD302_I01')}" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;font-family:monospace;"/>
                             </div>
                             <div>
-                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">Reason (min 10 chars)</label>
-                                <input type="text" id="kpi-mute-input-reason" placeholder="ex: manutencao planeada CR-12345 ate 2026-06-01" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;"/>
+                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">${_collT('coll.mute.f_reason', 'Reason (min 10 chars)')}</label>
+                                <input type="text" id="kpi-mute-input-reason" placeholder="${_collT('coll.mute.ph_reason', 'ex: manutencao planeada CR-12345 ate 2026-06-01')}" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;"/>
                             </div>
                             <div>
-                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">Mute Hours</label>
+                                <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">${_collT('coll.mute.f_hours', 'Mute Hours')}</label>
                                 <input type="number" id="kpi-mute-input-hours" value="24" min="1" max="720" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;"/>
                             </div>
                             <button data-write-gated="1" onclick="kpiMuteCreate()" style="padding:7px 12px;background:#f59e0b;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">
-                                <i class="fas fa-plus"></i> Mute
+                                <i class="fas fa-plus"></i> ${_collT('coll.mute.btn', 'Mute')}
                             </button>
                         </div>
                         <div style="margin-top:8px;font-size:10px;color:var(--color-text-disabled);">
-                            Max 720h (30 dias). Reason e Mute_Until obrigatorios (audit + no permanent mutes).
+                            ${_collT('coll.mute.note', 'Max 720h (30 dias). Reason e Mute_Until obrigatorios (audit + no permanent mutes).')}
                         </div>
                     </div>
                     <div id="kpi-mute-body" style="flex:1;overflow-y:auto;padding:16px 20px;">
-                        <div style="text-align:center;padding:40px;color:var(--color-text-tertiary);">A carregar...</div>
+                        <div style="text-align:center;padding:40px;color:var(--color-text-tertiary);">${_collT('coll.loading', 'A carregar...')}</div>
                     </div>
                 </div>
             `;
@@ -57488,7 +57494,7 @@ WHERE servicename LIKE '%Agent%'` }
     async function kpiMuteRefresh() {
         const body = document.getElementById('kpi-mute-body');
         if (!body) return;
-        body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--color-text-tertiary);">A carregar...</div>';
+        body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--color-text-tertiary);">' + _collT('coll.loading', 'A carregar...') + '</div>';
         try {
             const token = localStorage.getItem('watcherdb_token');
             const r = await fetch('/api/v1/kpi-mute', {
@@ -57498,7 +57504,9 @@ WHERE servicename LIKE '%Agent%'` }
             const data = await r.json();
             const mutes = data.mutes || [];
             if (mutes.length === 0) {
-                body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--color-text-tertiary);"><i class="fas fa-bell" style="font-size:32px;color:var(--color-border-strong);margin-bottom:10px;"></i><br>Nenhum mute activo. <br><span style="font-size:11px;">Smart Defaults active -- todos KPIs alertando normalmente.</span></div>';
+                body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--color-text-tertiary);"><i class="fas fa-bell" style="font-size:32px;color:var(--color-border-strong);margin-bottom:10px;"></i><br>'
+                    + _collT('coll.mute.empty', 'Nenhum mute activo.')
+                    + ' <br><span style="font-size:11px;">' + _collT('coll.mute.empty_sub', 'Todos KPIs alertando normalmente.') + '</span></div>';
                 return;
             }
             const rows = mutes.map(m => {
@@ -57518,29 +57526,29 @@ WHERE servicename LIKE '%Agent%'` }
                         <td style="padding:8px 6px;color:var(--color-text-disabled);font-size:11px;">${muteUntil.toISOString().slice(0, 16).replace('T', ' ')}</td>
                         <td style="padding:8px 6px;text-align:center;">
                             <button data-write-gated="1" onclick="kpiMuteDelete('${safeKpi}', '${safeInst}')" style="background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#fca5a5;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:10px;">
-                                <i class="fas fa-trash"></i> Unmute
+                                <i class="fas fa-trash"></i> ${_collT('coll.mute.unmute', 'Unmute')}
                             </button>
                         </td>
                     </tr>`;
             }).join('');
             body.innerHTML = `
-                <div style="margin-bottom:10px;color:var(--color-text-tertiary);font-size:12px;">${mutes.length} mute(s) activo(s)</div>
+                <div style="margin-bottom:10px;color:var(--color-text-tertiary);font-size:12px;">${_collTp(mutes.length === 1 ? 'coll.mute.count_one' : 'coll.mute.count_many', mutes.length === 1 ? '{n} mute activo' : '{n} mutes activos', { n: mutes.length })}</div>
                 <table style="width:100%;border-collapse:collapse;">
                     <thead>
                         <tr style="border-bottom:2px solid var(--color-border);text-align:left;">
-                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">KPI Type</th>
-                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">Instance</th>
-                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">Reason</th>
-                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">Created By</th>
-                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">Hrs Left</th>
-                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">Until (UTC)</th>
-                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;width:80px;">Action</th>
+                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">${_collT('coll.mute.f_kpi', 'KPI Type')}</th>
+                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">${_collT('coll.col.instance', 'Instance')}</th>
+                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">${_collT('coll.mute.col_reason', 'Reason')}</th>
+                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">${_collT('coll.mute.col_created_by', 'Created By')}</th>
+                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">${_collT('coll.mute.col_hrs_left', 'Hrs Left')}</th>
+                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;">${_collT('coll.mute.col_until', 'Until (UTC)')}</th>
+                            <th style="padding:8px 6px;color:var(--color-text-tertiary);font-size:11px;font-weight:600;width:80px;">${_collT('coll.col.action', 'Action')}</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>`;
         } catch (e) {
-            body.innerHTML = `<div style="padding:20px;color:#fca5a5;">Erro: ${e.message}</div>`;
+            body.innerHTML = `<div style="padding:20px;color:#fca5a5;">${_collT('coll.mute.err_load', 'Erro:')} ${e.message}</div>`;
         }
     }
 
@@ -57550,15 +57558,15 @@ WHERE servicename LIKE '%Agent%'` }
         const reason = document.getElementById('kpi-mute-input-reason').value.trim();
         const hours = parseInt(document.getElementById('kpi-mute-input-hours').value, 10);
         if (!kpiType || !instance || !reason) {
-            alert('KPI Type, Instance e Reason obrigatorios.');
+            alert(_collT('coll.mute.val_required', 'KPI Type, Instance e Reason obrigatorios.'));
             return;
         }
         if (reason.length < 10) {
-            alert('Reason minimo 10 caracteres (audit trail).');
+            alert(_collT('coll.mute.val_reason', 'Reason minimo 10 caracteres (audit trail).'));
             return;
         }
         if (!hours || hours < 1 || hours > 720) {
-            alert('Mute Hours entre 1 e 720 (30 dias max).');
+            alert(_collT('coll.mute.val_hours', 'Mute Hours entre 1 e 720 (30 dias max).'));
             return;
         }
         try {
@@ -57577,12 +57585,12 @@ WHERE servicename LIKE '%Agent%'` }
             document.getElementById('kpi-mute-input-reason').value = '';
             await kpiMuteRefresh();
         } catch (e) {
-            alert('Erro a criar mute: ' + e.message);
+            alert(_collT('coll.mute.err_create', 'Erro a criar mute:') + ' ' + e.message);
         }
     }
 
     async function kpiMuteDelete(kpiType, instance) {
-        if (!confirm(`Remover mute "${kpiType}" para "${instance}"?\n\nKPI volta a alertar imediatamente.`)) return;
+        if (!confirm(_collTp('coll.mute.confirm_delete', 'Remover mute "{kpi}" para "{inst}"?\n\nKPI volta a alertar imediatamente.', { kpi: kpiType, inst: instance }))) return;
         try {
             const token = localStorage.getItem('watcherdb_token');
             const r = await fetch('/api/v1/kpi-mute/' + encodeURIComponent(kpiType) + '/' + encodeURIComponent(instance), {
@@ -57592,7 +57600,7 @@ WHERE servicename LIKE '%Agent%'` }
             if (!r.ok) throw new Error('HTTP ' + r.status);
             await kpiMuteRefresh();
         } catch (e) {
-            alert('Erro a remover mute: ' + e.message);
+            alert(_collT('coll.mute.err_delete', 'Erro a remover mute:') + ' ' + e.message);
         }
     }
 
@@ -57903,6 +57911,12 @@ WHERE servicename LIKE '%Agent%'` }
     const _collT = (chave, pt) => {
         try { const v = (typeof t === 'function') ? t(chave) : null; return (v && v !== chave) ? v : pt; }
         catch (e) { return pt; }
+    };
+    // Com marcadores {n}. Contagens nao se fazem por concatenacao ("1 ativos"): cada caso tem chave propria.
+    const _collTp = (chave, pt, vals) => {
+        let s = _collT(chave, pt);
+        Object.keys(vals || {}).forEach(k => { s = s.split('{' + k + '}').join(vals[k]); });
+        return s;
     };
 
     // === Phase 0c: Modal info 7 estados ===

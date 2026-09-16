@@ -253,6 +253,31 @@
     "loading_program": "Carregando {program}..."
   },
   "coll": {
+    "mute": {
+      "subtitle": "silenciar os alertas de um KPI em uma instância, por tempo limitado",
+      "note": "No máximo 720 horas (30 dias). O motivo e a data de fim são obrigatórios: não há silêncios permanentes, e fica registrado quem silenciou.",
+      "empty_sub": "Todos os KPIs estão alertando normalmente.",
+      "val_reason": "O motivo precisa ter pelo menos 10 caracteres — fica em registro.",
+      "val_hours": "As horas precisam estar entre 1 e 720 (no máximo 30 dias).",
+      "unmute": "Reativar",
+      "confirm_delete": "Reativar os alertas de \"{kpi}\" em \"{inst}\"?\n\nO KPI volta a alertar imediatamente.",
+      "err_delete": "Não foi possível reativar:"
+    },
+    "search_ph": "Pesquisar por nome...",
+    "events": {
+      "title": "Eventos do coletor",
+      "subtitle": "tempos esgotados e SQL fora do ar, vistos pelo coletor central no momento da coleta (automonitoramento, não é o parque)",
+      "none_active": "sem eventos ativos",
+      "active_one": "{n} ativo",
+      "active_many": "{n} ativos",
+      "active_badge": "ativo",
+      "old_title": "Evento com mais de 24 horas sem resolver — pode já não estar ativo. Confirme na aba Serviços do servidor antes de agir.",
+      "goto_title": "Abrir a aba adequada ao diagnóstico",
+      "confirm_resolve": "Marcar este evento do coletor como resolvido?"
+    },
+    "col": {
+      "action": "Ação"
+    },
     "state_info": {
       "label": {
         "action": "Ação recomendada"
