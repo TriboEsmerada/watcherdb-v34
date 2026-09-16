@@ -3171,33 +3171,42 @@ async def api_sql_errors(server_id: str, hours: int = 24):
         DECLARE @start DATETIME = DATEADD(HOUR, -{int(hours)}, GETDATE());
 
         CREATE TABLE #errorlog (
+            Seq INT IDENTITY(1,1),      -- 2026-09-16: ordem de leitura; liga o cabecalho "Error: N" a` linha seguinte
             LogDate DATETIME,
             ProcessInfo NVARCHAR(100),
             Text NVARCHAR(MAX)
         );
 
         BEGIN TRY
-            INSERT INTO #errorlog EXEC xp_readerrorlog 0, 1, NULL, NULL, @start;
+            INSERT INTO #errorlog (LogDate, ProcessInfo, Text) EXEC xp_readerrorlog 0, 1, NULL, NULL, @start;
         END TRY
         BEGIN CATCH
             -- Se falhar, tentar sp_readerrorlog
             BEGIN TRY
-                INSERT INTO #errorlog EXEC sp_readerrorlog 0, 1, NULL, NULL, @start;
+                INSERT INTO #errorlog (LogDate, ProcessInfo, Text) EXEC sp_readerrorlog 0, 1, NULL, NULL, @start;
             END TRY
             BEGIN CATCH
                 -- Silenciar - tabela ficara vazia
             END CATCH
         END CATCH
 
+        -- 2026-09-16: cada erro sao DUAS linhas (cabecalho "Error: N, Severity, State" + mensagem) no mesmo spid.
+        -- A linha anterior e' cabecalho? Entao esta e' a continuacao e vem sempre, mesmo sem palavra da lista.
+        -- A exclusao das informativas saiu daqui: e' decidida depois de emparelhar (api/errorlog_pairs.py).
+        ;WITH L AS (
+            SELECT Seq, LogDate, ProcessInfo, Text,
+                   CASE WHEN LAG(Text) OVER (PARTITION BY ProcessInfo ORDER BY Seq)
+                             LIKE 'Error: %, Severity: %, State: %' THEN 1 ELSE 0 END AS PrevIsHeader
+            FROM #errorlog
+        )
         SELECT
             LogDate,
             ProcessInfo,
             Text
-        FROM #errorlog
+        FROM L
         WHERE Text NOT LIKE '%Login succeeded%'
             AND Text NOT LIKE '%found 0 errors%'
             AND Text NOT LIKE '%CHECKDB%0 errors%'
-            AND Text NOT LIKE '%This is an informational message%'
             AND Text NOT LIKE '%Setting database option%'
             AND Text NOT LIKE '%Starting up database%'
             AND Text NOT LIKE '%Recovery is complete%'
@@ -3227,8 +3236,9 @@ async def api_sql_errors(server_id: str, hours: int = 24):
                 OR Text LIKE '%Severity: 1[7-9]%'
                 OR Text LIKE '%Severity: 2[0-5]%'
                 OR ProcessInfo = 'Backup'
+                OR PrevIsHeader = 1
             )
-        ORDER BY LogDate DESC;
+        ORDER BY Seq;
 
         DROP TABLE #errorlog;
         """
@@ -3250,48 +3260,10 @@ async def api_sql_errors(server_id: str, hours: int = 24):
 
         if result and len(result) > 0:
             source_method = 'xp_readerrorlog'
-            for row in result:
-                log_date = row.get('LogDate', '')
-                text = row.get('Text', '')
-                process_info = row.get('ProcessInfo', '')
-
-                # Tentar extrair severity do texto
-                severity = None
-                import re
-                sev_match = re.search(r'Severity:\s*(\d+)', text)
-                if sev_match:
-                    severity = int(sev_match.group(1))
-
-                # Tentar extrair error number
-                err_match = re.search(r'Error:\s*(\d+)', text)
-                error_number = int(err_match.group(1)) if err_match else None
-
-                # Classificar severidade para display
-                if severity and severity >= 17:
-                    display_severity = 'ERROR'
-                elif severity and severity >= 11:
-                    display_severity = 'WARNING'
-                elif 'fail' in text.lower() or 'error' in text.lower():
-                    display_severity = 'WARNING'
-                else:
-                    display_severity = 'INFO'
-
-                errors.append({
-                    'error_date': str(log_date) if log_date else '',
-                    'errorDate': str(log_date) if log_date else '',
-                    'log_date': str(log_date) if log_date else '',
-                    'error_severity': severity or display_severity,
-                    'severity': display_severity,
-                    'error_number': error_number,
-                    'errorNumber': error_number,
-                    'error_message': text,
-                    'message': text,
-                    'text': text,
-                    'process_info': process_info,
-                    'database_name': None,
-                    'databaseName': None,
-                    'source': 'xp_readerrorlog'
-                })
+            # 2026-09-16: o cabecalho "Error: N, Severity, State" e a mensagem que se lhe segue passam a ser
+            # UMA linha, com a base de dados e o nivel certos (informativa -> INFO). Ver api/errorlog_pairs.py.
+            from api.errorlog_pairs import emparelhar_errorlog
+            errors.extend(emparelhar_errorlog(result))
 
             logger.info(f"[SQL Errors] xp_readerrorlog retornou {len(errors)} erros para {server_id}")
         else:

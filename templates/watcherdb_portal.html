@@ -23374,6 +23374,9 @@
             };
             // Classifica um erro SQL numa de 3 buckets
             const classifySqlLevel = (err) => {
+                // 2026-09-16: se o servidor ja emparelhou o cabecalho com a mensagem e ela e' informativa
+                // ("This is an informational message"), o nivel e' INFO mesmo com Severity 16 no cabecalho.
+                if (String(err.severity || '').toUpperCase() === 'INFO') return 'INFO';
                 const sev = String(err.error_severity || err.severity || err.error_number || '').toUpperCase();
                 if (['16','17','18','19','20','21','22','CRITICAL','ERROR'].includes(sev)) return 'ERRO';
                 if (sev === 'WARNING' || sev === '14' || sev === '15' || sev === 'WARN') return 'AVISO';
@@ -23495,7 +23498,9 @@
             // Filtro por categoria: sempre explicito (vem do caller ou dos chips)
             window._logCatFilter = currentCatFilter || null;
             // Filtros por coluna (texto por coluna, aplicados em applyRowFilters)
-            window._logColFilter = window._logColFilter || { win: {}, sql: {} };
+            // 2026-09-16 (owner): a tabela SQL nasce filtrada por ERRO -- e' o que se procura quando se abre a aba.
+            // O utilizador pode apagar o filtro; o valor persiste na sessao como qualquer outro.
+            window._logColFilter = window._logColFilter || { win: {}, sql: { level: 'ERRO' } };
 
             // Guardar dados raw + counts para os handlers de re-render
             // _logTableData: dados originais (todos), filtrados depois pelo extractor

@@ -9,6 +9,26 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **O caminho legado de ligação à frota passa a usar as credenciais do pool** (16/09, Regra de Ouro #2, lote B).
+  O LIVE, o Overview, o Always On e os logs de serviço ligavam com a identidade de Windows do serviço; passam
+  a ligar como `sql_monitoring` nos servidores da allowlist, decidido num único sítio, e mantêm a identidade de
+  Windows fora dela. A leitura do *default trace* nos logs de serviço fica desligada por interruptor: exige um
+  grant que a conta não tem, e rotulava criações de objectos como arranques do serviço; os arranques reais
+  continuam a vir do errorlog. [tier: Std]
+
+- **Collector Health: cada tarefa passa a olhar para a linha do seu ambiente** (owner 16/09). A tabela de
+  estado tem uma linha por ambiente (PRD/QA/TST) para a mesma tabela; o quadro indexava só pelo nome da tabela
+  e ficava com a última a chegar — as tarefas PRD de Always On, filas de AG e Mirroring apareciam paradas há
+  158 dias (a data do TST) enquanto faziam swap todos os dias. Os QA/TST dessas famílias continuam antigos por
+  não terem alvos nesses ambientes; classificá-los como "sem alvo" fica proposto. [tier: Std]
+
+- **Aba Log: cada erro do SQL Server traz a sua mensagem, e a tabela abre filtrada por erros** (owner 16/09).
+  O SQL Server escreve cada erro em duas linhas — o cabeçalho `Error: N, Severity, State` e, a seguir, a
+  mensagem — e o ecrã mostrava só o cabeçalho, porque a segunda linha caía nos filtros. Passam a ser uma linha,
+  com a base de dados extraída e o nível certo: quando o próprio SQL Server diz que é informativa (como o 41145
+  no arranque de um grupo de disponibilidade), deixa de aparecer como erro. O filtro de nível nasce em ERRO.
+  [tier: Std]
+
 - **Ligações à frota fora do pool passam a usar a ligação do pool** (16/09, Regra de Ouro #2). Duas consultas de
   trabalhos do dashboard abriam, para cada um dos ~62 servidores, uma ligação com a identidade de Windows do
   serviço e pelo SQL Browser; passam a usar a string do pool central — conta `sql_monitoring` na allowlist, IP e
