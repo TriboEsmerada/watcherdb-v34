@@ -72,6 +72,8 @@ def test_o_aviso_nomeia_a_coluna_e_o_script():
 def test_a_degradacao_continua_a_nao_rebentar_o_login():
     """O aviso substitui o `pass`, mas a excepcao continua apanhada: o login tem de responder."""
     i = AUTH.index("# Check must_change_password flag")
-    bloco = AUTH[i:i + 700]
+    # 2026-09-16: era AUTH[i:i+700]. O lote da tarde acrescentou comentarios ao bloco e o `except` saiu
+    # da janela -- teste vermelho sem defeito nenhum. Delimitar pelo fim real do bloco, nao por contagem.
+    bloco = AUTH[i:AUTH.index("response = JSONResponse(content=result)", i)]
     assert "except Exception as exc:" in bloco
     assert "raise" not in bloco
