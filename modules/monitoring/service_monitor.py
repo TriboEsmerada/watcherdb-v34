@@ -737,8 +737,20 @@ class SQLServiceMonitor:
             logger.error(f"Erro ao buscar SQL Error Log de {server}: {e}", exc_info=True)
             return []
     
+    # 2026-09-16 (Regra de Ouro #2, lote B): a leitura do default trace fica DESLIGADA ate' haver grant.
+    #  - sys.fn_trace_gettable exige ALTER TRACE, que a conta sql_monitoring nao tem (LEAST_PRIVILEGE_SETUP.sql);
+    #    com o caminho legado a ligar pelo pool, esta leitura falharia nos 62 servidores da allowlist.
+    #  - E a funcao rotulava os EventClass 46/47 como "Server Start/Stop" quando 46/47 sao Object:Created/Deleted:
+    #    mostrava criacoes de objectos como arranques do servico. Os arranques e paragens reais ja vem do errorlog
+    #    (get_sql_error_logs, via xp_readerrorlog, que esta' no grant).
+    #  Quando ALTER TRACE entrar na revisao de grants, por a True e corrigir os rotulos (18 = Audit Server Starts And Stops).
+    DEFAULT_TRACE_ENABLED = False
+
     def get_default_trace_logs(self, server: str, instance: Optional[str] = None, hours: int = 24) -> List[Dict]:
         """Obtém logs do Default Trace do SQL Server (Event Classes 46, 47, 164)"""
+        if not self.DEFAULT_TRACE_ENABLED:
+            logger.debug("Default Trace desligado (sem ALTER TRACE para sql_monitoring; rotulos 46/47 errados) -- ver service_monitor.py")
+            return []
         try:
             from modules.monitoring.monitoring import ConnectionPool, ConnectionInfo
 

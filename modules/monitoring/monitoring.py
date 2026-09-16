@@ -24,6 +24,30 @@ logger = logging.getLogger(__name__)
 
 # === CONNECTION POOL MANUAL ===
 
+def _credenciais_do_pool(server: str, instance: str):
+    """(username, password) do pool central para este servidor, ou None.
+
+    2026-09-16 (Regra de Ouro #2, lote B): o caminho legado montava Trusted_Connection com a identidade de dominio
+    do servico. Agora pergunta ao pool central -- que ja decide pela allowlist do SQL Auth e pelas credenciais do
+    servers.json -- e so' usa SQL Auth quando o pool tambem usaria. Fora da allowlist (ex.: OATXP01) ou sem
+    credenciais completas, devolve None e o chamador mantem a identidade de Windows. FAIL-OPEN: qualquer erro
+    aqui e' "sem credenciais", nunca uma ligacao partida.
+    """
+    try:
+        from api.connection_pool import get_sql_server_pool
+        pool = get_sql_server_pool()
+        inst = (instance or "").strip()
+        server_id = f"{server}_{inst}" if inst and inst.upper() != "DEFAULT" else server
+        if not pool._sql_auth_enabled_for(server_id):
+            return None
+        creds = pool._resolve_credentials(server_id)
+        if not creds or creds.get("use_windows_auth") or not creds.get("username") or not creds.get("password"):
+            return None
+        return creds["username"], creds["password"]
+    except Exception:
+        return None
+
+
 @dataclass
 class ConnectionInfo:
     """Informações de conexão SQL Server"""
@@ -54,6 +78,15 @@ class ConnectionInfo:
 
     def get_connection_string(self) -> str:
         """Gera connection string pyodbc"""
+        # 2026-09-16 (Regra de Ouro #2, lote B): com use_windows_auth=True, as credenciais vem do pool central
+        # quando o servidor esta' na allowlist do SQL Auth; senao mantem-se a identidade de Windows.
+        use_windows = self.use_windows_auth
+        username, password = self.username, self.password
+        if use_windows:
+            creds = _credenciais_do_pool(self.server, self.instance)
+            if creds:
+                use_windows = False
+                username, password = creds
         # Para instâncias nomeadas com porta configurada:
         #   - Usar SERVER=host,port (conexão directa — bypassa SQL Browser)
         #   - Isto resolve o problema de SQL Browser bloqueado por firewall
@@ -79,7 +112,7 @@ class ConnectionInfo:
             else:
                 server_full = self.server
 
-        if self.use_windows_auth:
+        if use_windows:
             conn_str = (
                 f"DRIVER={{ODBC Driver 17 for SQL Server}};"
                 f"SERVER={server_full};"
@@ -96,8 +129,8 @@ class ConnectionInfo:
                 f"DRIVER={{ODBC Driver 17 for SQL Server}};"
                 f"SERVER={server_full};"
                 f"DATABASE={self.database};"
-                f"UID={self.username};"
-                f"PWD={self.password};"
+                f"UID={username};"
+                f"PWD={password};"
                 f"TrustServerCertificate=yes;"
                 f"Connection Timeout={self.connection_timeout};"
             )
@@ -833,25 +866,7 @@ class SQLServerMonitoring:
         role_info = await self.check_alwayson_role(server, instance)
         return role_info.get('is_primary', True) or not role_info.get('has_alwayson', False)
 
-    def _build_connection_string(self, server_config: dict) -> str:
-        """Build SQL Server connection string with Windows Auth"""
-        host = server_config.get('host', server_config.get('server', ''))
-        instance = server_config.get('instance', 'DEFAULT')
-        
-        if instance and instance != 'DEFAULT':
-            server_address = f"{host}\\{instance}"
-        else:
-            server_address = host
-        
-        conn_str = (
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={server_address};"
-            f"Trusted_Connection=yes;"
-            f"TrustServerCertificate=yes;"
-            f"Connection Timeout=10;"
-        )
-        
-        return conn_str
+    # 2026-09-16 (Regra de Ouro #2): _build_connection_string(server_config), Trusted-only e sem chamadores, saiu.
 
     def get_pool_stats(self) -> Dict[str, Any]:
         """Estatísticas do connection pool"""
