@@ -3367,7 +3367,7 @@
     "loading": "Cargando...",
     "events": {
       "title": "Eventos del colector",
-      "subtitle": "tiempos de espera agotados y SQL caído, vistos por el colector central al momento de la recolección (automonitoreo, no el parque)",
+      "subtitle": "tiempos de espera agotados y SQL caído, vistos por el colector central al momento de la recolección (automonitoreo, no la flota)",
       "none_active": "sin eventos activos",
       "active_one": "{n} activo",
       "active_many": "{n} activos",
@@ -3433,8 +3433,8 @@
         "action": "Observe la tendencia. Si persiste, abra el detalle y revise el registro de errores."
       },
       "QUIET": {
-        "meaning": "Colector basado en eventos (páginas sospechosas, bloqueos mutuos, conmutaciones de Always On, ping, bloqueos prolongados) sin eventos nuevos en el parque.",
-        "normal": "Estado SALUDABLE: significa \"no se detectó ningún problema, el parque funciona\". La hora del último cambio queda congelada por diseño.",
+        "meaning": "Colector basado en eventos (páginas sospechosas, bloqueos mutuos, conmutaciones de Always On, ping, bloqueos prolongados) sin eventos nuevos en la flota.",
+        "normal": "Estado SALUDABLE: significa \"no se detectó ningún problema, la flota funciona\". La hora del último cambio queda congelada por diseño.",
         "problem": "Nunca es problema. No lo confunda con detenido: aquí el colector está activo, solo que no tiene nada que registrar.",
         "action": "Ninguna acción. Para confirmar que está vivo, abra el detalle y vea la hora del último cambio y el estado del servicio."
       },

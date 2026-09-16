@@ -3236,7 +3236,7 @@
   },
   "coll": {
     "run": {
-      "need_enable": "Para executar esta tarefa, active primeiro a recolha no botão Activar.",
+      "need_enable": "Para executar esta tarefa, ative primeiro a recolha no botão Ativar.",
       "confirm": "Executar \"{nome}\" agora?",
       "st_registering": "A registar o pedido",
       "st_pending": "À espera de execução",
@@ -3257,23 +3257,23 @@
       "close": "Fechar"
     },
     "bulk": {
-      "none": "Nenhuma tarefa activa entre as visíveis. Ajuste os filtros, ou active as tarefas primeiro.",
+      "none": "Nenhuma tarefa ativa entre as visíveis. Ajuste os filtros, ou ative as tarefas primeiro.",
       "confirm_title": "Re-correr as tarefas filtradas",
       "confirm_count": "Vão ser disparadas {n} tarefas ao mesmo tempo:",
       "confirm_more": "... e mais {n} tarefas",
-      "confirm_skipped": "({n} tarefas desactivadas ficam de fora)",
+      "confirm_skipped": "({n} tarefas desativadas ficam de fora)",
       "confirm_ask": "Confirma?",
       "dispatching": "A disparar {n}...",
       "done_title": "Re-execução terminada:",
       "done_ok": "Disparadas: {ok} de {n}",
       "done_failed": "Falharam ao disparar: {n}",
       "done_failed_list": "Tarefas que falharam (as 5 primeiras):",
-      "done_note": "As tarefas disparadas ficaram em fila. Carregue em Actualizar daqui a um minuto para ver o progresso."
+      "done_note": "As tarefas disparadas ficaram em fila. Carregue em Atualizar daqui a um minuto para ver o progresso."
     },
     "toggle": {
       "word_on": "ACTIVAR",
       "word_off": "DESACTIVAR",
-      "prompt": "{accao} \"{nome}\"?\n\nMotivo (obrigatório, pelo menos 20 caracteres):\nExemplo: Reactivar para validar a correcção no recolhedor de páginas suspeitas",
+      "prompt": "{accao} \"{nome}\"?\n\nMotivo (obrigatório, pelo menos 20 caracteres):\nExemplo: Reativar para validar a correção no recolhedor de páginas suspeitas",
       "too_short": "Motivo demasiado curto ({n} caracteres). São precisos pelo menos 20.\n\nÉ isto que deixa rasto de quem mudou o quê, e porquê.",
       "processing": "A processar..."
     },
@@ -3285,7 +3285,7 @@
       "tab_audit": "Alterações",
       "environment": "Ambiente",
       "interval": "Intervalo",
-      "enabled": "Activo",
+      "enabled": "Ativo",
       "status": "Estado",
       "data_source": "Fonte de dados",
       "last_run": "Última passagem",
@@ -3293,7 +3293,7 @@
       "duration": "Duração do último ciclo",
       "rows": "Linhas recolhidas",
       "rows_title": "Linhas inseridas na tabela de passagem no último ciclo (não é o número de servidores)",
-      "active_slot": "Lado activo",
+      "active_slot": "Lado ativo",
       "failures_24h": "Falhas nas últimas 24 horas",
       "class": "Classe",
       "module": "Módulo",
@@ -3303,7 +3303,7 @@
       "no": "Não",
       "minutes": "min",
       "ds_bg": "Blue/Green (KPI_STG_ACTIVE_TABLE)",
-      "ds_max": "MAX(Update_TS) directo da tabela (sem Blue/Green)",
+      "ds_max": "MAX(Update_TS) direto da tabela (sem Blue/Green)",
       "ds_none": "Sem registos recentes (sem Blue/Green)",
       "loading_logs": "A carregar os erros...",
       "empty_logs": "Sem erros registados para esta tarefa.",
@@ -3311,19 +3311,19 @@
       "config_source": "Origem:",
       "loading_runs": "A carregar o histórico...",
       "empty_runs": "Sem execuções manuais registadas para esta tarefa.",
-      "loading_audit": "A carregar o histórico de activações e desactivações...",
-      "empty_audit": "Sem registos de activação ou desactivação para esta tarefa.",
+      "loading_audit": "A carregar o histórico de ativações e desativações...",
+      "empty_audit": "Sem registos de ativação ou desativação para esta tarefa.",
       "no_data": "Sem dados.",
       "error": "Erro:",
-      "activate": "Activar",
-      "deactivate": "Desactivar",
+      "activate": "Ativar",
+      "deactivate": "Desativar",
       "run_now": "Executar agora",
       "run_title_on": "Executar a recolha agora",
-      "run_title_off": "Tarefa desactivada — active-a primeiro para poder executar",
-      "override_on": "Excepção activa na base de dados — activada por",
-      "override_off": "Excepção activa na base de dados — desactivada por",
-      "via_config_on": "Activa pelo ficheiro de configuração",
-      "via_config_off": "Desactivada pelo ficheiro de configuração"
+      "run_title_off": "Tarefa desativada — ative-a primeiro para poder executar",
+      "override_on": "Exceção ativa na base de dados — ativada por",
+      "override_off": "Exceção ativa na base de dados — desativada por",
+      "via_config_on": "Ativa pelo ficheiro de configuração",
+      "via_config_off": "Desativada pelo ficheiro de configuração"
     },
     "mute": {
       "title": "KPIs silenciados",
@@ -3346,38 +3346,38 @@
       "col_created_by": "Silenciado por",
       "col_hrs_left": "Horas restantes",
       "col_until": "Até (UTC)",
-      "unmute": "Reactivar",
-      "confirm_delete": "Reactivar os alertas de \"{kpi}\" em \"{inst}\"?\n\nO KPI volta a alertar de imediato.",
+      "unmute": "Reativar",
+      "confirm_delete": "Reativar os alertas de \"{kpi}\" em \"{inst}\"?\n\nO KPI volta a alertar de imediato.",
       "val_required": "O tipo de KPI, a instância e o motivo são obrigatórios.",
       "val_reason": "O motivo tem de ter pelo menos 10 caracteres — fica em registo.",
       "val_hours": "As horas têm de estar entre 1 e 720 (no máximo 30 dias).",
       "err_create": "Não foi possível silenciar:",
-      "err_delete": "Não foi possível reactivar:",
+      "err_delete": "Não foi possível reativar:",
       "err_load": "Erro:"
     },
     "restricted": "Acesso restrito a DBA e administradores.",
-    "refresh": "Actualizar",
+    "refresh": "Atualizar",
     "bulk_run": "Re-correr filtrados",
     "bulk_run_title": "Re-correr, em paralelo, todas as tarefas visíveis depois dos filtros",
     "toggle_max": "Expandir ou contrair",
     "filter_env": "Ambiente:",
     "filter_state": "Estado:",
     "all": "Todos",
-    "search_ph": "Procurar por nome...",
+    "search_ph": "Pesquisar por nome...",
     "loading": "A carregar...",
     "events": {
       "title": "Eventos do recolhedor",
       "subtitle": "tempos esgotados e SQL em baixo, vistos pelo recolhedor central no momento da recolha (auto-vigilância, não é a frota)",
-      "none_active": "sem eventos activos",
-      "active_one": "{n} activo",
-      "active_many": "{n} activos",
+      "none_active": "sem eventos ativos",
+      "active_one": "{n} ativo",
+      "active_many": "{n} ativos",
       "old_one": "({n} antigo)",
       "old_many": "({n} antigos)",
       "empty_7d": "Sem eventos nos últimos 7 dias.",
       "resolved": "resolvido",
-      "active_badge": "activo",
+      "active_badge": "ativo",
       "old_badge": "antigo — confirmar",
-      "old_title": "Evento com mais de 24 horas por resolver — pode já não estar activo. Confirme no separador Serviços do servidor antes de agir.",
+      "old_title": "Evento com mais de 24 horas por resolver — pode já não estar ativo. Confirme no separador Serviços do servidor antes de agir.",
       "resolve": "Resolver",
       "goto_title": "Abrir o separador adequado ao diagnóstico",
       "showing": "A mostrar 50 de {n} eventos (7 dias).",
@@ -3403,7 +3403,7 @@
       "start": "Início",
       "duration": "Duração",
       "state": "Estado",
-      "action": "Acção"
+      "action": "Ação"
     },
     "help_icon": "Explicar os 7 estados",
     "close": "Fechar",
@@ -3413,7 +3413,7 @@
         "meaning": "Significa",
         "normal": "Quando é normal",
         "problem": "Quando é problema",
-        "action": "Acção recomendada"
+        "action": "Ação recomendada"
       },
       "footer_how": "Como decidimos o estado:",
       "footer_order": "Ordem de avaliação:",
@@ -3424,7 +3424,7 @@
         "meaning": "O recolhedor correu há pouco, com sucesso, e a última passagem está dentro do intervalo configurado.",
         "normal": "É o estado desejado — recolhedor saudável, a correr no horário.",
         "problem": "Nunca é problema. Um atraso abaixo de 30 minutos ainda é tolerância normal.",
-        "action": "Nenhuma acção necessária."
+        "action": "Nenhuma ação necessária."
       },
       "RECENT": {
         "meaning": "O recolhedor já correu antes, mas o atraso ultrapassa o intervalo configurado (ainda abaixo do dobro).",
@@ -3433,10 +3433,10 @@
         "action": "Observe a tendência. Se persistir, abra o detalhe e veja o registo de erros."
       },
       "QUIET": {
-        "meaning": "Recolhedor movido a acontecimentos (páginas suspeitas, deadlocks, mudanças de função em Always On, ping, bloqueios longos) sem nada de novo no parque.",
-        "normal": "Estado SAUDÁVEL — quer dizer \"nenhum problema detectado, parque a funcionar\". A hora da última troca fica parada por desenho.",
-        "problem": "Nunca é problema. Não confunda com parado: aqui o recolhedor está activo, apenas não tem o que registar.",
-        "action": "Nenhuma acção. Para confirmar que está vivo, abra o detalhe e veja a hora da última troca e o estado do serviço."
+        "meaning": "Recolhedor movido a acontecimentos (páginas suspeitas, deadlocks, mudanças de função em Always On, ping, bloqueios longos) sem nada de novo na frota.",
+        "normal": "Estado SAUDÁVEL — quer dizer \"nenhum problema detetado, frota a funcionar\". A hora da última troca fica parada por desenho.",
+        "problem": "Nunca é problema. Não confunda com parado: aqui o recolhedor está ativo, apenas não tem o que registar.",
+        "action": "Nenhuma ação. Para confirmar que está vivo, abra o detalhe e veja a hora da última troca e o estado do serviço."
       },
       "STALE": {
         "meaning": "O recolhedor não corre há demasiado tempo (atraso acima do dobro do intervalo, sem falhas registadas).",
@@ -3451,10 +3451,10 @@
         "action": "Abra o detalhe e o registo de erros e identifique o erro. Se for infra-estrutura, fale com quem a opera; se for código, abra um registo de defeito."
       },
       "DISABLED": {
-        "meaning": "Recolhedor marcado como desactivado na configuração (antigo, substituído, ou em manutenção).",
+        "meaning": "Recolhedor marcado como desativado na configuração (antigo, substituído, ou em manutenção).",
         "normal": "Estado declarado — esperado para recolhedores substituídos por outros mais recentes.",
-        "problem": "Se um recolhedor importante ficar desactivado por engano, os indicadores dele deixam de ser alimentados.",
-        "action": "Reveja a lista de desactivados de vez em quando e reactive na configuração, se for preciso."
+        "problem": "Se um recolhedor importante ficar desativado por engano, os indicadores dele deixam de ser alimentados.",
+        "action": "Reveja a lista de desativados de vez em quando e reative na configuração, se for preciso."
       },
       "NEVER_RAN": {
         "meaning": "Recolhedor registado que nunca correu (sem qualquer passagem no histórico).",

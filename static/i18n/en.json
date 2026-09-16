@@ -3367,7 +3367,7 @@
     "loading": "Loading...",
     "events": {
       "title": "Collector events",
-      "subtitle": "timeouts and SQL down, seen by the central collector at collection time (self-monitoring, not the estate)",
+      "subtitle": "timeouts and SQL down, seen by the central collector at collection time (self-monitoring, not the fleet)",
       "none_active": "no active events",
       "active_one": "{n} active",
       "active_many": "{n} active",
@@ -3433,8 +3433,8 @@
         "action": "Watch the trend. If it persists, open the detail view and check the error log."
       },
       "QUIET": {
-        "meaning": "Event-driven collector (suspect pages, deadlocks, Always On failovers, server ping, blocking, long locks) with no new events across the estate.",
-        "normal": "A HEALTHY state — it means \"nothing wrong detected, the estate is working\". The last swap time stays frozen by design.",
+        "meaning": "Event-driven collector (suspect pages, deadlocks, Always On failovers, server ping, blocking, long locks) with no new events across the fleet.",
+        "normal": "A HEALTHY state — it means \"nothing wrong detected, the fleet is working\". The last swap time stays frozen by design.",
         "problem": "Never a problem. Not the same as stale: here the collector is running, it simply has nothing to record.",
         "action": "No action. To confirm it is alive, open the detail view and check the last swap time and the service state."
       },

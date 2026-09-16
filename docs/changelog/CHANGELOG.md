@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Collector Health: revisão linguística das 194 chaves** (16/09). O grupo escrito hoje estava inteiro na grafia
+  anterior ao Acordo de 1990 ("activo", "acção", "actualizar") num ficheiro que usa a nova em todo o lado; passa
+  a AO90. "Parque"/"estate" dão lugar ao termo da casa — frota, fleet, flota. O português do Brasil deixa de
+  herdar "A carregar" e "Pesquisar" (usa gerúndio e "Buscar", como o resto do sobreposto) e perde as chaves
+  que só existiam por causa da grafia. Parecer: v33-i18n-linguist. [tier: Std]
+
 - **O pool de ligações passa a encontrar a sua configuração** (16/09). Dois ficheiros — `servers.json` e a
   allowlist do SQL Auth — eram procurados por caminho relativo ao directório corrente, e o serviço Windows corre
   noutro sítio: nunca os encontrava. Sem eles, o portal ligava sempre por identidade de Windows, nunca usava as

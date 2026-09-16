@@ -255,17 +255,15 @@
   "coll": {
     "run": {
       "need_enable": "Para executar esta tarefa, ative primeiro a coleta no botão Ativar.",
+      "st_registering": "Registrando o pedido",
+      "st_pending": "Esperando execução",
+      "registering": "Registrando o pedido...",
+      "err_register": "Não foi possível registrar o pedido:",
       "queued": "Pedido #{id} registrado. Esperando que o serviço de coleta o execute...",
       "timeout_queue": "Tempo esgotado depois de {s} s. O pedido #{id} continua na fila.",
-      "timeout_poller": "Tempo esgotado depois de {s} s. O pedido #{id} continua esperando. O serviço de coleta pode não estar consumindo a fila.",
-      "err_register": "Não foi possível registrar o pedido:",
-      "registering": "A registrar o pedido...",
-      "st_registering": "A registrar o pedido",
-      "st_pending": "Esperando execução"
+      "timeout_poller": "Tempo esgotado depois de {s} s. O pedido #{id} continua esperando. O serviço de coleta pode não estar consumindo a fila."
     },
     "bulk": {
-      "none": "Nenhuma tarefa ativa entre as visíveis. Ajuste os filtros, ou ative as tarefas primeiro.",
-      "confirm_skipped": "({n} tarefas desativadas ficam de fora)",
       "done_note": "As tarefas disparadas ficaram em fila. Clique em Atualizar daqui a um minuto para ver o progresso."
     },
     "toggle": {
@@ -275,57 +273,47 @@
       "too_short": "Motivo curto demais ({n} caracteres). São precisos pelo menos 20.\n\nÉ isto que deixa rastro de quem mudou o quê, e por quê."
     },
     "det": {
-      "last_run": "Última execução",
-      "ds_max": "MAX(Update_TS) direto da tabela (sem Blue/Green)",
+      "ds_none": "Sem registros recentes (sem Blue/Green)",
+      "loading_logs": "Carregando os erros...",
+      "empty_logs": "Sem erros registrados para esta tarefa.",
+      "loading_config": "Carregando a configuração...",
+      "loading_runs": "Carregando o histórico...",
       "empty_runs": "Sem execuções manuais registradas para esta tarefa.",
-      "loading_audit": "A carregar o histórico de ativações e desativações...",
+      "loading_audit": "Carregando o histórico de ativações e desativações...",
       "empty_audit": "Sem registros de ativação ou desativação para esta tarefa.",
-      "activate": "Ativar",
-      "deactivate": "Desativar",
-      "run_title_off": "Tarefa desativada — ative-a primeiro para poder executar",
+      "run_title_on": "Executar a coleta agora",
       "override_on": "Exceção ativa no banco de dados — ativada por",
       "override_off": "Exceção ativa no banco de dados — desativada por",
       "via_config_on": "Ativa pelo arquivo de configuração",
-      "via_config_off": "Desativada pelo arquivo de configuração",
-      "enabled": "Ativo"
+      "via_config_off": "Desativada pelo arquivo de configuração"
     },
     "mute": {
       "subtitle": "silenciar os alertas de um KPI em uma instância, por tempo limitado",
       "note": "No máximo 720 horas (30 dias). O motivo e a data de fim são obrigatórios: não há silêncios permanentes, e fica registrado quem silenciou.",
       "empty_sub": "Todos os KPIs estão alertando normalmente.",
-      "val_reason": "O motivo precisa ter pelo menos 10 caracteres — fica em registro.",
-      "val_hours": "As horas precisam estar entre 1 e 720 (no máximo 30 dias).",
-      "unmute": "Reativar",
       "confirm_delete": "Reativar os alertas de \"{kpi}\" em \"{inst}\"?\n\nO KPI volta a alertar imediatamente.",
-      "err_delete": "Não foi possível reativar:"
+      "val_reason": "O motivo precisa ter pelo menos 10 caracteres — fica em registro.",
+      "val_hours": "As horas precisam estar entre 1 e 720 (no máximo 30 dias)."
     },
-    "search_ph": "Pesquisar por nome...",
+    "search_ph": "Buscar por nome...",
+    "loading": "Carregando...",
     "events": {
       "title": "Eventos do coletor",
       "subtitle": "tempos esgotados e SQL fora do ar, vistos pelo coletor central no momento da coleta (automonitoramento, não é o parque)",
-      "none_active": "sem eventos ativos",
-      "active_one": "{n} ativo",
-      "active_many": "{n} ativos",
-      "active_badge": "ativo",
       "old_title": "Evento com mais de 24 horas sem resolver — pode já não estar ativo. Confirme na aba Serviços do servidor antes de agir.",
       "goto_title": "Abrir a aba adequada ao diagnóstico",
       "confirm_resolve": "Marcar este evento do coletor como resolvido?"
     },
     "col": {
-      "requested_at": "Solicitado em",
-      "action": "Ação"
+      "requested_at": "Solicitado em"
     },
     "state_info": {
-      "label": {
-        "action": "Ação recomendada"
-      },
       "footer_esc": "Pressionar <code>Esc</code> ou clicar fora fecha esta janela."
     },
     "state": {
       "FRESH": {
         "meaning": "O coletor rodou há pouco, com sucesso, e a última passagem está dentro do intervalo configurado.",
-        "normal": "É o estado desejado — coletor saudável, rodando no horário.",
-        "action": "Nenhuma ação necessária."
+        "normal": "É o estado desejado — coletor saudável, rodando no horário."
       },
       "RECENT": {
         "meaning": "O coletor já rodou antes, mas o atraso ultrapassa o intervalo configurado (ainda abaixo do dobro).",
@@ -333,9 +321,8 @@
       },
       "QUIET": {
         "meaning": "Coletor movido a eventos (páginas suspeitas, deadlocks, mudanças de função em Always On, ping, bloqueios longos) sem nada de novo no parque.",
-        "normal": "Estado SAUDÁVEL — quer dizer \"nenhum problema detectado, parque funcionando\". A hora da última troca fica parada por design.",
-        "problem": "Nunca é problema. Não confunda com parado: aqui o coletor está ativo, apenas não tem o que registrar.",
-        "action": "Nenhuma ação. Para confirmar que está vivo, abra o detalhe e veja a hora da última troca e o estado do serviço."
+        "normal": "Estado SAUDÁVEL — quer dizer \"nenhum problema detetado, parque funcionando\". A hora da última troca fica parada por design.",
+        "problem": "Nunca é problema. Não confunda com parado: aqui o coletor está ativo, apenas não tem o que registrar."
       },
       "STALE": {
         "meaning": "O coletor não roda há tempo demais (atraso acima do dobro do intervalo, sem falhas registradas).",
@@ -350,8 +337,7 @@
       "DISABLED": {
         "meaning": "Coletor marcado como desativado na configuração (antigo, substituído, ou em manutenção).",
         "normal": "Estado declarado — esperado para coletores substituídos por outros mais recentes.",
-        "problem": "Se um coletor importante ficar desativado por engano, os indicadores dele deixam de ser alimentados.",
-        "action": "Reveja a lista de desativados de vez em quando e reative na configuração, se for preciso."
+        "problem": "Se um coletor importante ficar desativado por engano, os indicadores dele deixam de ser alimentados."
       },
       "NEVER_RAN": {
         "meaning": "Coletor registrado que nunca rodou (sem nenhuma passagem no histórico).",
