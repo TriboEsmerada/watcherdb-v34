@@ -139,6 +139,24 @@ POOL_CLEANUP_INTERVAL = 60  # 1 minuto
 # POOL PARA SERVIDORES SQL MONITORADOS
 # ============================================
 
+def _config_file_path(nome: str) -> str:
+    """Caminho ABSOLUTO de um ficheiro de config/ -- nunca relativo ao CWD.
+
+    2026-09-16: os dois ficheiros deste pool ("config/servers.json" e "config/sql_auth_rollout.json") eram relativos ao
+    directorio corrente. O servico Windows corre com o CWD em System32, por isso nunca os encontrava: 2.145 avisos
+    "Cannot stat" no log, nenhuma credencial em cache, portas aprendidas nunca consultadas (so' se consultam quando ha
+    creds) e a allowlist de 62 servidores do SQL Auth nunca lida -- a frota continuava em Trusted_Connection enquanto o
+    blackboard dizia "rollout activado". Mesma origem que o episodio de 2026-04-29 (SOLUCOES.md), noutros leitores.
+    config_dir() e' a regra da casa (dev: <raiz>/config; congelado: ProgramData); o recurso e' a raiz do projecto.
+    """
+    try:
+        from watcherdb.core.paths import config_dir
+        return str(config_dir() / nome)
+    except Exception:
+        from pathlib import Path as _P
+        return str(_P(__file__).resolve().parents[1] / "config" / nome)
+
+
 class SQLServerConnectionPool:
     """
     Pool de conexões para múltiplos servidores SQL monitorados.
@@ -197,7 +215,7 @@ class SQLServerConnectionPool:
         self._creds_cache: Dict[str, dict] = {}
         self._creds_cache_lock = threading.Lock()
         self._creds_cache_loaded_at: float = 0.0
-        self._creds_cache_path = "config/servers.json"
+        self._creds_cache_path = _config_file_path("servers.json")
 
         # FASE 1 least-privilege (2026-08-21): gate de rollout do SQL Auth.
         # A flag use_windows_auth JA' esta a False em TODAS as 63 entradas do
@@ -212,7 +230,14 @@ class SQLServerConnectionPool:
         self._sql_auth_rollout: set = set()
         self._sql_auth_rollout_lock = threading.Lock()
         self._sql_auth_rollout_loaded_at: float = 0.0
-        self._sql_auth_rollout_path = "config/sql_auth_rollout.json"
+        self._sql_auth_rollout_path = _config_file_path("sql_auth_rollout.json")
+        # Uma linha no arranque para o estado deixar de ser adivinhado (ate' 16/09 ninguem sabia que estes
+        # ficheiros nao eram encontrados). WARNING de proposito: INFO nao chega ao log do servico.
+        logger.warning(
+            "[CONFIG] servers.json=%s (%s) | sql_auth_rollout.json=%s (%s)",
+            self._creds_cache_path, "existe" if os.path.exists(self._creds_cache_path) else "NAO EXISTE",
+            self._sql_auth_rollout_path, "existe" if os.path.exists(self._sql_auth_rollout_path) else "NAO EXISTE",
+        )
 
         # Wave A (2026-07-28): porta TCP + IPv4 APRENDIDOS pelo collector V1 e
         # guardados na BD partilhada. Carregados EM BLOCO com TTL -- nunca uma
@@ -589,8 +614,9 @@ class SQLServerConnectionPool:
                 )
                 self._sql_auth_rollout = set()
             self._sql_auth_rollout_loaded_at = mtime
-            logger.info(
-                f"SQL Auth rollout allowlist: {len(self._sql_auth_rollout)} servidor(es)"
+            logger.warning(   # 2026-09-16: era INFO e nunca chegou ao log; o rollout tem de ser verificavel
+                f"SQL Auth rollout allowlist: {len(self._sql_auth_rollout)} servidor(es) "
+                f"({self._sql_auth_rollout_path})"
             )
             return self._sql_auth_rollout
 

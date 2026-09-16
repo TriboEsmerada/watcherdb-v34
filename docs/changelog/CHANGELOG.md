@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **O pool de ligações passa a encontrar a sua configuração** (16/09). Dois ficheiros — `servers.json` e a
+  allowlist do SQL Auth — eram procurados por caminho relativo ao directório corrente, e o serviço Windows corre
+  noutro sítio: nunca os encontrava. Sem eles, o portal ligava sempre por identidade de Windows, nunca usava as
+  portas manuais nem as aprendidas pelo recolhedor, e o rollout do SQL Auth de 09/09 nunca chegou a acontecer.
+  Passam a resolver-se pela pasta de configuração da instalação, e o arranque escreve no registo os caminhos e se
+  existem. A activação do SQL Auth na frota faz-se por canário, através da allowlist. [tier: Std]
+
 - **Primeiro administrador sem password conhecida** (segurança, 16/09). Uma instalação nova terminava sem forma de
   entrar: o canónico deixou de criar utilizadores a 08/09 e nada o substituiu — e o instalador ainda corria um script
   legado que semeava `admin/admin123` e `viewer/viewer123` num esquema que nenhum código usa. Entra

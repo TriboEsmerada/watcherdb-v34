@@ -77,13 +77,16 @@ Três perguntas, por esta ordem:
 
 ## Defeitos nossos encontrados durante este episódio (por corrigir)
 
-1. **`config/servers.json` lido por caminho relativo** em `api/connection_pool.py:444`. O serviço não corre na pasta do
-   repositório, por isso escreve `Cannot stat config/servers.json` em cada tentativa e fica sem a cache de credenciais e de
-   portas aprendidas. Consequência: as ligações dependem do SQL Browser para encontrar a instância nomeada, que é
-   exactamente o que falha quando a rede está má. Corrigir com caminho absoluto a partir da raiz do projecto.
+1. ~~**`config/servers.json` lido por caminho relativo** em `api/connection_pool.py`~~ — **resolvido a 16/09**
+   (`CONFIG_ABSOLUTO_2026-09-16_apply.py`): os dois ficheiros do pool (`servers.json` e a allowlist do SQL Auth)
+   passam por `config_dir()`. O arranque escreve agora `[CONFIG] servers.json=... (existe)` no registo — se disser
+   `NAO EXISTE`, a instalação está sem configuração e é isso que explica as ligações pelo SQL Browser. Enquanto
+   esteve por corrigir, a frota inteira ligou por identidade de Windows e o rollout do SQL Auth de 09/09 não chegou
+   a acontecer — ver `SOLUCOES.md`, linha de 16/09.
 2. ~~**`Invalid column name 'must_change_password'`** numa consulta de autenticação~~ — **resolvido a 16/09**: a
    coluna nunca tinha sido criada porque o script 07 abortava com o erro 207; ver `database/14_ADD_MUST_CHANGE_PASSWORD.sql`
    e a linha de 16/09 em `SOLUCOES.md`. Se esta mensagem voltar a aparecer, a base foi reposta de uma cópia anterior a essa
    data — correr o script 14 outra vez (é idempotente).
 
-Enquanto o ponto 1 não for corrigido, um episódio de rede dura mais e é mais difícil de distinguir de um defeito nosso.
+Ambos resolvidos a 16/09. Depois de um reinício, confirmar no registo a linha `[CONFIG]` e a linha
+`SQL Auth rollout allowlist: N servidor(es)`; sem elas, o pool não encontrou a configuração.

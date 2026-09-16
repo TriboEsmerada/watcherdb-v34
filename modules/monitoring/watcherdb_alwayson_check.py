@@ -123,7 +123,12 @@ class AlwaysOnChecker:
     def _load_servers_config(self):
         """Carrega config de servidores (port, auth) do servers.json para lookup rápido"""
         try:
-            servers_path = Path('config/servers.json')
+            # 2026-09-16: caminho absoluto (o servico corre com o CWD em System32; o relativo nunca existia)
+            try:
+                from watcherdb.core.paths import config_dir
+                servers_path = config_dir() / 'servers.json'
+            except Exception:
+                servers_path = Path(__file__).resolve().parents[2] / 'config' / 'servers.json'
             if not servers_path.exists():
                 logger.debug("servers.json não encontrado — usando Windows Auth para todos os servidores")
                 return
