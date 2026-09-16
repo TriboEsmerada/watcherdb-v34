@@ -137,8 +137,44 @@ async def _fetch_overrides() -> Dict[str, Dict[str, Any]]:
         return {}
 
 
+def _indexar_por_ambiente(rows: List[Dict[str, Any]], chave_ambiente: str) -> Dict[str, Dict[str, Any]]:
+    """{TABLE_NAME: {AMBIENTE_OU_NOME: row, "_any": row mais recente}}.
+
+    2026-09-16: KPI_STG_ACTIVE_TABLE tem uma linha por AMBIENTE para a mesma tabela (PRD/QA/TST) e
+    WDB_COLLECTION_SCHEDULE_META uma por Collector_Name. Indexar so' por Table_Name ficava com a ultima a
+    chegar, ao acaso: as tarefas PRD de AlwaysOn/AG/Mirroring apareciam STALE ha 158 dias (a linha do TST)
+    enquanto faziam swap todos os dias.
+    """
+    indice: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        tabela = (row.get("Table_Name") or "").upper()
+        if not tabela:
+            continue
+        por_tabela = indice.setdefault(tabela, {})
+        amb = (row.get(chave_ambiente) or "").upper()
+        if amb:
+            por_tabela[amb] = row
+        ts = row.get("Last_Swap_Time") or row.get("Last_Success_TS")
+        actual = por_tabela.get("_any")
+        actual_ts = (actual or {}).get("Last_Swap_Time") or (actual or {}).get("Last_Success_TS")
+        if actual is None or (ts and (actual_ts is None or ts > actual_ts)):
+            por_tabela["_any"] = row
+    return indice
+
+
+def _linha_do_ambiente(indice: Dict[str, Dict[str, Any]], tabela: str, ambiente: str) -> Optional[Dict[str, Any]]:
+    """A linha do ambiente pedido; sem ambiente na tarefa, a mais recente. Com ambiente e sem linha dele: None
+    (a tarefa desse ambiente nunca fez swap -- nao se empresta a frescura de outro ambiente)."""
+    por_tabela = indice.get((tabela or "").upper())
+    if not por_tabela:
+        return None
+    if ambiente:
+        return por_tabela.get(ambiente.upper())
+    return por_tabela.get("_any")
+
+
 async def _fetch_active_state() -> Dict[str, Dict[str, Any]]:
-    """Le KPI_STG_ACTIVE_TABLE — retorna dict por Table_Name."""
+    """Le KPI_STG_ACTIVE_TABLE — dict por Table_Name -> {Environment: row, "_any": row mais recente}."""
     try:
         from api.async_db import async_execute_on_intelligence
     except ImportError:
@@ -147,15 +183,11 @@ async def _fetch_active_state() -> Dict[str, Dict[str, Any]]:
 
     try:
         rows = await async_execute_on_intelligence(
-            "SELECT Table_Name, Active_Slot, Last_Swap_Time, "
+            "SELECT Table_Name, Environment, Active_Slot, Last_Swap_Time, "
             "Collection_Start_Time, Collection_End_Time, Servers_Collected, Created_Date "
             "FROM dbo.KPI_STG_ACTIVE_TABLE WITH (NOLOCK)"
         ) or []
-        return {
-            (row.get("Table_Name") or "").upper(): row
-            for row in rows
-            if row.get("Table_Name")
-        }
+        return _indexar_por_ambiente(rows, "Environment")
     except Exception as e:
         logger.warning("[CollectorHealth] falha a ler KPI_STG_ACTIVE_TABLE: %s", e)
         return {}
@@ -183,11 +215,7 @@ async def _fetch_schedule_meta() -> Dict[str, Dict[str, Any]]:
             "Freshness_Source, Last_Success_TS "
             "FROM dbo.WDB_COLLECTION_SCHEDULE_META WITH (NOLOCK)"
         ) or []
-        return {
-            (row.get("Table_Name") or "").upper(): row
-            for row in rows
-            if row.get("Table_Name")
-        }
+        return _indexar_por_ambiente(rows, "Collector_Name")
     except Exception as e:
         logger.debug("[CollectorHealth] falha a ler WDB_COLLECTION_SCHEDULE_META (nao-critico): %s", e)
         return {}
@@ -236,10 +264,12 @@ def _best_active_row(task: Dict[str, Any], active_by_table: Dict[str, Dict[str, 
     tables = task.get("tables") or []
     if not tables:
         return None
+    ambiente = (task.get("environment") or "").upper()
     best: Optional[Dict[str, Any]] = None
     best_ts: Optional[datetime] = None
     for tbl in tables:
-        row = active_by_table.get(str(tbl).upper())
+        # 2026-09-16: a linha do AMBIENTE da tarefa, nao a ultima que o dict apanhou
+        row = _linha_do_ambiente(active_by_table, str(tbl), ambiente)
         if not row:
             continue
         ts = row.get("Last_Swap_Time")
@@ -338,7 +368,8 @@ async def compute_health(
         # 1x/dia com date-gate, cujo interval_minutes do config e' so o tick).
         if not active_row:
             for tbl in (task.get("tables") or []):
-                meta = schedule_meta.get(str(tbl).upper())
+                # 2026-09-16: primeiro a linha desta tarefa (Collector_Name); depois a mais recente da tabela
+                meta = _linha_do_ambiente(schedule_meta, str(tbl), name) or _linha_do_ambiente(schedule_meta, str(tbl), "")
                 if meta and meta.get("Freshness_Source") == "HEARTBEAT" and meta.get("Last_Success_TS"):
                     active_row = {
                         "Table_Name": tbl,
