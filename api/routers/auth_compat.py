@@ -35,6 +35,29 @@ from api.versioning import AUTH_PREFIX
 router = APIRouter(prefix=AUTH_PREFIX, tags=["Authentication"])
 
 
+# 2026-09-16: a coluna dbo.WatcherDB_Users.must_change_password nunca chegou a ser criada (o script 07
+# abortava com o erro 207) e as tres chamadas que a usam engoliam a excepcao com `except Exception: pass`.
+# A funcionalidade "obrigar a trocar a password no proximo login" esteve desligada oito dias sem ninguem
+# reparar. Continuamos a degradar em vez de rebentar o login, mas agora a degradacao diz o que fazer.
+_AVISOS_MUST_CHANGE: set = set()
+
+
+def _avisar_coluna_em_falta(onde: str, exc: Exception) -> None:
+    """Regista que must_change_password nao pode ser lida/escrita, sem interromper o pedido."""
+    texto = str(exc)
+    if "must_change_password" in texto:
+        if onde in _AVISOS_MUST_CHANGE:
+            return  # uma vez por sitio, por processo: senao inunda o log a cada login
+        _AVISOS_MUST_CHANGE.add(onde)
+        logger.warning(
+            "[AUTH] %s: a coluna dbo.WatcherDB_Users.must_change_password nao existe. A obrigacao de trocar "
+            "a password no proximo login esta DESLIGADA. Corrigir com database/14_ADD_MUST_CHANGE_PASSWORD.sql. "
+            "Detalhe: %s", onde, texto,
+        )
+    else:
+        logger.warning("[AUTH] %s: must_change_password nao pode ser lida/escrita: %s", onde, texto)
+
+
 # ============================================
 # REQUEST MODELS
 # ============================================
@@ -337,8 +360,8 @@ async def login(request: Request, login_req: LoginRequest):
         )
         if rows and rows[0].get("must_change_password"):
             result["must_change_password"] = True
-    except Exception:
-        pass  # Column may not exist yet — graceful degradation
+    except Exception as exc:
+        _avisar_coluna_em_falta("login", exc)
 
     response = JSONResponse(content=result)
     # Cookie so' e' emitido se houver token. Chave e' access_token (auth_service devolve
@@ -448,8 +471,8 @@ async def change_password(body: ChangePasswordRequest, request: Request):
             "UPDATE dbo.WatcherDB_Users SET must_change_password = 0 WHERE username = ?",
             (user["username"],),
         )
-    except Exception:
-        pass  # Column may not exist yet — graceful degradation
+    except Exception as exc:
+        _avisar_coluna_em_falta("mudanca de password", exc)
 
     # Lote P4 A-4.7 (2026-09-08): a mudanca de password revoga TODOS os tokens anteriores
     # (password_changed_at). Para o proprio utilizador nao ficar deslogado, emite-se um
@@ -536,8 +559,9 @@ async def reset_password(
             "UPDATE dbo.WatcherDB_Users SET must_change_password = 1 WHERE username = ?",
             (username,),
         )
-    except Exception:
-        pass
+    except Exception as exc:
+        # Sem a coluna, o reset por administrador NAO obriga o utilizador a trocar a password.
+        _avisar_coluna_em_falta("reset por administrador", exc)
 
     return JSONResponse(content={"success": True, "message": f"Senha de {username} alterada com sucesso"})
 

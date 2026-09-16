@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Obrigar a trocar a password no próximo login volta a funcionar** (16/09). A coluna que guarda essa
+  obrigação nunca chegou a ser criada na base: o script que a criava punha o UPDATE no mesmo bloco do ALTER,
+  e o SQL Server recusa o bloco inteiro quando a coluna ainda não existe. Desde 08/09, o reset feito por um
+  administrador não obrigava a nada e cada início de sessão escrevia um erro no registo. Novo script
+  `database/14_ADD_MUST_CHANGE_PASSWORD.sql` (a correr na base), o script antigo fica marcado como histórico,
+  e as três chamadas deixam de calar a falha: passam a dizer no registo qual a coluna e qual o script.
+  [tier: Std]
+
 - **Modal de instâncias offline: errorlog, link para o Overview e três comparações por título traduzido**
   (owner 16/09). Cada instância passa a ter o bloco "Errorlog antes da falha" recolhido, que só lê quando é
   aberto, e um botão "Abrir Overview". Corrigidos: a nota "drilldown não configurado" em instâncias
