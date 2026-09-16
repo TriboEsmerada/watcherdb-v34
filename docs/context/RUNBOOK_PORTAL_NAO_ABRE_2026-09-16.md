@@ -81,6 +81,9 @@ Três perguntas, por esta ordem:
    repositório, por isso escreve `Cannot stat config/servers.json` em cada tentativa e fica sem a cache de credenciais e de
    portas aprendidas. Consequência: as ligações dependem do SQL Browser para encontrar a instância nomeada, que é
    exactamente o que falha quando a rede está má. Corrigir com caminho absoluto a partir da raiz do projecto.
-2. **`Invalid column name 'must_change_password'`** numa consulta de autenticação (`[AUTH] Query error` no registo).
+2. ~~**`Invalid column name 'must_change_password'`** numa consulta de autenticação~~ — **resolvido a 16/09**: a
+   coluna nunca tinha sido criada porque o script 07 abortava com o erro 207; ver `database/14_ADD_MUST_CHANGE_PASSWORD.sql`
+   e a linha de 16/09 em `SOLUCOES.md`. Se esta mensagem voltar a aparecer, a base foi reposta de uma cópia anterior a essa
+   data — correr o script 14 outra vez (é idempotente).
 
 Enquanto o ponto 1 não for corrigido, um episódio de rede dura mais e é mais difícil de distinguir de um defeito nosso.
