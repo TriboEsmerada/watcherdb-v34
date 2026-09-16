@@ -362,42 +362,18 @@ def _run_network_test(server_id: str, port: int = 1433) -> Dict:
     conn = None
     try:
         import pyodbc
-        if use_windows_auth:
-            conn_str = (
-                f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-                f"SERVER={server_full};"
-                f"DATABASE=master;"
-                f"Trusted_Connection=yes;"
-                f"TrustServerCertificate=yes;"
-                f"Connection Timeout=10;"
-            )
-        else:
-            # Desencriptar password se necessário
-            pwd = password
-            if isinstance(pwd, str) and pwd.startswith('encrypted:'):
-                try:
-                    import os as _os
-                    from cryptography.fernet import Fernet as _Fernet
-                    _enc_key = _os.environ.get('WATCHERDB_ENCRYPTION_KEY', '')
-                    if _enc_key:
-                        _f = _Fernet(_enc_key.encode())
-                        pwd = _f.decrypt(pwd[len('encrypted:'):].encode()).decode()
-                    else:
-                        pwd = pwd[len('encrypted:'):]
-                except Exception:
-                    pwd = pwd[len('encrypted:'):]
-            conn_str = (
-                f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-                f"SERVER={server_full};"
-                f"DATABASE=master;"
-                f"UID={username};"
-                f"PWD={pwd};"
-                f"TrustServerCertificate=yes;"
-                f"Connection Timeout=10;"
-            )
+        # 2026-09-16 (Regra de Ouro #2): o teste usa EXACTAMENTE a ligacao que o portal usaria para este servidor,
+        # construida pelo pool central (allowlist do SQL Auth, portas aprendidas, credenciais decifradas pelo
+        # servico de segredos). Antes montava aqui uma string propria -- Trusted_Connection quando
+        # use_windows_auth era True, e uma decifra Fernet duplicada -- e diagnosticava uma ligacao que nao era a do
+        # portal. O alvo (ip,porta vs host\instancia) tambem passa a ser o real.
+        from api.connection_pool import get_sql_server_pool
+        conn_str = get_sql_server_pool()._build_connection_string(server_id, "master")
+        _modo = 'SQL Auth (sql_monitoring)' if 'UID=' in conn_str else 'Windows (identidade do servico)'
+        _alvo = conn_str.split('SERVER=')[1].split(';')[0] if 'SERVER=' in conn_str else server_full
         conn = pyodbc.connect(conn_str, timeout=10)
         test3['time_ms'] = round((time.perf_counter() - t0) * 1000, 2)
-        test3['detail'] = f'Conexão ODBC estabelecida em {test3["time_ms"]}ms'
+        test3['detail'] = f'Conexão ODBC estabelecida em {test3["time_ms"]}ms · {_modo} · alvo {_alvo}'
     except Exception as e:
         test3['time_ms'] = round((time.perf_counter() - t0) * 1000, 2)
         test3['status'] = 'FAIL'

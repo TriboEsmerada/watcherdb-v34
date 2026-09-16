@@ -232,14 +232,8 @@ class SQLServiceStatus:
 class SQLServiceMonitor:
     """Monitor de serviços SQL Server"""
 
-    # Configuração de conexão com WatcherDB Intelligence
-    WATCHERDB_CONNECTION_STRING = (
-        'DRIVER={ODBC Driver 17 for SQL Server};'
-        'SERVER=SQLHDSTST505\\I01;'
-        'DATABASE=WatcherDB_Intelligence;'
-        'Trusted_Connection=yes;'
-        'Connection Timeout=10;'
-    )
+    # 2026-09-16: a constante WATCHERDB_CONNECTION_STRING (servidor fixo + Trusted_Connection, nunca usada)
+    # saiu; a Intelligence e' acedida por get_intelligence_pool().
 
     def __init__(self):
         """Inicializa o monitor"""

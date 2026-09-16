@@ -98,39 +98,8 @@ router = APIRouter(
 )
 
 
-def get_server_connection_string(server_id: str) -> str:
-    """
-    Generate connection string for SQL Server with validation
-    DEPRECATED: Use get_pooled_connection() instead for better performance.
-
-    Args:
-        server_id: Server identifier (HOST_INSTANCE or HOST\\INSTANCE)
-
-    Returns:
-        ODBC connection string
-
-    Raises:
-        ValueError: If server_id is invalid
-    """
-    if not server_id or not server_id.strip():
-        raise ValueError("server_id não pode ser vazio")
-
-    server_id = server_id.strip()
-
-    # Converter formato HOST_INSTANCE para HOST\\INSTANCE
-    if '_' in server_id and '\\' not in server_id:
-        parts = server_id.split('_', 1)
-        server_name = f"{parts[0]}\\{parts[1]}"
-    else:
-        server_name = server_id
-
-    return (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={server_name};"
-        f"DATABASE=msdb;"
-        f"Trusted_Connection=yes;"
-        f"Connection Timeout={CONNECTION_TIMEOUT};"
-    )
+# 2026-09-16 (Regra de Ouro #2): get_server_connection_string, marcada DEPRECATED e sem chamadores, saiu:
+# montava uma ligacao directa com Trusted_Connection. Toda a ligacao a` frota passa por get_pooled_connection().
 
 
 def get_pooled_connection(server_id: str, database: str = "msdb", pool: SQLServerConnectionPool = None):

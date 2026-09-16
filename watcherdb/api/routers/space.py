@@ -40,16 +40,8 @@ INTELLIGENCE_SCHEMA = "dbo"
 INTELLIGENCE_DRIVER = "ODBC Driver 17 for SQL Server"
 
 
-def _get_intelligence_connection():
-    """Cria conexão com o WatcherDB Intelligence"""
-    conn_str = (
-        f"DRIVER={{{INTELLIGENCE_DRIVER}}};"
-        f"SERVER={INTELLIGENCE_SERVER};"
-        f"DATABASE={INTELLIGENCE_DATABASE};"
-        f"Trusted_Connection=yes;"
-        f"Connection Timeout=30"
-    )
-    return pyodbc.connect(conn_str)
+# 2026-09-16 (Regra de Ouro #2): a ligacao directa a` Intelligence com Trusted_Connection saiu; as consultas
+# passam por execute_on_intelligence (pool da Intelligence, sql_monitoring).
 
 
 def _serialize_value(val):
@@ -64,19 +56,10 @@ def _serialize_value(val):
 
 
 def _execute_intelligence_query(query: str) -> List[Dict]:
-    """Executa query no WatcherDB Intelligence e retorna lista de dicts"""
+    """Executa query no WatcherDB Intelligence pelo pool central e devolve lista de dicts."""
     try:
-        conn = _get_intelligence_connection()
-        cursor = conn.cursor()
-        cursor.execute(query)
-        columns = [column[0] for column in cursor.description]
-        rows = cursor.fetchall()
-        conn.close()
-
-        return [
-            {col: _serialize_value(val) for col, val in zip(columns, row)}
-            for row in rows
-        ]
+        from api.connection_pool import execute_on_intelligence
+        return [{col: _serialize_value(val) for col, val in row.items()} for row in execute_on_intelligence(query)]
     except Exception as e:
         logger.error(f"Erro ao executar query no Intelligence: {e}")
         return []

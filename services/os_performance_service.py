@@ -101,22 +101,9 @@ class OSPerformanceService:
         Args:
             connection_string: String de conexao ao WatcherDB_Intelligence
         """
-        self.connection_string = connection_string or self._build_connection_string()
+        # 2026-09-16: a string nunca foi usada para ligar (o servico le WMI); a antiga trazia Trusted_Connection.
+        self.connection_string = connection_string or ""
         self._wmi_available = self._check_wmi_available()
-
-    def _build_connection_string(self) -> str:
-        """Constroi connection string baseado em variaveis de ambiente"""
-        server = os.getenv('INTELLIGENCE_SERVER', 'SQLHDSTST505\\I01')
-        database = os.getenv('INTELLIGENCE_DATABASE', 'WatcherDB_Intelligence')
-        driver = os.getenv('SQL_DRIVER', 'ODBC Driver 17 for SQL Server')
-
-        return (
-            f"DRIVER={{{driver}}};"
-            f"SERVER={server};"
-            f"DATABASE={database};"
-            f"Trusted_Connection=yes;"
-            f"Connection Timeout=30;"
-        )
 
     def _check_wmi_available(self) -> bool:
         """Verifica se WMI esta disponivel"""

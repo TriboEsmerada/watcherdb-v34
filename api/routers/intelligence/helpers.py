@@ -483,19 +483,8 @@ def _load_monitored_servers() -> List[Dict]:
         return []
 
 
-def _build_jobs_conn_str(server_id: str) -> str:
-    """Connection string com timeout curto (4s) para queries de jobs KPI."""
-    if '_' in server_id and '\\' not in server_id:
-        parts = server_id.split('_', 1)
-        server_name = f"{parts[0]}\\{parts[1]}"
-    else:
-        server_name = server_id
-    return (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={server_name};DATABASE=master;"
-        f"Trusted_Connection=yes;TrustServerCertificate=yes;"
-        f"Connection Timeout=4;"
-    )
+# 2026-09-16: _build_jobs_conn_str (copia com Trusted_Connection, nunca chamada) saiu daqui; as consultas de
+# jobs vivem em intelligence_kpis.py e passam pelo pool central.
 
 
 # ========================================

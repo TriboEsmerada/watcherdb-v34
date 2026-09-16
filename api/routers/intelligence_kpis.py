@@ -520,28 +520,29 @@ def _load_monitored_servers() -> List[Dict]:
         return []
 
 
-def _build_jobs_conn_str(server_id: str) -> str:
-    """Connection string com timeout curto (4s) para queries de jobs KPI."""
-    if '_' in server_id and '\\' not in server_id:
-        parts = server_id.split('_', 1)
-        server_name = f"{parts[0]}\\{parts[1]}"
-    else:
-        server_name = server_id
-    return (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={server_name};DATABASE=master;"
-        f"Trusted_Connection=yes;TrustServerCertificate=yes;"
-        f"Connection Timeout=4;"
-    )
+def _conn_str_msdb(server_id: str) -> str:
+    """String de ligacao ao msdb de um servidor monitorizado -- a DO POOL, com o login timeout curto de sempre.
+
+    2026-09-16 (Regra de Ouro #2): ate' aqui as duas consultas de jobs montavam uma string propria com
+    Trusted_Connection (a identidade de dominio do servico) e host\\instancia (SQL Browser). Passam a usar a
+    string que o pool central constroi: sql_monitoring nos servidores da allowlist, Trusted so' fora dela
+    (OATXP01), e alvo por IP e porta aprendida em vez do Browser. A ligacao continua DIRECTA e curta (4 s de
+    login, sem retries): medido a 16/09, um servidor inalcancavel demorava 54,8 s a falhar pelo pool (retries +
+    15 s de login) contra 4 s aqui -- e o fan-out do dashboard corre isto para ~62 servidores com 16 workers e um
+    tecto de 25 s; um punhado de servidores em baixo esgotaria os workers.
+    """
+    import re as _re
+    base = get_sql_server_pool()._build_connection_string(server_id, "msdb")
+    return _re.sub(r"Connection Timeout=\d+;", "Connection Timeout=4;", base)
 
 
 def _query_server_failed_jobs(server_id: str) -> List[Dict]:
     """Query failed jobs nas ultimas 24h de um servidor via msdb."""
     conn = None
     try:
-        # Conexao directa com timeout curto (4s) — servidores offline falham rapido
-        # Evita bloquear a thread 30s (pool timeout) e perder todos os resultados no asyncio
-        conn = pyodbc.connect(_build_jobs_conn_str(server_id), timeout=4, autocommit=True)
+        # Conexao directa com timeout curto (4s) e a STRING DO POOL (Regra de Ouro #2, 2026-09-16) — servidores offline falham rapido
+        # Evita bloquear a thread (retries + 15 s de login do pool) e perder todos os resultados no asyncio
+        conn = pyodbc.connect(_conn_str_msdb(server_id), timeout=4, autocommit=True)
         cursor = conn.cursor()
         cursor.execute("""
             SELECT TOP 50
@@ -592,8 +593,8 @@ def _query_server_job_collisions(server_id: str) -> List[Dict]:
     """Detecta colisoes de schedule (jobs que executaram ao mesmo tempo) nas ultimas 24h."""
     conn = None
     try:
-        # Conexao directa com timeout curto (4s) — servidores offline falham rapido
-        conn = pyodbc.connect(_build_jobs_conn_str(server_id), timeout=4, autocommit=True)
+        # Conexao directa com timeout curto (4s) e a STRING DO POOL (Regra de Ouro #2, 2026-09-16) — servidores offline falham rapido
+        conn = pyodbc.connect(_conn_str_msdb(server_id), timeout=4, autocommit=True)
         cursor = conn.cursor()
         # Detectar jobs que executaram simultaneamente nas ultimas 24h
         cursor.execute("""

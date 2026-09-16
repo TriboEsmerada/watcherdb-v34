@@ -39,7 +39,6 @@ from api.routers.intelligence.helpers import (
     _detect_env,
     _count_by_env,
     _load_monitored_servers,
-    _build_jobs_conn_str,
     _query_executor,
     FRESHNESS_WINDOWS,
     INTELLIGENCE_SERVER,

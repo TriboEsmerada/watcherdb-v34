@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Ligações à frota fora do pool passam a usar a ligação do pool** (16/09, Regra de Ouro #2). Duas consultas de
+  trabalhos do dashboard abriam, para cada um dos ~62 servidores, uma ligação com a identidade de Windows do
+  serviço e pelo SQL Browser; passam a usar a string do pool central — conta `sql_monitoring` na allowlist, IP e
+  porta aprendida — mantendo o *fail-fast* de 4 s que protege o painel quando há servidores em baixo. O
+  diagnóstico de rede testa agora exactamente a ligação que o portal usaria e diz que autenticação usou.
+  O resumo de espaço dos alertas e o recurso da análise de memória seguem o mesmo caminho. Saem quatro cópias
+  mortas de ligações com identidade de Windows. Um teste de guarda impede novas. [tier: Std]
+
 - **Collector Health: revisão linguística das 194 chaves** (16/09). O grupo escrito hoje estava inteiro na grafia
   anterior ao Acordo de 1990 ("activo", "acção", "actualizar") num ficheiro que usa a nova em todo o lado; passa
   a AO90. "Parque"/"estate" dão lugar ao termo da casa — frota, fleet, flota. O português do Brasil deixa de

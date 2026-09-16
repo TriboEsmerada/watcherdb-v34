@@ -11,12 +11,13 @@ from decimal import Decimal
 logger = logging.getLogger(__name__)
 
 def get_connection_string(server_name: str) -> str:
+    """String de ligacao para o servidor SQL -- a MESMA que o pool central usaria.
+
+    2026-09-16 (Regra de Ouro #2): era uma string propria com Trusted_Connection. Agora vem do pool: SQL Auth na
+    allowlist, portas aprendidas, Trusted so' fora da allowlist. server_name pode vir como HOST\\INSTANCIA.
     """
-    Gera string de conexão para o servidor SQL
-    Usa o mesmo padrão do sistema WatcherDB existente
-    """
-    # Usar o padrão de conexão do WatcherDB (mesmo que o monitoring.py)
-    return f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server_name};Trusted_Connection=yes;Connection Timeout=10;"
+    from api.connection_pool import get_sql_server_pool
+    return get_sql_server_pool()._build_connection_string(_server_id_from_name(server_name), "master")
 
 def _server_id_from_name(server_name: str) -> str:
     """Converte nome exibido (HOST\\INSTANCIA) para server_id (HOST_INSTANCIA).
