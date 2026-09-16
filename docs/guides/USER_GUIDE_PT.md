@@ -513,12 +513,12 @@ Apos a instalacao, aceda ao portal WatcherDB pela primeira vez:
 
 1. Abrir o browser (Chrome, Firefox ou Edge)
 2. Navegar para `https://servidor:8433/watcherdb/`
-3. Na pagina de login, introduzir as credenciais por defeito:
+3. Na pagina de login, introduzir as credenciais do primeiro administrador, criado durante a instalacao:
 
 | Campo | Valor |
 |-------|-------|
-| Username | `admin` |
-| Password | `admin123` |
+| Username | o nome escolhido ao criar o primeiro administrador durante a instalacao (`py tools\bootstrap_admin.py`) |
+| Password | a definida nesse passo -- o portal obriga a troca-la no primeiro inicio de sessao |
 
 4. Clicar em **Login**
 
@@ -541,7 +541,7 @@ Apos a instalacao, aceda ao portal WatcherDB pela primeira vez:
 +------------------------------------------+
 ```
 
-> **AVISO DE SEGURANCA:** A senha por defeito `admin123` DEVE ser alterada imediatamente apos o primeiro login. Manter a senha por defeito constitui um risco de seguranca grave.
+> **NAO EXISTE PASSWORD POR OMISSAO.** O primeiro administrador e criado durante a instalacao com `py tools\bootstrap_admin.py` (interactivo: a password nunca passa por argumentos nem fica no historico) e o portal obriga a troca-la no primeiro inicio de sessao. O comando recusa criar um segundo administrador; se ninguem conseguir entrar, o DBA reactiva uma conta existente.
 
 ---
 
@@ -3009,14 +3009,14 @@ Test-NetConnection sql-server-01 -Port 1433
 nslookup -type=SRV _ldap._tcp.dominio.local
 ```
 
-## Credenciais por Defeito
+## Primeiro Administrador
 
 | Campo | Valor |
 |-------|-------|
-| Username | `admin` |
-| Password | `admin123` |
+| Username | o nome escolhido ao criar o primeiro administrador durante a instalacao (`py tools\bootstrap_admin.py`) |
+| Password | a definida nesse passo -- o portal obriga a troca-la no primeiro inicio de sessao |
 
-> **ALTERAR IMEDIATAMENTE apos o primeiro login.**
+> **Criado na instalacao com `py tools\bootstrap_admin.py`. Nao ha password por omissao; a troca e obrigatoria no primeiro inicio de sessao.**
 
 ## Requisitos Minimos
 

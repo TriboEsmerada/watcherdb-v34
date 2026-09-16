@@ -1,3 +1,13 @@
+-- ############################################################################
+-- HISTORICO -- NAO FAZ PARTE DA INSTALACAO (retirado de deploy/setup_database.ps1 a 2026-09-16).
+--
+-- Este script cria um sistema de autenticacao LEGADO (esquema auth.*, 27/01/2026) que nenhum codigo do portal
+-- usa: a autenticacao real vive em dbo.WatcherDB_Users (INSTALACAO_COMPLETA_UNIFICADA.sql, seccao 13). Ate 16/09
+-- semeava admin/admin123 e viewer/viewer123 com dois hashes bcrypt escritos aqui e imprimia as passwords no ecra.
+-- As sementes sairam; as tabelas ficam como estavam para quem ja as tenha (nao se apaga nada).
+-- O primeiro administrador cria-se com tools/bootstrap_admin.py (interactivo, troca obrigatoria no primeiro login).
+-- ############################################################################
+
 -- ============================================================================
 -- CRIACAO: Sistema de Autenticação de Usuários
 -- ============================================================================
@@ -356,70 +366,10 @@ PRINT '  [OK] Procedure auth.sp_ListUsers criada';
 PRINT '';
 PRINT '-- [5/5] Criando usuário admin padrão...';
 
--- Verificar se já existe usuário admin
-IF NOT EXISTS (SELECT 1 FROM auth.Users WHERE Username = 'admin')
-BEGIN
-    -- Senha padrão: admin123
-    -- Hash bcrypt: $2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIw.HpKgai
-
-    INSERT INTO auth.Users (
-        Username,
-        PasswordHash,
-        Email,
-        FullName,
-        Role,
-        CreatedBy
-    )
-    VALUES (
-        'admin',
-        '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIw.HpKgai',
-        'admin@watcherdb.local',
-        'Administrator',
-        'admin',
-        'SYSTEM'
-    );
-
-    PRINT '  [OK] Usuário admin criado';
-    PRINT '      Username: admin';
-    PRINT '      Senha: admin123';
-    PRINT '      IMPORTANTE: Altere a senha após primeiro login!';
-END
-ELSE
-BEGIN
-    PRINT '  [INFO] Usuário admin já existe';
-END
-
--- Verificar se existe usuário viewer
-IF NOT EXISTS (SELECT 1 FROM auth.Users WHERE Username = 'viewer')
-BEGIN
-    -- Senha padrão: viewer123
-    -- Hash bcrypt: $2b$12$7ZiQ6C5LD7QzPqQKZ4DpOeKqN0/fF1GwqZJ6LhfF.qiJ7Q8F9H1yy
-
-    INSERT INTO auth.Users (
-        Username,
-        PasswordHash,
-        Email,
-        FullName,
-        Role,
-        CreatedBy
-    )
-    VALUES (
-        'viewer',
-        '$2b$12$7ZiQ6C5LD7QzPqQKZ4DpOeKqN0/fF1GwqZJ6LhfF.qiJ7Q8F9H1yy',
-        'viewer@watcherdb.local',
-        'Viewer User',
-        'viewer',
-        'SYSTEM'
-    );
-
-    PRINT '  [OK] Usuário viewer criado';
-    PRINT '      Username: viewer';
-    PRINT '      Senha: viewer123';
-END
-ELSE
-BEGIN
-    PRINT '  [INFO] Usuário viewer já existe';
-END
+-- 2026-09-16: as duas contas-semente (admin e viewer, com password conhecida e hash escrito neste ficheiro)
+-- foram retiradas. Nenhum utilizador e' criado por script; o primeiro administrador cria-se com
+-- tools/bootstrap_admin.py, que obriga a trocar a password no primeiro login.
+PRINT '  [INFO] Sem utilizadores por omissao. Primeiro administrador: py tools\bootstrap_admin.py';
 
 -- ============================================================================
 -- 6. CRIAR VIEWS ÚTEIS
@@ -522,20 +472,11 @@ PRINT 'Finalizado em: ' + CONVERT(VARCHAR(23), GETDATE(), 121);
 PRINT '';
 PRINT 'Sistema de Autenticação criado com sucesso!';
 PRINT '';
-PRINT 'CREDENCIAIS PADRÃO:';
-PRINT '==================';
-PRINT 'Admin:';
-PRINT '  Username: admin';
-PRINT '  Senha: admin123';
-PRINT '';
-PRINT 'Viewer:';
-PRINT '  Username: viewer';
-PRINT '  Senha: viewer123';
-PRINT '';
-PRINT 'IMPORTANTE: Altere as senhas padrão após primeiro login!';
+PRINT 'SEM CREDENCIAIS POR OMISSAO (desde 2026-09-16).';
+PRINT 'Primeiro administrador: py tools\bootstrap_admin.py (interactivo; troca obrigatoria no primeiro login).';
 PRINT '';
 PRINT 'PRÓXIMOS PASSOS:';
-PRINT '1. Alterar senhas padrão';
+PRINT '1. Criar o primeiro administrador: py tools\bootstrap_admin.py';
 PRINT '2. Configurar web service para usar banco de dados';
 PRINT '3. Testar login na interface web';
 PRINT '============================================================================';

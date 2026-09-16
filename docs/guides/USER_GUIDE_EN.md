@@ -496,12 +496,12 @@ After installation, access the WatcherDB portal for the first time:
 
 1. Open the browser (Chrome, Firefox, or Edge)
 2. Navigate to `https://server:8433/watcherdb/`
-3. On the login page, enter the default credentials:
+3. On the login page, enter the first administrator's credentials, created during installation:
 
 | Field | Value |
 |-------|-------|
-| Username | `admin` |
-| Password | `admin123` |
+| Username | the name chosen when the first administrator was created during installation (`py tools\bootstrap_admin.py`) |
+| Password | the one set in that step -- the portal forces a change on the first sign-in |
 
 4. Click **Login**
 
@@ -524,7 +524,7 @@ After installation, access the WatcherDB portal for the first time:
 +------------------------------------------+
 ```
 
-> **SECURITY WARNING:** The default password `admin123` MUST be changed immediately after the first login. Keeping the default password is a serious security risk.
+> **THERE IS NO DEFAULT PASSWORD.** The first administrator is created during installation with `py tools\bootstrap_admin.py` (interactive: the password never goes through arguments or shell history) and the portal forces a change on the first sign-in. The command refuses to create a second administrator; if nobody can sign in, the DBA re-enables an existing account.
 
 ---
 
@@ -2992,14 +2992,14 @@ Test-NetConnection sql-server-01 -Port 1433
 nslookup -type=SRV _ldap._tcp.domain.local
 ```
 
-## Default Credentials
+## First Administrator
 
 | Field | Value |
 |-------|-------|
-| Username | `admin` |
-| Password | `admin123` |
+| Username | the name chosen when the first administrator was created during installation (`py tools\bootstrap_admin.py`) |
+| Password | the one set in that step -- the portal forces a change on the first sign-in |
 
-> **CHANGE IMMEDIATELY after the first login.**
+> **Created at installation with `py tools\bootstrap_admin.py`. There is no default password; a change is forced on the first sign-in.**
 
 ## Minimum Requirements
 

@@ -1064,7 +1064,7 @@ Eventos auditados (via `_log_auth()` em `services/auth_service.py`):
 
 1. **JWT_SECRET_KEY** -- DEVE ser definida no `.env`. Sem ela, tokens nao sobrevivem restart.
 2. **WATCHERDB_ENCRYPTION_KEY** -- DEVE ser definida. Sem ela, preferencias ficam em plaintext.
-3. **Alterar passwords default** -- O script SQL cria users com password `admin123`.
+3. **Primeiro administrador** -- o canonico nao cria utilizadores; criar com `py tools\bootstrap_admin.py` (interactivo, recusa se ja houver admin, troca obrigatoria no primeiro login). Nao ha password por omissao.
 4. **CORS** -- Actualmente `allow_origins=["*"]` (linha 2590 de watcherdb_main.py). Deve ser restringido em producao.
 5. **HTTPS** -- A aplicacao corre em HTTP. Deve estar atras de reverse proxy com TLS.
 6. **AD_ENABLED** -- Activar LDAP para evitar passwords locais.
@@ -1080,7 +1080,7 @@ Eventos auditados (via `_log_auth()` em `services/auth_service.py`):
 | HTTP sem TLS | Risco | Precisa reverse proxy |
 | SQL Injection | Mitigado | Queries parametrizadas em auth_service.py e auth_compat.py |
 | Credenciais no .env | Risco se commitado | `.gitignore` exclui `.env` |
-| Passwords default (admin123) | Risco | Script SQL cria users com senha fraca -- alterar |
+| Contas por omissao | Mitigado (16/09) | Sem sementes em script; primeiro admin por bootstrap interactivo; teste de guarda rejeita hashes fixos e passwords-semente em database/, deploy/, docs/guides/ e tools/ |
 | Token blacklist in-memory | Limitacao | Nao persiste entre restarts |
 | Preferencias sem Fernet key | Risco | Guardadas em plaintext se key ausente |
 | servers.json com passwords | Mitigado | Fernet encryption |

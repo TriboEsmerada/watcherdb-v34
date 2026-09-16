@@ -9,6 +9,15 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Primeiro administrador sem password conhecida** (segurança, 16/09). Uma instalação nova terminava sem forma de
+  entrar: o canónico deixou de criar utilizadores a 08/09 e nada o substituiu — e o instalador ainda corria um script
+  legado que semeava `admin/admin123` e `viewer/viewer123` num esquema que nenhum código usa. Entra
+  `tools/bootstrap_admin.py`: interactivo, recusa correr se já houver um administrador, recusa nomes previsíveis,
+  aplica a política de password do portal e obriga a trocá-la no primeiro início de sessão. O instalador ganha o
+  Passo 3 (bootstrap) e deixa de correr o script legado e o 07; os guias do cliente deixam de publicar `admin123`;
+  um teste de guarda rejeita para sempre hashes fixos e passwords-semente em `database/`, `deploy/`, `docs/guides/`
+  e `tools/`. [tier: Std]
+
 - **Collector Health: as acções traduzidas fecham o ecrã** (owner 16/09). Último lote: executar uma tarefa
   agora e acompanhar o pedido até ao fim, re-correr em massa as tarefas filtradas, e activar ou desactivar
   com motivo obrigatório. São quase todos textos de progresso e de erro — os que só se vêem quando algo

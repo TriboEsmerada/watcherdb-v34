@@ -11,7 +11,10 @@ param(
     [string]$Database = "WatcherDB_Intelligence",
     [switch]$UseWindowsAuth = $true,
     [Parameter(Mandatory=$true, HelpMessage="Identidade DBA que autoriza DDL na BD partilhada WatcherDB_Intelligence (REGRA OURO #2). Ex: 'salomao.netto'. Coordinate com v1-intel-specialist antes de qualquer execucao.")]
-    [string]$ConfirmedDBAIdentity
+    [string]$ConfirmedDBAIdentity,
+    # 2026-09-16: o canonico nao cria utilizadores; o Passo 3 cria o primeiro administrador (interactivo).
+    # -SkipBootstrap so' para instalacoes sem consola -- correr depois, a` mao: py tools\bootstrap_admin.py
+    [switch]$SkipBootstrap
 )
 
 $ErrorActionPreference = "Stop"
@@ -105,7 +108,9 @@ $scripts = @(
     "03_WATCHERDB_PROCEDURES.sql",
     "04_WATCHERDB_VIEWS.sql",
     "05_WATCHERDB_BLUE_GREEN_ENV.sql",
-    "CREATE_USER_AUTHENTICATION_SYSTEM.sql",
+    # 2026-09-16: CREATE_USER_AUTHENTICATION_SYSTEM.sql saiu da lista. Era um sistema de autenticacao legado
+    # (esquema auth.*, 27/01) que nenhum codigo usa e que semeava admin/admin123 e viewer/viewer123 com hashes
+    # escritos no ficheiro. O ficheiro fica marcado HISTORICO, sem sementes.
     "CREATE_USER_AUTH_PREFS.sql",
     "CREATE_DISK_UNALLOCATED_TABLES.sql",
     "CREATE_DB_AVAILABILITY_PROBLEM_VIEW.sql",
@@ -121,7 +126,7 @@ $scripts = @(
     "UPDATE_DB_AVAILABILITY_MIRRORING.sql",
     "INSTALACAO_COMPLETA_UNIFICADA.sql",
     "06_CREATE_TOKEN_BLACKLIST.sql",
-    "07_ADD_MUST_CHANGE_PASSWORD.sql",
+    "14_ADD_MUST_CHANGE_PASSWORD.sql",
     "08_CREATE_SYSTEM_CONFIG.sql"
 )
 
@@ -129,7 +134,23 @@ foreach ($script in $scripts) {
     Invoke-SqlScript -File $script -Db $Database
 }
 
-# --- 3. Resumo ---
+# --- 3. Primeiro administrador (2026-09-16) ---
+# O canonico nao cria NENHUM utilizador (as contas-semente admin123 sairam a 08/09). Sem este passo, uma
+# instalacao nova fica sem forma de entrar. O comando e' interactivo (a password nunca passa por argumentos),
+# recusa correr se ja existir um administrador e o portal obriga a trocar a password no primeiro login.
+Write-Host ""
+Write-Host "--- Passo 3: Primeiro administrador ---" -ForegroundColor Cyan
+if ($SkipBootstrap) {
+    Write-Host "  [SKIP] -SkipBootstrap: correr depois, a mao: py tools\bootstrap_admin.py" -ForegroundColor Yellow
+} else {
+    $repoRoot = Split-Path -Parent $PSScriptRoot
+    & py (Join-Path $repoRoot "tools\bootstrap_admin.py")
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  [AVISO] Bootstrap nao concluido (codigo $LASTEXITCODE). Repetir: py tools\bootstrap_admin.py" -ForegroundColor Yellow
+    }
+}
+
+# --- 4. Resumo ---
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  DATABASE SETUP CONCLUIDO" -ForegroundColor Green
@@ -141,4 +162,5 @@ Write-Host "  PROXIMOS PASSOS:" -ForegroundColor Yellow
 Write-Host "  1. Verificar que a BD foi criada: SSMS → $SqlServer → $Database" -ForegroundColor White
 Write-Host "  2. Configurar .env com INTELLIGENCE_SERVER=$SqlServer" -ForegroundColor White
 Write-Host "  3. Reiniciar servico: net stop/start WatcherDBWebServiceV33" -ForegroundColor White
+Write-Host "  4. Entrar com o administrador criado no Passo 3 -- o portal obriga a trocar a password no primeiro login" -ForegroundColor White
 Write-Host ""
