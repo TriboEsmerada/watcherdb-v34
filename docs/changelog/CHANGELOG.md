@@ -9,6 +9,14 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Collector Health: janela de detalhe traduzida, e dois defeitos escondidos por trás disso** (owner 16/09).
+  Separadores, lista de propriedades, tabelas de erros, execuções e alterações passam a falar o idioma
+  escolhido. Pelo caminho: o separador activo era escolhido comparando o **texto visível** com o nome interno
+  — traduzi-lo partiria o realce em todos os idiomas, tal como aconteceu de manhã nas modais dos KPI; e as
+  tabelas usavam o rótulo da coluna como chave dos dados, pelo que traduzir o cabeçalho as teria esvaziado.
+  Ambos corrigidos: o separador compara um atributo, e a coluna passa a ter rótulo separado da chave.
+  [tier: Std]
+
 - **Collector Health: a janela de silenciar alertas deixa de ser meio inglesa** (owner 16/09). Era a mais
   misturada do ecrã — "KPI Mute List", "Created By", "Hrs Left" e "Unmute" ao lado de "Adicionar novo mute"
   e das mensagens de erro em português, e nada disto mudava com o idioma. Passa a estar traduzida nos quatro

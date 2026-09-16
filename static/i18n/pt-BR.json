@@ -253,6 +253,21 @@
     "loading_program": "Carregando {program}..."
   },
   "coll": {
+    "det": {
+      "last_run": "Última execução",
+      "ds_max": "MAX(Update_TS) direto da tabela (sem Blue/Green)",
+      "empty_runs": "Sem execuções manuais registradas para esta tarefa.",
+      "loading_audit": "A carregar o histórico de ativações e desativações...",
+      "empty_audit": "Sem registros de ativação ou desativação para esta tarefa.",
+      "activate": "Ativar",
+      "deactivate": "Desativar",
+      "run_title_off": "Tarefa desativada — ative-a primeiro para poder executar",
+      "override_on": "Exceção ativa no banco de dados — ativada por",
+      "override_off": "Exceção ativa no banco de dados — desativada por",
+      "via_config_on": "Ativa pelo arquivo de configuração",
+      "via_config_off": "Desativada pelo arquivo de configuração",
+      "enabled": "Ativo"
+    },
     "mute": {
       "subtitle": "silenciar os alertas de um KPI em uma instância, por tempo limitado",
       "note": "No máximo 720 horas (30 dias). O motivo e a data de fim são obrigatórios: não há silêncios permanentes, e fica registrado quem silenciou.",
@@ -276,6 +291,7 @@
       "confirm_resolve": "Marcar este evento do coletor como resolvido?"
     },
     "col": {
+      "requested_at": "Solicitado em",
       "action": "Ação"
     },
     "state_info": {

@@ -58038,20 +58038,20 @@ WHERE servicename LIKE '%Agent%'` }
                     <button class="coll-close" onclick="document.getElementById('coll-detail-overlay').classList.remove('show')">×</button>
                 </div>
                 <div class="coll-tabs">
-                    <div class="coll-tab active" onclick="collSwitchTab('overview')">Overview</div>
-                    <div class="coll-tab" onclick="collSwitchTab('logs')">Error Log</div>
-                    <div class="coll-tab" onclick="collSwitchTab('config')">Config</div>
-                    <div class="coll-tab" onclick="collSwitchTab('runs')">Run History</div>
-                    <div class="coll-tab" onclick="collSwitchTab('audit')">Audit</div>
+                    <div class="coll-tab active" data-tab="overview" onclick="collSwitchTab('overview')">${_collT('coll.det.tab_overview', 'Overview')}</div>
+                    <div class="coll-tab" data-tab="logs" onclick="collSwitchTab('logs')">${_collT('coll.det.tab_logs', 'Error Log')}</div>
+                    <div class="coll-tab" data-tab="config" onclick="collSwitchTab('config')">${_collT('coll.det.tab_config', 'Config')}</div>
+                    <div class="coll-tab" data-tab="runs" onclick="collSwitchTab('runs')">${_collT('coll.det.tab_runs', 'Run History')}</div>
+                    <div class="coll-tab" data-tab="audit" onclick="collSwitchTab('audit')">${_collT('coll.det.tab_audit', 'Audit')}</div>
                 </div>
                 <div class="coll-tab-body" id="coll-det-body"></div>
                 <div style="padding:10px 18px; border-top:1px solid rgba(71,85,105,0.3); display:flex; gap:10px; justify-content:flex-end; align-items:center;">
                     <span id="coll-toggle-status" style="font-size:11px;color:var(--color-text-tertiary);margin-right:auto;"></span>
                     <button id="coll-toggle-btn" data-write-gated="1" class="coll-run-btn" style="background:linear-gradient(135deg,#6366f1,#4f46e5);" onclick="collToggleEnabled()">
-                        <i class="fas fa-power-off"></i> <span id="coll-toggle-label">Activar</span>
+                        <i class="fas fa-power-off"></i> <span id="coll-toggle-label">${_collT('coll.det.activate', 'Activar')}</span>
                     </button>
                     <button id="coll-run-btn" data-write-gated="1" class="coll-run-btn" onclick="collTriggerRun()">
-                        <i class="fas fa-play"></i> Run now
+                        <i class="fas fa-play"></i> ${_collT('coll.det.run_now', 'Run now')}
                     </button>
                 </div>
             </div>`;
@@ -58066,19 +58066,21 @@ WHERE servicename LIKE '%Agent%'` }
         if (runBtn) {
             runBtn.disabled = false; // sempre clicavel — guard no onclick
             runBtn.classList.toggle('coll-run-btn-off', !task.enabled);
-            runBtn.title = task.enabled ? 'Executar coleta agora' : 'Task desactivado — active primeiro para poder executar';
+            runBtn.title = task.enabled
+                ? _collT('coll.det.run_title_on', 'Executar coleta agora')
+                : _collT('coll.det.run_title_off', 'Task desactivado — active primeiro para poder executar');
         }
         _collUpdateToggleUI(task);
         collSwitchTab('overview');
     };
 
     window.collSwitchTab = async function(tabName) {
-        document.querySelectorAll('.coll-tab').forEach(el => el.classList.remove('active'));
+        // 2026-09-16: o separador activo era escolhido pelo TEXTO VISIVEL
+        // (textContent.includes(tabName)), com um remendo a` parte para 'runs'. Funcionava por acaso
+        // enquanto os rotulos estavam em ingles; traduzi-los partia o realce em todos os idiomas, sem
+        // erro nenhum. O atributo data-tab nao se traduz.
         document.querySelectorAll('.coll-tab').forEach(el => {
-            if ((el.textContent || '').toLowerCase().includes(tabName.toLowerCase()) ||
-                (tabName === 'runs' && (el.textContent || '').toLowerCase().includes('run'))) {
-                el.classList.add('active');
-            }
+            el.classList.toggle('active', el.dataset.tab === tabName);
         });
         const body = document.getElementById('coll-det-body');
         const task = window._collDetailTask;
@@ -58086,30 +58088,30 @@ WHERE servicename LIKE '%Agent%'` }
         if (tabName === 'overview') {
             // Fonte de dados (transparencia) — Blue/Green vs MAX(Update_TS) vs sem dados
             const dsMap = {
-                'blue_green':           { label: 'Blue/Green (KPI_STG_ACTIVE_TABLE)', color: 'var(--color-text-link)' },
-                'non_bg_max_update_ts': { label: 'MAX(Update_TS) directo da tabela (non-Blue/Green)', color: '#a78bfa' },
-                'non_bg_no_data':       { label: 'Sem registos recentes (non-Blue/Green)', color: 'var(--color-text-disabled)' },
+                'blue_green':           { label: _collT('coll.det.ds_bg', 'Blue/Green (KPI_STG_ACTIVE_TABLE)'), color: 'var(--color-text-link)' },
+                'non_bg_max_update_ts': { label: _collT('coll.det.ds_max', 'MAX(Update_TS) directo da tabela (non-Blue/Green)'), color: '#a78bfa' },
+                'non_bg_no_data':       { label: _collT('coll.det.ds_none', 'Sem registos recentes (non-Blue/Green)'), color: 'var(--color-text-disabled)' },
             };
             const ds = dsMap[task.data_source] || { label: task.data_source || '—', color: 'var(--color-text-tertiary)' };
             body.innerHTML = `<div class="coll-kv">
-                <div>Environment</div><div>${_esc(task.environment||'—')}</div>
-                <div>Interval</div><div>${task.interval_minutes} min</div>
-                <div>Enabled</div><div>${task.enabled ? 'Sim' : 'Nao'}</div>
-                <div>Status</div><div>${task.status} — ${_esc(task.status_reason||'')}</div>
-                <div>Fonte de dados</div><div><span style="color:${ds.color};font-weight:600;">${_esc(ds.label)}</span></div>
-                <div>Ultimo run</div><div>${_collDetailLastRun(task)}</div>
-                <div>Atraso</div><div>${_collDetailDelay(task)}</div>
-                <div>Duracao ultimo ciclo</div><div>${_fmtDur(task.collection_duration_ms)}</div>
-                <div>Rows recolhidas</div><div title="Numero de rows inseridas no STG no ultimo ciclo (nao distinto de servers)">${task.servers_collected==null?'—':task.servers_collected}</div>
-                <div>Active slot</div><div>${_esc(task.active_slot||'—')}</div>
-                <div>Falhas nas 24h</div><div style="color:${(task.failure_count_24h||0)>0?'#ef4444':'#10b981'};font-weight:600;">${task.failure_count_24h||0}</div>
-                <div>Classe</div><div>${_esc(task.class||'')}</div>
-                <div>Modulo</div><div>${_esc(task.module||'')}</div>
-                <div>Target tables</div><div>${(task.target_tables||[]).map(t=>'<code>'+_esc(t)+'</code>').join('<br>') || '—'}</div>
-                <div>Descricao</div><div>${_esc(task.description||'—')}</div>
+                <div>${_collT('coll.det.environment', 'Environment')}</div><div>${_esc(task.environment||'—')}</div>
+                <div>${_collT('coll.det.interval', 'Interval')}</div><div>${task.interval_minutes} ${_collT('coll.det.minutes', 'min')}</div>
+                <div>${_collT('coll.det.enabled', 'Enabled')}</div><div>${task.enabled ? _collT('coll.det.yes', 'Sim') : _collT('coll.det.no', 'Nao')}</div>
+                <div>${_collT('coll.det.status', 'Status')}</div><div>${task.status} — ${_esc(task.status_reason||'')}</div>
+                <div>${_collT('coll.det.data_source', 'Fonte de dados')}</div><div><span style="color:${ds.color};font-weight:600;">${_esc(ds.label)}</span></div>
+                <div>${_collT('coll.det.last_run', 'Ultimo run')}</div><div>${_collDetailLastRun(task)}</div>
+                <div>${_collT('coll.det.delay', 'Atraso')}</div><div>${_collDetailDelay(task)}</div>
+                <div>${_collT('coll.det.duration', 'Duracao ultimo ciclo')}</div><div>${_fmtDur(task.collection_duration_ms)}</div>
+                <div>${_collT('coll.det.rows', 'Rows recolhidas')}</div><div title="${_collT('coll.det.rows_title', 'Numero de rows inseridas no STG no ultimo ciclo (nao distinto de servers)')}">${task.servers_collected==null?'—':task.servers_collected}</div>
+                <div>${_collT('coll.det.active_slot', 'Active slot')}</div><div>${_esc(task.active_slot||'—')}</div>
+                <div>${_collT('coll.det.failures_24h', 'Falhas nas 24h')}</div><div style="color:${(task.failure_count_24h||0)>0?'#ef4444':'#10b981'};font-weight:600;">${task.failure_count_24h||0}</div>
+                <div>${_collT('coll.det.class', 'Classe')}</div><div>${_esc(task.class||'')}</div>
+                <div>${_collT('coll.det.module', 'Modulo')}</div><div>${_esc(task.module||'')}</div>
+                <div>${_collT('coll.det.target_tables', 'Target tables')}</div><div>${(task.target_tables||[]).map(t=>'<code>'+_esc(t)+'</code>').join('<br>') || '—'}</div>
+                <div>${_collT('coll.det.description', 'Descricao')}</div><div>${_esc(task.description||'—')}</div>
             </div>`;
         } else if (tabName === 'logs') {
-            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">A carregar error log...</div>';
+            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_logs', 'A carregar error log...') + '</div>';
             try {
                 const token = localStorage.getItem('watcherdb_token');
                 const r = await fetch('/api/v1/collectors/' + encodeURIComponent(task.name) + '/logs?limit=100', {
@@ -58117,7 +58119,7 @@ WHERE servicename LIKE '%Agent%'` }
                 });
                 const d = await r.json();
                 if (!d.entries || !d.entries.length) {
-                    body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">Sem erros registados para este task.</div>';
+                    body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.empty_logs', 'Sem erros registados para este task.') + '</div>';
                 } else {
                     // Mapear para format uniforme para a tabela sortable
                     const rows = d.entries.map(e => ({
@@ -58128,23 +58130,26 @@ WHERE servicename LIKE '%Agent%'` }
                         Mensagem: e.message || '',
                     }));
                     body.innerHTML = _collSortableTable('coll-logs', rows,
-                        [{k:'Timestamp',w:'160px'},{k:'Level',w:'70px'},{k:'Duracao',sortK:'_duration_sort',w:'80px'},{k:'Mensagem',wrap:true}]
+                        [{k:'Timestamp',lbl:_collT('coll.col.timestamp','Timestamp'),w:'160px'},
+                         {k:'Level',lbl:_collT('coll.col.level','Level'),w:'70px'},
+                         {k:'Duracao',lbl:_collT('coll.col.duration','Duracao'),sortK:'_duration_sort',w:'80px'},
+                         {k:'Mensagem',lbl:_collT('coll.col.message','Mensagem'),wrap:true}]
                     );
                 }
-            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">Erro: ' + _esc(e.message) + '</div>'; }
+            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
         } else if (tabName === 'config') {
-            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">A carregar config...</div>';
+            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_config', 'A carregar config...') + '</div>';
             try {
                 const token = localStorage.getItem('watcherdb_token');
                 const r = await fetch('/api/v1/collectors/' + encodeURIComponent(task.name) + '/config', {
                     headers: token ? { 'Authorization': 'Bearer ' + token } : {}
                 });
                 const d = await r.json();
-                body.innerHTML = `<div style="color:var(--color-text-tertiary);font-size:11px;margin-bottom:6px;">Source: ${_esc(d.source_path||'')}</div>`
+                body.innerHTML = `<div style="color:var(--color-text-tertiary);font-size:11px;margin-bottom:6px;">${_collT('coll.det.config_source', 'Source:')} ${_esc(d.source_path||'')}</div>`
                     + `<pre>${_esc(JSON.stringify(d.config, null, 2))}</pre>`;
-            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">Erro: ' + _esc(e.message) + '</div>'; }
+            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
         } else if (tabName === 'runs') {
-            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">A carregar historico...</div>';
+            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_runs', 'A carregar historico...') + '</div>';
             try {
                 const token = localStorage.getItem('watcherdb_token');
                 const r = await fetch('/api/v1/collectors/runs/recent?task_name=' + encodeURIComponent(task.name) + '&limit=50', {
@@ -58152,7 +58157,7 @@ WHERE servicename LIKE '%Agent%'` }
                 });
                 const d = await r.json();
                 if (!d.runs || !d.runs.length) {
-                    body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">Sem runs manuais registados para este task.</div>';
+                    body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.empty_runs', 'Sem runs manuais registados para este task.') + '</div>';
                 } else {
                     const rows = d.runs.map(run => ({
                         ID: run.request_id,
@@ -58166,15 +58171,20 @@ WHERE servicename LIKE '%Agent%'` }
                         Erro: run.error_message ? String(run.error_message).substring(0, 200) : '—',
                     }));
                     body.innerHTML = _collSortableTable('coll-runs', rows,
-                        [{k:'ID',w:'50px'},{k:'Requested at',w:'160px'},{k:'By',w:'100px'},{k:'Status',w:'80px'},
-                         {k:'Pickup lag',sortK:'_pickup_sort',w:'80px'},{k:'Duracao',sortK:'_dur_sort',w:'80px'},{k:'Erro',wrap:true}]
+                        [{k:'ID',lbl:_collT('coll.col.id','ID'),w:'50px'},
+                         {k:'Requested at',lbl:_collT('coll.col.requested_at','Requested at'),w:'160px'},
+                         {k:'By',lbl:_collT('coll.col.by','By'),w:'100px'},
+                         {k:'Status',lbl:_collT('coll.col.status','Status'),w:'80px'},
+                         {k:'Pickup lag',lbl:_collT('coll.col.pickup_lag','Pickup lag'),sortK:'_pickup_sort',w:'80px'},
+                         {k:'Duracao',lbl:_collT('coll.col.duration','Duracao'),sortK:'_dur_sort',w:'80px'},
+                         {k:'Erro',lbl:_collT('coll.col.error','Erro'),wrap:true}]
                     );
                 }
             } catch (e) {
-                body.innerHTML = '<div style="color:#ef4444;padding:20px;">Erro: ' + _esc(e.message) + '</div>';
+                body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
             }
         } else if (tabName === 'audit') {
-            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">A carregar historico de activacoes/desactivacoes...</div>';
+            body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_audit', 'A carregar historico de activacoes/desactivacoes...') + '</div>';
             try {
                 const token = localStorage.getItem('watcherdb_token');
                 const r = await fetch('/api/v1/collectors/' + encodeURIComponent(task.name) + '/toggle-history', {
@@ -58184,7 +58194,7 @@ WHERE servicename LIKE '%Agent%'` }
                 const d = await r.json();
                 const history = d.history || [];
                 if (!history.length) {
-                    body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">Sem registos de activacao/desactivacao para este task.</div>';
+                    body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.empty_audit', 'Sem registos de activacao/desactivacao para este task.') + '</div>';
                 } else {
                     const rows = history.map(e => ({
                         'Data/Hora': e.changed_at ? String(e.changed_at).replace('T',' ').substring(0,19) : '',
@@ -58193,11 +58203,14 @@ WHERE servicename LIKE '%Agent%'` }
                         Motivo: e.reason || '',
                     }));
                     body.innerHTML = _collSortableTable('coll-audit', rows,
-                        [{k:'Data/Hora',w:'160px'},{k:'Accao',w:'90px'},{k:'Utilizador',w:'120px'},{k:'Motivo',wrap:true}]
+                        [{k:'Data/Hora',lbl:_collT('coll.col.datetime','Data/Hora'),w:'160px'},
+                         {k:'Accao',lbl:_collT('coll.col.action','Accao'),w:'90px'},
+                         {k:'Utilizador',lbl:_collT('coll.col.user','Utilizador'),w:'120px'},
+                         {k:'Motivo',lbl:_collT('coll.col.reason','Motivo'),wrap:true}]
                     );
                 }
             } catch (e) {
-                body.innerHTML = '<div style="color:#ef4444;padding:20px;">Erro: ' + _esc(e.message) + '</div>';
+                body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
             }
         }
     };
@@ -58417,7 +58430,9 @@ WHERE servicename LIKE '%Agent%'` }
         if (runBtn) {
             runBtn.disabled = false;
             runBtn.classList.toggle('coll-run-btn-off', !task.enabled);
-            runBtn.title = task.enabled ? 'Executar coleta agora' : 'Task desactivado — active primeiro para poder executar';
+            runBtn.title = task.enabled
+                ? _collT('coll.det.run_title_on', 'Executar coleta agora')
+                : _collT('coll.det.run_title_off', 'Task desactivado — active primeiro para poder executar');
         }
     };
 
@@ -58430,13 +58445,13 @@ WHERE servicename LIKE '%Agent%'` }
             if (toggleBtn) {
                 toggleBtn.disabled = false;
                 toggleBtn.style.background = 'linear-gradient(135deg,var(--color-text-disabled),var(--color-border-strong))';
-                toggleBtn.innerHTML = '<i class="fas fa-power-off"></i> Desactivar';
+                toggleBtn.innerHTML = '<i class="fas fa-power-off"></i> ' + _collT('coll.det.deactivate', 'Desactivar');
             }
             if (toggleStatus) {
                 if (task.override) {
-                    toggleStatus.innerHTML = '<i class="fas fa-database" style="color:#6366f1;margin-right:4px;"></i>Override activo (BD) — activado por ' + _esc(task.override.changed_by || '?');
+                    toggleStatus.innerHTML = '<i class="fas fa-database" style="color:#6366f1;margin-right:4px;"></i>' + _collT('coll.det.override_on', 'Override activo (BD) — activado por') + ' ' + _esc(task.override.changed_by || '?');
                 } else {
-                    toggleStatus.innerHTML = '<i class="fas fa-file-code" style="color:#22c55e;margin-right:4px;"></i>Activo via config.yaml';
+                    toggleStatus.innerHTML = '<i class="fas fa-file-code" style="color:#22c55e;margin-right:4px;"></i>' + _collT('coll.det.via_config_on', 'Activo via config.yaml');
                 }
             }
         } else {
@@ -58444,13 +58459,13 @@ WHERE servicename LIKE '%Agent%'` }
             if (toggleBtn) {
                 toggleBtn.disabled = false;
                 toggleBtn.style.background = 'linear-gradient(135deg,#6366f1,#4f46e5)';
-                toggleBtn.innerHTML = '<i class="fas fa-power-off"></i> Activar';
+                toggleBtn.innerHTML = '<i class="fas fa-power-off"></i> ' + _collT('coll.det.activate', 'Activar');
             }
             if (toggleStatus) {
                 if (task.override) {
-                    toggleStatus.innerHTML = '<i class="fas fa-database" style="color:#ef4444;margin-right:4px;"></i>Override activo (BD) — desactivado por ' + _esc(task.override.changed_by || '?');
+                    toggleStatus.innerHTML = '<i class="fas fa-database" style="color:#ef4444;margin-right:4px;"></i>' + _collT('coll.det.override_off', 'Override activo (BD) — desactivado por') + ' ' + _esc(task.override.changed_by || '?');
                 } else {
-                    toggleStatus.innerHTML = '<i class="fas fa-file-code" style="color:var(--color-text-tertiary);margin-right:4px;"></i>Desactivado via config.yaml';
+                    toggleStatus.innerHTML = '<i class="fas fa-file-code" style="color:var(--color-text-tertiary);margin-right:4px;"></i>' + _collT('coll.det.via_config_off', 'Desactivado via config.yaml');
                 }
             }
         }
@@ -58461,7 +58476,7 @@ WHERE servicename LIKE '%Agent%'` }
     // columns: [{k: 'NomeColuna', sortK: 'campoSort' (opcional), w: 'width', wrap: bool}]
     window._collTabSorts = {};
     function _collSortableTable(tableId, rows, columns) {
-        if (!rows.length) return '<div style="padding:20px;color:var(--color-text-tertiary);">Sem dados.</div>';
+        if (!rows.length) return '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.no_data', 'Sem dados.') + '</div>';
         window._collTabSorts[tableId] = { rows, columns, col: null, dir: null };
 
         return _collBuildSortableHTML(tableId, rows, columns);
@@ -58481,7 +58496,9 @@ WHERE servicename LIKE '%Agent%'` }
                 + `border-bottom:2px solid ${isActive ? 'rgba(59,130,246,0.6)' : 'rgba(71,85,105,0.3)'};`
                 + (col.w ? `min-width:${col.w};` : '')
                 + `" onclick="_collTabSort('${tableId}','${col.sortK||col.k}')">`
-                + `${col.k}${arrow}</th>`;
+                // 2026-09-16: `col.k` e' a CHAVE dos dados (row[col.k]) e fica sempre em ingles; `col.lbl`
+                // e' o que se mostra. Antes eram a mesma coisa, e traduzir o cabecalho esvaziava a tabela.
+                + `${col.lbl || col.k}${arrow}</th>`;
         });
         h += '</tr></thead><tbody>';
         rows.forEach(row => {
