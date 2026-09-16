@@ -876,6 +876,7 @@
     "integrity_modal": "Integrity — Verdict per Database"
   },
   "kpi_modal": {
+    "open_overview": "Open Overview",
     "affected_users": "affected user(s)",
     "all_normal": "All items are within normal parameters.",
     "blocked_sessions": "Blocked Sessions",

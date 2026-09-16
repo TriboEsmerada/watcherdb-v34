@@ -37698,12 +37698,14 @@
         // B3b 2026-09-15: o mesmo bloco no banner de diagnostico (host responde, verificacoes falham). Persona: carrega
         // sozinho so com todas as verificacoes falhadas ou evento offline activo; nos parciais so a pedido; recolhido por
         // omissao; titulo proprio. Frontend: irmao do banner, nunca dentro da cor de severidade.
-        function offlineErrorlogBannerBlock(instance, auto) {
+        function offlineErrorlogBannerBlock(instance, auto, sufixo) {
             const inst = String(instance || '').replace(/\\/g, '_');
-            const id = offlineErrorlogId(inst);
+            // 2026-09-16: sufixo para o bloco poder viver na modal de KPI sem colidir com o do ecra offline
+            const id = offlineErrorlogId(inst) + (sufixo ? '-' + String(sufixo).replace(/[^A-Za-z0-9_-]/g, '_') : '');
             return `<details id="${id}-wrap" ontoggle="_oelBannerToggle(this)"
                          style="background: var(--color-bg-sunken); border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 14px; margin: -8px 0 16px; text-align: left; color: var(--color-text-secondary);">
-                    <summary style="cursor: pointer; font-size: 13px;">
+                    <summary onclick="event.stopPropagation();" style="cursor: pointer; font-size: 13px;">
+                        <!-- 2026-09-16: dentro de um cartao clicavel (modal de KPI) o clique nao pode fechar o cartao -->
                         <i class="fas fa-file-lines" aria-hidden="true"></i>
                         <strong style="color: var(--color-text-primary);">${auto ? _oelT('banner_title', 'Errorlog recente da instância') : _oelT('banner_link', 'Ver errorlog recente desta instância')}</strong>
                         · <span id="${id}-resumo">${auto ? _oelT('loading', 'A ler o errorlog guardado na Intelligence…') : _oelT('banner_on_demand', 'abrir para ler a pedido')}</span>
@@ -38158,7 +38160,7 @@ Tempo de Resposta: ${responseTime}
                 
                 // Verificar se deve buscar instâncias OK (APENAS para card "Instances OK")
                 // NÃO usar kpiType === 'instance-availability' porque isso também inclui o card "Instances Off"
-                const isOkFilter = title === 'Instances OK';
+                const isOkFilter = _ehModalInstanciasOk(title);   // 2026-09-16: por chave, nao pelo titulo traduzido
                 let url = '';
                 if (showAll) {
                     url = `${instancesEndpoint}?all=true`;
@@ -38324,7 +38326,7 @@ Tempo de Resposta: ${responseTime}
                     // o cartao conta instancias distintas. Dizer as duas unidades evita ler 4 bases como 4 instancias.
                     const _aoInstancias = new Set(instances.map(i => String(i.Instance || i.instance || i.SERVER_INSTANCE || i.AgName || ''))).size;
                     summaryText = `Total: <strong style="color: var(--color-text-primary);">${_aoInstancias}</strong> ${t('kpi_modal.instance_s')} \u00b7 <strong style="color: var(--color-text-primary);">${instances.length}</strong> ${t('kpi_modal.database_s')} ${t('kpi_modal.with_problem')}`;
-                } else if (kpiType === 'db-availability-ok' || title === 'Instances OK') {
+                } else if (kpiType === 'db-availability-ok' || _ehModalInstanciasOk(title)) {
                     summaryText = `Total: <strong style="color: #10b981;">${instances.length}</strong> ${t('kpi_modal.instance_s')} OK`;
                 } else if (kpiType.includes('filegroup-usage')) {
                     // FileGroups: card mostra instancias, drill-down mostra total de filegroups
@@ -38502,8 +38504,8 @@ Tempo de Resposta: ${responseTime}
 
                     // Definir título do gráfico baseado no KPI
                     let chartTitle = t('chart.distribution_by_env');
-                    if (title === 'Instances OK') chartTitle = t('chart.instances_ok_by_env');
-                    else if (title === 'Instances Off') chartTitle = t('chart.instances_off_by_env');
+                    if (_ehModalInstanciasOk(title)) chartTitle = t('chart.instances_ok_by_env');
+                    else if (_ehModalInstanciasOffline(title)) chartTitle = t('chart.instances_off_by_env');
                     else if (title.includes('DB Availability')) chartTitle = t('chart.databases_by_env');
                     else if (title.includes('DB Not Availability')) chartTitle = t('chart.databases_problem_by_env');
                     else if (title.includes('FileGroups')) chartTitle = t('chart.filegroups_by_env');
@@ -39945,7 +39947,7 @@ Tempo de Resposta: ${responseTime}
                             </div>
                         `;
 
-                    } else if (title === 'Instances OK') {
+                    } else if (_ehModalInstanciasOk(title)) {   // 2026-09-16: idem no cartao proprio das instancias OK
                         // Renderização específica para Instances OK
                         // data-env em falta era o unico card sem ele: filtro de ambiente
                         // comparava dataset.env vazio e escondia os 109 ("Mostrando 0").
@@ -39987,7 +39989,7 @@ Tempo de Resposta: ${responseTime}
                                 </div>
                             </div>
                         `;
-                    } else if (title === 'Instances Off') {
+                    } else if (_ehModalInstanciasOffline(title)) {   // 2026-09-16: o cartao proprio dos offline nunca chegava aqui
                         // Rendering dedicado para servidores offline (ping fail)
                         const serverName = instance.Server_Name || instance.server_name || instanceName;
                         const diagnosis = (instance.diagnosis || instance.Diagnosis || 'offline').toLowerCase();
@@ -40049,6 +40051,10 @@ Tempo de Resposta: ${responseTime}
                                             <i class="fas ${diagIcon}" style="color: ${sevColor}; font-size: 18px;"></i>
                                             <span class="instance-name" style="color: var(--color-text-bright); font-weight: 700; font-size: 15px;">${serverName}</span>
                                             <span style="background: ${inferredEnvColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">${inferredEnv}</span>
+                                            <button type="button" class="kpi-overview-btn" onclick="event.stopPropagation(); _kpiAbrirOverview(this);"
+                                                    style="background: transparent; border: 1px solid var(--color-border); color: var(--color-text-link); border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer;">
+                                                <i class="fas fa-up-right-from-square" aria-hidden="true"></i> ${_kpiT('kpi_modal.open_overview', 'Abrir Overview')}
+                                            </button>
                                         </div>
                                         <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 8px;">
                                             <div style="font-size: 12px;">
@@ -44743,6 +44749,17 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                 // filegroups com problema via endpoint detail (1 fetch por card;
                 // inclui rows sinteticas UNLIMITED disk-bound). kt declarado
                 // acima (tambem decide o suppressEmpty do expand generico).
+                // 2026-09-16 (owner): nas modais de disponibilidade, o mesmo bloco do errorlog do ecra offline,
+                // recolhido e a ler so quando o utilizador o abre (a modal pode ter 20 instancias). O nome vem do
+                // host; usa a instancia resolvida, senao o endpoint nao encontra linhas. Id proprio da modal.
+                if (kt === 'instance-availability' && card.dataset.instanceName) {
+                    const servidor = _kpiServidorDaLinha(card.dataset.instanceName);
+                    const alvo = servidor ? String(servidor.server_id || '') : String(card.dataset.instanceName).replace(/\\/g, '_');
+                    const caixa = document.createElement('div');
+                    caixa.style.cssText = 'margin-top:8px;';
+                    caixa.innerHTML = offlineErrorlogBannerBlock(alvo, false, 'modal-' + (card.dataset.idx || '0'));
+                    panel.appendChild(caixa);
+                }
                 if (kt.indexOf('filegroup-usage') === 0 && card.dataset.instanceName) {
                     const host = document.createElement('div');
                     // container-type activa o @container do .fg-problem-grid
@@ -50047,16 +50064,49 @@ ORDER BY SizeMB DESC;`,
         // abrir..." por hint informativo em vez de prometer accao que acaba em alert().
         // Mesma fuzzy-match (\\ vs _) dos click handlers; fallback inofensivo se
         // allServers ainda nao carregou (mantem link default).
+        // 2026-09-16 (owner: log e link na modal de offline): tres comparacoes decidiam comportamento pelo TITULO TRADUZIDO.
+        // isOkFilter falhava em pt e es (titulo "Instancias OK") e a modal de instancias OK mostrava as OFFLINE; o cartao
+        // proprio dos offline e o titulo do grafico comparavam com "Instances Off" e a chave da "Instances Offline".
+        function _kpiTituloDaChave(id, fb) { return _kpiT('kpi_meta.' + id + '.modal_title', fb); }
+        function _ehModalInstanciasOk(titulo) { return titulo === _kpiTituloDaChave('db-availability-ok', 'Instances OK'); }
+        function _ehModalInstanciasOffline(titulo) {
+            return titulo === _kpiTituloDaChave('instance-availability-off', 'Instances Off')
+                || titulo === _kpiTituloDaChave('db-availability-off', 'Instances Offline');
+        }
+
+        // 2026-09-16: o KPI de disponibilidade da o nome do HOST (SQLHDSPRD407) e o inventario tem a instancia
+        // (SQLHDSPRD407_I01). Resolve pelo host quando esse host tem UMA instancia; com duas ou mais fica ambiguo
+        // (SQLHDSQLT103 e SQLHDSQLT105 sao os unicos casos) e devolve null, para nao abrir a instancia errada.
+        function _kpiServidorDaLinha(nome) {
+            if (!Array.isArray(allServers) || !allServers.length || !nome) return null;
+            const alvo = String(nome).replace(/\\/g, '_').toLowerCase();
+            const exacto = allServers.find(s => String(s.server_id || '').toLowerCase() === alvo
+                || String(s.name || '').toLowerCase() === alvo);
+            if (exacto) return exacto;
+            const host = alvo.split('_')[0];
+            const doHost = allServers.filter(s => String(s.server_id || '').toLowerCase().split('_')[0] === host);
+            return doHost.length === 1 ? doHost[0] : null;
+        }
+        function _kpiAbrirOverview(el) {
+            const card = el.closest('.instance-item');
+            const servidor = _kpiServidorDaLinha(card && card.dataset.instanceName);
+            if (!servidor) return;
+            const modal = document.getElementById('instancesModal');
+            if (modal) modal.classList.remove('show');
+            createTab(servidor, 'overview');
+        }
+
         function _applyDrilldownAvailability(modalBody) {
             if (!Array.isArray(allServers) || allServers.length === 0) return;
             modalBody.querySelectorAll('.instance-item[data-instance-name]').forEach(card => {
                 const name = card.dataset.instanceName || '';
                 if (!name) return;
-                const candidates = [name, name.replace(/\\/g, '_'), name.replace(/_/g, '\\')];
-                const found = allServers.some(s => candidates.some(c =>
-                    String(s.server_id || '').toLowerCase() === c.toLowerCase() ||
-                    String(s.name || '').toLowerCase() === c.toLowerCase()));
+                // 2026-09-16: resolve tambem pelo host (o KPI de offline da SQLHDSPRD407, o inventario tem
+                // SQLHDSPRD407_I01). Sem servidor resolvido, tira tambem o botao de Overview.
+                const found = !!_kpiServidorDaLinha(name);
                 if (!found) {
+                    const btn = card.querySelector('.kpi-overview-btn');
+                    if (btn) btn.remove();
                     const hint = card.querySelector('.kpi-drill-hint');
                     if (hint) {
                         hint.style.color = 'var(--color-text-disabled)';

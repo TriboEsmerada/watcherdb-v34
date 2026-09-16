@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Modal de instâncias offline: errorlog, link para o Overview e três comparações por título traduzido**
+  (owner 16/09). Cada instância passa a ter o bloco "Errorlog antes da falha" recolhido, que só lê quando é
+  aberto, e um botão "Abrir Overview". Corrigidos: a nota "drilldown não configurado" em instâncias
+  monitorizadas (o KPI dá o host e o inventário tem a instância); o cartão próprio dos servidores offline, que
+  nunca aparecia porque o código comparava com "Instances Off"; e — o mais grave — a modal "Instâncias OK",
+  que em português e espanhol pedia e mostrava a lista de offline. [tier: Std]
+
 - **LIVE com ajuda em todos os separadores e Sched em linguagem simples** (owner 15/09). Um botão "?" no fim
   da barra abre a ajuda do separador activo (o que mostra, como ler, quando preocupar, passo seguinte) e segue
   a troca de separador; Escape fecha primeiro a ajuda. O Sched passa a mostrar o estado (CPU com folga, fila a

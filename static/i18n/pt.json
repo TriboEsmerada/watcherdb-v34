@@ -876,6 +876,7 @@
     "integrity_modal": "Integridade — Veredicto por Database"
   },
   "kpi_modal": {
+    "open_overview": "Abrir Overview",
     "affected_users": "utilizador(es) afetado(s)",
     "all_normal": "Todos os itens estão dentro dos parâmetros normais.",
     "blocked_sessions": "Sessões Bloqueadas",
