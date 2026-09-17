@@ -9,6 +9,10 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Disk Latency: "um disco = uma linha" em todos os leitores** (owner 17/09). A modal do KPI e o separador de
+  desempenho do SO tinham as suas próprias consultas à tabela de discos e continuavam a repetir o mesmo disco por
+  cada instância do host; passam pela mesma regra do dashboard. [tier: Std]
+
 - **Disk Latency: um cartão e uma contagem por disco, não por instância** (owner 16/09). O recolhedor de
   desempenho de disco grava uma linha por instância; num host com duas instâncias o mesmo `c:` aparecia duas
   vezes na modal e contava 2 no KPI. O portal passa a fundir as linhas do mesmo (host, disco), ficando com a

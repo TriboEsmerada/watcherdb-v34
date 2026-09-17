@@ -2481,6 +2481,7 @@ async def get_problematic_instances(kpi_type: str, all: bool = Query(False, desc
 
             query = f"""
             SELECT
+                Instance,
                 Hostname,
                 Drive,
                 Avg_Read_Latency_MS,
@@ -2506,6 +2507,10 @@ async def get_problematic_instances(kpi_type: str, all: bool = Query(False, desc
             """
 
             all_disk_latency = await execute_intelligence_query_async(query, raise_on_error=False) or []
+            # 2026-09-17: o recolhedor grava uma linha por instancia; o disco e' do host. A mesma regra do
+            # dashboard (helpers.collect_disk_latency, 40bb4c1) -- esta modal tinha a sua copia da consulta.
+            from api.routers.intelligence.helpers import _uma_linha_por_disco
+            all_disk_latency = _uma_linha_por_disco(all_disk_latency)
 
             # Censo B4 (2026-08-11): card exclui hosts offline, modal nao excluia —
             # mesmo padrao do cpu-critical. (O Env por LIKE abaixo fica: a chave

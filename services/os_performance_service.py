@@ -446,7 +446,9 @@ class OSPerformanceService:
                     return []
 
                 columns = [desc[0] for desc in cursor.description]
-                return [dict(zip(columns, row)) for row in rows]
+                # 2026-09-17: uma linha por disco (o recolhedor grava uma por instancia do mesmo host)
+                from api.routers.intelligence.helpers import _uma_linha_por_disco
+                return _uma_linha_por_disco([dict(zip(columns, row)) for row in rows])
 
         except Exception as e:
             logger.error(f"Error getting disk by drive for {hostname}: {e}")
@@ -479,8 +481,13 @@ class OSPerformanceService:
                         ELSE NULL
                     END, ', '
                 ) AS Problem_Drives
-            FROM dbo.KPI_OS_DISK_PERF_STG WITH (NOLOCK)
-            WHERE Hostname = ?
+            FROM (
+                -- 2026-09-17: a linha mais recente de cada disco; havia uma por instancia do mesmo host
+                SELECT *, ROW_NUMBER() OVER (PARTITION BY Hostname, Drive ORDER BY Update_TS DESC) AS rn
+                FROM dbo.KPI_OS_DISK_PERF_STG WITH (NOLOCK)
+                WHERE Hostname = ?
+            ) D
+            WHERE rn = 1
             """
 
             with self._get_connection() as conn:
