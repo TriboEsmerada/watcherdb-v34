@@ -9,6 +9,13 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Repor a password de uma conta de domínio deixa de a converter em conta local** (16/09). O reset por
+  administrador reescrevia o marcador que diz "esta conta entra pelo domínio"; a partir daí a password do domínio
+  deixava de servir, sem aviso. Passa a definir a senha local de recurso, e a resposta diz isso. No self-service, um
+  utilizador de domínio com senha local de recurso consegue finalmente trocá-la (antes recebia sempre "password
+  actual incorrecta"), e sem senha local recebe uma explicação em vez de um erro. Contas locais: nada muda.
+  [tier: Std]
+
 - **Cartão de Disk Latency em quatro idiomas** (owner 16/09). O corpo do cartão da modal — métricas, dicas de
   diagnóstico, lista recomendada e botões — estava escrito à mão em português; passa a `dlat.*` em pt/pt-BR/en/es.
   A dica "Disco muito ocupado (N%)" mostrava o código em vez do número (interpolação dentro de aspas simples);

@@ -18,7 +18,7 @@ from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
 
 from services.auth_service import (
-    get_auth_service, decode_token, _execute_query, _execute_update, verify_password,
+    get_auth_service, decode_token, _execute_query, _execute_update, verify_password, e_conta_de_dominio,
     create_access_token
 )
 from api.error_helpers import safe_http_error
@@ -470,7 +470,20 @@ async def change_password(body: ChangePasswordRequest, request: Request):
     service = get_auth_service()
     # Verificar password actual antes de permitir alteracao
     db_user = service._get_user_from_db(user["username"])
-    if not db_user or not verify_password(body.current_password, db_user.get("password_hash", "")):
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Password actual incorrecta")
+    if e_conta_de_dominio(db_user):
+        # 2026-09-16: conta de dominio -- a password actual e' a senha LOCAL de recurso, nao o marcador ad_auth:
+        # (contra o marcador dava sempre 401, mesmo com senha local definida). Sem senha local, nao ha o que trocar aqui.
+        local_hash = db_user.get("local_password_hash") or ""
+        if not local_hash:
+            raise HTTPException(
+                status_code=400,
+                detail="Conta de dominio: a password muda-se no AD. Para definir uma senha local de recurso, peca ao administrador.",
+            )
+        if not verify_password(body.current_password, local_hash):
+            raise HTTPException(status_code=401, detail="Password actual incorrecta")
+    elif not verify_password(body.current_password, db_user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Password actual incorrecta")
     result = await service.change_password(user["username"], body.new_password)
     if not result.get("success"):
@@ -563,6 +576,11 @@ async def reset_password(
     result = await service.change_password(username, body.new_password)
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error"))
+    if result.get("conta_de_dominio"):
+        # 2026-09-16: numa conta de dominio o reset define a senha local de recurso e nao converte a conta.
+        # A obrigacao de trocar nao se impoe a contas de dominio (a19585b), por isso nao se marca nada.
+        return JSONResponse(content={"success": True, "conta_de_dominio": True,
+                                     "message": f"{username} e uma conta de dominio: definida a senha local de recurso; a entrada pelo dominio nao muda"})
 
     # Set must_change_password so user changes on next login
     try:

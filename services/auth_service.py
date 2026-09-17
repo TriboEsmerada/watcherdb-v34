@@ -173,6 +173,14 @@ def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 
+def e_conta_de_dominio(user_row) -> bool:
+    """True quando password_hash guarda o marcador ad_auth: -- a conta entra pelo dominio.
+
+    2026-09-16: reescrever esse campo (change_password fazia-o sempre) convertia a conta em local sem aviso.
+    """
+    return str((user_row or {}).get("password_hash") or "").startswith("ad_auth:")
+
+
 def validate_strong_password(password: str) -> Optional[str]:
     """Validate password meets strong password policy.
     Returns None if valid, error message string if invalid."""
@@ -1379,6 +1387,24 @@ class AuthService:
         antes de chamar este metodo. Este metodo apenas executa a alteracao.
         """
         hashed = hash_password(new_password)
+        # 2026-09-16: numa conta de dominio o password_hash e' o marcador ad_auth: e NAO se toca. "Trocar" ou
+        # "repor" a password dessa conta e' mexer na senha local de recurso (mesmo modelo do
+        # tools/set_local_password.py). Antes, este metodo reescrevia o marcador e a conta passava a local.
+        try:
+            actual = self._get_user_from_db(username)
+        except Exception:
+            actual = None
+        if e_conta_de_dominio(actual):
+            try:
+                _execute_update(
+                    "UPDATE dbo.WatcherDB_Users SET local_password_hash = ?, local_password_set_at = SYSUTCDATETIME(), "
+                    "failed_attempts = 0, locked_until = NULL, password_changed_at = SYSUTCDATETIME() WHERE username = ?",
+                    (hashed, username)
+                )
+                return {"success": True, "conta_de_dominio": True,
+                        "message": "Conta de dominio: definida a senha local de recurso. A entrada pelo dominio nao muda."}
+            except Exception as e:
+                return {"success": False, "error": str(e)}
         try:
             try:
                 # Lote P4 A-4.7: marca a mudanca em UTC -> tokens anteriores deixam de validar
