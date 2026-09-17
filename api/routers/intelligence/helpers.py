@@ -397,6 +397,37 @@ def _detect_env(instance_name: str, env_value: Optional[str] = None) -> str:
     return _infer_env_from_instance(instance_name or '')
 
 
+def _uma_linha_por_disco(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Uma linha por (Hostname, Drive): a mais recente, com Instances_On_Host e Instances anotados.
+
+    2026-09-16: o recolhedor de disco (WMI) corre uma vez por INSTANCIA e grava Instance; num host com duas
+    instancias o mesmo c: vinha em duplicado (SQLHDSQLT301), com quatro em SQLHDSQLT105. O disco e' do host,
+    nao da instancia: aqui fica um cartao e uma contagem por disco. A ordem de entrada e' preservada.
+    """
+    por_disco: Dict[tuple, Dict[str, Any]] = {}
+    ordem: List[tuple] = []
+    for row in rows:
+        chave = ((row.get('Hostname') or '').strip().upper(), (row.get('Drive') or '').strip().lower())
+        inst = (row.get('Instance') or '').strip()
+        actual = por_disco.get(chave)
+        if actual is None:
+            novo = dict(row)
+            novo['Instances'] = [inst] if inst else []
+            novo['Instances_On_Host'] = 1
+            por_disco[chave] = novo
+            ordem.append(chave)
+            continue
+        if inst and inst not in actual['Instances']:
+            actual['Instances'].append(inst)
+        actual['Instances_On_Host'] = max(len(actual['Instances']), actual['Instances_On_Host'] + 1)
+        ts_novo, ts_actual = row.get('Update_TS'), actual.get('Update_TS')
+        if ts_novo is not None and (ts_actual is None or ts_novo > ts_actual):
+            guardado_inst, guardado_n = actual['Instances'], actual['Instances_On_Host']
+            actual.update({k: v for k, v in row.items() if k not in ('Instance',)})
+            actual['Instances'], actual['Instances_On_Host'] = guardado_inst, guardado_n
+    return [por_disco[c] for c in ordem]
+
+
 def _count_by_env(instances: List[Dict[str, Any]], env_key: str = 'Env') -> Dict[str, int]:
     """Conta instancias por ambiente (PRD, QLT, TST, Undefined)"""
     counts = {'PRD': 0, 'QLT': 0, 'TST': 0, 'Undefined': 0}
@@ -2440,6 +2471,7 @@ async def collect_disk_latency(results: Dict[str, Any], offline_hostnames: Set[s
     try:
         query_disk_latency = f"""
         SELECT
+            Instance,
             Hostname,
             Drive,
             Avg_Read_Latency_MS,
@@ -2468,6 +2500,11 @@ async def collect_disk_latency(results: Dict[str, Any], offline_hostnames: Set[s
         disk_latency_data_raw = await execute_intelligence_query_async(query_disk_latency, raise_on_error=False) or []
         disk_latency_data = [row for row in disk_latency_data_raw if (row.get('Hostname') or '').upper() not in offline_hostnames]
         dl_filtered = len(disk_latency_data_raw) - len(disk_latency_data)
+        # 2026-09-16: o recolhedor grava uma linha por instancia; o disco e' do host -> um cartao por disco
+        antes = len(disk_latency_data)
+        disk_latency_data = _uma_linha_por_disco(disk_latency_data)
+        if len(disk_latency_data) != antes:
+            logger.info(f"Disk Latency: {antes - len(disk_latency_data)} linha(s) repetida(s) por instancia do mesmo host fundidas")
         if dl_filtered > 0:
             logger.info(f"Disk Latency: {dl_filtered} entrada(s) filtrada(s) por servidor offline")
 

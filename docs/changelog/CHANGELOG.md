@@ -9,6 +9,11 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Disk Latency: um cartão e uma contagem por disco, não por instância** (owner 16/09). O recolhedor de
+  desempenho de disco grava uma linha por instância; num host com duas instâncias o mesmo `c:` aparecia duas
+  vezes na modal e contava 2 no KPI. O portal passa a fundir as linhas do mesmo (host, disco), ficando com a
+  mais recente e a lista de instâncias. [tier: Std]
+
 - **O caminho legado de ligação à frota passa a usar as credenciais do pool** (16/09, Regra de Ouro #2, lote B).
   O LIVE, o Overview, o Always On e os logs de serviço ligavam com a identidade de Windows do serviço; passam
   a ligar como `sql_monitoring` nos servidores da allowlist, decidido num único sítio, e mantêm a identidade de
