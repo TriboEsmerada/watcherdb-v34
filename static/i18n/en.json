@@ -3463,5 +3463,28 @@
         "action": "Check the scheduler logs (APScheduler / Task Scheduler) to confirm the job is registered."
       }
     }
+  },
+  "dlat": {
+    "drive": "Drive:",
+    "read": "Read",
+    "write": "Write",
+    "disk_busy": "Disk busy",
+    "iops_read": "Read IOPS:",
+    "iops_write": "Write IOPS:",
+    "causes": "Possible causes and diagnosis",
+    "tip_low_iops_title": "High latency with low IOPS:",
+    "tip_low_iops": "May indicate a degraded RAID, write cache disabled (failed BBU battery) or a storage/SAN problem.",
+    "tip_read_title": "High read latency:",
+    "tip_read": "Possible disk fragmentation, mechanical disk (HDD) or imminent disk failure.",
+    "tip_busy_title": "Disk very busy ({pct}%):",
+    "tip_busy": "I/O congestion. Consider moving files to separate disks.",
+    "tip_cdrive_title": "Drive C: (system):",
+    "tip_cdrive": "Check the pagefile, antivirus and whether SQL Server files (MDF/LDF/TempDB) live on this disk. Ideally move them to a dedicated disk.",
+    "diag_title": "Recommended diagnosis:",
+    "diag_raid": "Check the RAID controller status and the cache battery",
+    "diag_storage": "Ask the storage team about the LUN/volume status",
+    "diag_perfmon": "PerfMon: Avg. Disk sec/Write, Disk Queue Length",
+    "run_diag": "Run I/O diagnostic",
+    "more": "Click for more details"
   }
 }

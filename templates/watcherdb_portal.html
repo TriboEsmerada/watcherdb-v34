@@ -39902,7 +39902,7 @@ Tempo de Resposta: ${responseTime}
                                             <i class="fas fa-server" style="margin-right: 8px;"></i>${hostname}
                                         </div>
                                         <div style="color: var(--color-text-tertiary); font-size: 12px; margin-top: 4px;">
-                                            <i class="fas fa-hdd" style="margin-right: 4px;"></i>Drive: <strong style="color: var(--color-text-primary);">${drive}</strong>
+                                            <i class="fas fa-hdd" style="margin-right: 4px;"></i>${t('dlat.drive')} <strong style="color: var(--color-text-primary);">${drive}</strong>
                                         </div>
                                     </div>
                                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
@@ -39918,7 +39918,7 @@ Tempo de Resposta: ${responseTime}
                                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(100, 116, 139, 0.2);">
                                     <div style="text-align: center;">
                                         <div style="color: var(--color-text-tertiary); font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">
-                                            <i class="fas fa-arrow-down" style="margin-right: 4px;"></i>Leitura
+                                            <i class="fas fa-arrow-down" style="margin-right: 4px;"></i>${t('dlat.read')}
                                         </div>
                                         <div style="color: ${readLatency >= 50 ? '#ef4444' : readLatency >= 20 ? '#f59e0b' : '#10b981'}; font-size: 18px; font-weight: 700;">
                                             ${readLatency.toFixed(1)}<span style="font-size: 11px; color: var(--color-text-tertiary);"> ms</span>
@@ -39926,7 +39926,7 @@ Tempo de Resposta: ${responseTime}
                                     </div>
                                     <div style="text-align: center;">
                                         <div style="color: var(--color-text-tertiary); font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">
-                                            <i class="fas fa-arrow-up" style="margin-right: 4px;"></i>Escrita
+                                            <i class="fas fa-arrow-up" style="margin-right: 4px;"></i>${t('dlat.write')}
                                         </div>
                                         <div style="color: ${writeLatency >= 50 ? '#ef4444' : writeLatency >= 20 ? '#f59e0b' : '#10b981'}; font-size: 18px; font-weight: 700;">
                                             ${writeLatency.toFixed(1)}<span style="font-size: 11px; color: var(--color-text-tertiary);"> ms</span>
@@ -39934,7 +39934,7 @@ Tempo de Resposta: ${responseTime}
                                     </div>
                                     <div style="text-align: center;">
                                         <div style="color: var(--color-text-tertiary); font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">
-                                            <i class="fas fa-percentage" style="margin-right: 4px;"></i>Uso Disco
+                                            <i class="fas fa-percentage" style="margin-right: 4px;"></i>${t('dlat.disk_busy')}
                                         </div>
                                         <div style="color: ${diskTimePct >= 80 ? '#ef4444' : diskTimePct >= 50 ? '#f59e0b' : '#10b981'}; font-size: 18px; font-weight: 700;">
                                             ${diskTimePct.toFixed(0)}<span style="font-size: 11px; color: var(--color-text-tertiary);">%</span>
@@ -39945,36 +39945,36 @@ Tempo de Resposta: ${responseTime}
                                 <div style="display: flex; justify-content: space-around; margin-top: 12px; padding: 8px; background: rgb(var(--rgb-surface-panel) / 0.5); border-radius: 4px;">
                                     <div style="color: var(--color-text-tertiary); font-size: 11px;">
                                         <i class="fas fa-tachometer-alt" style="margin-right: 4px; color: var(--color-text-link);"></i>
-                                        IOPS Leitura: <strong style="color: var(--color-text-primary);">${diskReadsSec.toFixed(0)}</strong>
+                                        ${t('dlat.iops_read')} <strong style="color: var(--color-text-primary);">${diskReadsSec.toFixed(0)}</strong>
                                     </div>
                                     <div style="color: var(--color-text-tertiary); font-size: 11px;">
                                         <i class="fas fa-tachometer-alt" style="margin-right: 4px; color: var(--color-text-link);"></i>
-                                        IOPS Escrita: <strong style="color: var(--color-text-primary);">${diskWritesSec.toFixed(0)}</strong>
+                                        ${t('dlat.iops_write')} <strong style="color: var(--color-text-primary);">${diskWritesSec.toFixed(0)}</strong>
                                     </div>
                                 </div>
                                 <!-- Dicas de Diagnostico -->
                                 <div style="margin-top: 10px; padding: 8px 10px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px;">
                                     <div onclick="const tips=this.nextElementSibling; tips.style.display=tips.style.display==='none'?'block':'none'; this.querySelector('.fa-chevron-right').classList.toggle('fa-chevron-down')" style="cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--color-text-link); font-size: 11px; font-weight: 600;">
                                         <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
-                                        Possiveis causas e diagnostico
+                                        ${t('dlat.causes')}
                                         <i class="fas fa-chevron-right" style="font-size: 9px; margin-left: auto; transition: transform 0.2s;"></i>
                                     </div>
                                     <div style="display: none; margin-top: 8px; font-size: 10px; color: var(--color-text-tertiary); line-height: 1.6;">
-                                        ${writeLatency >= 50 && diskWritesSec < 10 ? '<div style="margin-bottom: 4px;"><i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 4px;"></i><strong style="color: #fca5a5;">Latencia alta com IOPS baixo:</strong> Pode indicar RAID degradado, cache de escrita desabilitado (bateria BBU falha) ou problema no storage/SAN.</div>' : ''}
-                                        ${readLatency >= 50 ? '<div style="margin-bottom: 4px;"><i class="fas fa-exclamation-triangle" style="color: #f59e0b; margin-right: 4px;"></i><strong style="color: #fbbf24;">Latencia de leitura alta:</strong> Possivel fragmentacao de disco, disco mecanico (HDD), ou falha iminente do disco.</div>' : ''}
-                                        ${diskTimePct >= 80 ? '<div style="margin-bottom: 4px;"><i class="fas fa-exclamation-triangle" style="color: #f59e0b; margin-right: 4px;"></i><strong style="color: #fbbf24;">Disco muito ocupado (${diskTimePct.toFixed(0)}%):</strong> Congestionamento de I/O. Considere mover arquivos para discos separados.</div>' : ''}
-                                        ${drive.toUpperCase().startsWith('C') ? '<div style="margin-bottom: 4px;"><i class="fas fa-info-circle" style="color: var(--color-text-link); margin-right: 4px;"></i><strong style="color: #93c5fd;">Drive C: (sistema):</strong> Verificar pagefile, antivirus, e se ha arquivos SQL Server (MDF/LDF/TempDB) neste disco. Ideal: mover para disco dedicado.</div>' : ''}
+                                        ${writeLatency >= 50 && diskWritesSec < 10 ? '<div style="margin-bottom: 4px;"><i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 4px;"></i><strong style="color: #fca5a5;">' + t('dlat.tip_low_iops_title') + '</strong> ' + t('dlat.tip_low_iops') + '</div>' : ''}
+                                        ${readLatency >= 50 ? '<div style="margin-bottom: 4px;"><i class="fas fa-exclamation-triangle" style="color: #f59e0b; margin-right: 4px;"></i><strong style="color: #fbbf24;">' + t('dlat.tip_read_title') + '</strong> ' + t('dlat.tip_read') + '</div>' : ''}
+                                        ${diskTimePct >= 80 ? '<div style="margin-bottom: 4px;"><i class="fas fa-exclamation-triangle" style="color: #f59e0b; margin-right: 4px;"></i><strong style="color: #fbbf24;">' + t('dlat.tip_busy_title').replace('{pct}', diskTimePct.toFixed(0)) + '</strong> ' + t('dlat.tip_busy') + '</div>' : ''}
+                                        ${drive.toUpperCase().startsWith('C') ? '<div style="margin-bottom: 4px;"><i class="fas fa-info-circle" style="color: var(--color-text-link); margin-right: 4px;"></i><strong style="color: #93c5fd;">' + t('dlat.tip_cdrive_title') + '</strong> ' + t('dlat.tip_cdrive') + '</div>' : ''}
                                         <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(100,116,139,0.2);">
-                                            <div style="color: var(--color-text-disabled); font-weight: 600; margin-bottom: 4px;">Diagnostico recomendado:</div>
-                                            <div style="margin-bottom: 2px;"><i class="fas fa-check" style="color: #10b981; margin-right: 4px; font-size: 9px;"></i>Verificar status do controlador RAID e bateria do cache</div>
-                                            <div style="margin-bottom: 2px;"><i class="fas fa-check" style="color: #10b981; margin-right: 4px; font-size: 9px;"></i>Consultar equipe de storage sobre status da LUN/volume</div>
-                                            <div style="margin-bottom: 2px;"><i class="fas fa-check" style="color: #10b981; margin-right: 4px; font-size: 9px;"></i>PerfMon: Avg. Disk sec/Write, Disk Queue Length</div>
+                                            <div style="color: var(--color-text-disabled); font-weight: 600; margin-bottom: 4px;">${t('dlat.diag_title')}</div>
+                                            <div style="margin-bottom: 2px;"><i class="fas fa-check" style="color: #10b981; margin-right: 4px; font-size: 9px;"></i>${t('dlat.diag_raid')}</div>
+                                            <div style="margin-bottom: 2px;"><i class="fas fa-check" style="color: #10b981; margin-right: 4px; font-size: 9px;"></i>${t('dlat.diag_storage')}</div>
+                                            <div style="margin-bottom: 2px;"><i class="fas fa-check" style="color: #10b981; margin-right: 4px; font-size: 9px;"></i>${t('dlat.diag_perfmon')}</div>
                                             <div style="margin-top: 8px;">
                                                 <button onclick="event.stopPropagation(); runDiskIODiagnostic('${hostname.replace(/\\\\/g, '_').replace(/\\/g, '_')}', 'disk-io-modal-${hostname.replace(/[^a-zA-Z0-9]/g, '_')}')"
                                                     style="background:linear-gradient(135deg,#3b82f6,#2563eb);border:none;border-radius:4px;padding:6px 14px;color:white;font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"
                                                     onmouseover="this.style.boxShadow='0 2px 8px rgba(59,130,246,0.4)'"
                                                     onmouseout="this.style.boxShadow=''">
-                                                    <i class="fas fa-play"></i> Executar Diagnostico de I/O
+                                                    <i class="fas fa-play"></i> ${t('dlat.run_diag')}
                                                 </button>
                                             </div>
                                             <div id="disk-io-modal-${hostname.replace(/[^a-zA-Z0-9]/g, '_')}" style="margin-top: 8px;"></div>
@@ -39985,7 +39985,7 @@ Tempo de Resposta: ${responseTime}
                                 <div class="kpi-drill-hint" role="link" tabindex="0"
                                      onclick="event.stopPropagation(); selectInstanceFromModal('${escapedHostname}', 'disk-latency')"
                                      style="margin-top: 8px; font-size: 11px; color: var(--color-text-link); text-align: right; cursor: pointer;">
-                                    <i class="fas fa-arrow-right"></i> Clique para mais detalhes
+                                    <i class="fas fa-arrow-right"></i> ${t('dlat.more')}
                                 </div>
                             </div>
                         `;

@@ -3463,5 +3463,28 @@
         "action": "Revise los registros del planificador (APScheduler / Task Scheduler) para confirmar que la tarea está registrada."
       }
     }
+  },
+  "dlat": {
+    "drive": "Unidad:",
+    "read": "Lectura",
+    "write": "Escritura",
+    "disk_busy": "Uso del disco",
+    "iops_read": "IOPS lectura:",
+    "iops_write": "IOPS escritura:",
+    "causes": "Posibles causas y diagnóstico",
+    "tip_low_iops_title": "Latencia alta con IOPS bajo:",
+    "tip_low_iops": "Puede indicar RAID degradado, caché de escritura desactivada (batería BBU fallida) o un problema en el storage/SAN.",
+    "tip_read_title": "Latencia de lectura alta:",
+    "tip_read": "Posible fragmentación del disco, disco mecánico (HDD) o fallo inminente del disco.",
+    "tip_busy_title": "Disco muy ocupado ({pct}%):",
+    "tip_busy": "Congestión de I/O. Considere mover archivos a discos separados.",
+    "tip_cdrive_title": "Unidad C: (sistema):",
+    "tip_cdrive": "Verificar pagefile, antivirus y si hay archivos de SQL Server (MDF/LDF/TempDB) en este disco. Ideal: moverlos a un disco dedicado.",
+    "diag_title": "Diagnóstico recomendado:",
+    "diag_raid": "Verificar el estado del controlador RAID y de la batería de la caché",
+    "diag_storage": "Consultar al equipo de storage sobre el estado de la LUN/volumen",
+    "diag_perfmon": "PerfMon: Avg. Disk sec/Write, Disk Queue Length",
+    "run_diag": "Ejecutar diagnóstico de I/O",
+    "more": "Clic para más detalles"
   }
 }

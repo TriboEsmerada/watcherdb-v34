@@ -9,6 +9,12 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Cartão de Disk Latency em quatro idiomas** (owner 16/09). O corpo do cartão da modal — métricas, dicas de
+  diagnóstico, lista recomendada e botões — estava escrito à mão em português; passa a `dlat.*` em pt/pt-BR/en/es.
+  A dica "Disco muito ocupado (N%)" mostrava o código em vez do número (interpolação dentro de aspas simples);
+  corrigido. De caminho, três chaves do grupo `live` que faziam falhar o teste de paridade i18n (grafia
+  pré-AO90 e um override pt-BR redundante). [tier: Std]
+
 - **Disk Latency: "um disco = uma linha" em todos os leitores** (owner 17/09). A modal do KPI e o separador de
   desempenho do SO tinham as suas próprias consultas à tabela de discos e continuavam a repetir o mesmo disco por
   cada instância do host; passam pela mesma regra do dashboard. [tier: Std]

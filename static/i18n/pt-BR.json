@@ -240,11 +240,10 @@
     "help_io_next": "Confirme em Waits se há PAGEIOLATCH ou WRITELOG agora e leve o arquivo e o disco à equipe de armazenamento.",
     "help_tempdb_what": "O espaço do tempdb por tipo (objetos de usuário, internos, version store, livre), os arquivos e as sessões que mais o usam agora.",
     "help_errorlog_how": "Inclui mensagens informativas. O histórico classificado fica na Intelligence e aparece na tela de servidor offline e no banner de diagnóstico.",
-    "help_fleet_what": "O estado das instâncias a partir dos KPIs e, em tempo real, só as instâncias com problema: queries pesadas, bloqueios, erros recentes e TempDB.",
     "sched_state_spike": "Fila de CPU se formando",
     "measuring": "medindo…",
     "mem_tip_detail": "SQL Server: {sql} MB (max server memory: {max} MB) · disponível no sistema operacional: {avail} MB",
-    "sched_tip_workers": "Threads associadas a este scheduler; Active são as que estão trabalhando agora.",
+    "sched_tip_workers": "Threads associadas a este scheduler; as ativas são as que estão trabalhando agora.",
     "sched_tip_runnable": "Pedidos prontos para rodar esperando CPU neste scheduler. Acima de 1 de forma sustentada indica pressão de CPU.",
     "loading_files": "Carregando arquivos...",
     "no_db_files_drive": "Nenhum arquivo de banco de dados encontrado neste drive",
@@ -345,5 +344,13 @@
         "action": "Veja os registros do agendador (APScheduler / Task Scheduler) para confirmar que a tarefa está registrada."
       }
     }
+  },
+  "dlat": {
+    "drive": "Drive:",
+    "tip_low_iops": "Pode indicar RAID degradado, cache de escrita desativado (bateria BBU com falha) ou problema no storage/SAN.",
+    "tip_busy": "Congestionamento de I/O. Considere mover arquivos para discos separados.",
+    "tip_cdrive": "Verificar pagefile, antivírus e se há arquivos do SQL Server (MDF/LDF/TempDB) neste disco. Ideal: mover para disco dedicado.",
+    "diag_raid": "Verificar o status do controlador RAID e da bateria do cache",
+    "diag_storage": "Consultar a equipe de storage sobre o status da LUN/volume"
   }
 }

@@ -3049,7 +3049,7 @@
 
   "live": {
     "help_tip": "Ajuda deste separador",
-    "help_region": "Ajuda do separador activo",
+    "help_region": "Ajuda do separador ativo",
     "help_close": "Fechar ajuda",
     "help_label_what": "O que mostra:",
     "help_label_how": "Como ler:",
@@ -3147,7 +3147,7 @@
     "sched_rates_note": "Yields/s e Ctx Switches/s são calculados pela diferença entre duas leituras.",
     "sched_tip_tasks": "Tarefas atribuídas a este scheduler, incluindo as que esperam por outra coisa.",
     "sched_tip_runnable": "Pedidos prontos a correr à espera de CPU neste scheduler. Acima de 1 de forma sustentada indica pressão de CPU.",
-    "sched_tip_workers": "Threads associadas a este scheduler; Active são as que estão a trabalhar agora.",
+    "sched_tip_workers": "Threads associadas a este scheduler; as ativas são as que estão a trabalhar agora.",
     "sched_tip_io": "Pedidos de I/O à espera de conclusão neste scheduler.",
     "sched_tip_rates": "Por segundo, pela diferença entre duas leituras.",
     "job_step": "Passo {i} de {n}: {name}",
@@ -3463,5 +3463,28 @@
         "action": "Veja os registos do agendador (APScheduler / Task Scheduler) para confirmar que a tarefa está registada."
       }
     }
+  },
+  "dlat": {
+    "drive": "Disco:",
+    "read": "Leitura",
+    "write": "Escrita",
+    "disk_busy": "Uso do disco",
+    "iops_read": "IOPS leitura:",
+    "iops_write": "IOPS escrita:",
+    "causes": "Possíveis causas e diagnóstico",
+    "tip_low_iops_title": "Latência alta com IOPS baixo:",
+    "tip_low_iops": "Pode indicar RAID degradado, cache de escrita desativada (bateria BBU em falha) ou problema no storage/SAN.",
+    "tip_read_title": "Latência de leitura alta:",
+    "tip_read": "Possível fragmentação do disco, disco mecânico (HDD) ou falha iminente do disco.",
+    "tip_busy_title": "Disco muito ocupado ({pct}%):",
+    "tip_busy": "Congestionamento de I/O. Considere mover ficheiros para discos separados.",
+    "tip_cdrive_title": "Disco C: (sistema):",
+    "tip_cdrive": "Verificar pagefile, antivírus e se há ficheiros do SQL Server (MDF/LDF/TempDB) neste disco. Ideal: mover para disco dedicado.",
+    "diag_title": "Diagnóstico recomendado:",
+    "diag_raid": "Verificar o estado do controlador RAID e da bateria da cache",
+    "diag_storage": "Consultar a equipa de storage sobre o estado da LUN/volume",
+    "diag_perfmon": "PerfMon: Avg. Disk sec/Write, Disk Queue Length",
+    "run_diag": "Executar diagnóstico de I/O",
+    "more": "Clique para mais detalhes"
   }
 }
