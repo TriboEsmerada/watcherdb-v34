@@ -9,6 +9,10 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Ajuda "?" das modais de backup em quatro idiomas** (owner 17/09). Os cinco textos (falhas, falhas de log, em atraso,
+  jobs desativados, sem checksum) estavam escritos à mão em português sem acentos; passam a `kpi_info.*` em pt/pt-BR/en/es.
+  [tier: Std]
+
 - **Repor a password de uma conta de domínio deixa de a converter em conta local** (16/09). O reset por
   administrador reescrevia o marcador que diz "esta conta entra pelo domínio"; a partir daí a password do domínio
   deixava de servir, sem aviso. Passa a definir a senha local de recurso, e a resposta diz isso. No self-service, um

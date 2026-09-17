@@ -38171,7 +38171,8 @@ Tempo de Resposta: ${responseTime}
             const modalBody = document.getElementById('instancesModalBody');
 
             // Wave R+7.T1 (2026-05-25): ? icon com tooltip info em modal headers de backup KPIs
-            const kpiInfo = BACKUP_KPI_INFO[kpiType];
+            // 2026-09-17: texto da ajuda vem dos locales (kpi_info.*); o dicionario antigo em portugues e' o recurso
+            const kpiInfo = BACKUP_KPI_INFO[kpiType] ? _kpiT('kpi_info.' + String(kpiType).replace(/-/g, '_'), BACKUP_KPI_INFO[kpiType]) : null;
             if (kpiInfo) {
                 const safeInfo = kpiInfo.replace(/"/g, '&quot;');
                 modalTitle.innerHTML = `${title} <span class="kpi-info-icon" title="${safeInfo}" style="display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;background:var(--color-border-strong);color:var(--color-text-secondary);border-radius:50%;font-size:12px;cursor:help;margin-left:10px;font-weight:600;">?</span>`;
