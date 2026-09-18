@@ -51433,7 +51433,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const tabContent = `
             <div id="live-container-${tabId}" style="display:flex;flex-direction:column;height:100%;background:var(--color-bg-primary);">
                 <div style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--color-bg-sunken);border-bottom:1px solid var(--color-bg-panel);flex-wrap:wrap;">
-                    <span style="display:inline-flex;align-items:center;gap:4px;color:#ef4444;font-weight:700;font-size:13px;flex-shrink:0;">
+                    <span style="display:inline-flex;align-items:center;gap:4px;color:var(--sev-critical-text);font-weight:700;font-size:13px;flex-shrink:0;">
                         <span style="width:8px;height:8px;background:#ef4444;border-radius:50%;animation:live-pulse 1.5s infinite;"></span> LIVE
                     </span>
                     <input id="live-channel-search-${tabId}" type="text" placeholder="${t('live.filter_instance')}"
@@ -51480,11 +51480,11 @@ window.showDiskDrilldown = async function(drive, label) {
                     <span title="${t('live.active_sessions')}">Sess: <b id="lg-sess-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span title="${t('live.gauge_qry_tip')}">Qry: <b id="lg-qry-${tabId}" style="color:var(--color-text-bright);">--</b></span>
                     <span title="${t('live.blocked_sessions')}">Blk: <b id="lg-blk-${tabId}" style="color:var(--color-text-bright);">--</b></span>
-                    <span id="live-status-${tabId}" style="margin-left:auto;color:var(--color-text-disabled);font-size:12px;">--</span>
+                    <span id="live-status-${tabId}" style="margin-left:auto;color:var(--color-text-tertiary);font-size:12px;">--</span>
                 </div>
                 <div id="live-help-${tabId}" role="region" aria-label="${t('live.help_region')}" style="display:none;flex-shrink:0;max-height:220px;overflow-y:auto;padding:10px 14px;background:var(--color-bg-panel);border-bottom:1px solid var(--color-border);font-size:13px;line-height:1.5;color:var(--color-text-secondary);"></div>
                 <div id="live-screen-${tabId}" style="flex:1;overflow:auto;padding:12px;font-family:var(--font-mono);font-size:var(--font-sm);color:var(--color-text-bright);">
-                    <div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
+                    <div style="text-align:center;padding:60px 20px;color:var(--color-text-tertiary);">
                         <i class="fas fa-satellite-dish" style="font-size:48px;margin-bottom:16px;color:var(--color-border);"></i>
                         <div style="font-size:16px;margin-bottom:8px;">${t('live.select_channel')}</div>
                     </div>
@@ -51541,7 +51541,7 @@ window.showDiskDrilldown = async function(drive, label) {
                         <div id="live-tv-bezel" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 8px;cursor:move;user-select:none;" title="${t('live.drag_to_move')}">
                             <div style="display:flex;align-items:center;gap:8px;pointer-events:none;">
                                 <span style="width:12px;height:12px;background:#ef4444;border-radius:50%;animation:live-pulse 1.5s infinite;box-shadow:0 0 8px #ef4444;"></span>
-                                <span style="color:var(--color-text-disabled);font-size:12px;font-family:var(--font-mono);letter-spacing:2px;">WATCHERDB LIVE ⋮⋮</span>
+                                <span style="color:var(--color-text-tertiary);font-size:12px;font-family:var(--font-mono);letter-spacing:2px;">WATCHERDB LIVE ⋮⋮</span>
                             </div>
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <span style="color:var(--color-border-strong);font-size:12px;font-family:var(--font-mono);" id="live-tv-clock"></span>
@@ -51697,7 +51697,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveShowLoading(tabId, msg) {
             const screen = document.getElementById('live-screen-' + tabId);
-            if (screen) screen.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
+            if (screen) screen.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--color-text-tertiary);">
                 <div style="display:inline-block;width:32px;height:32px;border:3px solid var(--color-border);border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
                 <div style="font-size:13px;">${msg || t('live.loading')}</div>
             </div>`;
@@ -51709,12 +51709,12 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveShowNoInstance(tabId, program) {
             if (_liveInterval) { clearInterval(_liveInterval); _liveInterval = null; }
             const screen = document.getElementById('live-screen-' + tabId);
-            if (screen) screen.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--color-text-disabled);">
+            if (screen) screen.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--color-text-tertiary);">
                 <i class="fas fa-satellite-dish" style="font-size:48px;margin-bottom:16px;color:var(--color-border);display:block;"></i>
                 <div style="font-size:16px;margin-bottom:8px;">${_diagEsc(program ? _kpiTp('live.select_instance_for_program', 'Selecione uma instância para ver {program}', { program }) : t('live.select_channel'))}</div>
             </div>`;
             const status = document.getElementById('live-status-' + tabId);
-            if (status) { status.textContent = '--'; status.style.color = 'var(--color-text-disabled)'; }
+            if (status) { status.textContent = '--'; status.style.color = 'var(--color-text-tertiary)'; }
             ['cpu','mem','ple','batch','sess','qry','blk'].forEach(g => { const el = document.getElementById('lg-' + g + '-' + tabId); if (el) { el.textContent = '--'; el.style.color = 'var(--color-text-bright)'; } });
         }
 
@@ -51780,9 +51780,10 @@ window.showDiskDrilldown = async function(drive, label) {
             _liveHelpRefresh(tabId);   // 2026-09-15: a ajuda aberta segue o separador
             document.querySelectorAll('.live-prog-btn').forEach(b => {
                 const active = b.dataset.prog === program;
-                b.style.background = active ? '#3b82f6' : 'var(--color-bg-panel)';
-                b.style.color = active ? '#fff' : 'var(--color-text-tertiary)';
-                b.style.borderColor = active ? '#3b82f6' : 'var(--color-border)';
+                b.style.background = active ? 'var(--sev-info-tint)' : 'var(--color-bg-panel)';
+                b.style.color = active ? 'var(--sev-info-text)' : 'var(--color-text-tertiary)';
+                b.style.borderColor = active ? 'var(--sev-info-text)' : 'var(--color-border)';
+                b.style.fontWeight = active ? '600' : '';
             });
             if (_liveInstance || program === 'fleet') {
                 const label = program === 'fleet' ? t('live.loading_fleet') : _kpiTp('live.loading_program', 'A carregar {program}...', { program });  // lote F8 2026-09-09
@@ -51842,8 +51843,8 @@ window.showDiskDrilldown = async function(drive, label) {
                         el.textContent = v.toFixed(0) + (unit || '');
                         // 2026-09-15: menorPior (PLE) -- abaixo do limite e que e mau; antes 2467 s aparecia vermelho
                         el.style.color = menorPior
-                            ? (v <= critAt ? '#ef4444' : v <= warnAt ? '#f59e0b' : '#10b981')
-                            : (v >= (critAt||999) ? '#ef4444' : v >= (warnAt||999) ? '#f59e0b' : '#10b981');
+                            ? (v <= critAt ? 'var(--sev-critical-text)' : v <= warnAt ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)')
+                            : (v >= (critAt||999) ? 'var(--sev-critical-text)' : v >= (warnAt||999) ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)');   // D1 piloto LIVE
                     };
                     _gc('lg-cpu-'+tabId, gd.cpu_pct, '%', 70, 90);
                     _gc('lg-mem-'+tabId, gd.memory_pct, '%', 101, 101);
@@ -51854,7 +51855,7 @@ window.showDiskDrilldown = async function(drive, label) {
                         if (!el) return;
                         const livre = +gd.available_memory_mb || 0, total = +gd.total_memory_mb || 0;
                         const pctLivre = total > 0 ? livre / total * 100 : 100;
-                        el.style.color = (livre < 512 || pctLivre < 2) ? '#ef4444' : (livre < 1024 || pctLivre < 5) ? '#f59e0b' : '#10b981';
+                        el.style.color = (livre < 512 || pctLivre < 2) ? 'var(--sev-critical-text)' : (livre < 1024 || pctLivre < 5) ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)';
                         el.title = _kpiTp('live.mem_tip_detail', 'SQL Server: {sql} MB (max server memory: {max} MB) · disponível no sistema operativo: {avail} MB',
                             { sql: (+gd.sql_memory_mb || 0).toLocaleString(), max: (+gd.max_server_memory_mb || 0).toLocaleString(), avail: livre.toLocaleString() });
                     })();
@@ -51895,21 +51896,21 @@ window.showDiskDrilldown = async function(drive, label) {
                     if (status) {
                         const now = new Date().toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
                         status.textContent = now;
-                        status.style.color = '#10b981';
+                        status.style.color = 'var(--color-text-tertiary)';   // D1: hora do refresh nao e' severidade; --sev-ok-text em Light da' 4,3 sobre a barra
                     }
                 } else if (progResp) {
                     const errCode = progResp.status;
                     let errMsg = t('live.no_data');
                     if (errCode === 503) errMsg = t('live.instance_unavailable');
-                    if (status) { status.textContent = _kpiTp('live.error_http', 'Erro HTTP {code}', { code: errCode }); status.style.color = '#ef4444'; }  // 2026-09-11
-                    screen.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-text-disabled);">
+                    if (status) { status.textContent = _kpiTp('live.error_http', 'Erro HTTP {code}', { code: errCode }); status.style.color = 'var(--sev-critical-text)'; }  // 2026-09-11
+                    screen.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-text-tertiary);">
                         <i class="fas fa-tv" style="font-size:36px;margin-bottom:12px;color:var(--color-border);display:block;"></i>
                         <div style="font-size:14px;margin-bottom:6px;color:var(--color-text-tertiary);">${errMsg}</div>
                         <div style="font-size:12px;">${_kpiTp('live.program_error', 'Programa: {program} | Erro: {code}', { program: _liveProgram, code: errCode })}</div>
                     </div>`;
                 }
             } catch (e) {
-                if (status) { status.textContent = t('live.error_short'); status.style.color = '#ef4444'; }
+                if (status) { status.textContent = t('live.error_short'); status.style.color = 'var(--sev-critical-text)'; }
             }
         }
 
@@ -52085,12 +52086,12 @@ window.showDiskDrilldown = async function(drive, label) {
             if (program === 'errorlog') return _liveRenderErrorLog(data);
             if (program === 'schedulers') return _liveRenderSchedulers(data);
             if (program === 'fleet') return _liveRenderFleet(data, tabId);
-            return '<div style="color:var(--color-text-disabled);">' + t('live.program_not_implemented') + '</div>';
+            return '<div style="color:var(--color-text-tertiary);">' + t('live.program_not_implemented') + '</div>';
         }
 
         function _liveRenderQueries(data, tabId) {
             const queries = data.queries || [];
-            if (!queries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_queries') + '</div>';
+            if (!queries.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_queries') + '</div>';
             // Wave S (2026-05-29): sortable headers + cached payload re-render.
             const NUMERIC_COLS_Q = ['spid', 'cpu_ms', 'logical_reads', 'elapsed_sec', 'blocking_spid'];
             const sortedQueries = _liveSortRows(queries, _liveSortState['queries'], NUMERIC_COLS_Q);
@@ -52119,7 +52120,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 const cmd = String(q.command || '');
                 const isIdle = /^sleeping/i.test(q.status || '') || /^AWAITING/i.test(cmd)
                     || /BROKER_RECEIVE_WAITFOR|WAITFOR/i.test(q.wait_type || '');
-                const elColor = isIdle ? 'var(--color-text-disabled)'
+                const elColor = isIdle ? 'var(--color-text-tertiary)'
                     : elapsed > 300 ? getSevTokens('CRITICAL').fill : elapsed > 60 ? getSevTokens('WARNING').fill : 'var(--color-text-bright)';
                 const elHuman = (function(sec){ sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec/86400), hh = Math.floor((sec%86400)/3600), mm = Math.floor((sec%3600)/60), ss = sec%60;
                     if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm ' + ss + 's'; return ss + 's'; })(elapsed);
@@ -52127,14 +52128,14 @@ window.showDiskDrilldown = async function(drive, label) {
                 const sql = (q.current_statement || '').replace(/</g,'&lt;').substring(0, 200);
                 h += `<tr style="border-bottom:1px solid var(--color-bg-panel);${rowBg}">`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-link);font-weight:600;">${q.spid}</td>`;
-                h += `<td style="padding:5px 8px;">${q.status || ''}${isIdle ? ' <span title="' + t('live.idle_title') + '" style="font-size:12px;color:var(--color-text-disabled);border:1px solid var(--color-border);border-radius:4px;padding:0 4px;">idle</span>' : ''}</td>`;
+                h += `<td style="padding:5px 8px;">${q.status || ''}${isIdle ? ' <span title="' + t('live.idle_title') + '" style="font-size:12px;color:var(--color-text-tertiary);border:1px solid var(--color-border);border-radius:4px;padding:0 4px;">idle</span>' : ''}</td>`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;">${cmd.replace(/</g,'&lt;')}</td>`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${q.database_name || ''}</td>`;
                 h += `<td style="padding:5px 8px;color:#f59e0b;">${q.wait_type || '-'}</td>`;
                 h += `<td style="padding:5px 8px;text-align:right;">${(q.cpu_ms||0).toLocaleString()}</td>`;
                 h += `<td style="padding:5px 8px;text-align:right;">${(q.logical_reads||0).toLocaleString()}</td>`;
                 h += `<td style="padding:5px 8px;text-align:right;color:${elColor};" title="${elTitle}">${elHuman}</td>`;
-                h += `<td style="padding:5px 8px;color:${isBlocked?'#ef4444':'var(--color-text-disabled)'};">${isBlocked ? q.blocking_spid : '-'}</td>`;
+                h += `<td style="padding:5px 8px;color:${isBlocked?'#ef4444':'var(--color-text-tertiary)'};">${isBlocked ? q.blocking_spid : '-'}</td>`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;">${q.login_name || ''}</td>`;
                 h += `<td style="padding:5px 8px;color:var(--color-text-secondary);font-size:12px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sql}">${sql}</td>`;
                 h += '</tr>';
@@ -52169,7 +52170,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 files.forEach(f => {
                     const usedPct = f.size_mb > 0 ? (f.used_mb / f.size_mb * 100).toFixed(0) : 0;
                     const pctColor = usedPct > 90 ? getSevTokens('CRITICAL').fill : usedPct > 70 ? getSevTokens('WARNING').fill : getSevTokens('OK').fill;
-                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:4px 8px;color:var(--color-text-bright);">${f.name}</td><td style="padding:4px 8px;color:var(--color-text-tertiary);">${f.type_desc}</td><td style="padding:4px 8px;">${formatSizeMB(f.size_mb)}</td><td style="padding:4px 8px;">${formatSizeMB(f.used_mb)}</td><td style="padding:4px 8px;color:${pctColor};">${usedPct}%</td><td style="padding:4px 8px;color:var(--color-text-disabled);">${f.max_size_mb == -1 ? 'Unlimited' : formatSizeMB(f.max_size_mb)}</td></tr>`;
+                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:4px 8px;color:var(--color-text-bright);">${f.name}</td><td style="padding:4px 8px;color:var(--color-text-tertiary);">${f.type_desc}</td><td style="padding:4px 8px;">${formatSizeMB(f.size_mb)}</td><td style="padding:4px 8px;">${formatSizeMB(f.used_mb)}</td><td style="padding:4px 8px;color:${pctColor};">${usedPct}%</td><td style="padding:4px 8px;color:var(--color-text-tertiary);">${f.max_size_mb == -1 ? 'Unlimited' : formatSizeMB(f.max_size_mb)}</td></tr>`;
                 });
                 h += '</tbody></table>';
             }
@@ -52182,7 +52183,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 });
                 h += '</tbody></table>';
             } else {
-                h += '<div style="color:var(--color-text-disabled);text-align:center;padding:20px;"><i class="fas fa-check-circle" style="color:#10b981;margin-right:6px;"></i>' + t('live.no_tempdb_consumer') + '</div>';
+                h += '<div style="color:var(--color-text-tertiary);text-align:center;padding:20px;"><i class="fas fa-check-circle" style="color:#10b981;margin-right:6px;"></i>' + t('live.no_tempdb_consumer') + '</div>';
             }
             const activeUsage = data.active_usage || [];
             if (activeUsage.length) {
@@ -52213,7 +52214,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderWaits(data, tabId) {
             const waits = data.waits || [];
-            if (!waits.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_wait_stats') + '</div>';
+            if (!waits.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.no_wait_stats') + '</div>';
             let deltaWaits = waits;
             // 2026-09-15 (owner: "order by demora muito"): o clique no cabecalho re-renderiza o MESMO payload; recalcular o
             // delta contra ele proprio dava 0 em tudo e a tabela ficava vazia ate ao refresh seguinte. Delta uma vez por leitura.
@@ -52235,7 +52236,7 @@ window.showDiskDrilldown = async function(drive, label) {
             // Wave S (2026-05-29): sort APOS delta computation, antes do slice(0, 20)
             const NUMERIC_COLS_W = ['delta_tasks', 'delta_ms', 'waiting_tasks_count', 'wait_time_ms', 'signal_wait_time_ms'];
             const sortedWaits = _liveSortRows(deltaWaits, _liveSortState['waits'], NUMERIC_COLS_W);
-            const catColors = {'I/O':'#3b82f6','CPU':'#ef4444','Lock':'#f59e0b','TempDB/Memory':'#8b5cf6','Parallelism':'#06b6d4','Log I/O':'#10b981','Network/Client':'var(--color-text-tertiary)','Memory Grant':'#ec4899','AlwaysOn':'#22d3ee','Other':'var(--color-text-disabled)'};
+            const catColors = {'I/O':'#3b82f6','CPU':'#ef4444','Lock':'#f59e0b','TempDB/Memory':'#8b5cf6','Parallelism':'#06b6d4','Log I/O':'#10b981','Network/Client':'var(--color-text-tertiary)','Memory Grant':'#ec4899','AlwaysOn':'#22d3ee','Other':'var(--color-text-tertiary)'};
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
             h += '<thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;">';
             h += _liveSortableHeader('waits', 'wait_type', 'Wait Type', tabId, 'padding:6px 8px;text-align:left;');
@@ -52249,14 +52250,14 @@ window.showDiskDrilldown = async function(drive, label) {
             h += _liveSortableHeader('waits', 'signal_wait_time_ms', 'Signal ms', tabId, 'padding:6px 8px;text-align:right;');
             h += '</tr></thead><tbody>';
             sortedWaits.slice(0, 20).forEach(w => {
-                const cc = catColors[w.category] || 'var(--color-text-disabled)';
+                const cc = catColors[w.category] || 'var(--color-text-tertiary)';
                 h += '<tr style="border-bottom:1px solid var(--color-bg-panel);">';
                 h += `<td style="padding:5px 8px;color:var(--color-text-bright);font-weight:500;">${w.wait_type}</td>`;
                 h += `<td style="padding:5px 8px;"><span style="background:${cc}33;color:${cc};padding:2px 8px;border-radius:10px;font-size:12px;">${w.category}</span></td>`;
                 if (hasDelta) {
                     const dt = w.delta_tasks || 0;
                     const dm = w.delta_ms || 0;
-                    h += `<td style="padding:5px 8px;text-align:right;color:${dt>0?'#f59e0b':'var(--color-text-disabled)'};">${dt > 0 ? '+'+dt.toLocaleString() : '-'}</td>`;
+                    h += `<td style="padding:5px 8px;text-align:right;color:${dt>0?'#f59e0b':'var(--color-text-tertiary)'};">${dt > 0 ? '+'+dt.toLocaleString() : '-'}</td>`;
                     h += `<td style="padding:5px 8px;text-align:right;color:${dm>1000?'#ef4444':dm>100?'#f59e0b':'#10b981'};">${dm > 0 ? '+'+dm.toLocaleString() : '-'}</td>`;
                 }
                 h += `<td style="padding:5px 8px;text-align:right;">${(w.waiting_tasks_count||0).toLocaleString()}</td>`;
@@ -52264,7 +52265,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:5px 8px;text-align:right;color:var(--color-text-tertiary);">${(w.signal_wait_time_ms||0).toLocaleString()}</td></tr>`;
             });
             h += '</tbody></table>';
-            if (hasDelta) h = '<div style="margin-bottom:8px;color:var(--color-text-disabled);font-size:12px;">' + _kpiTp('live.delta_since_refresh', 'Delta desde o último refresh ({s}s)', { s: _liveRefreshRate/1000 }) + '</div>' + h;
+            if (hasDelta) h = '<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:12px;">' + _kpiTp('live.delta_since_refresh', 'Delta desde o último refresh ({s}s)', { s: _liveRefreshRate/1000 }) + '</div>' + h;
             return h;
         }
 
@@ -52276,10 +52277,10 @@ window.showDiskDrilldown = async function(drive, label) {
             // esperado e tem de ser legivel (QA externo 2026-08-16 BUG-007).
             const _inst = String(data.instance || '').replace(/</g,'&lt;');
             const _ts = data.timestamp ? new Date(data.timestamp * 1000).toLocaleTimeString() : '';
-            const scope = '<div style="margin-bottom:6px;color:var(--color-text-disabled);font-size:12px;">'
+            const scope = '<div style="margin-bottom:6px;color:var(--color-text-tertiary);font-size:12px;">'
                 + (_inst ? t('live.instance_label') + ': <b style="color:var(--color-text-tertiary);">' + _inst + '</b>' : t('live.no_channel'))
                 + (_ts ? ' &middot; ' + t('live.sample') + ' ' + _ts : '') + ' &middot; ' + t('live.only_this_instance') + '</div>';
-            if (!chains.length) return scope + '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_blocking') + (_inst ? ' ' + t('live.in') + ' ' + _inst : '') + (_ts ? ' ' + t('live.at') + ' ' + _ts : '') + '</div>';
+            if (!chains.length) return scope + '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_blocking') + (_inst ? ' ' + t('live.in') + ' ' + _inst : '') + (_ts ? ' ' + t('live.at') + ' ' + _ts : '') + '</div>';
             let h = scope + '<div style="margin-bottom:8px;color:#ef4444;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>' + _kpiTp('live.blocked_sessions_n', '{n} sessão(ões) bloqueada(s)', { n: chains.length }) + '</div>';
             h += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
             h += '<thead><tr style="background:#7f1d1d44;color:#fca5a5;"><th style="padding:6px 8px;">Blocked</th><th>Blocker</th><th>DB</th><th>Wait</th><th>Wait sec</th><th>Blocked SQL</th><th>Blocker SQL</th></tr></thead><tbody>';
@@ -52320,7 +52321,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderFleet(data, tabId) {
             const instances = data.instances || [];
-            if (!instances.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.collecting_fleet') + '</div>';
+            if (!instances.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.collecting_fleet') + '</div>';
             const online = instances.filter(i => i.status === 'ok');
             const partial = instances.filter(i => i.status === 'partial');
             const offline = instances.filter(i => i.status === 'offline');
@@ -52334,15 +52335,15 @@ window.showDiskDrilldown = async function(drive, label) {
             const problemCount = data.problem_count || 0;
             let h = '';
             h += '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
-            h += _fleetCard('Online', online.length, '#10b981', 'fa-check-circle');
-            h += _fleetCard('Parcial', partial.length, partial.length>0?'#f59e0b':'var(--color-text-disabled)', 'fa-exclamation');
-            h += _fleetCard('Offline', offline.length, offline.length>0?'#ef4444':'var(--color-text-disabled)', 'fa-times-circle');
-            h += _fleetCard(t('live.no_data_short'), noData.length, 'var(--color-text-disabled)', 'fa-question-circle');
-            h += _fleetCard('CPU >50%', cpuHigh.length, cpuHigh.length>0?'#f59e0b':'#10b981', 'fa-microchip');
-            h += _fleetCard('MEM >85%', memHigh.length, memHigh.length>0?'#f59e0b':'#10b981', 'fa-memory');
-            h += _fleetCard('Low PLE', lowPle.length, lowPle.length>0?'#ef4444':'#10b981', 'fa-clock');
-            h += _fleetCard('Blocking', blocked.length, blocked.length>0?'#ef4444':'#10b981', 'fa-lock');
-            h += _fleetCard('Drilled', problemCount, '#3b82f6', 'fa-satellite-dish');
+            h += _fleetCard('Online', online.length, 'var(--sev-ok-text)', 'fa-check-circle');
+            h += _fleetCard('Parcial', partial.length, partial.length>0?'var(--sev-warning-text)':'var(--color-text-tertiary)', 'fa-exclamation');
+            h += _fleetCard('Offline', offline.length, offline.length>0?'var(--sev-critical-text)':'var(--color-text-tertiary)', 'fa-times-circle');
+            h += _fleetCard(t('live.no_data_short'), noData.length, 'var(--color-text-tertiary)', 'fa-question-circle');
+            h += _fleetCard('CPU >50%', cpuHigh.length, cpuHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-microchip');
+            h += _fleetCard('MEM >85%', memHigh.length, memHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-memory');
+            h += _fleetCard('Low PLE', lowPle.length, lowPle.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-clock');
+            h += _fleetCard('Blocking', blocked.length, blocked.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-lock');
+            h += _fleetCard('Drilled', problemCount, 'var(--color-text-link)', 'fa-satellite-dish');
             h += '</div>';
 
             h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
@@ -52353,7 +52354,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     const name = (q.instance||'');  // F9b: id completo
                     const sql = (q.sql_text||'').replace(/</g,'&lt;').substring(0,80);
                     const cpuMs = q.cpu_ms || 0;
-                    const cc = cpuMs > 100000 ? '#ef4444' : cpuMs > 10000 ? '#f59e0b' : 'var(--color-text-tertiary)';
+                    const cc = cpuMs > 100000 ? 'var(--sev-critical-text)' : cpuMs > 10000 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
                     // A coluna da direita era cpu_ms/1000 mostrado como "Xs" — CPU
                     // acumulado (soma por thread em planos paralelos), lido como
                     // duracao: e' a origem do "1312570s" reportado pelo QA
@@ -52365,7 +52366,7 @@ window.showDiskDrilldown = async function(drive, label) {
                         if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm'; return sec + 's'; })(fEl);
                     const fCpuH = (function(sec){ sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec/86400), hh = Math.floor((sec%86400)/3600), mm = Math.floor((sec%3600)/60);
                         if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm'; return sec + 's'; })(cpuMs/1000);
-                    const fElC = fIdle ? 'var(--color-text-disabled)' : fEl > 300 ? '#ef4444' : fEl > 60 ? '#f59e0b' : 'var(--color-text-tertiary)';
+                    const fElC = fIdle ? 'var(--color-text-tertiary)' : fEl > 300 ? 'var(--sev-critical-text)' : fEl > 60 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
                     h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><div style="width:55px;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="${t('live.cpu_title')}">CPU ${fCpuH}</div><div style="width:58px;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="${t('live.elapsed_title')}${fIdle ? ' — ' + t('live.idle_not_exec') : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
                 });
             } else {
@@ -52374,12 +52375,12 @@ window.showDiskDrilldown = async function(drive, label) {
             h += '</div></div>';
 
             if (liveBlocking.length) {
-                h += '<div style="background:#7f1d1d22;border:1px solid #7f1d1d;border-radius:8px;padding:12px;margin-bottom:12px;">';
-                h += '<div style="color:#fca5a5;font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-lock" style="margin-right:6px;"></i>' + _kpiTp('live.blocking_active', 'BLOCKING ATIVO ({n})', { n: liveBlocking.length }) + '<span style="font-weight:400;color:var(--color-text-disabled);margin-left:8px;">' + t('live.blocking_hint') + '</span></div>';
-                h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--color-text-tertiary);"><th style="padding:3px 6px;text-align:left;">Instance</th><th>Blocked</th><th>Blocker</th><th>DB</th><th>Wait</th><th>Sec</th></tr></thead><tbody>';
+                h += '<div style="background:var(--sev-critical-tint);border:1px solid var(--sev-critical-text);border-radius:8px;padding:12px;margin-bottom:12px;">';
+                h += '<div style="color:var(--sev-critical-text);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-lock" style="margin-right:6px;"></i>' + _kpiTp('live.blocking_active', 'BLOCKING ATIVO ({n})', { n: liveBlocking.length }) + '<span style="font-weight:400;color:var(--color-text-tertiary);margin-left:8px;">' + t('live.blocking_hint') + '</span></div>';
+                h += '<table style="width:100%;background:var(--color-bg-panel);border-radius:6px;border-collapse:collapse;font-size:12px;"><thead><tr style="color:var(--color-text-tertiary);"><th style="padding:3px 6px;text-align:left;">Instance</th><th>Blocked</th><th>Blocker</th><th>DB</th><th>Wait</th><th>Sec</th></tr></thead><tbody>';
                 liveBlocking.slice(0,8).forEach(b => {
                     const name = (b.instance||'');  // F9b: id completo
-                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);cursor:pointer;" onclick="_fleetSwitchTo('${b.instance}','blocking')"><td style="padding:3px 6px;color:var(--color-text-link);">${name}</td><td style="padding:3px 6px;color:#fca5a5;font-weight:600;">${b.blocked_spid}</td><td style="padding:3px 6px;color:#ef4444;font-weight:600;">${b.blocker_spid}</td><td style="padding:3px 6px;color:var(--color-text-tertiary);">${b.db||''}</td><td style="padding:3px 6px;color:#f59e0b;">${b.wait_type||''}</td><td style="padding:3px 6px;color:#ef4444;">${b.wait_sec||0}s</td></tr>`;
+                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);cursor:pointer;" onclick="_fleetSwitchTo('${b.instance}','blocking')"><td style="padding:3px 6px;color:var(--color-text-link);">${name}</td><td style="padding:3px 6px;color:var(--sev-critical-text);font-weight:600;">${b.blocked_spid}</td><td style="padding:3px 6px;color:var(--sev-critical-text);font-weight:600;">${b.blocker_spid}</td><td style="padding:3px 6px;color:var(--color-text-tertiary);">${b.db||''}</td><td style="padding:3px 6px;color:var(--sev-warning-text);">${b.wait_type||''}</td><td style="padding:3px 6px;color:var(--sev-critical-text);">${b.wait_sec||0}s</td></tr>`;
                 });
                 h += '</tbody></table></div>';
             }
@@ -52393,7 +52394,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 liveTempdb.slice(0,5).forEach(t => {
                     const name = (t.instance||'');  // F9b: id completo
                     const mb = parseInt(t.tempdb_mb || 0);
-                    const c = mb > 1024 ? '#ef4444' : mb > 100 ? '#f59e0b' : '#10b981';
+                    const c = mb > 1024 ? 'var(--sev-critical-text)' : mb > 100 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)';
                     h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${t.instance} SPID ${t.spid}: ${mb} MB"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${t.spid}</div><div style="width:50px;color:${c};font-size:12px;font-weight:600;">${formatSizeMB(mb)}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
                 });
             } else {
@@ -52414,7 +52415,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 const topWaits = Object.values(waitMap).sort((a,b) => b.total_ms - a.total_ms).slice(0,5);
                 const maxMs = Math.max(...topWaits.map(w => w.total_ms), 1);
                 topWaits.forEach(w => {
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} ${t('live.instances')}"><div style="width:110px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:#f59e0b;height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:#f59e0b;font-size:12px;">${w.instances.size} inst</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} ${t('live.instances')}"><div style="width:110px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:var(--sev-warning-text);height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:var(--sev-warning-text);font-size:12px;">${w.instances.size} inst</div></div>`;
                 });
             } else {
                 h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_significant_waits') + '</div>';
@@ -52432,11 +52433,11 @@ window.showDiskDrilldown = async function(drive, label) {
                         const name = (a.instance||'');  // F9b: id completo
                         const sendMB = ((a.send_queue_kb||0)/1024).toFixed(1);
                         const redoMB = ((a.redo_queue_kb||0)/1024).toFixed(1);
-                        const c = (parseFloat(sendMB) > 50 || parseFloat(redoMB) > 50) ? '#ef4444' : '#f59e0b';
+                        const c = (parseFloat(sendMB) > 50 || parseFloat(redoMB) > 50) ? 'var(--sev-critical-text)' : 'var(--sev-warning-text)';
                         h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${a.instance}','alwayson')" title="${a.instance} AG: ${a.ag_name}, DB: ${a.database_name}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.database_name||''}</div><div style="color:${c};font-size:12px;font-weight:600;">S:${sendMB}MB R:${redoMB}MB</div></div>`;
                     });
                 } else {
-                    h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>AGs saudaveis</div>';
+                    h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>AGs saudaveis</div>';
                 }
                 h += '</div>';
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -52446,7 +52447,7 @@ window.showDiskDrilldown = async function(drive, label) {
                         const name = (s.instance||'');  // F9b: id completo
                         const mins = s.idle_minutes || 0;
                         const hours = (mins/60).toFixed(1);
-                        const c = mins > 480 ? '#ef4444' : mins > 120 ? '#f59e0b' : 'var(--color-text-tertiary)';
+                        const c = mins > 480 ? 'var(--sev-critical-text)' : mins > 120 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
                         h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${s.instance}','connections')" title="${s.instance} SPID ${s.spid}: ${s.login_name} idle ${hours}h"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${s.spid}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.login_name||''} / ${s.program_name||''}</div><div style="color:${c};font-size:12px;font-weight:600;">${hours}h</div></div>`;
                     });
                 } else {
@@ -52464,8 +52465,8 @@ window.showDiskDrilldown = async function(drive, label) {
                     const name = (t.instance||'');  // F9b: id completo
                     const mins = t.tran_minutes || 0;
                     const logMb = t.log_used_mb || 0;
-                    const c = mins > 60 ? '#ef4444' : mins > 15 ? '#f59e0b' : 'var(--color-text-tertiary)';
-                    h += `<div style="background:var(--color-bg-sunken);border:1px solid ${c}44;border-radius:6px;padding:6px 10px;cursor:pointer;min-width:120px;" onclick="_fleetSwitchTo('${t.instance}','connections')" title="${t.instance} SPID ${t.spid}: ${t.login_name}"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;">${name} <span style="color:var(--color-text-disabled);">SPID ${t.spid}</span></div><div style="color:${c};font-size:12px;font-weight:600;">${mins} min</div><div style="color:var(--color-text-tertiary);font-size:12px;">${t.login_name||''} | Log: ${logMb} MB | ${t.db||''}</div></div>`;
+                    const c = mins > 60 ? 'var(--sev-critical-text)' : mins > 15 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
+                    h += `<div style="background:var(--color-bg-sunken);border:1px solid ${c}44;border-radius:6px;padding:6px 10px;cursor:pointer;min-width:120px;" onclick="_fleetSwitchTo('${t.instance}','connections')" title="${t.instance} SPID ${t.spid}: ${t.login_name}"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;">${name} <span style="color:var(--color-text-tertiary);">SPID ${t.spid}</span></div><div style="color:${c};font-size:12px;font-weight:600;">${mins} min</div><div style="color:var(--color-text-tertiary);font-size:12px;">${t.login_name||''} | Log: ${logMb} MB | ${t.db||''}</div></div>`;
                 });
                 h += '</div></div>';
             }
@@ -52484,9 +52485,9 @@ window.showDiskDrilldown = async function(drive, label) {
                     const ple = i.ple || 0;
                     const blk = i.blocked || 0;
                     const name = i.instance.split('_')[0];
-                    let borderC = blk > 0 ? '#ef4444' : cpu > 90 ? '#ef4444' : cpu > 70 ? '#f59e0b' : 'var(--color-border)';
+                    let borderC = blk > 0 ? 'var(--sev-critical-text)' : cpu > 90 ? 'var(--sev-critical-text)' : cpu > 70 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';   // D1: era var(--color-border) como cor de texto
                     let reason = blk > 0 ? `🔒 ${blk} blocked` : cpu > 70 ? `CPU ${cpu}%` : ple < 300 ? `PLE ${ple}s` : `MEM ${mem}%`;
-                    h += `<div onclick="_fleetSwitchTo('${i.instance}','queries')" title="${i.instance}" style="background:var(--color-bg-panel);border:1px solid ${borderC};border-radius:8px;padding:8px 12px;cursor:pointer;min-width:100px;"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;margin-bottom:4px;">${name}</div><div style="color:${borderC};font-size:12px;font-weight:600;">${reason}</div><div style="color:var(--color-text-disabled);font-size:12px;margin-top:2px;">${i.env}</div></div>`;
+                    h += `<div onclick="_fleetSwitchTo('${i.instance}','queries')" title="${i.instance}" style="background:var(--color-bg-panel);border:1px solid ${borderC};border-radius:8px;padding:8px 12px;cursor:pointer;min-width:100px;"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;margin-bottom:4px;">${name}</div><div style="color:${borderC};font-size:12px;font-weight:600;">${reason}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;">${i.env}</div></div>`;
                 });
                 h += '</div>';
             }
@@ -52509,7 +52510,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderIO(data) {
             const files = data.files || [];
-            if (!files.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_io_data') + '</div>';
+            if (!files.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.no_io_data') + '</div>';
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">Database</th><th>Type</th><th>Reads</th><th>Writes</th><th>Read Lat ms</th><th>Write Lat ms</th><th>Read MB</th><th>Write MB</th><th>File Size</th></tr></thead><tbody>';
             // Fix 2026-08-05: literais 20/50 substituidos pelo threshold
             // efectivo (registry + override do cliente). Hoisted para fora do
@@ -52545,7 +52546,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const ops = data.operations || [];
             let h = '';
             if (!jobs.length) {
-                h += '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_jobs') + '</div>';
+                h += '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_running_jobs') + '</div>';
             } else {
                 h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="${TH}">Job</th><th style="${TH}">Step</th><th style="${TH}">Progress</th><th style="${TH}">Running</th><th style="${TH}">Wait</th><th style="${TH}">Category</th><th style="${TH}">Started</th></tr></thead><tbody>`;
                 jobs.forEach(j => {
@@ -52553,22 +52554,22 @@ window.showDiskDrilldown = async function(drive, label) {
                     const mc = mins > 120 ? '#ef4444' : mins > 30 ? '#f59e0b' : '#10b981';
                     const pct = (j.step_percent != null && +j.step_percent > 0) ? +j.step_percent : null;
                     const passo = _kpiTp('live.job_step', 'Passo {i} de {n}: {name}', { i: j.current_step_id || 1, n: j.total_steps || 1, name: j.current_step || '' });
-                    const prog = pct == null ? `<span style="color:var(--color-text-disabled);" title="${esc(t('live.job_no_progress_tip'))}">—</span>` : barra(pct);
+                    const prog = pct == null ? `<span style="color:var(--color-text-tertiary);" title="${esc(t('live.job_no_progress_tip'))}">—</span>` : barra(pct);
                     h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:5px 8px;color:var(--color-text-bright);font-weight:500;">${esc(j.job_name)}</td>`;
                     h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);">${esc(passo)}</td>`;
                     h += `<td style="padding:5px 8px;" data-sort-value="${pct == null ? '' : pct}">${prog}</td>`;
                     h += `<td style="padding:5px 8px;color:${mc};font-weight:600;" data-sort-value="${mins}">${mins} min</td>`;
                     h += `<td style="padding:5px 8px;color:#f59e0b;font-size:12px;">${esc(j.step_wait_type || '-')}</td>`;
-                    h += `<td style="padding:5px 8px;color:var(--color-text-disabled);font-size:12px;">${esc(j.category_name)}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;">${esc(j.category_name)}</td>`;
                     h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;" data-sort-value="${esc(j.start_execution_date || '')}">${quando(j.start_execution_date)}</td></tr>`;
                 });
                 h += '</tbody></table>';
             }
             h += `<div style="margin:18px 0 6px;color:var(--color-text-tertiary);font-weight:600;">${esc(t('live.ops_title'))}</div>`;
             if (data.operations_error) {
-                h += `<div style="color:var(--color-text-disabled);font-size:12px;">${esc(t('live.ops_unavailable'))}</div>`;
+                h += `<div style="color:var(--color-text-tertiary);font-size:12px;">${esc(t('live.ops_unavailable'))}</div>`;
             } else if (!ops.length) {
-                h += `<div style="color:var(--color-text-disabled);font-size:12px;">${esc(t('live.ops_none'))}</div>`;
+                h += `<div style="color:var(--color-text-tertiary);font-size:12px;">${esc(t('live.ops_none'))}</div>`;
             } else {
                 h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="${TH}">Command</th><th style="${TH}">DB</th><th style="${TH}">Progress</th><th style="${TH}">Running</th><th style="${TH}" title="${esc(t('live.ops_eta_note'))}">ETA</th><th style="${TH}">Wait</th><th style="${TH}">Program</th><th style="${TH}">SPID</th></tr></thead><tbody>`;
                 ops.forEach(o => {
@@ -52580,11 +52581,11 @@ window.showDiskDrilldown = async function(drive, label) {
                     h += `<td style="padding:5px 8px;" data-sort-value="${+o.running_minutes || 0}">${+o.running_minutes || 0} min</td>`;
                     h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);" data-sort-value="${eta > 0 ? eta : ''}" title="${esc(t('live.ops_eta_note'))}">${eta > 0 ? '~' + eta + ' min' : '—'}</td>`;
                     h += `<td style="padding:5px 8px;color:#f59e0b;font-size:12px;">${esc(o.wait_type || '-')}</td>`;
-                    h += `<td style="padding:5px 8px;color:var(--color-text-disabled);font-size:12px;">${esc(o.program_name)}</td>`;
+                    h += `<td style="padding:5px 8px;color:var(--color-text-tertiary);font-size:12px;">${esc(o.program_name)}</td>`;
                     h += `<td style="padding:5px 8px;color:var(--color-text-link);">${esc(o.session_id)}</td></tr>`;
                 });
                 h += '</tbody></table>';
-                h += `<div style="font-size:12px;color:var(--color-text-disabled);margin-top:4px;font-style:italic;">${esc(t('live.ops_eta_note'))}</div>`;
+                h += `<div style="font-size:12px;color:var(--color-text-tertiary);margin-top:4px;font-style:italic;">${esc(t('live.ops_eta_note'))}</div>`;
             }
             return h;
         }
@@ -52618,16 +52619,16 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += '<div style="font-weight:600;margin-bottom:6px;color:#f59e0b;">Memory Grants (' + grants.length + ')</div>';
                 h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:4px 8px;">SPID</th><th>Granted</th><th>Used</th><th>Ideal</th><th>Wait ms</th></tr></thead><tbody>';
                 grants.forEach(g => {
-                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-link);">${g.spid}</td><td style="padding:3px 8px;">${formatSizeMB(g.granted_mb)}</td><td style="padding:3px 8px;">${formatSizeMB(g.used_mb)}</td><td style="padding:3px 8px;color:var(--color-text-tertiary);">${formatSizeMB(g.ideal_mb)}</td><td style="padding:3px 8px;color:${g.wait_time_ms>0?'#ef4444':'var(--color-text-disabled)'};">${g.wait_time_ms||0}</td></tr>`;
+                    h += `<tr style="border-bottom:1px solid var(--color-bg-panel);"><td style="padding:3px 8px;color:var(--color-text-link);">${g.spid}</td><td style="padding:3px 8px;">${formatSizeMB(g.granted_mb)}</td><td style="padding:3px 8px;">${formatSizeMB(g.used_mb)}</td><td style="padding:3px 8px;color:var(--color-text-tertiary);">${formatSizeMB(g.ideal_mb)}</td><td style="padding:3px 8px;color:${g.wait_time_ms>0?'#ef4444':'var(--color-text-tertiary)'};">${g.wait_time_ms||0}</td></tr>`;
                 });
                 h += '</tbody></table>';
             }
-            return h || '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_memory_data') + '</div>';
+            return h || '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.no_memory_data') + '</div>';
         }
 
         function _liveRenderConnections(data) {
             const conns = data.connections || [];
-            if (!conns.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_active_connections') + '</div>';
+            if (!conns.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.no_active_connections') + '</div>';
             let h = `<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:12px;">${_kpiTp('live.connections_count', '{n} conexões', { n: conns.length })}</div>`;
             h += '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">SPID</th><th>Login</th><th>Host</th><th>Program</th><th>DB</th><th>Status</th><th>CPU ms</th><th>Connected</th><th>Transport</th></tr></thead><tbody>';
             conns.forEach(c => {
@@ -52639,7 +52640,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:4px 8px;">${c.status||''}</td>`;
                 h += `<td style="padding:4px 8px;text-align:right;">${(c.total_cpu_ms||0).toLocaleString()}</td>`;
                 h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);">${c.connected_minutes||0}m</td>`;
-                h += `<td style="padding:4px 8px;color:var(--color-text-disabled);font-size:12px;">${c.net_transport||''}</td></tr>`;
+                h += `<td style="padding:4px 8px;color:var(--color-text-tertiary);font-size:12px;">${c.net_transport||''}</td></tr>`;
             });
             return h + '</tbody></table>';
         }
@@ -52652,7 +52653,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const _hopNote = _prims.length
                 ? `<div style="margin-bottom:8px;padding:6px 10px;border-left:3px solid #3b82f6;background:var(--color-bg-sunken);color:var(--color-text-tertiary);font-size:12px;">${_diagEsc(_kpiTp('live.ag_from_primary', 'Dados lidos na primária {primary} — esta instância é secundária', { primary: _prims.join(', ') }))}</div>`
                 : '';
-            if (!replicas.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_ags') + '</div>';
+            if (!replicas.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;"><i class="fas fa-check-circle" style="font-size:32px;color:#10b981;margin-bottom:10px;display:block;"></i>' + t('live.no_ags') + '</div>';
             let h = _hopNote + '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">AG</th><th>Replica</th><th>Role</th><th>Sync Health</th><th>DB</th><th>Sync State</th><th>Send Queue</th><th>Redo Queue</th><th>Send KB/s</th><th>Lag sec</th></tr></thead><tbody>';
             replicas.forEach(r => {
                 const hc = (r.synchronization_health_desc||'').includes('HEALTHY') ? '#10b981' : '#ef4444';
@@ -52670,14 +52671,14 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += `<td style="padding:4px 8px;text-align:right;">${(r.send_rate_kb_sec||0).toLocaleString()}</td>`;
                 const _lag = (r.commit_lag_sec === null || r.commit_lag_sec === undefined) ? null : Number(r.commit_lag_sec);  // 2026-09-11: NULL = sem linha da primária
                 // suspensa: o lag so' cresce quando a primária commita -- a cor sai primeiro do estado, depois do lag
-                h += `<td style="padding:4px 8px;text-align:right;color:${_lag === null ? 'var(--color-text-disabled)' : r.is_suspended ? '#f59e0b' : _lag > 30 ? '#ef4444' : '#10b981'};">${_lag === null ? 'n/d' : _lag}</td></tr>`;
+                h += `<td style="padding:4px 8px;text-align:right;color:${_lag === null ? 'var(--color-text-tertiary)' : r.is_suspended ? '#f59e0b' : _lag > 30 ? '#ef4444' : '#10b981'};">${_lag === null ? 'n/d' : _lag}</td></tr>`;
             });
             return h + '</tbody></table>';
         }
 
         function _liveRenderTLog(data) {
             const dbs = data.databases || [];
-            if (!dbs.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.no_tlog_data') + '</div>';
+            if (!dbs.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.no_tlog_data') + '</div>';
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);"><th style="padding:5px 8px;text-align:left;">Database</th>';
             const hasVlf = dbs[0].vlf_count !== undefined;
             if (hasVlf) h += '<th>VLFs</th><th>Active VLFs</th><th>Log Since Backup</th><th>Truncation Reason</th>';
@@ -52705,7 +52706,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderPlanCache(data) {
             const queries = data.queries || [];
-            if (!queries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.plan_cache_empty') + '</div>';
+            if (!queries.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.plan_cache_empty') + '</div>';
             let h = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:var(--color-bg-panel);color:var(--color-text-tertiary);position:sticky;top:0;"><th style="padding:5px 8px;text-align:left;">DB</th><th>Avg CPU us</th><th>Avg Reads</th><th>Execs</th><th>Total CPU ms</th><th>Recompiles</th><th style="min-width:200px;">SQL</th></tr></thead><tbody>';
             queries.forEach(q => {
                 const sql = (q.sql_text || '').replace(/</g,'&lt;').substring(0, 200);
@@ -52724,14 +52725,14 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function _liveRenderErrorLog(data) {
             const entries = data.entries || [];
-            if (!entries.length) return '<div style="color:var(--color-text-disabled);text-align:center;padding:40px;">' + t('live.error_log_empty') + '</div>';
+            if (!entries.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.error_log_empty') + '</div>';
             let h = '<div style="font-family:var(--font-mono);font-size:12px;line-height:1.6;">';
             entries.forEach(e => {
                 const txt = (e.Text || e.text || '').replace(/</g,'&lt;');
                 const isErr = /error|fail|severity/i.test(txt);
-                const color = isErr ? '#fca5a5' : 'var(--color-text-tertiary)';
+                const color = isErr ? 'var(--sev-critical-text)' : 'var(--color-text-tertiary)';
                 const dt = e.LogDate || e.logdate || '';
-                h += `<div style="color:${color};border-bottom:1px solid #1e293b22;padding:2px 0;"><span style="color:var(--color-text-disabled);margin-right:8px;">${dt}</span><span style="color:var(--color-border-strong);margin-right:8px;">[${e.ProcessInfo||''}]</span>${txt}</div>`;
+                h += `<div style="color:${color};border-bottom:1px solid #1e293b22;padding:2px 0;"><span style="color:var(--color-text-tertiary);margin-right:8px;">${dt}</span><span style="color:var(--color-border-strong);margin-right:8px;">[${e.ProcessInfo||''}]</span>${txt}</div>`;
             });
             return h + '</div>';
         }

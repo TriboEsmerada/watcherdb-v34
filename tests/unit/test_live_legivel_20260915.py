@@ -60,7 +60,7 @@ def test_gauges_batch_ple_mem():
     assert "_gc('lg-batch-'" not in LIVE and "_liveBatchPrev[chave] = agora;" in LIVE
     assert "(agora.v - antes.v) / dt" in LIVE
     assert "_gc('lg-ple-'+tabId, gd.ple_seconds, 's', 600, 300, true);" in LIVE
-    assert "(livre < 512 || pctLivre < 2) ? '#ef4444'" in LIVE and "live.mem_tip_detail" in LIVE
+    assert "(livre < 512 || pctLivre < 2) ? 'var(--sev-critical-text)'" in LIVE and "live.mem_tip_detail" in LIVE
 
 
 def test_jobs_e_sched_legiveis():
