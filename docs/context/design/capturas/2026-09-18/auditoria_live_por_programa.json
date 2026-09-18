@@ -1,0 +1,1869 @@
+{
+ "url": "https://localhost:8434",
+ "quando": "2026-09-18 11:04",
+ "temas": {
+  "light": {
+   "soma_falhas": 123,
+   "soma_textos": 619,
+   "programas": {
+    "fleet": {
+     "total": 185,
+     "fails": 67,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "ACTIVE BLOCKING (3)",
+       "ratio": 1.33,
+       "fg": "rgb(252, 165, 165)",
+       "bg": "rgb(223,214,218)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "112",
+       "ratio": 1.33,
+       "fg": "rgb(252, 165, 165)",
+       "bg": "rgb(223,214,218)",
+       "size": 12,
+       "tag": "td",
+       "cls": ""
+      },
+      {
+       "text": "116",
+       "ratio": 1.33,
+       "fg": "rgb(252, 165, 165)",
+       "bg": "rgb(223,214,218)",
+       "size": 12,
+       "tag": "td",
+       "cls": ""
+      },
+      {
+       "text": "75",
+       "ratio": 1.33,
+       "fg": "rgb(252, 165, 165)",
+       "bg": "rgb(223,214,218)",
+       "size": 12,
+       "tag": "td",
+       "cls": ""
+      },
+      {
+       "text": "MEM 75%",
+       "ratio": 1.48,
+       "fg": "rgb(203, 213, 225)",
+       "bg": "rgb(255,255,255)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PLE 258s",
+       "ratio": 1.48,
+       "fg": "rgb(203, 213, 225)",
+       "bg": "rgb(255,255,255)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "MEM 74%",
+       "ratio": 1.48,
+       "fg": "rgb(203, 213, 225)",
+       "bg": "rgb(255,255,255)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "MEM 91%",
+       "ratio": 1.48,
+       "fg": "rgb(203, 213, 225)",
+       "bg": "rgb(255,255,255)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "MEM 86%",
+       "ratio": 1.48,
+       "fg": "rgb(203, 213, 225)",
+       "bg": "rgb(255,255,255)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LCK_M_S",
+       "ratio": 1.51,
+       "fg": "rgb(245, 158, 11)",
+       "bg": "rgb(223,214,218)",
+       "size": 12,
+       "tag": "td",
+       "cls": ""
+      }
+     ]
+    },
+    "queries": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view qu",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Queries",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "waits": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view wa",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Waits",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "blocking": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view bl",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Blocking",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "plancache": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view pl",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Plan Cache",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "memory": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view me",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Memory",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "tempdb": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view te",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "TempDB",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "io": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view io",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "I/O",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "tlog": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view tl",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "TLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "connections": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view co",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Conn",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "jobs": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view jo",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Jobs",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "alwayson": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view al",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "AG",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "schedulers": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view sc",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Sched",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "errorlog": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view er",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "ErrLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "errlog": {
+     "total": 31,
+     "fails": 4,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "--",
+       "ratio": 2.2,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(233,238,245)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view er",
+       "ratio": 2.28,
+       "fg": "rgb(148, 163, 184)",
+       "bg": "rgb(238,242,247)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "LIVE",
+       "ratio": 3.23,
+       "fg": "rgb(239, 68, 68)",
+       "bg": "rgb(233,238,245)",
+       "size": 13,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "ErrLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    }
+   }
+  },
+  "dark": {
+   "soma_falhas": 78,
+   "soma_textos": 600,
+   "programas": {
+    "fleet": {
+     "total": 166,
+     "fails": 36,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "MEM 60%",
+       "ratio": 1.41,
+       "fg": "rgb(51, 65, 85)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "MEM 74%",
+       "ratio": 1.41,
+       "fg": "rgb(51, 65, 85)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "MEM 86%",
+       "ratio": 1.41,
+       "fg": "rgb(51, 65, 85)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "MEM 75%",
+       "ratio": 1.41,
+       "fg": "rgb(51, 65, 85)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "MEM 91%",
+       "ratio": 1.41,
+       "fg": "rgb(51, 65, 85)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "30d 22h idle",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "QLT",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "TST",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "queries": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Queries",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view qu",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "waits": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Waits",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view wa",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "blocking": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Blocking",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view bl",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "plancache": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Plan Cache",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view pl",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "memory": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Memory",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view me",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "tempdb": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "TempDB",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view te",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "io": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "I/O",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view io",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "tlog": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "TLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view tl",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "connections": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Conn",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view co",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "jobs": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Jobs",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view jo",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "alwayson": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "AG",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view al",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "schedulers": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Sched",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view sc",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "errorlog": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "ErrLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view er",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "errlog": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "ErrLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view er",
+       "ratio": 4.03,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(10,15,26)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    }
+   }
+  },
+  "high-contrast": {
+   "soma_falhas": 73,
+   "soma_textos": 596,
+   "programas": {
+    "fleet": {
+     "total": 162,
+     "fails": 31,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "30d 22h idle",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "QLT",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "TST",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "PRD",
+       "ratio": 3.07,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(30,41,59)",
+       "size": 12,
+       "tag": "div",
+       "cls": ""
+      },
+      {
+       "text": "📡 Fleet",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      }
+     ]
+    },
+    "queries": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Queries",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view qu",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "waits": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Waits",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view wa",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "blocking": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Blocking",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view bl",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "plancache": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Plan Cache",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view pl",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "memory": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Memory",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view me",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "tempdb": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "TempDB",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view te",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "io": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "I/O",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view io",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "tlog": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "TLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view tl",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "connections": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Conn",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view co",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "jobs": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Jobs",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view jo",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "alwayson": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "AG",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view al",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "schedulers": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "Sched",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view sc",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "errorlog": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "ErrLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view er",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    },
+    "errlog": {
+     "total": 31,
+     "fails": 3,
+     "gradiente_ignorado": 0,
+     "worst": [
+      {
+       "text": "ErrLog",
+       "ratio": 3.68,
+       "fg": "rgb(255, 255, 255)",
+       "bg": "rgb(59,130,246)",
+       "size": 12,
+       "tag": "button",
+       "cls": "live-prog-btn"
+      },
+      {
+       "text": "--",
+       "ratio": 3.75,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(15,23,42)",
+       "size": 12,
+       "tag": "span",
+       "cls": ""
+      },
+      {
+       "text": "Select an instance in Channel to view er",
+       "ratio": 4.41,
+       "fg": "rgb(100, 116, 139)",
+       "bg": "rgb(0,0,0)",
+       "size": 16,
+       "tag": "div",
+       "cls": ""
+      }
+     ]
+    }
+   }
+  }
+ }
+}

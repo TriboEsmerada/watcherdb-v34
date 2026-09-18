@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WatcherDB — Contrato de tokens (swatches)</title>
+<style>
+  /* Mockup estático. Dados fictícios. Os ratios são calculados em JS nesta página (WCAG 2.1, fórmula de luminância relativa). */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, -apple-system, "Segoe UI", system-ui, sans-serif; background: #0f1420; color: #e5e7eb; padding: 24px; font-size: 13px; line-height: 1.45; }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  .sub { color: #9ca3af; margin-bottom: 18px; font-size: 12px; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; font-size: 12px; color: #d1d5db; }
+  .legend span { padding: 2px 8px; border-radius: 4px; border: 1px solid #374151; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(360px, 1fr)); gap: 16px; align-items: start; }
+  .theme { border-radius: 10px; padding: 14px; border: 1px solid rgba(255,255,255,.12); }
+  .theme h2 { font-size: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; }
+  .theme h2 small { font-weight: 400; font-size: 11px; opacity: .8; }
+  .sec { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 14px 0 6px; opacity: .75; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; margin-bottom: 4px; }
+  .row .lbl { flex: 1; font-size: 12px; }
+  .row code { font-size: 10.5px; opacity: .8; font-family: Consolas, "SF Mono", monospace; }
+  .badge { font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 4px; font-variant-numeric: tabular-nums; min-width: 78px; text-align: center; border: 1px solid; }
+  .pass { color: #052e16; background: #bbf7d0; border-color: #15803d; }
+  .fail { color: #450a0a; background: #fecaca; border-color: #b91c1c; }
+  .warn { color: #451a03; background: #fde68a; border-color: #b45309; }
+  .sev { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+  .chip { padding: 5px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .chip .badge { min-width: 0; }
+  .sevname { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin: 8px 0 4px; opacity: .9; }
+  .cases { margin-top: 22px; }
+  .cases h2 { font-size: 14px; margin-bottom: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid #1f2937; text-align: left; vertical-align: middle; }
+  th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px; color: #9ca3af; }
+  .sample { display: inline-flex; align-items: center; justify-content: center; padding: 3px 9px; border-radius: 5px; font-weight: 700; font-size: 12px; min-width: 64px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .track { display: inline-block; width: 90px; height: 8px; border-radius: 99px; overflow: hidden; vertical-align: middle; }
+  .track i { display: block; height: 100%; width: 62%; }
+  .bell { display: inline-flex; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 11px; font-weight: 700; align-items: center; justify-content: center; }
+  .note { color: #9ca3af; font-size: 11.5px; margin-top: 10px; }
+  @media (max-width: 1200px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>Contrato de tokens de cor — Dark / Light / High-contrast</h1>
+<div class="sub">WatcherDB V3.3 · proposta 2026-09-18 · ratios WCAG 2.1 calculados nesta página (JS) · dados fictícios · nada aplicado ao portal</div>
+<div class="legend">
+  <span class="badge pass">≥ 4,5 AA texto</span>
+  <span class="badge warn">3,0–4,49 só UI/grande</span>
+  <span class="badge fail">&lt; 3,0 falha</span>
+  <span>Cada linha mostra a cor real de texto sobre a cor real de fundo; o crachá diz o ratio.</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="cases">
+  <h2>Os casos do auditor — antes e depois</h2>
+  <table>
+    <thead><tr><th>Caso</th><th>Tema</th><th>Hoje</th><th>Ratio</th><th>Proposta</th><th>Ratio</th></tr></thead>
+    <tbody id="cases"></tbody>
+  </table>
+  <p class="note">HC: o disco do avatar mantém-se porque a proposta acrescenta <code>background-color: var(--sev-info-solid)</code> — o apagador <code>background-image:none</code> não toca em <code>background-color</code>. O trilho ganha <code>border: 1px solid var(--color-border)</code> só em HC.</p>
+</div>
+
+<script>
+// ---------- paleta (igual à do relatório 2026-09-18_tokens_contrato.md) ----------
+const PAL = {
+  dark: { name: 'Dark (:root)', scheme: 'dark',
+    bg: { primary:'#0a0f1a', secondary:'#1a2332', tertiary:'#243447', elevated:'#2d3e52', panel:'#1e293b', panel2:'#1f2937', sunken:'#0f172a' },
+    text: { primary:'#f1f5f9', secondary:'#cbd5e1', tertiary:'#9daabe', disabled:'#8e9cb2', bright:'#e2e8f0', faint:'#e5e7eb', link:'#6badfb' },
+    accent:'#4189f7', border:'#334155', borderStrong:'#475569',
+    sev: {
+      critical:  { text:'#fa8a8a', tint:[220,38,38,.15],  border:'#f25050', solid:'#dc2626', on:'#ffffff' },
+      warning:   { text:'#fbbf24', tint:[245,158,11,.13], border:'#f59e0b', solid:'#d97706', on:'#0a0f1a' },
+      attention: { text:'#fcd34d', tint:[234,179,8,.12],  border:'#eab308', solid:'#a16207', on:'#ffffff' },
+      ok:        { text:'#34d399', tint:[16,185,129,.12], border:'#10b981', solid:'#047857', on:'#ffffff' },
+      info:      { text:'#6badfb', tint:[37,99,235,.14],  border:'#3b82f6', solid:'#2563eb', on:'#ffffff' },
+      overflow:  { text:'#fca5a5', tint:[124,45,18,.30],  border:'#dc2626', solid:'#7c2d12', on:'#fecaca' } } },
+  light: { name: 'Light', scheme: 'light',
+    bg: { primary:'#eef2f7', secondary:'#ffffff', tertiary:'#e2e8f0', elevated:'#ffffff', panel:'#ffffff', panel2:'#f1f5f9', sunken:'#e9eef5' },
+    text: { primary:'#0f172a', secondary:'#334155', tertiary:'#475569', disabled:'#59697f', bright:'#0f172a', faint:'#475569', link:'#1d4ed8' },
+    accent:'#2563eb', border:'#cbd5e1', borderStrong:'#94a3b8',
+    sev: {
+      critical:  { text:'#b91c1c', tint:[220,38,38,.10],  border:'#dc2626', solid:'#b91c1c', on:'#ffffff' },
+      warning:   { text:'#a3470a', tint:[217,119,6,.14],  border:'#d97706', solid:'#a3470a', on:'#ffffff' },
+      attention: { text:'#854d0e', tint:[161,98,7,.12],   border:'#a16207', solid:'#854d0e', on:'#ffffff' },
+      ok:        { text:'#166534', tint:[16,185,129,.14], border:'#059669', solid:'#166534', on:'#ffffff' },
+      info:      { text:'#1d4ed8', tint:[37,99,235,.10],  border:'#2563eb', solid:'#1d4ed8', on:'#ffffff' },
+      overflow:  { text:'#7f1d1d', tint:[124,45,18,.12],  border:'#b91c1c', solid:'#7c2d12', on:'#ffffff' } } },
+  hc: { name: 'High-contrast', scheme: 'dark',
+    bg: { primary:'#000000', secondary:'#0a0a0a', tertiary:'#1a1a1a', elevated:'#0a0a0a', panel:'#0a0a0a', panel2:'#111111', sunken:'#000000' },
+    text: { primary:'#ffffff', secondary:'#f0f0f0', tertiary:'#d0d0d0', disabled:'#a0a0a0', bright:'#ffffff', faint:'#f0f0f0', link:'#4da6ff' },
+    accent:'#4da6ff', border:'#ffffff', borderStrong:'#ffffff',
+    sev: {
+      critical:  { text:'#ff6666', tint:[255,102,102,.15], border:'#ff6666', solid:'#ff6666', on:'#000000' },
+      warning:   { text:'#ffcc00', tint:[255,204,0,.15],   border:'#ffcc00', solid:'#ffcc00', on:'#000000' },
+      attention: { text:'#ffd000', tint:[255,208,0,.15],   border:'#ffd000', solid:'#ffd000', on:'#000000' },
+      ok:        { text:'#00ff88', tint:[0,255,136,.15],   border:'#00ff88', solid:'#00ff88', on:'#000000' },
+      info:      { text:'#4da6ff', tint:[77,166,255,.15],  border:'#4da6ff', solid:'#4da6ff', on:'#000000' },
+      overflow:  { text:'#ff9999', tint:[255,153,153,.15], border:'#ff9999', solid:'#ff9999', on:'#000000' } } }
+};
+
+// ---------- WCAG ----------
+const hex = h => { h = h.replace('#',''); return [0,2,4].map(i => parseInt(h.slice(i,i+2),16)); };
+const lin = v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+const lum = rgb => 0.2126*lin(rgb[0]) + 0.7152*lin(rgb[1]) + 0.0722*lin(rgb[2]);
+const ratio = (a, b) => { const la = lum(a), lb = lum(b); const hi = Math.max(la,lb), lo = Math.min(la,lb); return (hi+0.05)/(lo+0.05); };
+const blend = (t, bg) => { const [r,g,b,a] = t; const B = hex(bg); return [Math.round(r*a+B[0]*(1-a)), Math.round(g*a+B[1]*(1-a)), Math.round(b*a+B[2]*(1-a))]; };
+const toHex = rgb => '#' + rgb.map(v => v.toString(16).padStart(2,'0')).join('');
+const fmt = r => r.toFixed(2).replace('.', ',') + ':1';
+function badge(r, min) {
+  const cls = r >= 4.5 ? 'pass' : (r >= 3 ? 'warn' : 'fail');
+  const ok = r >= min;
+  return `<span class="badge ${ok ? cls : 'fail'}" aria-label="ratio ${fmt(r)} ${ok ? 'passa' : 'falha'}">${ok ? '✓' : '✗'} ${fmt(r)}</span>`;
+}
+function rowText(label, fg, bg, min) {
+  const r = ratio(hex(fg), hex(bg));
+  return `<div class="row" style="background:${bg};color:${fg}"><span class="lbl">${label}</span><code>${fg} / ${bg}</code>${badge(r, min)}</div>`;
+}
+
+// ---------- render temas ----------
+const grid = document.getElementById('grid');
+for (const key of ['dark','light','hc']) {
+  const P = PAL[key];
+  let h = `<div class="theme" style="background:${P.bg.primary};color:${P.text.primary};border-color:${P.border}">
+    <h2>${P.name} <small>color-scheme: ${P.scheme}</small></h2>`;
+  h += `<div class="sec">Texto neutro sobre bg-panel · bg-elevated · bg-primary</div>`;
+  for (const t of ['primary','secondary','tertiary','disabled','link']) {
+    h += rowText(`--color-text-${t} / panel`, P.text[t], P.bg.panel, t === 'disabled' ? 3 : 4.5);
+    h += rowText(`--color-text-${t} / elevated`, P.text[t], P.bg.elevated, t === 'disabled' ? 3 : 4.5);
+  }
+  h += rowText('--color-text-primary / primary', P.text.primary, P.bg.primary, 4.5);
+  h += rowText('--color-accent (UI 3:1) / elevated', P.accent, P.bg.elevated, 3);
+
+  h += `<div class="sec">Severidades — -text sobre panel · -on sobre -solid · -text sobre -tint · -border UI</div>`;
+  for (const s of ['critical','warning','attention','ok','info','overflow']) {
+    const S = P.sev[s];
+    const tint = blend(S.tint, P.bg.panel);
+    const rT = ratio(hex(S.text), hex(P.bg.panel));
+    const rS = ratio(hex(S.on), hex(S.solid));
+    const rN = ratio(hex(S.text), tint);
+    const rB = ratio(hex(S.border), hex(P.bg.panel));
+    h += `<div class="sevname">${s}</div><div class="sev">
+      <div class="chip" style="background:${P.bg.panel};color:${S.text};border:1px solid ${S.border}" title="-text sobre bg-panel; borda = -border (${fmt(rB)})">105 -text ${badge(rT,4.5)}</div>
+      <div class="chip" style="background:${S.solid};color:${S.on}" title="-on sobre -solid">9 -solid ${badge(rS,4.5)}</div>
+      <div class="chip" style="background:${toHex(tint)};color:${S.text}" title="-text sobre -tint (${toHex(tint)})">42 -tint ${badge(rN,4.5)}</div>
+    </div>`;
+  }
+  h += `</div>`;
+  grid.insertAdjacentHTML('beforeend', h);
+}
+
+// ---------- casos do auditor ----------
+const cases = [
+  { c: '.vl número crítico (12px)', t: 'Dark', a: ['#ef4444','#1a2332'], b: [PAL.dark.sev.critical.text, '#1a2332'] },
+  { c: '.vl número info (12px)', t: 'Light', a: ['#3b82f6','#ffffff'], b: [PAL.light.sev.info.text, '#ffffff'] },
+  { c: 'Badge do sino (11px)', t: 'Todos', a: ['#ffffff','#ef4444'], b: [PAL.dark.sev.critical.on, PAL.dark.sev.critical.solid], kind: 'bell' },
+  { c: '.user-role "admin" (10px)', t: 'Light', a: ['#94a3b8','#ffffff'], b: [PAL.light.text.tertiary, '#ffffff'] },
+  { c: '.user-role "dba" (10px)', t: 'Dark', a: ['#64748b','#1d2839'], b: [PAL.dark.text.tertiary, '#1d2839'] },
+  { c: 'Botão Ping (ok-text sobre ok-tint)', t: 'Light', a: ['#34d399','#d9f4eb'], b: [PAL.light.sev.ok.text, toHex(blend(PAL.light.sev.ok.tint,'#ffffff'))] },
+  { c: 'Botão KPIs activo (info-text sobre info-tint)', t: 'Light', a: ['#2563eb','#e0ebfe'], b: [PAL.light.sev.info.text, toHex(blend(PAL.light.sev.info.tint,'#ffffff'))] },
+  { c: 'Separador "KPIs" (tab-label 14px)', t: 'Dark', a: ['#2563eb','#1a2332'], b: [PAL.dark.sev.info.text, '#1a2332'] },
+  { c: 'Chip "MEM 74%" (texto = --color-border)', t: 'Dark', a: ['#334155','#1e293b'], b: [PAL.dark.text.tertiary, '#1e293b'] },
+  { c: 'Valor "505 MB" warning', t: 'Light', a: ['#f59e0b','#ffffff'], b: [PAL.light.sev.warning.text, '#ffffff'] },
+  { c: 'Botão Fleet (branco sobre #3b82f6)', t: 'HC', a: ['#ffffff','#3b82f6'], b: [PAL.hc.sev.info.on, PAL.hc.sev.info.solid] },
+  { c: 'Texto sobre sólido warning', t: 'HC', a: ['#ffffff','#ffcc00'], b: [PAL.hc.sev.warning.on, PAL.hc.sev.warning.solid] },
+  { c: 'Trilho .rep-track sobre card', t: 'HC', a: ['#111111','#0a0a0a'], b: ['#ffffff','#0a0a0a'], kind: 'track' },
+  { c: 'Avatar "SA" (gradiente apagado)', t: 'Light-HC', a: ['#ffffff','#ffffff'], b: ['#000000','#4da6ff'], kind: 'avatar' },
+];
+const tb = document.getElementById('cases');
+for (const k of cases) {
+  const r1 = ratio(hex(k.a[0]), hex(k.a[1])), r2 = ratio(hex(k.b[0]), hex(k.b[1]));
+  const sample = (fg, bg, kind) => {
+    if (kind === 'avatar') return `<span class="avatar" style="background:${bg};color:${fg}">SA</span>`;
+    if (kind === 'bell') return `<span class="bell" style="background:${bg};color:${fg}">13</span>`;
+    if (kind === 'track') return `<span class="track" style="background:#0a0a0a;border:1px solid ${fg === '#111111' ? '#0a0a0a' : fg}"><i style="background:${fg === '#111111' ? '#111111' : '#1a1a1a'}"></i></span>`;
+    return `<span class="sample" style="background:${bg};color:${fg}">105</span>`;
+  };
+  tb.insertAdjacentHTML('beforeend', `<tr><td>${k.c}</td><td>${k.t}</td>
+    <td>${sample(k.a[0],k.a[1],k.kind)} <code>${k.a[0]}/${k.a[1]}</code></td><td>${badge(r1, k.kind === 'track' ? 3 : 4.5)}</td>
+    <td>${sample(k.b[0],k.b[1],k.kind)} <code>${k.b[0]}/${k.b[1]}</code></td><td>${badge(r2, k.kind === 'track' ? 3 : 4.5)}</td></tr>`);
+}
+</script>
+</body>
+</html>
