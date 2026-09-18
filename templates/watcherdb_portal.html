@@ -44879,7 +44879,7 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                                 if (f.Total_MB == null) return '<div class="fg-cell-size"></div>';
                                 const livre = f.Free_MB != null ? Number(f.Free_MB) : Math.max(0, Number(f.Total_MB) - Number(f.Used_MB || 0));
                                 const tip = `${Math.round(livre).toLocaleString(_lang)} MB / ${Math.round(Number(f.Total_MB)).toLocaleString(_lang)} MB` + (f.Used_MB != null ? ` (${Math.round(Number(f.Used_MB)).toLocaleString(_lang)} MB)` : '');
-                                return `<div class="fg-cell-size" title="${tip}">${_fgFmt(livre)} / ${_fgFmt(f.Total_MB)}</div>`;
+                                return `<div class="fg-cell-size" title="${tip}">${_fgFmt(livre)} ${_kpiT('kpi_modal.fg_free', 'Livre')} / ${_fgFmt(f.Total_MB)} ${_kpiT('kpi_modal.fg_total', 'Total')}</div>`;
                             };
                             const badge = st => {
                                 const s = String(st || '').toUpperCase();
@@ -51493,12 +51493,12 @@ window.showDiskDrilldown = async function(drive, label) {
                     </span>
                     <input id="live-channel-search-${tabId}" type="text" placeholder="${t('live.filter_instance')}"
                            oninput="liveFilterChannels('${tabId}', this.value)" autocomplete="off"
-                           style="width:130px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;">
+                           style="width:110px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;">
                     <select id="live-channel-${tabId}" onchange="liveChangeChannel('${tabId}', this.value)"
-                            style="max-width:320px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;font-weight:500;">
+                            style="max-width:240px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;font-weight:500;">
                         <option value="">${t('live.channel_placeholder')}</option>
                     </select>
-                    <span style="width:1px;height:14px;background:var(--color-border);"></span>
+                    <div style="flex-basis:100%;height:0;"></div><!-- 2026-09-18 (owner): programas todos na 2.a linha, ErrLog e ? incluidos -->
                     <button onclick="liveSetProgram('${tabId}','fleet')" class="live-prog-btn" data-prog="fleet" style="${_pb}" title="Fleet Dashboard">📡 Fleet</button>
                     <span style="width:1px;height:14px;background:var(--color-border);"></span>
                     <button onclick="liveSetProgram('${tabId}','queries')" class="live-prog-btn" data-prog="queries" style="${_pb}">Queries</button>
@@ -52385,21 +52385,34 @@ window.showDiskDrilldown = async function(drive, label) {
             const cpuHigh = online.filter(i => i.cpu_pct >= 50);
             const memHigh = online.filter(i => i.mem_pct >= 85);
             const lowPle = online.filter(i => (i.ple||9999) < 300);
-            const liveQueries = data.live_queries || [];
-            const liveBlocking = data.live_blocking || [];
             const problemCount = data.problem_count || 0;
+            // 2026-09-18 (owner): os cards filtram o ecra. "Drilled" = instancias com dados live neste ciclo.
+            const _drilledSet = new Set([].concat(data.live_queries||[], data.live_blocking||[], data.live_tempdb||[], data.live_waits||[], data.live_ag_queues||[], data.live_idle||[], data.live_long_tran||[]).map(x => x.instance).filter(Boolean));
+            const drilled = instances.filter(i => _drilledSet.has(i.instance));
+            const groups = { online: online, partial: partial, offline: offline, no_data: noData, cpu: cpuHigh, mem: memHigh, ple: lowPle, blocking: blocked, drilled: drilled };
+            const labels = { online: 'Online', partial: 'Parcial', offline: 'Offline', no_data: t('live.no_data_short'), cpu: 'CPU >50%', mem: 'MEM >85%', ple: 'Low PLE', blocking: 'Blocking', drilled: 'Drilled' };
+            const fKey = window._fleetFilter && groups[window._fleetFilter] ? window._fleetFilter : null;
+            const fSet = fKey ? new Set(groups[fKey].map(i => i.instance)) : null;
+            const soFiltro = arr => fSet ? (arr || []).filter(x => fSet.has(x.instance)) : (arr || []);
+            const liveQueries = soFiltro(data.live_queries);
+            const liveBlocking = soFiltro(data.live_blocking);
             let h = '';
             h += '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
-            h += _fleetCard('Online', online.length, 'var(--sev-ok-text)', 'fa-check-circle');
-            h += _fleetCard('Parcial', partial.length, partial.length>0?'var(--sev-warning-text)':'var(--color-text-tertiary)', 'fa-exclamation');
-            h += _fleetCard('Offline', offline.length, offline.length>0?'var(--sev-critical-text)':'var(--color-text-tertiary)', 'fa-times-circle');
-            h += _fleetCard(t('live.no_data_short'), noData.length, 'var(--color-text-tertiary)', 'fa-question-circle');
-            h += _fleetCard('CPU >50%', cpuHigh.length, cpuHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-microchip');
-            h += _fleetCard('MEM >85%', memHigh.length, memHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-memory');
-            h += _fleetCard('Low PLE', lowPle.length, lowPle.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-clock');
-            h += _fleetCard('Blocking', blocked.length, blocked.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-lock');
-            h += _fleetCard('Drilled', problemCount, 'var(--color-text-link)', 'fa-satellite-dish');
+            h += _fleetCard(labels.online, online.length, 'var(--sev-ok-text)', 'fa-check-circle', 'online', tabId, fKey);
+            h += _fleetCard(labels.partial, partial.length, partial.length>0?'var(--sev-warning-text)':'var(--color-text-tertiary)', 'fa-exclamation', 'partial', tabId, fKey);
+            h += _fleetCard(labels.offline, offline.length, offline.length>0?'var(--sev-critical-text)':'var(--color-text-tertiary)', 'fa-times-circle', 'offline', tabId, fKey);
+            h += _fleetCard(labels.no_data, noData.length, 'var(--color-text-tertiary)', 'fa-question-circle', 'no_data', tabId, fKey);
+            h += _fleetCard(labels.cpu, cpuHigh.length, cpuHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-microchip', 'cpu', tabId, fKey);
+            h += _fleetCard(labels.mem, memHigh.length, memHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-memory', 'mem', tabId, fKey);
+            h += _fleetCard(labels.ple, lowPle.length, lowPle.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-clock', 'ple', tabId, fKey);
+            h += _fleetCard(labels.blocking, blocked.length, blocked.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-lock', 'blocking', tabId, fKey);
+            h += _fleetCard(labels.drilled, problemCount, 'var(--color-text-link)', 'fa-satellite-dish', 'drilled', tabId, fKey);
             h += '</div>';
+            if (fKey) {
+                h += `<div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:6px 10px;background:var(--sev-info-tint);border:1px solid var(--sev-info-text);border-radius:6px;font-size:12px;color:var(--sev-info-text);">`
+                   + `<i class="fas fa-filter"></i> ${_kpiT('live.fleet_filter', 'Filtro')}: <b>${labels[fKey]}</b> (${groups[fKey].length})`
+                   + `<button onclick="_fleetToggleFilter('${tabId}', null)" title="${_kpiT('live.fleet_filter_clear', 'Limpar filtro')}" style="margin-left:auto;background:none;border:1px solid var(--sev-info-text);color:var(--sev-info-text);border-radius:4px;padding:1px 8px;cursor:pointer;font-size:12px;">×</button></div>`;
+            }
 
             h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -52407,7 +52420,8 @@ window.showDiskDrilldown = async function(drive, label) {
             if (liveQueries.length) {
                 liveQueries.slice(0,5).forEach(q => {
                     const name = (q.instance||'');  // F9b: id completo
-                    const sql = (q.sql_text||'').replace(/</g,'&lt;').substring(0,80);
+                    const sql = (q.sql_text||'').replace(/</g,'&lt;').substring(0,60);
+                    const sqlAttr = String(q.sql_text||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
                     const cpuMs = q.cpu_ms || 0;
                     const cc = cpuMs > 100000 ? 'var(--sev-critical-text)' : cpuMs > 10000 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
                     // A coluna da direita era cpu_ms/1000 mostrado como "Xs" — CPU
@@ -52422,10 +52436,10 @@ window.showDiskDrilldown = async function(drive, label) {
                     const fCpuH = (function(sec){ sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec/86400), hh = Math.floor((sec%86400)/3600), mm = Math.floor((sec%3600)/60);
                         if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm'; return sec + 's'; })(cpuMs/1000);
                     const fElC = fIdle ? 'var(--color-text-tertiary)' : fEl > 300 ? 'var(--sev-critical-text)' : fEl > 60 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><div style="width:55px;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="${t('live.cpu_title')}">CPU ${fCpuH}</div><div style="width:58px;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="${t('live.elapsed_title')}${fIdle ? ' — ' + t('live.idle_not_exec') : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;min-width:0;max-width:50%;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><button type="button" onclick="event.stopPropagation();_fleetCopySql(this)" data-sql="${sqlAttr}" title="${_kpiT('live.copy_sql', 'Copiar comando')}" aria-label="${_kpiT('live.copy_sql', 'Copiar comando')}" style="flex-shrink:0;background:none;border:1px solid var(--color-border);color:var(--color-text-tertiary);border-radius:4px;padding:0 5px;font-size:12px;line-height:18px;cursor:pointer;">⧉</button><div style="width:80px;flex-shrink:0;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="${t('live.cpu_title')}">CPU ${fCpuH}</div><div style="width:70px;flex-shrink:0;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="${t('live.elapsed_title')}${fIdle ? ' — ' + t('live.idle_not_exec') : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_heavy_queries') + '</div>';
+                h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_heavy_queries') + '</div>';
             }
             h += '</div></div>';
 
@@ -52440,8 +52454,8 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += '</tbody></table></div>';
             }
 
-            const liveTempdb = data.live_tempdb || [];
-            const liveWaits = data.live_waits || [];
+            const liveTempdb = soFiltro(data.live_tempdb);
+            const liveWaits = soFiltro(data.live_waits);
             h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
             h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-fire" style="margin-right:6px;color:#8b5cf6;"></i>TEMPDB CONSUMERS AGORA</div>';
@@ -52449,11 +52463,17 @@ window.showDiskDrilldown = async function(drive, label) {
                 liveTempdb.slice(0,5).forEach(t => {
                     const name = (t.instance||'');  // F9b: id completo
                     const mb = parseInt(t.tempdb_mb || 0);
-                    const c = mb > 1024 ? 'var(--sev-critical-text)' : mb > 100 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)';
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${t.instance} SPID ${t.spid}: ${mb} MB"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${t.spid}</div><div style="width:50px;color:${c};font-size:12px;font-weight:600;">${formatSizeMB(mb)}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
+                    // 2026-09-18 (owner): consumo / total do tempdb da instancia; cor pela fraccao do total quando o total existe
+                    const totalMb = parseInt(t.tempdb_total_mb || 0);
+                    const pct = totalMb > 0 ? (mb / totalMb) * 100 : null;
+                    const c = pct != null ? (pct > 25 ? 'var(--sev-critical-text)' : pct > 10 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)')
+                                          : (mb > 1024 ? 'var(--sev-critical-text)' : mb > 100 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)');
+                    const doTotal = totalMb > 0 ? ` <span style="color:var(--color-text-tertiary);font-weight:400;">/ ${formatSizeMB(totalMb)}</span>` : '';
+                    const tip = `${t.instance} SPID ${t.spid}: ${mb} MB` + (totalMb > 0 ? ` ${_kpiT('live.tempdb_of_total', 'de')} ${totalMb} MB (${pct.toFixed(1)}%)` + (t.tempdb_free_mb != null ? `, ${_kpiT('live.free_short', 'livre')} ${t.tempdb_free_mb} MB` : '') : '');
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${tip}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${t.spid}</div><div style="min-width:50px;color:${c};font-size:12px;font-weight:600;white-space:nowrap;">${formatSizeMB(mb)}${doTotal}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_active_consumers') + '</div>';
+                h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_active_consumers') + '</div>';
             }
             h += '</div>';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -52473,12 +52493,12 @@ window.showDiskDrilldown = async function(drive, label) {
                     h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} ${t('live.instances')}"><div style="width:110px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:var(--sev-warning-text);height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:var(--sev-warning-text);font-size:12px;">${w.instances.size} inst</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_significant_waits') + '</div>';
+                h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_significant_waits') + '</div>';
             }
             h += '</div></div>';
 
-            const liveAgQueues = data.live_ag_queues || [];
-            const liveIdle = data.live_idle || [];
+            const liveAgQueues = soFiltro(data.live_ag_queues);
+            const liveIdle = soFiltro(data.live_idle);
             if (liveAgQueues.length || liveIdle.length) {
                 h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -52506,12 +52526,12 @@ window.showDiskDrilldown = async function(drive, label) {
                         h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${s.instance}','connections')" title="${s.instance} SPID ${s.spid}: ${s.login_name} idle ${hours}h"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${s.spid}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.login_name||''} / ${s.program_name||''}</div><div style="color:${c};font-size:12px;font-weight:600;">${hours}h</div></div>`;
                     });
                 } else {
-                    h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_idle_sessions') + '</div>';
+                    h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_idle_sessions') + '</div>';
                 }
                 h += '</div></div>';
             }
 
-            const liveLongTran = data.live_long_tran || [];
+            const liveLongTran = soFiltro(data.live_long_tran);
             if (liveLongTran.length) {
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;margin-bottom:12px;">';
                 h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-exchange-alt" style="margin-right:6px;color:#fb7185;"></i>TRANSACOES LONGAS (>5 min)</div>';
@@ -52526,11 +52546,11 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += '</div></div>';
             }
 
-            const worst = [...online].sort((a,b) => {
+            const worst = [...(fSet ? groups[fKey] : online)].sort((a,b) => {
                 const scoreA = (a.blocked||0)*1000 + (a.cpu_pct||0)*10 + (10000/(a.ple||9999)) + (a.mem_pct||0);
                 const scoreB = (b.blocked||0)*1000 + (b.cpu_pct||0)*10 + (10000/(b.ple||9999)) + (b.mem_pct||0);
                 return scoreB - scoreA;
-            }).slice(0, 8);
+            }).slice(0, fSet ? 40 : 8);   // com filtro: as instancias do card (ate 40), nao so' as 8 piores
             if (worst.length > 0) {
                 h += '<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;color:#ef4444;"></i>PIORES CANAIS (clica para investigar)</div>';
                 h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
@@ -52549,9 +52569,28 @@ window.showDiskDrilldown = async function(drive, label) {
             return h;
         }
 
-        function _fleetCard(label, value, color, icon) {
-            return `<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;"><div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
+        function _fleetCard(label, value, color, icon, key, tabId, activeKey) {
+            const on = key && key === activeKey;
+            const click = key ? ` onclick="_fleetToggleFilter('${tabId}','${key}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" aria-pressed="${on ? 'true' : 'false'}"` : '';
+            const frame = on ? 'border:2px solid var(--sev-info-text);background:var(--sev-info-tint);' : 'border:1px solid var(--color-border);background:var(--color-bg-panel);';
+            return `<div${click} style="${frame}border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;${key ? 'cursor:pointer;' : ''}"><div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
         }
+        // 2026-09-18 (owner): cards do Fleet filtram o ecra; re-render a partir do cache, sem novo pedido
+        function _fleetToggleFilter(tabId, key) {
+            window._fleetFilter = (key && window._fleetFilter !== key) ? key : null;
+            const cached = _liveLastData['fleet'];
+            const screen = document.getElementById('live-screen-' + tabId);
+            if (cached && screen) _liveRenderAndSet(screen, 'fleet', cached, tabId);
+        }
+        window._fleetToggleFilter = _fleetToggleFilter;
+        function _fleetCopySql(btn) {
+            const sql = btn.getAttribute('data-sql') || '';
+            const ok = () => { const old = btn.textContent; btn.textContent = '✓'; btn.title = _kpiT('live.copied', 'Copiado'); setTimeout(() => { btn.textContent = old; }, 1200); };
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(sql).then(ok).catch(() => {}); return; }
+            const ta = document.createElement('textarea'); ta.value = sql; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); ok(); } catch (e) {} document.body.removeChild(ta);
+        }
+        window._fleetCopySql = _fleetCopySql;
 
         function _fleetSwitchTo(instance, program) {
             const sel = document.querySelector('select[id^="live-channel-"]');
