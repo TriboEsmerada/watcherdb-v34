@@ -125,6 +125,8 @@
             /* D2 contrato: attention existia só em Light/HC; em Dark o JS caía num fallback fixo */
             --sev-attention-text: #fcd34d;  --sev-attention-tint: rgba(234,179,8,0.12);
             --sev-attention-border: #eab308;--sev-attention-solid: #a16207;--sev-attention-on: #ffffff;
+            /* D6: roxo (warnings do resumo executivo; o mesmo do QUIET dos Collectors) */
+            --sev-violet-text: #c4b5fd;     --sev-violet-tint: rgba(139,92,246,0.20);
 
             /* === TIPOGRAFIA === */
             --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -259,6 +261,7 @@
             --sev-critical-border: #dc2626;  --sev-critical-solid: #b91c1c;  --sev-critical-on: #ffffff;
             --sev-attention-border: #a16207; --sev-attention-solid: #854d0e; --sev-attention-on: #ffffff;
             --sev-overflow-border: #b91c1c;  --sev-overflow-solid: #7c2d12;  --sev-overflow-on: #ffffff;
+            --sev-violet-text: #6d28d9;      --sev-violet-tint: rgba(139,92,246,0.12);
         }
 
         /* Tema Alto Contraste (WCAG AAA) -- propagado do V6 (2026-06-24) */
@@ -283,6 +286,7 @@
             --sev-ok-on: #000000;  --sev-info-on: #000000;  --sev-warning-on: #000000;  --sev-critical-on: #000000;
             --sev-attention-border: #ffd000;  --sev-attention-on: #000000;
             --sev-overflow-text: #ff9999;  --sev-overflow-tint: rgba(255,153,153,0.15);  --sev-overflow-border: #ff9999;  --sev-overflow-solid: #ff9999;  --sev-overflow-on: #000000;
+            --sev-violet-text: #d9c8ff;  --sev-violet-tint: rgba(139,92,246,0.15);
         }
         html[data-theme="high-contrast"] *, html[data-theme="high-contrast"] *::before, html[data-theme="high-contrast"] *::after {
             background-image: none !important; box-shadow: none !important; text-shadow: none !important;
@@ -1982,10 +1986,10 @@
         .rep-ico-info { background:color-mix(in srgb, var(--sev-info-solid) 15%, transparent); color:var(--sev-info-solid); }
         .rep-ico-ok { background:color-mix(in srgb, var(--sev-ok-solid) 15%, transparent); color:var(--sev-ok-solid); }
         .rep-ico-crit { background:color-mix(in srgb, var(--sev-critical-solid) 15%, transparent); color:var(--sev-critical-solid); }
-        .rep-ico-warn { background:color-mix(in srgb, var(--sev-warning-solid) 15%, transparent); color:var(--sev-warning-solid); }
+        .rep-ico-warn { background:var(--sev-violet-tint); color:var(--sev-violet-text); }   /* D6 (owner): warnings em roxo */
         .rep-exec-txt { display:flex; flex-direction:column; }
         .rep-exec-stat b { font-size:clamp(23px, 2.5vh, 30px); font-weight:700; line-height:1; display:block; font-variant-numeric:tabular-nums; color:var(--color-text-primary); }
-        .rep-exec-stat b.ok { color:var(--sev-ok-text); } .rep-exec-stat b.crit { color:var(--sev-critical-text); } .rep-exec-stat b.warn { color:var(--sev-warning-text); }   /* D2: era -solid como texto */
+        .rep-exec-stat b.ok { color:var(--sev-ok-text); } .rep-exec-stat b.crit { color:var(--sev-critical-text); } .rep-exec-stat b.warn { color:var(--sev-violet-text); }   /* D2: era -solid como texto */
         .rep-exec-txt span { font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-text-tertiary); margin-top:clamp(3px, 0.4vh, 5px); display:block; white-space:nowrap; }
         .rep-exec-attn { margin-top:auto; padding-top:clamp(8px, 1.15vh, 14px); border-top:1px solid var(--color-border); display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; font-size:13px; color:var(--sev-critical-solid); }
         .rep-exec-attn i { flex-shrink:0; }
@@ -3955,7 +3959,7 @@
            linhas). Precedente @container: .rep-exec-card. */
         .fg-problem-grid {
             display: grid;
-            grid-template-columns: auto auto max-content max-content;
+            grid-template-columns: auto auto max-content max-content max-content;   /* 2026-09-18: + livre/total */
             column-gap: 28px;
             row-gap: 3px;
             width: max-content;
@@ -3984,11 +3988,18 @@
             text-align: right;
             font-variant-numeric: tabular-nums;
         }
+        .fg-problem-grid .fg-cell-size {   /* 2026-09-18 (owner): livre / total ao lado da percentagem */
+            color: var(--color-text-tertiary);
+            font-size: 11px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
         @container (max-width: 640px) {
             .fg-problem-grid { grid-template-columns: minmax(0, 1fr); width: auto; }
             .fg-problem-grid .fg-row {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) max-content max-content;
+                grid-template-columns: minmax(0, 1fr) max-content max-content max-content;
                 column-gap: 8px;
                 align-items: center;
                 padding: 2px 0;
@@ -12631,12 +12642,12 @@
                 const physPath = f.physical_path || f.physical_name || '-';
                 const fgName = f.filegroup_name || '-';
                 const maxSz = f.max_size_formatted || '-';
-                const maxColor = maxSz === 'Unlimited' ? '#818cf8' : 'var(--color-text-tertiary)';
+                const maxColor = maxSz === 'Unlimited' ? 'var(--sev-info-text)' : 'var(--color-text-tertiary)';
                 const growth = f.growth_setting || '-';
                 const dbEsc = (f.database_name||'').replace(/'/g,"\\'").replace(/\\/g,'\\\\');
                 const fgEsc = fgName.replace(/'/g,"\\'").replace(/\\/g,'\\\\');
                 const fgCell = (fgName && fgName !== '-')
-                    ? '<a href="javascript:void(0)" onclick="event.stopPropagation();navigateToSpaceFilegroup(\'' + dbEsc + '\',\'' + fgEsc + '\')" style="color:#818cf8;text-decoration:none;font-size:11px;cursor:pointer" title="Abrir no modulo Space"><i class="fas fa-external-link-alt" style="font-size:8px;margin-right:3px"></i>' + fgName + '</a>'
+                    ? '<a href="javascript:void(0)" onclick="event.stopPropagation();navigateToSpaceFilegroup(\'' + dbEsc + '\',\'' + fgEsc + '\')" style="color:var(--color-text-link);text-decoration:none;font-size:11px;cursor:pointer" title="Abrir no modulo Space"><i class="fas fa-external-link-alt" style="font-size:8px;margin-right:3px"></i>' + fgName + '</a>'
                     : '<span style="color:var(--color-text-disabled);font-size:11px">-</span>';
 
                 return '<tr style="border-bottom:1px solid var(--color-bg-panel)">'
@@ -38607,18 +38618,18 @@ Tempo de Resposta: ${responseTime}
                         // (roxo/azul/verde-escuro nao agradou); a separacao de semantica
                         // fica pela BARRA em cor de severidade do modal (abaixo).
                         const colors = {
-                            'PRD': '#ef4444',  // Vermelho para Produção
-                            'QLT': '#f59e0b',  // Amarelo para Qualidade
-                            'TST': '#22c55e',  // Verde para Teste
-                            'DEV': '#3b82f6',  // Azul para Desenvolvimento
+                            'PRD': getSevTokens('CRITICAL').text,  // Vermelho para Produção (D5: variante -text, mesma convencao)
+                            'QLT': getSevTokens('WARNING').text,   // Amarelo para Qualidade
+                            'TST': getSevTokens('OK').text,        // Verde para Teste
+                            'DEV': getSevTokens('INFO').text,      // Azul para Desenvolvimento
                             'Undefined': 'var(--color-text-tertiary)'  // Cinza para indefinido
                         };
                         // 2026-07-27 (owner): numa modal de WARNING a barra PRD vermelha
                         // (convencao de ambiente) le-se como critico — a BARRA passa a usar
                         // a cor da severidade do modal; o NOME do ambiente mantem a cor da
                         // convencao (PRD vermelho no label).
-                        const modalSevBarColor = kpiType.includes('-warning') ? '#f59e0b'
-                            : kpiType.includes('-critical') ? '#ef4444' : null;
+                        const modalSevBarColor = kpiType.includes('-warning') ? getSevTokens('WARNING').fill
+                            : kpiType.includes('-critical') ? getSevTokens('CRITICAL').fill : null;   // D5: barra = solido do contrato
                         const isFgModal = kpiType.includes('filegroup-usage');
 
                         envChartHtml = `
@@ -38629,7 +38640,7 @@ Tempo de Resposta: ${responseTime}
                                     </div>
                                     <div id="envFilterInfo" style="display: none; font-size: 11px; color: var(--color-text-link);">
                                         <span id="envFilterText"></span>
-                                        <button onclick="clearEnvFilter()" style="margin-left: 8px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;">
+                                        <button onclick="clearEnvFilter()" style="margin-left: 8px; background: var(--sev-critical-tint); border: 1px solid var(--sev-critical-border); color: var(--sev-critical-text); padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;">
                                             <i class="fas fa-times" aria-hidden="true"></i> ${t('ui.clear') || 'Limpar'}
                                         </button>
                                     </div>
@@ -40398,7 +40409,9 @@ Tempo de Resposta: ${responseTime}
                             else if (srvUp.includes('DEV')) itemEnv = 'DEV';
                             else if (srvUp.includes('SCOM')) itemEnv = 'SCOM';
                         }
-                        const itemEnvColor = itemEnv === 'PRD' ? getSevTokens('CRITICAL').fill : itemEnv === 'QLT' ? getSevTokens('WARNING').fill : itemEnv === 'TST' ? getSevTokens('OK').fill : itemEnv === 'DEV' ? getSevTokens('INFO').fill : 'var(--color-text-disabled)';
+                        const itemEnvSev = itemEnv === 'PRD' ? 'CRITICAL' : itemEnv === 'QLT' ? 'WARNING' : itemEnv === 'TST' ? 'OK' : itemEnv === 'DEV' ? 'INFO' : null;   // D5 detalhe
+                        const itemEnvColor = itemEnvSev ? getSevTokens(itemEnvSev).fill : 'var(--color-text-disabled)';
+                        const itemEnvPill = itemEnvSev ? `background: ${getSevTokens(itemEnvSev).bg}; color: ${getSevTokens(itemEnvSev).text};` : 'background: rgba(100,116,139,0.15); color: var(--color-text-tertiary);';
 
                         // Determinar severidade e cores
                         let itemSev = severity;
@@ -40409,7 +40422,8 @@ Tempo de Resposta: ${responseTime}
                         // modal -critical propria).
                         if (kpiType === 'filegroup-usage-warning') itemSev = 'WARNING';
                         else if (kpiType === 'filegroup-usage-critical') itemSev = 'CRITICAL';
-                        const sevColor = itemSev === 'CRITICAL' ? getSevTokens('CRITICAL').fill : itemSev === 'WARNING' ? getSevTokens('WARNING').fill : getSevTokens('OK').fill;
+                        const sevTk = itemSev === 'CRITICAL' ? getSevTokens('CRITICAL') : itemSev === 'WARNING' ? getSevTokens('WARNING') : getSevTokens('OK');
+                        const sevColor = sevTk.text;   // D5 detalhe: e' cor de TEXTO/icone (era .fill = solido)
                         const sevBg = itemSev === 'CRITICAL' ? 'rgba(239, 68, 68, 0.08)' : itemSev === 'WARNING' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(34, 197, 94, 0.08)';
 
                         // Icone por tipo de KPI
@@ -40471,8 +40485,8 @@ Tempo de Resposta: ${responseTime}
                                     <span style="color: var(--color-text-disabled); margin-left: 8px;">${t('kpi_modal.disk_threshold_crit') || 'Crit'} &lt;${thrLabelCrit}</span>
                                     <span style="color: var(--color-text-disabled); margin-left: 4px;">${t('kpi_modal.disk_threshold_warn') || 'Warn'} &lt;${thrLabelWarn}</span>
                                 </div>
-                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 600;" aria-label="${criticalVal} drives criticos">${criticalVal} critical</span></div>` : ''}
-                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;" aria-label="${warningVal} drives em warning">${warningVal} warning</span></div>` : ''}`;
+                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 600;" aria-label="${criticalVal} drives criticos">${criticalVal} critical</span></div>` : ''}
+                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;" aria-label="${warningVal} drives em warning">${warningVal} warning</span></div>` : ''}`;
                         } else if (kpiType.includes('transaction-log')) {
                             // 2026-09-02 (owner: "nome, nao numero"): 1 card = 1 BASE.
                             // Backend (tlog_usage_classes) entrega Database, Percent_Used,
@@ -40523,15 +40537,15 @@ Tempo de Resposta: ${responseTime}
                             const attention = parseInt(instance.Attention || instance.attention || 0);
                             if (kpiType === 'filegroup-usage-critical') {
                                 metricsHtml = `
-                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 700;">${criticalVal} critical</span></div>` : ''}`;
+                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 700;">${criticalVal} critical</span></div>` : ''}`;
                             } else if (kpiType === 'filegroup-usage-warning') {
                                 metricsHtml = `
-                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;">${warningVal} warning</span></div>` : ''}
+                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;">${warningVal} warning</span></div>` : ''}
                                     ${attention > 0 ? `<div style="font-size: 12px;"><span style="color: #fb923c;">${attention} attention</span></div>` : ''}`;
                             } else {
                                 metricsHtml = `
-                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 700;">${criticalVal} critical</span></div>` : ''}
-                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;">${warningVal} warning</span></div>` : ''}
+                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 700;">${criticalVal} critical</span></div>` : ''}
+                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;">${warningVal} warning</span></div>` : ''}
                                     ${attention > 0 ? `<div style="font-size: 12px;"><span style="color: #fb923c;">${attention} attention</span></div>` : ''}`;
                             }
                         } else if (kpiType.includes('tempdb')) {
@@ -40543,8 +40557,8 @@ Tempo de Resposta: ${responseTime}
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.disk_usage_label', 'Uso Disco')}:</span> <span style="color: ${usedColor}; font-weight: 700; font-size: 14px;">${usedPct}%</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">TempDB:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${fileGB} GB</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.free_label', 'Livre')}:</span> <span style="color: var(--color-text-bright);">${freeGB} GB</span></div>
-                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 600;">${criticalVal} critical</span></div>` : ''}
-                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;">${warningVal} warning</span></div>` : ''}`;
+                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 600;">${criticalVal} critical</span></div>` : ''}
+                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;">${warningVal} warning</span></div>` : ''}`;
                         } else if (kpiType.includes('blocked-sessions')) {
                             const blockedCount = parseInt(instance.Blocked_Count || instance.blocked_count || 0);
                             metricsHtml = `
@@ -40874,7 +40888,7 @@ Tempo de Resposta: ${responseTime}
                                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                             <i class="fas ${kpiIcon}" style="color: ${sevColor}; font-size: 18px;"></i>
                                             <span class="instance-name" style="color: var(--color-text-bright); font-weight: 700; font-size: 15px;">${displayName}</span>
-                                            <span style="background: ${itemEnvColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">${itemEnv}</span>
+                                            <span style="${itemEnvPill} padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">${itemEnv}</span>
                                             ${delayClassChip}
                                             <i class="fas fa-chevron-down expand-chevron" style="color: var(--color-text-tertiary); font-size: 11px;" aria-hidden="true"></i>
                                         </div>
@@ -40883,10 +40897,10 @@ Tempo de Resposta: ${responseTime}
                                         </div>
                                     </div>
                                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 90px;">
-                                        <span style="background: ${itemSev === 'CRITICAL' ? '#7f1d1d' : itemSev === 'WARNING' ? '#78350f' : '#1e3a5f'}; color: ${sevColor}; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700;">
+                                        <span style="background: ${sevTk.bg}; color: ${sevColor}; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700;">
                                             ${itemSev}
                                         </span>
-                                        ${timeStr ? `<span style="color: var(--color-text-disabled); font-size: 11px;"><i class="fas fa-clock" style="margin-right: 3px;"></i>${timeStr}</span>` : ''}
+                                        ${timeStr ? `<span style="color: var(--color-text-tertiary); font-size: 11px;"><i class="fas fa-clock" style="margin-right: 3px;"></i>${timeStr}</span>` : ''}
                                         ${(kpiType === 'backup-failed' || kpiType === 'backup-log-failed' || kpiType === 'backup-jobs-disabled' || kpiType === 'backup-no-checksum') && _getBackupCardDate(instance) ? `<span style="color: var(--color-text-tertiary); font-size: 10px;" title="Event datetime (UTC)"><i class="far fa-calendar" style="margin-right: 3px;"></i>${_formatBackupCardDate(_getBackupCardDate(instance))}</span>` : ''}
                                     </div>
                                 </div>
@@ -44815,7 +44829,7 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                 const inst = (window._kpiModalInstances || [])[parseInt(card.dataset.idx, 10)];
                 const kt = String(card.dataset.kpiType || '');
                 panel.innerHTML = inst ? _buildCardExpandHtml(inst, kt.indexOf('filegroup-usage') === 0) : '';
-                panel.style.cssText = 'display: block; margin-top: 8px; padding: 10px; background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(71, 85, 105, 0.35); border-radius: 6px;';
+                panel.style.cssText = 'display: block; margin-top: 8px; padding: 10px; background: rgb(var(--rgb-surface-deep) / 0.55); border: 1px solid var(--color-border); border-radius: 6px;';   // D5 detalhe: era navy fixo (cinzento escuro em Light)
                 // Seleccionar/copiar texto do painel nao pode colapsar o card
                 panel.onclick = function (e) { e.stopPropagation(); };
                 panel.dataset.loaded = '1';
@@ -44858,10 +44872,19 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                             const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
                             const escJs = s => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                             const instDisplay = String(card.dataset.instanceName || '');
+                            // 2026-09-18 (owner): livre / total ao lado da percentagem (o endpoint ja devolve Total_MB/Used_MB/Free_MB)
+                            const _lang = document.documentElement.lang || undefined;
+                            const _fgFmt = mb => { const n = Number(mb); if (!isFinite(n)) return ''; return n >= 1024 ? (n / 1024).toLocaleString(_lang, { maximumFractionDigits: 1 }) + ' GB' : Math.round(n).toLocaleString(_lang) + ' MB'; };
+                            const sizeCell = f => {
+                                if (f.Total_MB == null) return '<div class="fg-cell-size"></div>';
+                                const livre = f.Free_MB != null ? Number(f.Free_MB) : Math.max(0, Number(f.Total_MB) - Number(f.Used_MB || 0));
+                                const tip = `${Math.round(livre).toLocaleString(_lang)} MB / ${Math.round(Number(f.Total_MB)).toLocaleString(_lang)} MB` + (f.Used_MB != null ? ` (${Math.round(Number(f.Used_MB)).toLocaleString(_lang)} MB)` : '');
+                                return `<div class="fg-cell-size" title="${tip}">${_fgFmt(livre)} / ${_fgFmt(f.Total_MB)}</div>`;
+                            };
                             const badge = st => {
                                 const s = String(st || '').toUpperCase();
-                                const col = getSevTokens(s).fill;
-                                return `<span style="background:${col}22;color:${col};padding:1px 8px;border-radius:4px;font-size:10px;font-weight:700;">${s || '?'}</span>`;
+                                const tk = getSevTokens(s);   // D5 detalhe: tint/texto (era solido como texto)
+                                return `<span style="background:${tk.bg};color:${tk.text};padding:1px 8px;border-radius:4px;font-size:10px;font-weight:700;">${s || '?'}</span>`;
                             };
                             host.style.color = '';
                             host.innerHTML = `
@@ -44869,12 +44892,13 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                                 <div class="fg-problem-grid">
                                     ${fgs.map(f => {
                                         const fgReal = String(f.Filegroup || '').split(' [')[0];
-                                        const linkOpen = `<a href="javascript:void(0)" onclick="event.stopPropagation(); _fgOpenInSpace('${escJs(instDisplay)}','${escJs(f.Database)}','${escJs(fgReal)}')" style="color:#818cf8;text-decoration:none;" title="Abrir no Space filtrado nesta database">`;
+                                        const linkOpen = `<a href="javascript:void(0)" onclick="event.stopPropagation(); _fgOpenInSpace('${escJs(instDisplay)}','${escJs(f.Database)}','${escJs(fgReal)}')" style="color:var(--color-text-link);text-decoration:none;" title="Abrir no Space filtrado nesta database">`;
                                         return `
                                         <div class="fg-row">
                                         <div class="fg-cell-db" title="${esc(f.Database)}">${linkOpen}${esc(f.Database)}</a></div>
                                         <div class="fg-cell-name">${linkOpen}<i class="fas fa-external-link-alt" style="font-size:8px;margin-right:3px;" aria-hidden="true"></i>${esc(f.Filegroup)}</a></div>
                                         <div class="fg-cell-pct">${f.Percent_Used != null ? Number(f.Percent_Used).toFixed(1) + '%' : ''}</div>
+                                        ${sizeCell(f)}
                                         <div class="fg-cell-badge">${badge(f.Status)}</div>
                                         </div>`;
                                     }).join('')}

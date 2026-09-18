@@ -194,12 +194,12 @@ class TestF4LaddersBatch8(unittest.TestCase):
 
     def test_env_5way(self):
         # PRD/QLT/TST/DEV/else -> CRIT/WARN/OK/INFO/text-disabled (5 variantes de var)
-        self.assertGreaterEqual(PORTAL.count("=== 'DEV' ? getSevTokens('INFO').fill : 'var(--color-text-disabled)'"), 5)
+        self.assertGreaterEqual(PORTAL.count("=== 'DEV' ? getSevTokens('INFO').fill : 'var(--color-text-disabled)'"), 4)   # D5: o cartao generico da modal de KPI passou a itemEnvSev (tint/texto)
 
     def test_metrics(self):
         self.assertIn("const pctColor = parseFloat(currentPctUsed) >= 95 ? getSevTokens('CRITICAL').fill", PORTAL)
         self.assertIn("const cpuColor = parseFloat(cpuPct) >= 95 ? getSevTokens('CRITICAL').fill", PORTAL)
-        self.assertIn("const sevColor = itemSev === 'CRITICAL' ? getSevTokens('CRITICAL').fill", PORTAL)
+        self.assertIn("const sevColor = sevTk.text;", PORTAL)   # D5: solido nao serve de cor de texto; sevTk vem de getSevTokens(itemSev)
 
 
 class TestF4LaddersBatch9(unittest.TestCase):
