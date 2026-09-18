@@ -51829,6 +51829,9 @@ window.showDiskDrilldown = async function(drive, label) {
 
         function liveSetProgram(tabId, program) {
             _liveProgram = program;
+            // 2026-09-18 (owner): os medidores sao de uma instancia; no Fleet ficam escondidos (a hora do refresh fica)
+            const _gauges = document.getElementById('live-gauges-' + tabId);
+            if (_gauges) _gauges.querySelectorAll(':scope > span:not([id^="live-status-"])').forEach(s => { s.style.display = program === 'fleet' ? 'none' : ''; });
             try { localStorage.setItem('live-last-program', program); } catch (e) {}  // 2026-09-11 F9
             _liveWaitsPrev = null;
             _liveWaitsMemo = null;
@@ -52414,7 +52417,7 @@ window.showDiskDrilldown = async function(drive, label) {
                    + `<button onclick="_fleetToggleFilter('${tabId}', null)" title="${_kpiT('live.fleet_filter_clear', 'Limpar filtro')}" style="margin-left:auto;background:none;border:1px solid var(--sev-info-text);color:var(--sev-info-text);border-radius:4px;padding:1px 8px;cursor:pointer;font-size:12px;">×</button></div>`;
             }
 
-            h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+            h += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
             h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-bolt" style="margin-right:6px;color:#f59e0b;"></i>QUERIES PESADAS AGORA</div>';
             if (liveQueries.length) {
@@ -52441,7 +52444,9 @@ window.showDiskDrilldown = async function(drive, label) {
             } else {
                 h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_heavy_queries') + '</div>';
             }
-            h += '</div></div>';
+            h += '</div>';
+            h += _fleetSpacePanel(soFiltro(data.space_risk));   // 2026-09-18 (owner): espaco critico da frota no vazio a direita
+            h += '</div>';
 
             if (liveBlocking.length) {
                 h += '<div style="background:var(--sev-critical-tint);border:1px solid var(--sev-critical-text);border-radius:8px;padding:12px;margin-bottom:12px;">';
@@ -52456,7 +52461,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
             const liveTempdb = soFiltro(data.live_tempdb);
             const liveWaits = soFiltro(data.live_waits);
-            h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+            h += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
             h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-fire" style="margin-right:6px;color:#8b5cf6;"></i>TEMPDB CONSUMERS AGORA</div>';
             if (liveTempdb.length) {
@@ -52500,7 +52505,7 @@ window.showDiskDrilldown = async function(drive, label) {
             const liveAgQueues = soFiltro(data.live_ag_queues);
             const liveIdle = soFiltro(data.live_idle);
             if (liveAgQueues.length || liveIdle.length) {
-                h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+                h += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px;">';
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
                 h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-sync-alt" style="margin-right:6px;color:#06b6d4;"></i>ALWAYSON QUEUES</div>';
                 if (liveAgQueues.length) {
@@ -52591,6 +52596,31 @@ window.showDiskDrilldown = async function(drive, label) {
             try { document.execCommand('copy'); ok(); } catch (e) {} document.body.removeChild(ta);
         }
         window._fleetCopySql = _fleetCopySql;
+        // 2026-09-18 (owner): filegroups e discos >= 90% usados, ordenados por espaco livre (menos livre primeiro)
+        function _fleetSpacePanel(rows) {
+            rows = (rows || []).slice().sort((a, b) => (a.free_mb || 0) - (b.free_mb || 0)).slice(0, 8);
+            let h = '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
+            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-hdd" style="margin-right:6px;color:var(--sev-critical-text);"></i>' + _kpiT('live.fleet_space_title', 'ESPAÇO CRÍTICO (frota)') + '</div>';
+            if (!rows.length) {
+                return h + '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + _kpiT('live.fleet_space_empty', 'Sem filegroups nem discos acima de 90%') + '</div></div>';
+            }
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            rows.forEach(r => {
+                const pct = Number(r.pct_used || 0);
+                const sev = pct >= 98 ? 'critical' : pct >= 95 ? 'warning' : 'attention';
+                const obj = r.kind === 'disk' ? esc(r.object) : esc(r.database) + ' · ' + esc(r.object);
+                const inst = esc(r.instance || '');
+                const tip = `${inst} — ${obj}: ${pct.toFixed(1)}% · ${_kpiT('live.fleet_space_free', 'livre')} ${Math.round(r.free_mb || 0)} MB / ${Math.round(r.total_mb || 0)} MB`;
+                h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;padding:2px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${inst}','io')" title="${tip}">`
+                   + `<div style="width:120px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${inst}</div>`
+                   + `<i class="fas ${r.kind === 'disk' ? 'fa-hdd' : 'fa-layer-group'}" style="color:var(--color-text-tertiary);font-size:12px;flex-shrink:0;" aria-hidden="true"></i>`
+                   + `<div style="flex:1;min-width:0;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${obj}</div>`
+                   + `<div style="width:46px;flex-shrink:0;text-align:right;color:var(--sev-${sev}-text);font-size:12px;font-weight:600;">${pct.toFixed(1)}%</div>`
+                   + `<div style="width:130px;flex-shrink:0;text-align:right;color:var(--color-text-tertiary);font-size:12px;white-space:nowrap;"><b style="color:var(--sev-${sev}-text);">${formatSizeMB(Math.round(r.free_mb || 0))}</b> / ${formatSizeMB(Math.round(r.total_mb || 0))}</div>`
+                   + `<span style="flex-shrink:0;background:var(--sev-${sev}-tint);color:var(--sev-${sev}-text);padding:1px 6px;border-radius:4px;font-size:12px;font-weight:700;">${r.kind === 'disk' ? 'DISK' : 'FG'}</span></div>`;
+            });
+            return h + '</div>';
+        }
 
         function _fleetSwitchTo(instance, program) {
             const sel = document.querySelector('select[id^="live-channel-"]');
