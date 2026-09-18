@@ -27,6 +27,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.routing import APIRoute
 
 from api.error_helpers import safe_http_error
+from api.routers.intelligence.helpers import execute_intelligence_query, INTELLIGENCE_SCHEMA   # 2026-09-18: espaco critico da frota (Fleet)
 
 logger = logging.getLogger(__name__)
 
@@ -1479,8 +1480,40 @@ async def get_fleet_dashboard():
     live_ag_queues.sort(key=lambda x: -((x.get("send_queue_kb") or 0) + (x.get("redo_queue_kb") or 0)))
     live_idle.sort(key=lambda x: -(x.get("idle_minutes") or 0))
 
+    # 2026-09-18 (owner): espaco critico da frota -- filegroups e discos >= 90% usados, ordenados pelo espaco livre
+    # (menos livre primeiro). Fonte: STG do WatcherDB_Intelligence (sql_monitoring, SELECT). Falha => lista vazia.
+    space_risk = []
+    try:
+        space_risk = execute_intelligence_query(f"""
+            SELECT TOP 12 kind, instance, [database], [object], pct_used, free_mb, total_mb FROM (
+                -- mesma regra do KPI de filegroups (helpers.collect_filegroup_usage): UNLIMITED sai (e' disk-bound, o
+                -- disco cobre-o); com Max_Size acima do alocado conta o espaco ate ao tecto; senao o livre do alocado
+                SELECT 'fg' AS kind, g.instance, g.[database], g.[object],
+                       CAST(100.0 - g.eff_free_pct AS float) AS pct_used, CAST(g.eff_free_mb AS float) AS free_mb, CAST(g.eff_total_mb AS float) AS total_mb
+                FROM (
+                    SELECT f.Instance AS instance, f.[Database] AS [database], f.Filegroup AS [object],
+                           CASE WHEN ISNULL(f.Max_Size_MB, 0) > 0 AND f.Max_Size_MB > f.Total_MB
+                                THEN (f.Max_Size_MB - f.Used_MB) * 100.0 / NULLIF(f.Max_Size_MB, 0)
+                                ELSE 100.0 - f.Percent_Used END AS eff_free_pct,
+                           CASE WHEN ISNULL(f.Max_Size_MB, 0) > 0 AND f.Max_Size_MB > f.Total_MB THEN f.Max_Size_MB - f.Used_MB ELSE f.Free_MB END AS eff_free_mb,
+                           CASE WHEN ISNULL(f.Max_Size_MB, 0) > 0 AND f.Max_Size_MB > f.Total_MB THEN f.Max_Size_MB ELSE f.Total_MB END AS eff_total_mb
+                    FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_FG_USAGE_STG f WITH (NOLOCK)
+                    WHERE ISNULL(f.Growth_Type, '') <> 'UNLIMITED' AND f.Percent_Used > 80
+                ) g
+                WHERE g.eff_free_pct < 10
+                UNION ALL
+                SELECT 'disk', d.Instance, NULL, d.Drive,
+                       CAST(100 - d.Percent_Free AS float), CAST(d.Free_MB AS float), CAST(d.Total_MB AS float)
+                FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_DISK_USAGE_STG d WITH (NOLOCK)
+                WHERE d.Percent_Free <= 10
+            ) x
+            ORDER BY free_mb ASC, pct_used DESC""", raise_on_error=False) or []
+    except Exception:
+        space_risk = []
+
     return _live_json({
         "timestamp": time.time(),
+        "space_risk": space_risk,
         "total": len(instances),
         "online": len(online),
         "offline": len(offline),
