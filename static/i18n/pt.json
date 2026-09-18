@@ -876,6 +876,8 @@
     "integrity_modal": "Integridade — Veredicto por Database"
   },
   "kpi_modal": {
+    "fg_free": "Livre",
+    "fg_total": "Total",
     "open_overview": "Abrir Overview",
     "affected_users": "utilizador(es) afetado(s)",
     "all_normal": "Todos os itens estão dentro dos parâmetros normais.",

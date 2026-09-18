@@ -125,6 +125,8 @@
             /* D2 contrato: attention existia só em Light/HC; em Dark o JS caía num fallback fixo */
             --sev-attention-text: #fcd34d;  --sev-attention-tint: rgba(234,179,8,0.12);
             --sev-attention-border: #eab308;--sev-attention-solid: #a16207;--sev-attention-on: #ffffff;
+            /* D6: roxo (warnings do resumo executivo; o mesmo do QUIET dos Collectors) */
+            --sev-violet-text: #c4b5fd;     --sev-violet-tint: rgba(139,92,246,0.20);
 
             /* === TIPOGRAFIA === */
             --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -259,6 +261,7 @@
             --sev-critical-border: #dc2626;  --sev-critical-solid: #b91c1c;  --sev-critical-on: #ffffff;
             --sev-attention-border: #a16207; --sev-attention-solid: #854d0e; --sev-attention-on: #ffffff;
             --sev-overflow-border: #b91c1c;  --sev-overflow-solid: #7c2d12;  --sev-overflow-on: #ffffff;
+            --sev-violet-text: #6d28d9;      --sev-violet-tint: rgba(139,92,246,0.12);
         }
 
         /* Tema Alto Contraste (WCAG AAA) -- propagado do V6 (2026-06-24) */
@@ -283,6 +286,7 @@
             --sev-ok-on: #000000;  --sev-info-on: #000000;  --sev-warning-on: #000000;  --sev-critical-on: #000000;
             --sev-attention-border: #ffd000;  --sev-attention-on: #000000;
             --sev-overflow-text: #ff9999;  --sev-overflow-tint: rgba(255,153,153,0.15);  --sev-overflow-border: #ff9999;  --sev-overflow-solid: #ff9999;  --sev-overflow-on: #000000;
+            --sev-violet-text: #d9c8ff;  --sev-violet-tint: rgba(139,92,246,0.15);
         }
         html[data-theme="high-contrast"] *, html[data-theme="high-contrast"] *::before, html[data-theme="high-contrast"] *::after {
             background-image: none !important; box-shadow: none !important; text-shadow: none !important;
@@ -757,9 +761,9 @@
             pointer-events: auto;
             min-width: 360px;
             max-width: 420px;
-            background: #1a1f2e;
-            border: 1px solid #ef4444;
-            border-left: 4px solid #ef4444;
+            background: var(--color-bg-elevated);   /* D4 security: era #1a1f2e fixo (toast escuro em Light) */
+            border: 1px solid var(--sev-critical-border);
+            border-left: 4px solid var(--sev-critical-border);
             border-radius: 8px;
             padding: 14px 16px 10px;
             box-shadow: 0 8px 32px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(0,0,0,0.1);
@@ -795,8 +799,8 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.15);
+            color: var(--sev-critical-text);
+            background: var(--sev-critical-tint);
             padding: 2px 8px;
             border-radius: 4px;
         }
@@ -817,8 +821,8 @@
             transition: all 0.15s;
         }
         .toast-close:hover {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            color: var(--sev-critical-text);
+            background: var(--sev-critical-tint);
         }
         .toast-body {
             font-size: 13px;
@@ -1982,10 +1986,10 @@
         .rep-ico-info { background:color-mix(in srgb, var(--sev-info-solid) 15%, transparent); color:var(--sev-info-solid); }
         .rep-ico-ok { background:color-mix(in srgb, var(--sev-ok-solid) 15%, transparent); color:var(--sev-ok-solid); }
         .rep-ico-crit { background:color-mix(in srgb, var(--sev-critical-solid) 15%, transparent); color:var(--sev-critical-solid); }
-        .rep-ico-warn { background:color-mix(in srgb, var(--sev-warning-solid) 15%, transparent); color:var(--sev-warning-solid); }
+        .rep-ico-warn { background:var(--sev-violet-tint); color:var(--sev-violet-text); }   /* D6 (owner): warnings em roxo */
         .rep-exec-txt { display:flex; flex-direction:column; }
         .rep-exec-stat b { font-size:clamp(23px, 2.5vh, 30px); font-weight:700; line-height:1; display:block; font-variant-numeric:tabular-nums; color:var(--color-text-primary); }
-        .rep-exec-stat b.ok { color:var(--sev-ok-text); } .rep-exec-stat b.crit { color:var(--sev-critical-text); } .rep-exec-stat b.warn { color:var(--sev-warning-text); }   /* D2: era -solid como texto */
+        .rep-exec-stat b.ok { color:var(--sev-ok-text); } .rep-exec-stat b.crit { color:var(--sev-critical-text); } .rep-exec-stat b.warn { color:var(--sev-violet-text); }   /* D2: era -solid como texto */
         .rep-exec-txt span { font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-text-tertiary); margin-top:clamp(3px, 0.4vh, 5px); display:block; white-space:nowrap; }
         .rep-exec-attn { margin-top:auto; padding-top:clamp(8px, 1.15vh, 14px); border-top:1px solid var(--color-border); display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; font-size:13px; color:var(--sev-critical-solid); }
         .rep-exec-attn i { flex-shrink:0; }
@@ -3804,12 +3808,12 @@
         .report-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--color-bg-panel); font-size: 11px; color: var(--color-border-strong); text-align: center; }
 
         /* Generate button */
-        .report-btn-generate {
-            background: rgba(234, 88, 12, 0.15); border: 1px solid rgba(234, 88, 12, 0.3);
-            color: #fb923c; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+        .report-btn-generate {   /* D4 security: laranja fixo (1,69 em Light) -> warning do contrato */
+            background: var(--sev-warning-tint); border: 1px solid var(--sev-warning-border);
+            color: var(--sev-warning-text); padding: 8px 16px; border-radius: 6px; cursor: pointer;
             font-size: 14px; display: flex; align-items: center; gap: 6px; transition: all .15s;
         }
-        .report-btn-generate:hover { background: rgba(234, 88, 12, 0.25); transform: translateY(-1px); }
+        .report-btn-generate:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
         /* ========================================
          * LOGIN OVERLAY - WatcherDB V3.2 Auth
@@ -3955,7 +3959,7 @@
            linhas). Precedente @container: .rep-exec-card. */
         .fg-problem-grid {
             display: grid;
-            grid-template-columns: auto auto max-content max-content;
+            grid-template-columns: auto auto max-content max-content max-content;   /* 2026-09-18: + livre/total */
             column-gap: 28px;
             row-gap: 3px;
             width: max-content;
@@ -3984,11 +3988,18 @@
             text-align: right;
             font-variant-numeric: tabular-nums;
         }
+        .fg-problem-grid .fg-cell-size {   /* 2026-09-18 (owner): livre / total ao lado da percentagem */
+            color: var(--color-text-tertiary);
+            font-size: 11px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
         @container (max-width: 640px) {
             .fg-problem-grid { grid-template-columns: minmax(0, 1fr); width: auto; }
             .fg-problem-grid .fg-row {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) max-content max-content;
+                grid-template-columns: minmax(0, 1fr) max-content max-content max-content;
                 column-gap: 8px;
                 align-items: center;
                 padding: 2px 0;
@@ -8470,7 +8481,7 @@
                     return;
                 }
             content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Espaço</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de espaço está disponível apenas para instâncias de servidor específicas.
@@ -8523,7 +8534,7 @@
                     return;
                 }
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Memória</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de memória está disponível apenas para instâncias de servidor específicas.
@@ -8575,7 +8586,7 @@
                     return;
                 }
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de CPU</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de CPU está disponível apenas para instâncias de servidor específicas.
@@ -8623,7 +8634,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Backup</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de backup está disponível apenas para instâncias de servidor específicas.
@@ -8666,7 +8677,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> ${t('page.user_analysis')}</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de usuários está disponível apenas para instâncias de servidor específicas.
@@ -12631,12 +12642,12 @@
                 const physPath = f.physical_path || f.physical_name || '-';
                 const fgName = f.filegroup_name || '-';
                 const maxSz = f.max_size_formatted || '-';
-                const maxColor = maxSz === 'Unlimited' ? '#818cf8' : 'var(--color-text-tertiary)';
+                const maxColor = maxSz === 'Unlimited' ? 'var(--sev-info-text)' : 'var(--color-text-tertiary)';
                 const growth = f.growth_setting || '-';
                 const dbEsc = (f.database_name||'').replace(/'/g,"\\'").replace(/\\/g,'\\\\');
                 const fgEsc = fgName.replace(/'/g,"\\'").replace(/\\/g,'\\\\');
                 const fgCell = (fgName && fgName !== '-')
-                    ? '<a href="javascript:void(0)" onclick="event.stopPropagation();navigateToSpaceFilegroup(\'' + dbEsc + '\',\'' + fgEsc + '\')" style="color:#818cf8;text-decoration:none;font-size:11px;cursor:pointer" title="Abrir no modulo Space"><i class="fas fa-external-link-alt" style="font-size:8px;margin-right:3px"></i>' + fgName + '</a>'
+                    ? '<a href="javascript:void(0)" onclick="event.stopPropagation();navigateToSpaceFilegroup(\'' + dbEsc + '\',\'' + fgEsc + '\')" style="color:var(--color-text-link);text-decoration:none;font-size:11px;cursor:pointer" title="Abrir no modulo Space"><i class="fas fa-external-link-alt" style="font-size:8px;margin-right:3px"></i>' + fgName + '</a>'
                     : '<span style="color:var(--color-text-disabled);font-size:11px">-</span>';
 
                 return '<tr style="border-bottom:1px solid var(--color-bg-panel)">'
@@ -15566,7 +15577,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Segurança</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de segurança está disponível apenas para instâncias de servidor específicas.
@@ -15606,7 +15617,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> TDE Encryption</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de TDE está disponível apenas para instâncias de servidor específicas.
@@ -15646,7 +15657,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Log</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de log está disponível apenas para instâncias de servidor específicas.
@@ -15686,7 +15697,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Always On</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de Always On está disponível apenas para instâncias de servidor específicas.
@@ -15711,7 +15722,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> SQL Diagnostics</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             O SQL Diagnostics está disponível apenas para instâncias de servidor específicas.
@@ -15749,7 +15760,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> ${t('services.sql_services')}</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de serviços está disponível apenas para instâncias de servidor específicas.
@@ -20449,25 +20460,24 @@
                 // Helper para status badge
                 const getStatusBadge = (status, severity) => {
                     if (status === 'pass') {
-                        return '<span class="badge" style="background:#10b981; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-check" style="margin-right:4px;"></i>PASS</span>';
+                        return '<span class="badge" style="background:var(--sev-ok-tint); color:var(--sev-ok-text);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-check" style="margin-right:4px;"></i>PASS</span>';   // D4 security: tint/text
                     } else if (status === 'fail') {
-                        const color = severity === 'critical' ? getSevTokens('CRITICAL').fill : severity === 'high' ? getSevTokens('WARNING').fill : getSevTokens('ATTENTION').fill;
-                        return `<span class="badge" style="background:${color}; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-times" style="margin-right:4px;"></i>FAIL</span>`;
+                        const sev = severity === 'critical' ? 'critical' : severity === 'high' ? 'warning' : 'attention';
+                        return `<span class="badge" style="background:var(--sev-${sev}-tint); color:var(--sev-${sev}-text);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-times" style="margin-right:4px;"></i>FAIL</span>`;
                     } else if (status === 'warning') {
-                        return '<span class="badge" style="background:#f59e0b; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-exclamation-triangle" style="margin-right:4px;"></i>WARNING</span>';
+                        return '<span class="badge" style="background:var(--sev-warning-tint); color:var(--sev-warning-text);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-exclamation-triangle" style="margin-right:4px;"></i>WARNING</span>';
                     } else {
-                        return '<span class="badge" style="background:#6b7280; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-question" style="margin-right:4px;"></i>UNKNOWN</span>';
+                        return '<span class="badge" style="background:rgba(100,116,139,0.15); color:var(--color-text-tertiary);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-question" style="margin-right:4px;"></i>UNKNOWN</span>';
                     }
                 };
 
                 // Helper para severity badge
                 const getSeverityBadge = (severity) => {
-                    const colors = {
-                        'critical': '#ef4444',
-                        'high': '#f59e0b',
-                        'medium': '#fbbf24',
-                        'low': 'var(--color-text-link)',
-                        'info': 'var(--color-text-tertiary)'
+                    const sevs = {   // D4 security: par tint/text do contrato (era branco sobre solido)
+                        'critical': 'critical',
+                        'high': 'warning',
+                        'medium': 'attention',
+                        'low': 'info'
                     };
                     const labels = {
                         'critical': t('security.severity_critical'),
@@ -20476,14 +20486,15 @@
                         'low': t('security.severity_low'),
                         'info': t('security.severity_info')
                     };
-                    const color = colors[severity] || 'var(--color-text-tertiary)';
+                    const sev = sevs[severity];
+                    const estilo = sev ? `background:var(--sev-${sev}-tint); color:var(--sev-${sev}-text);` : 'background:rgba(100,116,139,0.15); color:var(--color-text-tertiary);';
                     const label = labels[severity] || severity;
-                    return `<span class="badge" style="background:${color}; color:#fff; font-size:11px;">${label}</span>`;
+                    return `<span class="badge" style="${estilo} font-size:11px;">${label}</span>`;
                 };
 
                 // Cards de resumo
                 const securityScore = summary.security_score || 0;
-                const scoreColor = securityScore >= 80 ? '#10b981' : securityScore >= 60 ? '#f59e0b' : '#ef4444';
+                const scoreSev = securityScore >= 80 ? 'ok' : securityScore >= 60 ? 'warning' : 'critical';   // D4 security
 
                 // Renderizar categorias
                 let categoriesHtml = '';
@@ -20523,11 +20534,11 @@
                                             </div>
                                         ` : ''}
                                         ${check.recommendation ? `
-                                            <div style="margin-top: 12px; padding: 12px; background: #1e3a5f; border-left: 3px solid var(--color-text-link); border-radius: 4px;">
+                                            <div style="margin-top: 12px; padding: 12px; background: var(--sev-info-tint); border-left: 3px solid var(--sev-info-border); border-radius: 4px;">
                                                 <div style="display: flex; align-items: start; gap: 8px;">
                                                     <i class="fas fa-lightbulb" style="color: var(--color-text-link); margin-top: 2px;"></i>
                                                     <div style="flex: 1;">
-                                                        <strong style="color: #93c5fd; font-size: 12px;">${t('security.recommendation')}</strong>
+                                                        <strong style="color: var(--sev-info-text); font-size: 12px;">${t('security.recommendation')}</strong>
                                                         <p style="color: var(--color-text-secondary); font-size: 12px; margin: 4px 0 0 0;">${check.recommendation}</p>
                                                     </div>
                                                 </div>
@@ -20573,35 +20584,35 @@
                         </div>
                         
                     <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 16px;">
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, ${scoreColor}22, ${scoreColor}11); border: 2px solid ${scoreColor};">
+                        <div class="stat-card" style="position:relative; background: var(--sev-${scoreSev}-tint); border: 2px solid var(--sev-${scoreSev}-border);">
                             <span class="card-help-btn help-green" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-score');" title="${t('ui.help')}">?</span>
                             <div class="label">${t('security.score')}</div>
-                            <div class="value" style="color: ${scoreColor}; font-size: 32px; font-weight: bold;">${securityScore}%</div>
+                            <div class="value" style="color: var(--sev-${scoreSev}-text); font-size: 32px; font-weight: bold;">${securityScore}%</div>
                 </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #10b98133, #10b98122); border: 1px solid #10b981;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-ok-tint); border: 1px solid var(--sev-ok-border);">
                             <span class="card-help-btn help-green" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-passed');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #6ee7b7;">${t('security.passed')}</div>
-                            <div class="value" style="color: #10b981;">${summary.passed || 0}</div>
+                            <div class="label" style="color: var(--sev-ok-text);">${t('security.passed')}</div>
+                            <div class="value" style="color: var(--sev-ok-text);">${summary.passed || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #dc262633, #dc262622); border: 1px solid #dc2626;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-critical-tint); border: 1px solid var(--sev-critical-border);">
                             <span class="card-help-btn help-red" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-failed');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fca5a5;">${t('security.failed')}</div>
-                            <div class="value" style="color: #f87171;">${summary.failed || 0}</div>
+                            <div class="label" style="color: var(--sev-critical-text);">${t('security.failed')}</div>
+                            <div class="value" style="color: var(--sev-critical-text);">${summary.failed || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #d9770633, #d9770622); border: 1px solid #d97706;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-attention-tint); border: 1px solid var(--sev-attention-border);">
                             <span class="card-help-btn help-orange" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-warnings');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fcd34d;">${t('security.warnings')}</div>
-                            <div class="value" style="color: #fbbf24;">${summary.warnings || 0}</div>
+                            <div class="label" style="color: var(--sev-attention-text);">${t('security.warnings')}</div>
+                            <div class="value" style="color: var(--sev-attention-text);">${summary.warnings || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #be123c33, #be123c22); border: 1px solid #be123c;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-overflow-tint); border: 1px solid var(--sev-overflow-border);">
                             <span class="card-help-btn help-red" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-critical');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fda4af;">${t('security.critical')}</div>
-                            <div class="value" style="color: #fb7185;">${summary.critical_issues || 0}</div>
+                            <div class="label" style="color: var(--sev-overflow-text);">${t('security.critical')}</div>
+                            <div class="value" style="color: var(--sev-overflow-text);">${summary.critical_issues || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #ea580c33, #ea580c22); border: 1px solid #ea580c;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-warning-tint); border: 1px solid var(--sev-warning-border);">
                             <span class="card-help-btn help-orange" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-high');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fdba74;">${t('security.high')}</div>
-                            <div class="value" style="color: #fb923c;">${summary.high_issues || 0}</div>
+                            <div class="label" style="color: var(--sev-warning-text);">${t('security.high')}</div>
+                            <div class="value" style="color: var(--sev-warning-text);">${summary.high_issues || 0}</div>
                         </div>
                     </div>
 
@@ -20626,8 +20637,8 @@
                 }
                 debugLog(`? Erro ao carregar Security Analysis: ${error.message}`, 'error');
                 content.innerHTML = `
-                    <div class="card" style="border-left: 4px solid #ef4444;">
-                        <h4 style="color: #ef4444; margin: 0 0 12px 0;">
+                    <div class="card" style="border-left: 4px solid var(--sev-critical-border);">
+                        <h4 style="color: var(--sev-critical-text); margin: 0 0 12px 0;">
                             <i class="fas fa-exclamation-triangle"></i> ${t('security.error_loading')}
                         </h4>
                         <p style="color: var(--color-text-tertiary); margin: 0;">${error.message}</p>
@@ -38607,18 +38618,18 @@ Tempo de Resposta: ${responseTime}
                         // (roxo/azul/verde-escuro nao agradou); a separacao de semantica
                         // fica pela BARRA em cor de severidade do modal (abaixo).
                         const colors = {
-                            'PRD': '#ef4444',  // Vermelho para Produção
-                            'QLT': '#f59e0b',  // Amarelo para Qualidade
-                            'TST': '#22c55e',  // Verde para Teste
-                            'DEV': '#3b82f6',  // Azul para Desenvolvimento
+                            'PRD': getSevTokens('CRITICAL').text,  // Vermelho para Produção (D5: variante -text, mesma convencao)
+                            'QLT': getSevTokens('WARNING').text,   // Amarelo para Qualidade
+                            'TST': getSevTokens('OK').text,        // Verde para Teste
+                            'DEV': getSevTokens('INFO').text,      // Azul para Desenvolvimento
                             'Undefined': 'var(--color-text-tertiary)'  // Cinza para indefinido
                         };
                         // 2026-07-27 (owner): numa modal de WARNING a barra PRD vermelha
                         // (convencao de ambiente) le-se como critico — a BARRA passa a usar
                         // a cor da severidade do modal; o NOME do ambiente mantem a cor da
                         // convencao (PRD vermelho no label).
-                        const modalSevBarColor = kpiType.includes('-warning') ? '#f59e0b'
-                            : kpiType.includes('-critical') ? '#ef4444' : null;
+                        const modalSevBarColor = kpiType.includes('-warning') ? getSevTokens('WARNING').fill
+                            : kpiType.includes('-critical') ? getSevTokens('CRITICAL').fill : null;   // D5: barra = solido do contrato
                         const isFgModal = kpiType.includes('filegroup-usage');
 
                         envChartHtml = `
@@ -38629,7 +38640,7 @@ Tempo de Resposta: ${responseTime}
                                     </div>
                                     <div id="envFilterInfo" style="display: none; font-size: 11px; color: var(--color-text-link);">
                                         <span id="envFilterText"></span>
-                                        <button onclick="clearEnvFilter()" style="margin-left: 8px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;">
+                                        <button onclick="clearEnvFilter()" style="margin-left: 8px; background: var(--sev-critical-tint); border: 1px solid var(--sev-critical-border); color: var(--sev-critical-text); padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;">
                                             <i class="fas fa-times" aria-hidden="true"></i> ${t('ui.clear') || 'Limpar'}
                                         </button>
                                     </div>
@@ -40398,7 +40409,9 @@ Tempo de Resposta: ${responseTime}
                             else if (srvUp.includes('DEV')) itemEnv = 'DEV';
                             else if (srvUp.includes('SCOM')) itemEnv = 'SCOM';
                         }
-                        const itemEnvColor = itemEnv === 'PRD' ? getSevTokens('CRITICAL').fill : itemEnv === 'QLT' ? getSevTokens('WARNING').fill : itemEnv === 'TST' ? getSevTokens('OK').fill : itemEnv === 'DEV' ? getSevTokens('INFO').fill : 'var(--color-text-disabled)';
+                        const itemEnvSev = itemEnv === 'PRD' ? 'CRITICAL' : itemEnv === 'QLT' ? 'WARNING' : itemEnv === 'TST' ? 'OK' : itemEnv === 'DEV' ? 'INFO' : null;   // D5 detalhe
+                        const itemEnvColor = itemEnvSev ? getSevTokens(itemEnvSev).fill : 'var(--color-text-disabled)';
+                        const itemEnvPill = itemEnvSev ? `background: ${getSevTokens(itemEnvSev).bg}; color: ${getSevTokens(itemEnvSev).text};` : 'background: rgba(100,116,139,0.15); color: var(--color-text-tertiary);';
 
                         // Determinar severidade e cores
                         let itemSev = severity;
@@ -40409,7 +40422,8 @@ Tempo de Resposta: ${responseTime}
                         // modal -critical propria).
                         if (kpiType === 'filegroup-usage-warning') itemSev = 'WARNING';
                         else if (kpiType === 'filegroup-usage-critical') itemSev = 'CRITICAL';
-                        const sevColor = itemSev === 'CRITICAL' ? getSevTokens('CRITICAL').fill : itemSev === 'WARNING' ? getSevTokens('WARNING').fill : getSevTokens('OK').fill;
+                        const sevTk = itemSev === 'CRITICAL' ? getSevTokens('CRITICAL') : itemSev === 'WARNING' ? getSevTokens('WARNING') : getSevTokens('OK');
+                        const sevColor = sevTk.text;   // D5 detalhe: e' cor de TEXTO/icone (era .fill = solido)
                         const sevBg = itemSev === 'CRITICAL' ? 'rgba(239, 68, 68, 0.08)' : itemSev === 'WARNING' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(34, 197, 94, 0.08)';
 
                         // Icone por tipo de KPI
@@ -40471,8 +40485,8 @@ Tempo de Resposta: ${responseTime}
                                     <span style="color: var(--color-text-disabled); margin-left: 8px;">${t('kpi_modal.disk_threshold_crit') || 'Crit'} &lt;${thrLabelCrit}</span>
                                     <span style="color: var(--color-text-disabled); margin-left: 4px;">${t('kpi_modal.disk_threshold_warn') || 'Warn'} &lt;${thrLabelWarn}</span>
                                 </div>
-                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 600;" aria-label="${criticalVal} drives criticos">${criticalVal} critical</span></div>` : ''}
-                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;" aria-label="${warningVal} drives em warning">${warningVal} warning</span></div>` : ''}`;
+                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 600;" aria-label="${criticalVal} drives criticos">${criticalVal} critical</span></div>` : ''}
+                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;" aria-label="${warningVal} drives em warning">${warningVal} warning</span></div>` : ''}`;
                         } else if (kpiType.includes('transaction-log')) {
                             // 2026-09-02 (owner: "nome, nao numero"): 1 card = 1 BASE.
                             // Backend (tlog_usage_classes) entrega Database, Percent_Used,
@@ -40523,15 +40537,15 @@ Tempo de Resposta: ${responseTime}
                             const attention = parseInt(instance.Attention || instance.attention || 0);
                             if (kpiType === 'filegroup-usage-critical') {
                                 metricsHtml = `
-                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 700;">${criticalVal} critical</span></div>` : ''}`;
+                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 700;">${criticalVal} critical</span></div>` : ''}`;
                             } else if (kpiType === 'filegroup-usage-warning') {
                                 metricsHtml = `
-                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;">${warningVal} warning</span></div>` : ''}
+                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;">${warningVal} warning</span></div>` : ''}
                                     ${attention > 0 ? `<div style="font-size: 12px;"><span style="color: #fb923c;">${attention} attention</span></div>` : ''}`;
                             } else {
                                 metricsHtml = `
-                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 700;">${criticalVal} critical</span></div>` : ''}
-                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;">${warningVal} warning</span></div>` : ''}
+                                    ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 700;">${criticalVal} critical</span></div>` : ''}
+                                    ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;">${warningVal} warning</span></div>` : ''}
                                     ${attention > 0 ? `<div style="font-size: 12px;"><span style="color: #fb923c;">${attention} attention</span></div>` : ''}`;
                             }
                         } else if (kpiType.includes('tempdb')) {
@@ -40543,8 +40557,8 @@ Tempo de Resposta: ${responseTime}
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.disk_usage_label', 'Uso Disco')}:</span> <span style="color: ${usedColor}; font-weight: 700; font-size: 14px;">${usedPct}%</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">TempDB:</span> <span style="color: var(--color-text-bright); font-weight: 600;">${fileGB} GB</span></div>
                                 <div style="font-size: 12px;"><span style="color: var(--color-text-disabled);">${_kpiT('kpi_adv.free_label', 'Livre')}:</span> <span style="color: var(--color-text-bright);">${freeGB} GB</span></div>
-                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: #ef4444; font-weight: 600;">${criticalVal} critical</span></div>` : ''}
-                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: #f59e0b; font-weight: 600;">${warningVal} warning</span></div>` : ''}`;
+                                ${criticalVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-critical-text); font-weight: 600;">${criticalVal} critical</span></div>` : ''}
+                                ${warningVal > 0 ? `<div style="font-size: 12px;"><span style="color: var(--sev-warning-text); font-weight: 600;">${warningVal} warning</span></div>` : ''}`;
                         } else if (kpiType.includes('blocked-sessions')) {
                             const blockedCount = parseInt(instance.Blocked_Count || instance.blocked_count || 0);
                             metricsHtml = `
@@ -40874,7 +40888,7 @@ Tempo de Resposta: ${responseTime}
                                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                             <i class="fas ${kpiIcon}" style="color: ${sevColor}; font-size: 18px;"></i>
                                             <span class="instance-name" style="color: var(--color-text-bright); font-weight: 700; font-size: 15px;">${displayName}</span>
-                                            <span style="background: ${itemEnvColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">${itemEnv}</span>
+                                            <span style="${itemEnvPill} padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">${itemEnv}</span>
                                             ${delayClassChip}
                                             <i class="fas fa-chevron-down expand-chevron" style="color: var(--color-text-tertiary); font-size: 11px;" aria-hidden="true"></i>
                                         </div>
@@ -40883,10 +40897,10 @@ Tempo de Resposta: ${responseTime}
                                         </div>
                                     </div>
                                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 90px;">
-                                        <span style="background: ${itemSev === 'CRITICAL' ? '#7f1d1d' : itemSev === 'WARNING' ? '#78350f' : '#1e3a5f'}; color: ${sevColor}; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700;">
+                                        <span style="background: ${sevTk.bg}; color: ${sevColor}; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700;">
                                             ${itemSev}
                                         </span>
-                                        ${timeStr ? `<span style="color: var(--color-text-disabled); font-size: 11px;"><i class="fas fa-clock" style="margin-right: 3px;"></i>${timeStr}</span>` : ''}
+                                        ${timeStr ? `<span style="color: var(--color-text-tertiary); font-size: 11px;"><i class="fas fa-clock" style="margin-right: 3px;"></i>${timeStr}</span>` : ''}
                                         ${(kpiType === 'backup-failed' || kpiType === 'backup-log-failed' || kpiType === 'backup-jobs-disabled' || kpiType === 'backup-no-checksum') && _getBackupCardDate(instance) ? `<span style="color: var(--color-text-tertiary); font-size: 10px;" title="Event datetime (UTC)"><i class="far fa-calendar" style="margin-right: 3px;"></i>${_formatBackupCardDate(_getBackupCardDate(instance))}</span>` : ''}
                                     </div>
                                 </div>
@@ -44815,7 +44829,7 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                 const inst = (window._kpiModalInstances || [])[parseInt(card.dataset.idx, 10)];
                 const kt = String(card.dataset.kpiType || '');
                 panel.innerHTML = inst ? _buildCardExpandHtml(inst, kt.indexOf('filegroup-usage') === 0) : '';
-                panel.style.cssText = 'display: block; margin-top: 8px; padding: 10px; background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(71, 85, 105, 0.35); border-radius: 6px;';
+                panel.style.cssText = 'display: block; margin-top: 8px; padding: 10px; background: rgb(var(--rgb-surface-deep) / 0.55); border: 1px solid var(--color-border); border-radius: 6px;';   // D5 detalhe: era navy fixo (cinzento escuro em Light)
                 // Seleccionar/copiar texto do painel nao pode colapsar o card
                 panel.onclick = function (e) { e.stopPropagation(); };
                 panel.dataset.loaded = '1';
@@ -44858,10 +44872,19 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                             const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
                             const escJs = s => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                             const instDisplay = String(card.dataset.instanceName || '');
+                            // 2026-09-18 (owner): livre / total ao lado da percentagem (o endpoint ja devolve Total_MB/Used_MB/Free_MB)
+                            const _lang = document.documentElement.lang || undefined;
+                            const _fgFmt = mb => { const n = Number(mb); if (!isFinite(n)) return ''; return n >= 1024 ? (n / 1024).toLocaleString(_lang, { maximumFractionDigits: 1 }) + ' GB' : Math.round(n).toLocaleString(_lang) + ' MB'; };
+                            const sizeCell = f => {
+                                if (f.Total_MB == null) return '<div class="fg-cell-size"></div>';
+                                const livre = f.Free_MB != null ? Number(f.Free_MB) : Math.max(0, Number(f.Total_MB) - Number(f.Used_MB || 0));
+                                const tip = `${Math.round(livre).toLocaleString(_lang)} MB / ${Math.round(Number(f.Total_MB)).toLocaleString(_lang)} MB` + (f.Used_MB != null ? ` (${Math.round(Number(f.Used_MB)).toLocaleString(_lang)} MB)` : '');
+                                return `<div class="fg-cell-size" title="${tip}">${_fgFmt(livre)} ${_kpiT('kpi_modal.fg_free', 'Livre')} / ${_fgFmt(f.Total_MB)} ${_kpiT('kpi_modal.fg_total', 'Total')}</div>`;
+                            };
                             const badge = st => {
                                 const s = String(st || '').toUpperCase();
-                                const col = getSevTokens(s).fill;
-                                return `<span style="background:${col}22;color:${col};padding:1px 8px;border-radius:4px;font-size:10px;font-weight:700;">${s || '?'}</span>`;
+                                const tk = getSevTokens(s);   // D5 detalhe: tint/texto (era solido como texto)
+                                return `<span style="background:${tk.bg};color:${tk.text};padding:1px 8px;border-radius:4px;font-size:10px;font-weight:700;">${s || '?'}</span>`;
                             };
                             host.style.color = '';
                             host.innerHTML = `
@@ -44869,12 +44892,13 @@ ${escapeHtml(idx.create_index_script || 'N/A')}
                                 <div class="fg-problem-grid">
                                     ${fgs.map(f => {
                                         const fgReal = String(f.Filegroup || '').split(' [')[0];
-                                        const linkOpen = `<a href="javascript:void(0)" onclick="event.stopPropagation(); _fgOpenInSpace('${escJs(instDisplay)}','${escJs(f.Database)}','${escJs(fgReal)}')" style="color:#818cf8;text-decoration:none;" title="Abrir no Space filtrado nesta database">`;
+                                        const linkOpen = `<a href="javascript:void(0)" onclick="event.stopPropagation(); _fgOpenInSpace('${escJs(instDisplay)}','${escJs(f.Database)}','${escJs(fgReal)}')" style="color:var(--color-text-link);text-decoration:none;" title="Abrir no Space filtrado nesta database">`;
                                         return `
                                         <div class="fg-row">
                                         <div class="fg-cell-db" title="${esc(f.Database)}">${linkOpen}${esc(f.Database)}</a></div>
                                         <div class="fg-cell-name">${linkOpen}<i class="fas fa-external-link-alt" style="font-size:8px;margin-right:3px;" aria-hidden="true"></i>${esc(f.Filegroup)}</a></div>
                                         <div class="fg-cell-pct">${f.Percent_Used != null ? Number(f.Percent_Used).toFixed(1) + '%' : ''}</div>
+                                        ${sizeCell(f)}
                                         <div class="fg-cell-badge">${badge(f.Status)}</div>
                                         </div>`;
                                     }).join('')}
@@ -51469,12 +51493,12 @@ window.showDiskDrilldown = async function(drive, label) {
                     </span>
                     <input id="live-channel-search-${tabId}" type="text" placeholder="${t('live.filter_instance')}"
                            oninput="liveFilterChannels('${tabId}', this.value)" autocomplete="off"
-                           style="width:130px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;">
+                           style="width:110px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;">
                     <select id="live-channel-${tabId}" onchange="liveChangeChannel('${tabId}', this.value)"
-                            style="max-width:320px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;font-weight:500;">
+                            style="max-width:240px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;font-weight:500;">
                         <option value="">${t('live.channel_placeholder')}</option>
                     </select>
-                    <span style="width:1px;height:14px;background:var(--color-border);"></span>
+                    <div style="flex-basis:100%;height:0;"></div><!-- 2026-09-18 (owner): programas todos na 2.a linha, ErrLog e ? incluidos -->
                     <button onclick="liveSetProgram('${tabId}','fleet')" class="live-prog-btn" data-prog="fleet" style="${_pb}" title="Fleet Dashboard">📡 Fleet</button>
                     <span style="width:1px;height:14px;background:var(--color-border);"></span>
                     <button onclick="liveSetProgram('${tabId}','queries')" class="live-prog-btn" data-prog="queries" style="${_pb}">Queries</button>
@@ -52361,21 +52385,34 @@ window.showDiskDrilldown = async function(drive, label) {
             const cpuHigh = online.filter(i => i.cpu_pct >= 50);
             const memHigh = online.filter(i => i.mem_pct >= 85);
             const lowPle = online.filter(i => (i.ple||9999) < 300);
-            const liveQueries = data.live_queries || [];
-            const liveBlocking = data.live_blocking || [];
             const problemCount = data.problem_count || 0;
+            // 2026-09-18 (owner): os cards filtram o ecra. "Drilled" = instancias com dados live neste ciclo.
+            const _drilledSet = new Set([].concat(data.live_queries||[], data.live_blocking||[], data.live_tempdb||[], data.live_waits||[], data.live_ag_queues||[], data.live_idle||[], data.live_long_tran||[]).map(x => x.instance).filter(Boolean));
+            const drilled = instances.filter(i => _drilledSet.has(i.instance));
+            const groups = { online: online, partial: partial, offline: offline, no_data: noData, cpu: cpuHigh, mem: memHigh, ple: lowPle, blocking: blocked, drilled: drilled };
+            const labels = { online: 'Online', partial: 'Parcial', offline: 'Offline', no_data: t('live.no_data_short'), cpu: 'CPU >50%', mem: 'MEM >85%', ple: 'Low PLE', blocking: 'Blocking', drilled: 'Drilled' };
+            const fKey = window._fleetFilter && groups[window._fleetFilter] ? window._fleetFilter : null;
+            const fSet = fKey ? new Set(groups[fKey].map(i => i.instance)) : null;
+            const soFiltro = arr => fSet ? (arr || []).filter(x => fSet.has(x.instance)) : (arr || []);
+            const liveQueries = soFiltro(data.live_queries);
+            const liveBlocking = soFiltro(data.live_blocking);
             let h = '';
             h += '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
-            h += _fleetCard('Online', online.length, 'var(--sev-ok-text)', 'fa-check-circle');
-            h += _fleetCard('Parcial', partial.length, partial.length>0?'var(--sev-warning-text)':'var(--color-text-tertiary)', 'fa-exclamation');
-            h += _fleetCard('Offline', offline.length, offline.length>0?'var(--sev-critical-text)':'var(--color-text-tertiary)', 'fa-times-circle');
-            h += _fleetCard(t('live.no_data_short'), noData.length, 'var(--color-text-tertiary)', 'fa-question-circle');
-            h += _fleetCard('CPU >50%', cpuHigh.length, cpuHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-microchip');
-            h += _fleetCard('MEM >85%', memHigh.length, memHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-memory');
-            h += _fleetCard('Low PLE', lowPle.length, lowPle.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-clock');
-            h += _fleetCard('Blocking', blocked.length, blocked.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-lock');
-            h += _fleetCard('Drilled', problemCount, 'var(--color-text-link)', 'fa-satellite-dish');
+            h += _fleetCard(labels.online, online.length, 'var(--sev-ok-text)', 'fa-check-circle', 'online', tabId, fKey);
+            h += _fleetCard(labels.partial, partial.length, partial.length>0?'var(--sev-warning-text)':'var(--color-text-tertiary)', 'fa-exclamation', 'partial', tabId, fKey);
+            h += _fleetCard(labels.offline, offline.length, offline.length>0?'var(--sev-critical-text)':'var(--color-text-tertiary)', 'fa-times-circle', 'offline', tabId, fKey);
+            h += _fleetCard(labels.no_data, noData.length, 'var(--color-text-tertiary)', 'fa-question-circle', 'no_data', tabId, fKey);
+            h += _fleetCard(labels.cpu, cpuHigh.length, cpuHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-microchip', 'cpu', tabId, fKey);
+            h += _fleetCard(labels.mem, memHigh.length, memHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-memory', 'mem', tabId, fKey);
+            h += _fleetCard(labels.ple, lowPle.length, lowPle.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-clock', 'ple', tabId, fKey);
+            h += _fleetCard(labels.blocking, blocked.length, blocked.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-lock', 'blocking', tabId, fKey);
+            h += _fleetCard(labels.drilled, problemCount, 'var(--color-text-link)', 'fa-satellite-dish', 'drilled', tabId, fKey);
             h += '</div>';
+            if (fKey) {
+                h += `<div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:6px 10px;background:var(--sev-info-tint);border:1px solid var(--sev-info-text);border-radius:6px;font-size:12px;color:var(--sev-info-text);">`
+                   + `<i class="fas fa-filter"></i> ${_kpiT('live.fleet_filter', 'Filtro')}: <b>${labels[fKey]}</b> (${groups[fKey].length})`
+                   + `<button onclick="_fleetToggleFilter('${tabId}', null)" title="${_kpiT('live.fleet_filter_clear', 'Limpar filtro')}" style="margin-left:auto;background:none;border:1px solid var(--sev-info-text);color:var(--sev-info-text);border-radius:4px;padding:1px 8px;cursor:pointer;font-size:12px;">×</button></div>`;
+            }
 
             h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -52383,7 +52420,8 @@ window.showDiskDrilldown = async function(drive, label) {
             if (liveQueries.length) {
                 liveQueries.slice(0,5).forEach(q => {
                     const name = (q.instance||'');  // F9b: id completo
-                    const sql = (q.sql_text||'').replace(/</g,'&lt;').substring(0,80);
+                    const sql = (q.sql_text||'').replace(/</g,'&lt;').substring(0,60);
+                    const sqlAttr = String(q.sql_text||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
                     const cpuMs = q.cpu_ms || 0;
                     const cc = cpuMs > 100000 ? 'var(--sev-critical-text)' : cpuMs > 10000 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
                     // A coluna da direita era cpu_ms/1000 mostrado como "Xs" — CPU
@@ -52398,10 +52436,10 @@ window.showDiskDrilldown = async function(drive, label) {
                     const fCpuH = (function(sec){ sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec/86400), hh = Math.floor((sec%86400)/3600), mm = Math.floor((sec%3600)/60);
                         if (d > 0) return d + 'd ' + hh + 'h'; if (hh > 0) return hh + 'h ' + mm + 'm'; if (mm > 0) return mm + 'm'; return sec + 's'; })(cpuMs/1000);
                     const fElC = fIdle ? 'var(--color-text-tertiary)' : fEl > 300 ? 'var(--sev-critical-text)' : fEl > 60 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><div style="width:55px;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="${t('live.cpu_title')}">CPU ${fCpuH}</div><div style="width:58px;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="${t('live.elapsed_title')}${fIdle ? ' — ' + t('live.idle_not_exec') : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:3px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${q.instance}','queries')" title="${q.instance} SPID ${q.spid}: ${sql}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${q.spid}</div><div style="flex:1;min-width:0;max-width:50%;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${sql}</div><button type="button" onclick="event.stopPropagation();_fleetCopySql(this)" data-sql="${sqlAttr}" title="${_kpiT('live.copy_sql', 'Copiar comando')}" aria-label="${_kpiT('live.copy_sql', 'Copiar comando')}" style="flex-shrink:0;background:none;border:1px solid var(--color-border);color:var(--color-text-tertiary);border-radius:4px;padding:0 5px;font-size:12px;line-height:18px;cursor:pointer;">⧉</button><div style="width:80px;flex-shrink:0;text-align:right;color:${cc};font-size:12px;font-weight:600;" title="${t('live.cpu_title')}">CPU ${fCpuH}</div><div style="width:70px;flex-shrink:0;text-align:right;color:${fElC};font-size:12px;font-weight:600;" title="${t('live.elapsed_title')}${fIdle ? ' — ' + t('live.idle_not_exec') : ''}">${fElH}${fIdle ? ' idle' : ''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_heavy_queries') + '</div>';
+                h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_heavy_queries') + '</div>';
             }
             h += '</div></div>';
 
@@ -52416,8 +52454,8 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += '</tbody></table></div>';
             }
 
-            const liveTempdb = data.live_tempdb || [];
-            const liveWaits = data.live_waits || [];
+            const liveTempdb = soFiltro(data.live_tempdb);
+            const liveWaits = soFiltro(data.live_waits);
             h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
             h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-fire" style="margin-right:6px;color:#8b5cf6;"></i>TEMPDB CONSUMERS AGORA</div>';
@@ -52425,11 +52463,17 @@ window.showDiskDrilldown = async function(drive, label) {
                 liveTempdb.slice(0,5).forEach(t => {
                     const name = (t.instance||'');  // F9b: id completo
                     const mb = parseInt(t.tempdb_mb || 0);
-                    const c = mb > 1024 ? 'var(--sev-critical-text)' : mb > 100 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)';
-                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${t.instance} SPID ${t.spid}: ${mb} MB"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${t.spid}</div><div style="width:50px;color:${c};font-size:12px;font-weight:600;">${formatSizeMB(mb)}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
+                    // 2026-09-18 (owner): consumo / total do tempdb da instancia; cor pela fraccao do total quando o total existe
+                    const totalMb = parseInt(t.tempdb_total_mb || 0);
+                    const pct = totalMb > 0 ? (mb / totalMb) * 100 : null;
+                    const c = pct != null ? (pct > 25 ? 'var(--sev-critical-text)' : pct > 10 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)')
+                                          : (mb > 1024 ? 'var(--sev-critical-text)' : mb > 100 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)');
+                    const doTotal = totalMb > 0 ? ` <span style="color:var(--color-text-tertiary);font-weight:400;">/ ${formatSizeMB(totalMb)}</span>` : '';
+                    const tip = `${t.instance} SPID ${t.spid}: ${mb} MB` + (totalMb > 0 ? ` ${_kpiT('live.tempdb_of_total', 'de')} ${totalMb} MB (${pct.toFixed(1)}%)` + (t.tempdb_free_mb != null ? `, ${_kpiT('live.free_short', 'livre')} ${t.tempdb_free_mb} MB` : '') : '');
+                    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${t.instance}','tempdb')" title="${tip}"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${t.spid}</div><div style="min-width:50px;color:${c};font-size:12px;font-weight:600;white-space:nowrap;">${formatSizeMB(mb)}${doTotal}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.login_name||''}</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_active_consumers') + '</div>';
+                h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_active_consumers') + '</div>';
             }
             h += '</div>';
             h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -52449,12 +52493,12 @@ window.showDiskDrilldown = async function(drive, label) {
                     h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;" title="${w.wait_type}: ${w.total_tasks.toLocaleString()} tasks, ${w.instances.size} ${t('live.instances')}"><div style="width:110px;color:var(--color-text-bright);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.wait_type}</div><div style="flex:1;background:var(--color-bg-sunken);border-radius:3px;height:10px;overflow:hidden;"><div style="background:var(--sev-warning-text);height:100%;width:${w.total_ms/maxMs*100}%;"></div></div><div style="width:40px;text-align:right;color:var(--sev-warning-text);font-size:12px;">${w.instances.size} inst</div></div>`;
                 });
             } else {
-                h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_significant_waits') + '</div>';
+                h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_significant_waits') + '</div>';
             }
             h += '</div></div>';
 
-            const liveAgQueues = data.live_ag_queues || [];
-            const liveIdle = data.live_idle || [];
+            const liveAgQueues = soFiltro(data.live_ag_queues);
+            const liveIdle = soFiltro(data.live_idle);
             if (liveAgQueues.length || liveIdle.length) {
                 h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
@@ -52482,12 +52526,12 @@ window.showDiskDrilldown = async function(drive, label) {
                         h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;cursor:pointer;" onclick="_fleetSwitchTo('${s.instance}','connections')" title="${s.instance} SPID ${s.spid}: ${s.login_name} idle ${hours}h"><div style="width:130px;flex-shrink:0;color:var(--color-text-link);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="width:30px;color:var(--color-text-tertiary);font-size:12px;">${s.spid}</div><div style="flex:1;color:var(--color-text-tertiary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.login_name||''} / ${s.program_name||''}</div><div style="color:${c};font-size:12px;font-weight:600;">${hours}h</div></div>`;
                     });
                 } else {
-                    h += '<div style="color:#10b981;font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_idle_sessions') + '</div>';
+                    h += '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + t('live.no_idle_sessions') + '</div>';
                 }
                 h += '</div></div>';
             }
 
-            const liveLongTran = data.live_long_tran || [];
+            const liveLongTran = soFiltro(data.live_long_tran);
             if (liveLongTran.length) {
                 h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;margin-bottom:12px;">';
                 h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-exchange-alt" style="margin-right:6px;color:#fb7185;"></i>TRANSACOES LONGAS (>5 min)</div>';
@@ -52502,11 +52546,11 @@ window.showDiskDrilldown = async function(drive, label) {
                 h += '</div></div>';
             }
 
-            const worst = [...online].sort((a,b) => {
+            const worst = [...(fSet ? groups[fKey] : online)].sort((a,b) => {
                 const scoreA = (a.blocked||0)*1000 + (a.cpu_pct||0)*10 + (10000/(a.ple||9999)) + (a.mem_pct||0);
                 const scoreB = (b.blocked||0)*1000 + (b.cpu_pct||0)*10 + (10000/(b.ple||9999)) + (b.mem_pct||0);
                 return scoreB - scoreA;
-            }).slice(0, 8);
+            }).slice(0, fSet ? 40 : 8);   // com filtro: as instancias do card (ate 40), nao so' as 8 piores
             if (worst.length > 0) {
                 h += '<div style="margin-bottom:8px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;color:#ef4444;"></i>PIORES CANAIS (clica para investigar)</div>';
                 h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
@@ -52525,9 +52569,28 @@ window.showDiskDrilldown = async function(drive, label) {
             return h;
         }
 
-        function _fleetCard(label, value, color, icon) {
-            return `<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;"><div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
+        function _fleetCard(label, value, color, icon, key, tabId, activeKey) {
+            const on = key && key === activeKey;
+            const click = key ? ` onclick="_fleetToggleFilter('${tabId}','${key}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" aria-pressed="${on ? 'true' : 'false'}"` : '';
+            const frame = on ? 'border:2px solid var(--sev-info-text);background:var(--sev-info-tint);' : 'border:1px solid var(--color-border);background:var(--color-bg-panel);';
+            return `<div${click} style="${frame}border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;${key ? 'cursor:pointer;' : ''}"><div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
         }
+        // 2026-09-18 (owner): cards do Fleet filtram o ecra; re-render a partir do cache, sem novo pedido
+        function _fleetToggleFilter(tabId, key) {
+            window._fleetFilter = (key && window._fleetFilter !== key) ? key : null;
+            const cached = _liveLastData['fleet'];
+            const screen = document.getElementById('live-screen-' + tabId);
+            if (cached && screen) _liveRenderAndSet(screen, 'fleet', cached, tabId);
+        }
+        window._fleetToggleFilter = _fleetToggleFilter;
+        function _fleetCopySql(btn) {
+            const sql = btn.getAttribute('data-sql') || '';
+            const ok = () => { const old = btn.textContent; btn.textContent = '✓'; btn.title = _kpiT('live.copied', 'Copiado'); setTimeout(() => { btn.textContent = old; }, 1200); };
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(sql).then(ok).catch(() => {}); return; }
+            const ta = document.createElement('textarea'); ta.value = sql; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); ok(); } catch (e) {} document.body.removeChild(ta);
+        }
+        window._fleetCopySql = _fleetCopySql;
 
         function _fleetSwitchTo(instance, program) {
             const sel = document.querySelector('select[id^="live-channel-"]');
@@ -57120,6 +57183,10 @@ WHERE servicename LIKE '%Agent%'` }
 <!-- Collector Health Monitoring (2026-04-16) — ADMIN only          -->
 <!-- ============================================================= -->
 <style nonce="{{ csp_nonce }}">
+    /* D3 collectors: roxo do QUIET/SCOM nao existe no contrato de severidade -> tokens locais, 3 temas */
+    :root { --coll-quiet-text:#c4b5fd; --coll-quiet-tint:rgba(139,92,246,0.20); }
+    html[data-theme="light"] { --coll-quiet-text:#6d28d9; --coll-quiet-tint:rgba(139,92,246,0.12); }
+    html[data-theme="high-contrast"] { --coll-quiet-text:#d9c8ff; --coll-quiet-tint:rgba(139,92,246,0.15); }
     .coll-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:99999; display:none; align-items:center; justify-content:center; padding:20px; }
     .coll-overlay.show { display:flex; }
     .coll-modal { background:var(--color-bg-sunken); border:1px solid rgba(71,85,105,0.6); border-radius:10px; width:100%; max-width:1400px; max-height:92vh; display:flex; flex-direction:column; }
@@ -57134,11 +57201,11 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-stat-active { border-color:rgba(59,130,246,0.8); box-shadow:0 0 0 2px rgba(59,130,246,0.3); transform:translateY(-1px); }
     .coll-stat .n { font-size:22px; font-weight:700; }
     .coll-stat .l { font-size:10px; color:var(--color-text-tertiary); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
-    .coll-stat.fresh    .n { color:#10b981; }
+    .coll-stat.fresh    .n { color:var(--sev-ok-text); }
     .coll-stat.recent   .n { color:var(--color-text-link); }
-    .coll-stat.quiet    .n { color:#a78bfa; }
-    .coll-stat.stale    .n { color:#f59e0b; }
-    .coll-stat.failed   .n { color:#ef4444; }
+    .coll-stat.quiet    .n { color:var(--coll-quiet-text); }
+    .coll-stat.stale    .n { color:var(--sev-warning-text); }
+    .coll-stat.failed   .n { color:var(--sev-critical-text); }
     .coll-stat.disabled .n { color:var(--color-text-tertiary); }
     .coll-stat.never    .n { color:var(--color-text-disabled); }
     .coll-filters { display:flex; gap:10px; padding:10px 18px; background:rgb(var(--rgb-surface-deep) / 0.3); border-bottom:1px solid rgba(71,85,105,0.3); align-items:center; flex-wrap:wrap; }
@@ -57154,17 +57221,17 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-table tbody tr:nth-child(even) td { background:rgb(var(--rgb-surface-panel) / 0.2); }
     .coll-table tbody tr:hover td { background:rgba(59,130,246,0.1); cursor:pointer; }
     .coll-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; letter-spacing:0.3px; }
-    .coll-badge.fresh    { background:rgba(16,185,129,0.2);  color:#10b981; }
-    .coll-badge.recent   { background:rgba(96,165,250,0.2);  color:var(--color-text-link); }
-    .coll-badge.quiet    { background:rgba(139,92,246,0.2);  color:#a78bfa; }
-    .coll-badge.stale    { background:rgba(245,158,11,0.2);  color:#f59e0b; }
-    .coll-badge.failed   { background:rgba(239,68,68,0.25);  color:#fca5a5; }
+    .coll-badge.fresh    { background:var(--sev-ok-tint);  color:var(--sev-ok-text); }
+    .coll-badge.recent   { background:var(--sev-info-tint);  color:var(--sev-info-text); }
+    .coll-badge.quiet    { background:var(--coll-quiet-tint);  color:var(--coll-quiet-text); }
+    .coll-badge.stale    { background:var(--sev-warning-tint);  color:var(--sev-warning-text); }
+    .coll-badge.failed   { background:var(--sev-critical-tint);  color:var(--sev-critical-text); }
     .coll-badge.disabled { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }
-    .coll-badge.never    { background:rgba(51,65,85,0.4);    color:var(--color-text-disabled); }
-    .coll-badge.env-prd { background:rgba(59,130,246,0.25); color:var(--color-text-link); }
-    .coll-badge.env-qa, .coll-badge.env-qlt { background:rgba(245,158,11,0.25); color:#fbbf24; }
+    .coll-badge.never    { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }   /* D3: era -disabled sobre slate escuro */
+    .coll-badge.env-prd { background:var(--sev-info-tint); color:var(--sev-info-text); }
+    .coll-badge.env-qa, .coll-badge.env-qlt { background:var(--sev-warning-tint); color:var(--sev-warning-text); }
     .coll-badge.env-tst { background:rgba(100,116,139,0.25); color:var(--color-text-secondary); }
-    .coll-badge.env-scom { background:rgba(139,92,246,0.25); color:#c4b5fd; }
+    .coll-badge.env-scom { background:var(--coll-quiet-tint); color:var(--coll-quiet-text); }
     /* === Phase 0c: Modal info 7 estados (2026-05-05 FIND-20260505-001) === */
     .coll-info-icon { display:inline-block; cursor:pointer; color:var(--color-text-disabled); margin-left:6px; font-size:14px; user-select:none; font-weight:600; transition:color 0.15s; }
     .coll-info-icon:hover { color:var(--color-text-link); }
@@ -57183,13 +57250,13 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-state-info-block { padding:14px 20px; border-bottom:1px solid rgba(71,85,105,0.2); transition:background 0.4s; }
     .coll-state-info-block.highlighted { background:rgba(59,130,246,0.14); }
     .coll-state-info-block .label { display:inline-block; padding:3px 12px; border-radius:10px; font-weight:600; font-size:11px; letter-spacing:0.5px; margin-bottom:10px; }
-    .coll-state-info-block.fresh    .label { background:rgba(16,185,129,0.2);  color:#10b981; }
-    .coll-state-info-block.recent   .label { background:rgba(96,165,250,0.2);  color:var(--color-text-link); }
-    .coll-state-info-block.quiet    .label { background:rgba(139,92,246,0.2);  color:#a78bfa; }
-    .coll-state-info-block.stale    .label { background:rgba(245,158,11,0.2);  color:#f59e0b; }
-    .coll-state-info-block.failed   .label { background:rgba(239,68,68,0.25);  color:#fca5a5; }
+    .coll-state-info-block.fresh    .label { background:var(--sev-ok-tint);  color:var(--sev-ok-text); }
+    .coll-state-info-block.recent   .label { background:var(--sev-info-tint);  color:var(--sev-info-text); }
+    .coll-state-info-block.quiet    .label { background:var(--coll-quiet-tint);  color:var(--coll-quiet-text); }
+    .coll-state-info-block.stale    .label { background:var(--sev-warning-tint);  color:var(--sev-warning-text); }
+    .coll-state-info-block.failed   .label { background:var(--sev-critical-tint);  color:var(--sev-critical-text); }
     .coll-state-info-block.disabled .label { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }
-    .coll-state-info-block.never    .label { background:rgba(51,65,85,0.4);    color:var(--color-text-disabled); }
+    .coll-state-info-block.never    .label { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }
     .coll-state-info-block dl { margin:0; display:grid; grid-template-columns:160px 1fr; gap:6px 14px; font-size:12px; }
     .coll-state-info-block dt { color:var(--color-text-tertiary); font-weight:500; }
     .coll-state-info-block dd { margin:0; color:var(--color-text-bright); line-height:1.45; }
@@ -57202,7 +57269,7 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-tab { padding:8px 16px; font-size:12px; font-weight:600; color:var(--color-text-tertiary); cursor:pointer; border-radius:6px 6px 0 0; border:1px solid transparent; }
     .coll-tab.active { background:var(--color-bg-sunken); color:var(--color-text-bright); border-color:rgba(71,85,105,0.5); border-bottom-color:transparent; }
     .coll-tab-body { padding:16px 18px; overflow:auto; flex:1; }
-    .coll-tab-body pre { background:#020617; color:var(--color-text-secondary); padding:10px; border-radius:4px; font-size:11px; overflow:auto; max-height:400px; }
+    .coll-tab-body pre { background:var(--color-bg-panel-2); color:var(--color-text-secondary);   /* D3: era #020617 fixo */ padding:10px; border-radius:4px; font-size:11px; overflow:auto; max-height:400px; }
     .coll-kv { display:grid; grid-template-columns:200px 1fr; gap:6px 12px; font-size:12px; }
     .coll-kv > div:nth-child(odd) { color:var(--color-text-tertiary); font-weight:500; }
     .coll-kv > div:nth-child(even) { color:var(--color-text-bright); font-family:'Cascadia Code',Consolas,monospace; word-break:break-all; }
@@ -57238,9 +57305,9 @@ WHERE servicename LIKE '%Agent%'` }
                     <div class="coll-header">
                         <h3><i class="fas fa-tower-broadcast" style="color:#ef4444;"></i> Collector Health Monitoring <span class="coll-info-icon" onclick="event.stopPropagation();collOpenStateInfo()" title="Explicar os 7 estados" data-i18n-title="coll.help_icon" role="button" tabindex="0">?</span> <span id="coll-service-state" style="margin-left:10px;font-size:11px;"></span></h3>
                         <div style="display:flex;gap:8px;align-items:center;">
-                            <button onclick="collRefresh(true)" class="coll-run-btn" style="background:var(--color-border);"><i class="fas fa-sync-alt"></i> ${_collT('coll.refresh', 'Actualizar')}</button>
+                            <button onclick="collRefresh(true)" class="coll-run-btn" style="background:var(--color-bg-tertiary);color:var(--color-text-primary);"><i class="fas fa-sync-alt"></i> ${_collT('coll.refresh', 'Actualizar')}</button>
                             <button id="coll-bulk-run-btn" data-write-gated="1" onclick="collBulkRun()" class="coll-run-btn" style="background:#7c3aed;" title="${_collT('coll.bulk_run_title', 'Re-correr todos os tasks visiveis (apos filtros) em paralelo')}"><i class="fas fa-bolt"></i> ${_collT('coll.bulk_run', 'Re-run Filtrados')}</button>
-                            <button class="coll-run-btn" onclick="collToggleMaximize()" title="${_collT('coll.toggle_max', 'Expandir/contrair')}" style="background:var(--color-border);padding:6px 10px;"><i class="fas fa-expand-alt" id="collMaxIcon" aria-hidden="true"></i></button>
+                            <button class="coll-run-btn" onclick="collToggleMaximize()" title="${_collT('coll.toggle_max', 'Expandir/contrair')}" style="background:var(--color-bg-tertiary);color:var(--color-text-primary);padding:6px 10px;"><i class="fas fa-expand-alt" id="collMaxIcon" aria-hidden="true"></i></button>
                             <button class="coll-close" onclick="collCloseModal()">×</button>
                         </div>
                     </div>
@@ -57294,8 +57361,8 @@ WHERE servicename LIKE '%Agent%'` }
             const total = d.total || 0;
             if (total === 0) return;  // sem runs manuais, nao mostrar
             const rate = d.success_rate_pct == null ? '—' : d.success_rate_pct;
-            const rateColor = rate >= 95 ? '#10b981' : rate >= 80 ? '#f59e0b' : '#ef4444';
-            el.innerHTML += ` <span class="coll-badge" style="background:${rateColor}22;color:${rateColor};margin-left:6px;" `
+            const rateSev = rate >= 95 ? 'ok' : rate >= 80 ? 'warning' : 'critical';   // D3 collectors: tint/text do contrato
+            el.innerHTML += ` <span class="coll-badge" style="background:var(--sev-${rateSev}-tint);color:var(--sev-${rateSev}-text);margin-left:6px;" `
                 + `title="${d.ok||0} ok / ${d.fail||0} fail / ${d.pending||0} pending / ${d.running||0} running (24h)">`
                 + `24h: ${rate}% (${total} runs)</span>`;
         } catch (e) { /* silencioso */ }
@@ -57353,7 +57420,7 @@ WHERE servicename LIKE '%Agent%'` }
         const isOld = (ev) => { const t = ev.Event_Time ? new Date(ev.Event_Time).getTime() : 0; return t > 0 && (now - t) > 24 * 3600 * 1000; };
         const active = events.filter(e => !e.Is_Resolved);
         const oldCount = active.filter(isOld).length;
-        const badgeColor = active.length === 0 ? '#10b981' : (active.length === oldCount ? '#f59e0b' : '#ef4444');
+        const badgeSev = active.length === 0 ? 'ok' : (active.length === oldCount ? 'warning' : 'critical');   // D3 collectors
         const badgeText = active.length === 0
             ? _collT('coll.events.none_active', 'sem eventos ativos')
             : _collTp(active.length > 1 ? 'coll.events.active_many' : 'coll.events.active_one',
@@ -57371,7 +57438,7 @@ WHERE servicename LIKE '%Agent%'` }
                     <i class="fas fa-satellite-dish" style="color:var(--color-text-tertiary);font-size:12px;"></i>
                     <span style="font-size:12px;color:var(--color-text-secondary);font-weight:600;">${_collT('coll.events.title', 'Eventos do collector')}</span>
                     <span style="font-size:10px;color:var(--color-text-disabled);">${_collT('coll.events.subtitle', 'timeouts / SQL down vistos pelo collector central no momento da coleta (auto-monitoria, nao frota)')}</span>
-                    <span class="coll-badge" style="margin-left:auto;background:${badgeColor}22;color:${badgeColor};">${badgeText}</span>
+                    <span class="coll-badge" style="margin-left:auto;background:var(--sev-${badgeSev}-tint);color:var(--sev-${badgeSev}-text);">${badgeText}</span>
                     <i class="fas ${chev}" style="color:var(--color-text-tertiary);font-size:11px;"></i>
                 </div>`;
         if (_collOfflineExpanded) {
@@ -57384,12 +57451,12 @@ WHERE servicename LIKE '%Agent%'` }
                     const resolved = !!ev.Is_Resolved;
                     const old = !resolved && isOld(ev);
                     const st = resolved
-                        ? '<span class="coll-badge" style="background:#10b98122;color:#10b981;">' + _collT('coll.events.resolved', 'resolvido') + '</span>'
+                        ? '<span class="coll-badge" style="background:var(--sev-ok-tint);color:var(--sev-ok-text);">' + _collT('coll.events.resolved', 'resolvido') + '</span>'
                         : old
-                            ? '<span class="coll-badge" style="background:#f59e0b22;color:#f59e0b;" title="' + _collT('coll.events.old_title', 'Evento com mais de 24h por resolver — pode ja nao estar ativo. Confirmar na aba Services do servidor antes de agir.') + '">' + _collT('coll.events.old_badge', 'antigo — confirmar') + '</span>'
-                            : '<span class="coll-badge" style="background:#ef444422;color:#ef4444;">' + _collT('coll.events.active_badge', 'ativo') + '</span>';
+                            ? '<span class="coll-badge" style="background:var(--sev-warning-tint);color:var(--sev-warning-text);" title="' + _collT('coll.events.old_title', 'Evento com mais de 24h por resolver — pode ja nao estar ativo. Confirmar na aba Services do servidor antes de agir.') + '">' + _collT('coll.events.old_badge', 'antigo — confirmar') + '</span>'
+                            : '<span class="coll-badge" style="background:var(--sev-critical-tint);color:var(--sev-critical-text);">' + _collT('coll.events.active_badge', 'ativo') + '</span>';
                     const when = ev.Event_Time ? String(ev.Event_Time).replace('T', ' ').substring(0, 19) : '—';
-                    const act = resolved ? '—' : '<button onclick="collOfflineResolve(' + (Number(ev.Event_ID) || 0) + ')" style="background:#10b981;color:white;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;">' + _collT('coll.events.resolve', 'Resolver') + '</button>';
+                    const act = resolved ? '—' : '<button onclick="collOfflineResolve(' + (Number(ev.Event_ID) || 0) + ')" style="background:var(--sev-ok-solid);color:var(--sev-ok-on);border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;">' + _collT('coll.events.resolve', 'Resolver') + '</button>';
                     const instName = _collOffEsc(ev.Instance || ev.Server_Name || '');
                     return `<tr style="border-top:1px solid var(--color-border);">
                         <td style="padding:6px 10px;font-size:12px;font-weight:600;"><a href="javascript:void(0)"
@@ -57489,7 +57556,7 @@ WHERE servicename LIKE '%Agent%'` }
                         </div>
                     </div>
                     <div style="padding:16px 20px;background:rgba(245,158,11,0.05);border-bottom:1px solid var(--color-border);">
-                        <h4 style="margin:0 0 10px 0;color:#fbbf24;font-size:13px;">
+                        <h4 style="margin:0 0 10px 0;color:var(--sev-attention-text);font-size:13px;">
                             <i class="fas fa-plus-circle"></i> ${_collT('coll.mute.add', 'Adicionar novo mute')}
                         </h4>
                         <div style="display:grid;grid-template-columns:180px 220px 1fr 100px 100px;gap:8px;align-items:end;">
@@ -57509,7 +57576,7 @@ WHERE servicename LIKE '%Agent%'` }
                                 <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">${_collT('coll.mute.f_hours', 'Mute Hours')}</label>
                                 <input type="number" id="kpi-mute-input-hours" value="24" min="1" max="720" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;"/>
                             </div>
-                            <button data-write-gated="1" onclick="kpiMuteCreate()" style="padding:7px 12px;background:#f59e0b;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">
+                            <button data-write-gated="1" onclick="kpiMuteCreate()" style="padding:7px 12px;background:var(--sev-warning-solid);color:var(--sev-warning-on);border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">
                                 <i class="fas fa-plus"></i> ${_collT('coll.mute.btn', 'Mute')}
                             </button>
                         </div>
@@ -57555,7 +57622,7 @@ WHERE servicename LIKE '%Agent%'` }
                 const muteUntil = new Date(m.Mute_Until);
                 const now = new Date();
                 const hrsLeft = Math.max(0, Math.floor((muteUntil - now) / 3600000));
-                const colorLeft = hrsLeft < 4 ? '#ef4444' : hrsLeft < 24 ? '#f59e0b' : '#10b981';
+                const colorLeft = hrsLeft < 4 ? 'var(--sev-critical-text)' : hrsLeft < 24 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)';
                 const safeKpi = String(m.Kpi_Type || '').replace(/"/g, '&quot;');
                 const safeInst = String(m.Instance || '').replace(/"/g, '&quot;');
                 return `
@@ -57590,7 +57657,7 @@ WHERE servicename LIKE '%Agent%'` }
                     <tbody>${rows}</tbody>
                 </table>`;
         } catch (e) {
-            body.innerHTML = `<div style="padding:20px;color:#fca5a5;">${_collT('coll.mute.err_load', 'Erro:')} ${e.message}</div>`;
+            body.innerHTML = `<div style="padding:20px;color:var(--sev-critical-text);">${_collT('coll.mute.err_load', 'Erro:')} ${e.message}</div>`;
         }
     }
 
@@ -57673,7 +57740,7 @@ WHERE servicename LIKE '%Agent%'` }
             collRenderSummary(data.summary);
             collApplyFilters();
         } catch (e) {
-            if (body) body.innerHTML = `<div style="padding:40px;color:#ef4444;">Erro: ${e.message}</div>`;
+            if (body) body.innerHTML = `<div style="padding:40px;color:var(--sev-critical-text);">Erro: ${e.message}</div>`;
         }
     }
     window.collRefresh = collRefresh;
@@ -57688,9 +57755,10 @@ WHERE servicename LIKE '%Agent%'` }
             });
             if (!r.ok) { el.textContent = ''; return; }
             const d = await r.json();
-            const colors = { RUNNING:'#10b981', STOPPED:'#ef4444', PAUSED:'#f59e0b' };
-            const color = colors[d.state] || 'var(--color-text-disabled)';
-            el.innerHTML = `<span class="coll-badge" style="background:${color}33;color:${color};">Service: ${d.state}</span>`;
+            const sevs = { RUNNING:'ok', STOPPED:'critical', PAUSED:'warning' };   // D3 collectors
+            const sev = sevs[d.state];
+            const estilo = sev ? `background:var(--sev-${sev}-tint);color:var(--sev-${sev}-text);` : 'background:rgba(100,116,139,0.15);color:var(--color-text-tertiary);';
+            el.innerHTML = `<span class="coll-badge" style="${estilo}">Service: ${d.state}</span>`;
         } catch (e) { el.textContent = ''; }
     }
 
@@ -57824,7 +57892,7 @@ WHERE servicename LIKE '%Agent%'` }
         let h = '<div class="step-table-wrap" style="max-height:65vh;"><table class="coll-table"><thead><tr>';
         COLL_COLUMNS.forEach(col => {
             const isActive = sc === col.sortKey;
-            const arrow = isActive ? (sd === 'desc' ? ' &#9660;' : ' &#9650;') : ' <span style="color:var(--color-border-strong);">&#9651;&#9661;</span>';
+            const arrow = isActive ? (sd === 'desc' ? ' &#9660;' : ' &#9650;') : ' <span style="color:var(--color-text-tertiary);">&#9651;&#9661;</span>';
             h += `<th style="cursor:pointer;user-select:none;position:sticky;top:0;z-index:5;background:var(--color-bg-panel);border-bottom:2px solid ${isActive ? 'rgba(59,130,246,0.6)' : 'rgba(71,85,105,0.3)'};" `
                 + `onclick="collSortBy('${col.sortKey}')">${col.label}${arrow}</th>`;
         });
@@ -57844,7 +57912,7 @@ WHERE servicename LIKE '%Agent%'` }
                 + `<td>${_collDelayCell(t)}</td>`
                 + `<td>${t.servers_collected == null ? '—' : t.servers_collected}</td>`
                 + `<td>${_fmtDur(t.collection_duration_ms)}</td>`
-                + `<td style="color:${(t.failure_count_24h||0)>0?'#ef4444':'var(--color-text-tertiary)'};font-weight:${(t.failure_count_24h||0)>0?'600':'400'};">${t.failure_count_24h||0}</td>`
+                + `<td style="color:${(t.failure_count_24h||0)>0?'var(--sev-critical-text)':'var(--color-text-tertiary)'};font-weight:${(t.failure_count_24h||0)>0?'600':'400'};">${t.failure_count_24h||0}</td>`
                 + '</tr>';
         });
         h += '</tbody></table></div>';
@@ -57880,18 +57948,18 @@ WHERE servicename LIKE '%Agent%'` }
             return '<span style="color:var(--color-text-disabled);">—</span>';
         }
         if (st === 'NEVER_RAN') {
-            return '<span style="color:var(--color-border-strong);">nunca</span>';
+            return '<span style="color:var(--color-text-tertiary);">nunca</span>';   // D3: -border-strong nao e' cor de texto
         }
         const delay = t._delaySeconds;
         if (delay == null || delay === 0) {
             return '<span style="color:var(--color-text-disabled);">—</span>';
         }
         const txt = _fmtAgo(delay);
-        if (st === 'FAILED') return `<span style="color:#ef4444;font-weight:600;">${txt}</span>`;
-        if (st === 'STALE')  return `<span style="color:#f59e0b;">${txt}</span>`;
+        if (st === 'FAILED') return `<span style="color:var(--sev-critical-text);font-weight:600;">${txt}</span>`;
+        if (st === 'STALE')  return `<span style="color:var(--sev-warning-text);">${txt}</span>`;
         if (st === 'RECENT') return `<span style="color:var(--color-text-tertiary);">${txt}</span>`;
         // FRESH com delay > 0
-        return `<span style="color:#fbbf24;">${txt}</span>`;
+        return `<span style="color:var(--sev-attention-text);">${txt}</span>`;
     }
 
     // Versao do _collDelayCell para o detail modal. Ensure _delaySeconds is
@@ -57922,10 +57990,10 @@ WHERE servicename LIKE '%Agent%'` }
     function _collLastRunCell(t) {
         if (_collIsQuiet(t)) {
             const ago = _fmtAgo(t.last_run_ago_seconds);
-            return `<span style="color:#a78bfa;">Sem eventos ha ${ago}</span>`;
+            return `<span style="color:var(--coll-quiet-text);">Sem eventos ha ${ago}</span>`;
         }
         if (t.last_run_ago_seconds == null) {
-            return '<span style="color:var(--color-border-strong);">Nunca</span>';
+            return '<span style="color:var(--color-text-tertiary);">Nunca</span>';
         }
         return `${_fmtAgo(t.last_run_ago_seconds)}${t.last_run ? ' ago' : ''}`;
     }
@@ -57942,7 +58010,7 @@ WHERE servicename LIKE '%Agent%'` }
         if (_collIsQuiet(task)) {
             const ago = _fmtAgo(task.last_run_ago_seconds);
             const iso = task.last_run || '—';
-            return `<span style="color:#a78bfa;">Sem eventos ha ${ago}</span> <span style="color:var(--color-text-disabled);font-size:11px;">(Last_Swap_Time: ${_esc(iso)})</span>`;
+            return `<span style="color:var(--coll-quiet-text);">Sem eventos ha ${ago}</span> <span style="color:var(--color-text-disabled);font-size:11px;">(Last_Swap_Time: ${_esc(iso)})</span>`;
         }
         return _esc(task.last_run || 'Nunca');
     }
@@ -58146,7 +58214,7 @@ WHERE servicename LIKE '%Agent%'` }
                 <div>${_collT('coll.det.duration', 'Duracao ultimo ciclo')}</div><div>${_fmtDur(task.collection_duration_ms)}</div>
                 <div>${_collT('coll.det.rows', 'Rows recolhidas')}</div><div title="${_collT('coll.det.rows_title', 'Numero de rows inseridas no STG no ultimo ciclo (nao distinto de servers)')}">${task.servers_collected==null?'—':task.servers_collected}</div>
                 <div>${_collT('coll.det.active_slot', 'Active slot')}</div><div>${_esc(task.active_slot||'—')}</div>
-                <div>${_collT('coll.det.failures_24h', 'Falhas nas 24h')}</div><div style="color:${(task.failure_count_24h||0)>0?'#ef4444':'#10b981'};font-weight:600;">${task.failure_count_24h||0}</div>
+                <div>${_collT('coll.det.failures_24h', 'Falhas nas 24h')}</div><div style="color:${(task.failure_count_24h||0)>0?'var(--sev-critical-text)':'var(--sev-ok-text)'};font-weight:600;">${task.failure_count_24h||0}</div>
                 <div>${_collT('coll.det.class', 'Classe')}</div><div>${_esc(task.class||'')}</div>
                 <div>${_collT('coll.det.module', 'Modulo')}</div><div>${_esc(task.module||'')}</div>
                 <div>${_collT('coll.det.target_tables', 'Target tables')}</div><div>${(task.target_tables||[]).map(t=>'<code>'+_esc(t)+'</code>').join('<br>') || '—'}</div>
@@ -58178,7 +58246,7 @@ WHERE servicename LIKE '%Agent%'` }
                          {k:'Mensagem',lbl:_collT('coll.col.message','Mensagem'),wrap:true}]
                     );
                 }
-            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
+            } catch (e) { body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
         } else if (tabName === 'config') {
             body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_config', 'A carregar config...') + '</div>';
             try {
@@ -58189,7 +58257,7 @@ WHERE servicename LIKE '%Agent%'` }
                 const d = await r.json();
                 body.innerHTML = `<div style="color:var(--color-text-tertiary);font-size:11px;margin-bottom:6px;">${_collT('coll.det.config_source', 'Source:')} ${_esc(d.source_path||'')}</div>`
                     + `<pre>${_esc(JSON.stringify(d.config, null, 2))}</pre>`;
-            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
+            } catch (e) { body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
         } else if (tabName === 'runs') {
             body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_runs', 'A carregar historico...') + '</div>';
             try {
@@ -58223,7 +58291,7 @@ WHERE servicename LIKE '%Agent%'` }
                     );
                 }
             } catch (e) {
-                body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
+                body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
             }
         } else if (tabName === 'audit') {
             body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_audit', 'A carregar historico de activacoes/desactivacoes...') + '</div>';
@@ -58252,7 +58320,7 @@ WHERE servicename LIKE '%Agent%'` }
                     );
                 }
             } catch (e) {
-                body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
+                body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
             }
         }
     };
@@ -58544,7 +58612,7 @@ WHERE servicename LIKE '%Agent%'` }
             const isActive = st.col === (col.sortK || col.k);
             const arrow = isActive
                 ? (st.dir === 'desc' ? ' &#9660;' : ' &#9650;')
-                : ' <span style="color:var(--color-border-strong);">&#9651;&#9661;</span>';
+                : ' <span style="color:var(--color-text-tertiary);">&#9651;&#9661;</span>';
             h += `<th style="cursor:pointer;user-select:none;position:sticky;top:0;z-index:5;background:var(--color-bg-panel);`
                 + `border-bottom:2px solid ${isActive ? 'rgba(59,130,246,0.6)' : 'rgba(71,85,105,0.3)'};`
                 + (col.w ? `min-width:${col.w};` : '')

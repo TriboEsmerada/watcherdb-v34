@@ -1329,6 +1329,18 @@ async def get_fleet_dashboard():
             except Exception:
                 pass
 
+            # TempDB: total e livre da instancia (2026-09-18, owner: o Fleet mostra consumo / total). SELECT, mesma ligacao.
+            try:
+                cur.execute("""SET NOCOUNT ON;
+                    SELECT (SELECT SUM(CAST(size AS bigint)) * 8 / 1024 FROM tempdb.sys.database_files WITH (NOLOCK) WHERE type = 0) AS tempdb_total_mb,
+                           (SELECT SUM(CAST(unallocated_extent_page_count AS bigint)) * 8 / 1024 FROM tempdb.sys.dm_db_file_space_usage WITH (NOLOCK)) AS tempdb_free_mb""")
+                row = cur.fetchone()
+                if row:
+                    result["tempdb_total_mb"] = int(row[0] or 0)
+                    result["tempdb_free_mb"] = int(row[1] or 0)
+            except Exception:
+                pass
+
             # Top waits (snapshot para delta)
             try:
                 cur.execute("""SET NOCOUNT ON;
@@ -1438,6 +1450,8 @@ async def get_fleet_dashboard():
                             live_errors.append(e)
                         for t in drill.get("tempdb_consumers", []):
                             t["instance"] = inst
+                            t["tempdb_total_mb"] = drill.get("tempdb_total_mb")
+                            t["tempdb_free_mb"] = drill.get("tempdb_free_mb")
                             live_tempdb.append(t)
                         for w in drill.get("top_waits", []):
                             w["instance"] = inst
