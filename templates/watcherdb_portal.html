@@ -57120,6 +57120,10 @@ WHERE servicename LIKE '%Agent%'` }
 <!-- Collector Health Monitoring (2026-04-16) — ADMIN only          -->
 <!-- ============================================================= -->
 <style nonce="{{ csp_nonce }}">
+    /* D3 collectors: roxo do QUIET/SCOM nao existe no contrato de severidade -> tokens locais, 3 temas */
+    :root { --coll-quiet-text:#c4b5fd; --coll-quiet-tint:rgba(139,92,246,0.20); }
+    html[data-theme="light"] { --coll-quiet-text:#6d28d9; --coll-quiet-tint:rgba(139,92,246,0.12); }
+    html[data-theme="high-contrast"] { --coll-quiet-text:#d9c8ff; --coll-quiet-tint:rgba(139,92,246,0.15); }
     .coll-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:99999; display:none; align-items:center; justify-content:center; padding:20px; }
     .coll-overlay.show { display:flex; }
     .coll-modal { background:var(--color-bg-sunken); border:1px solid rgba(71,85,105,0.6); border-radius:10px; width:100%; max-width:1400px; max-height:92vh; display:flex; flex-direction:column; }
@@ -57134,11 +57138,11 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-stat-active { border-color:rgba(59,130,246,0.8); box-shadow:0 0 0 2px rgba(59,130,246,0.3); transform:translateY(-1px); }
     .coll-stat .n { font-size:22px; font-weight:700; }
     .coll-stat .l { font-size:10px; color:var(--color-text-tertiary); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
-    .coll-stat.fresh    .n { color:#10b981; }
+    .coll-stat.fresh    .n { color:var(--sev-ok-text); }
     .coll-stat.recent   .n { color:var(--color-text-link); }
-    .coll-stat.quiet    .n { color:#a78bfa; }
-    .coll-stat.stale    .n { color:#f59e0b; }
-    .coll-stat.failed   .n { color:#ef4444; }
+    .coll-stat.quiet    .n { color:var(--coll-quiet-text); }
+    .coll-stat.stale    .n { color:var(--sev-warning-text); }
+    .coll-stat.failed   .n { color:var(--sev-critical-text); }
     .coll-stat.disabled .n { color:var(--color-text-tertiary); }
     .coll-stat.never    .n { color:var(--color-text-disabled); }
     .coll-filters { display:flex; gap:10px; padding:10px 18px; background:rgb(var(--rgb-surface-deep) / 0.3); border-bottom:1px solid rgba(71,85,105,0.3); align-items:center; flex-wrap:wrap; }
@@ -57154,17 +57158,17 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-table tbody tr:nth-child(even) td { background:rgb(var(--rgb-surface-panel) / 0.2); }
     .coll-table tbody tr:hover td { background:rgba(59,130,246,0.1); cursor:pointer; }
     .coll-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; letter-spacing:0.3px; }
-    .coll-badge.fresh    { background:rgba(16,185,129,0.2);  color:#10b981; }
-    .coll-badge.recent   { background:rgba(96,165,250,0.2);  color:var(--color-text-link); }
-    .coll-badge.quiet    { background:rgba(139,92,246,0.2);  color:#a78bfa; }
-    .coll-badge.stale    { background:rgba(245,158,11,0.2);  color:#f59e0b; }
-    .coll-badge.failed   { background:rgba(239,68,68,0.25);  color:#fca5a5; }
+    .coll-badge.fresh    { background:var(--sev-ok-tint);  color:var(--sev-ok-text); }
+    .coll-badge.recent   { background:var(--sev-info-tint);  color:var(--sev-info-text); }
+    .coll-badge.quiet    { background:var(--coll-quiet-tint);  color:var(--coll-quiet-text); }
+    .coll-badge.stale    { background:var(--sev-warning-tint);  color:var(--sev-warning-text); }
+    .coll-badge.failed   { background:var(--sev-critical-tint);  color:var(--sev-critical-text); }
     .coll-badge.disabled { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }
-    .coll-badge.never    { background:rgba(51,65,85,0.4);    color:var(--color-text-disabled); }
-    .coll-badge.env-prd { background:rgba(59,130,246,0.25); color:var(--color-text-link); }
-    .coll-badge.env-qa, .coll-badge.env-qlt { background:rgba(245,158,11,0.25); color:#fbbf24; }
+    .coll-badge.never    { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }   /* D3: era -disabled sobre slate escuro */
+    .coll-badge.env-prd { background:var(--sev-info-tint); color:var(--sev-info-text); }
+    .coll-badge.env-qa, .coll-badge.env-qlt { background:var(--sev-warning-tint); color:var(--sev-warning-text); }
     .coll-badge.env-tst { background:rgba(100,116,139,0.25); color:var(--color-text-secondary); }
-    .coll-badge.env-scom { background:rgba(139,92,246,0.25); color:#c4b5fd; }
+    .coll-badge.env-scom { background:var(--coll-quiet-tint); color:var(--coll-quiet-text); }
     /* === Phase 0c: Modal info 7 estados (2026-05-05 FIND-20260505-001) === */
     .coll-info-icon { display:inline-block; cursor:pointer; color:var(--color-text-disabled); margin-left:6px; font-size:14px; user-select:none; font-weight:600; transition:color 0.15s; }
     .coll-info-icon:hover { color:var(--color-text-link); }
@@ -57183,13 +57187,13 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-state-info-block { padding:14px 20px; border-bottom:1px solid rgba(71,85,105,0.2); transition:background 0.4s; }
     .coll-state-info-block.highlighted { background:rgba(59,130,246,0.14); }
     .coll-state-info-block .label { display:inline-block; padding:3px 12px; border-radius:10px; font-weight:600; font-size:11px; letter-spacing:0.5px; margin-bottom:10px; }
-    .coll-state-info-block.fresh    .label { background:rgba(16,185,129,0.2);  color:#10b981; }
-    .coll-state-info-block.recent   .label { background:rgba(96,165,250,0.2);  color:var(--color-text-link); }
-    .coll-state-info-block.quiet    .label { background:rgba(139,92,246,0.2);  color:#a78bfa; }
-    .coll-state-info-block.stale    .label { background:rgba(245,158,11,0.2);  color:#f59e0b; }
-    .coll-state-info-block.failed   .label { background:rgba(239,68,68,0.25);  color:#fca5a5; }
+    .coll-state-info-block.fresh    .label { background:var(--sev-ok-tint);  color:var(--sev-ok-text); }
+    .coll-state-info-block.recent   .label { background:var(--sev-info-tint);  color:var(--sev-info-text); }
+    .coll-state-info-block.quiet    .label { background:var(--coll-quiet-tint);  color:var(--coll-quiet-text); }
+    .coll-state-info-block.stale    .label { background:var(--sev-warning-tint);  color:var(--sev-warning-text); }
+    .coll-state-info-block.failed   .label { background:var(--sev-critical-tint);  color:var(--sev-critical-text); }
     .coll-state-info-block.disabled .label { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }
-    .coll-state-info-block.never    .label { background:rgba(51,65,85,0.4);    color:var(--color-text-disabled); }
+    .coll-state-info-block.never    .label { background:rgba(100,116,139,0.15); color:var(--color-text-tertiary); }
     .coll-state-info-block dl { margin:0; display:grid; grid-template-columns:160px 1fr; gap:6px 14px; font-size:12px; }
     .coll-state-info-block dt { color:var(--color-text-tertiary); font-weight:500; }
     .coll-state-info-block dd { margin:0; color:var(--color-text-bright); line-height:1.45; }
@@ -57202,7 +57206,7 @@ WHERE servicename LIKE '%Agent%'` }
     .coll-tab { padding:8px 16px; font-size:12px; font-weight:600; color:var(--color-text-tertiary); cursor:pointer; border-radius:6px 6px 0 0; border:1px solid transparent; }
     .coll-tab.active { background:var(--color-bg-sunken); color:var(--color-text-bright); border-color:rgba(71,85,105,0.5); border-bottom-color:transparent; }
     .coll-tab-body { padding:16px 18px; overflow:auto; flex:1; }
-    .coll-tab-body pre { background:#020617; color:var(--color-text-secondary); padding:10px; border-radius:4px; font-size:11px; overflow:auto; max-height:400px; }
+    .coll-tab-body pre { background:var(--color-bg-panel-2); color:var(--color-text-secondary);   /* D3: era #020617 fixo */ padding:10px; border-radius:4px; font-size:11px; overflow:auto; max-height:400px; }
     .coll-kv { display:grid; grid-template-columns:200px 1fr; gap:6px 12px; font-size:12px; }
     .coll-kv > div:nth-child(odd) { color:var(--color-text-tertiary); font-weight:500; }
     .coll-kv > div:nth-child(even) { color:var(--color-text-bright); font-family:'Cascadia Code',Consolas,monospace; word-break:break-all; }
@@ -57238,9 +57242,9 @@ WHERE servicename LIKE '%Agent%'` }
                     <div class="coll-header">
                         <h3><i class="fas fa-tower-broadcast" style="color:#ef4444;"></i> Collector Health Monitoring <span class="coll-info-icon" onclick="event.stopPropagation();collOpenStateInfo()" title="Explicar os 7 estados" data-i18n-title="coll.help_icon" role="button" tabindex="0">?</span> <span id="coll-service-state" style="margin-left:10px;font-size:11px;"></span></h3>
                         <div style="display:flex;gap:8px;align-items:center;">
-                            <button onclick="collRefresh(true)" class="coll-run-btn" style="background:var(--color-border);"><i class="fas fa-sync-alt"></i> ${_collT('coll.refresh', 'Actualizar')}</button>
+                            <button onclick="collRefresh(true)" class="coll-run-btn" style="background:var(--color-bg-tertiary);color:var(--color-text-primary);"><i class="fas fa-sync-alt"></i> ${_collT('coll.refresh', 'Actualizar')}</button>
                             <button id="coll-bulk-run-btn" data-write-gated="1" onclick="collBulkRun()" class="coll-run-btn" style="background:#7c3aed;" title="${_collT('coll.bulk_run_title', 'Re-correr todos os tasks visiveis (apos filtros) em paralelo')}"><i class="fas fa-bolt"></i> ${_collT('coll.bulk_run', 'Re-run Filtrados')}</button>
-                            <button class="coll-run-btn" onclick="collToggleMaximize()" title="${_collT('coll.toggle_max', 'Expandir/contrair')}" style="background:var(--color-border);padding:6px 10px;"><i class="fas fa-expand-alt" id="collMaxIcon" aria-hidden="true"></i></button>
+                            <button class="coll-run-btn" onclick="collToggleMaximize()" title="${_collT('coll.toggle_max', 'Expandir/contrair')}" style="background:var(--color-bg-tertiary);color:var(--color-text-primary);padding:6px 10px;"><i class="fas fa-expand-alt" id="collMaxIcon" aria-hidden="true"></i></button>
                             <button class="coll-close" onclick="collCloseModal()">×</button>
                         </div>
                     </div>
@@ -57294,8 +57298,8 @@ WHERE servicename LIKE '%Agent%'` }
             const total = d.total || 0;
             if (total === 0) return;  // sem runs manuais, nao mostrar
             const rate = d.success_rate_pct == null ? '—' : d.success_rate_pct;
-            const rateColor = rate >= 95 ? '#10b981' : rate >= 80 ? '#f59e0b' : '#ef4444';
-            el.innerHTML += ` <span class="coll-badge" style="background:${rateColor}22;color:${rateColor};margin-left:6px;" `
+            const rateSev = rate >= 95 ? 'ok' : rate >= 80 ? 'warning' : 'critical';   // D3 collectors: tint/text do contrato
+            el.innerHTML += ` <span class="coll-badge" style="background:var(--sev-${rateSev}-tint);color:var(--sev-${rateSev}-text);margin-left:6px;" `
                 + `title="${d.ok||0} ok / ${d.fail||0} fail / ${d.pending||0} pending / ${d.running||0} running (24h)">`
                 + `24h: ${rate}% (${total} runs)</span>`;
         } catch (e) { /* silencioso */ }
@@ -57353,7 +57357,7 @@ WHERE servicename LIKE '%Agent%'` }
         const isOld = (ev) => { const t = ev.Event_Time ? new Date(ev.Event_Time).getTime() : 0; return t > 0 && (now - t) > 24 * 3600 * 1000; };
         const active = events.filter(e => !e.Is_Resolved);
         const oldCount = active.filter(isOld).length;
-        const badgeColor = active.length === 0 ? '#10b981' : (active.length === oldCount ? '#f59e0b' : '#ef4444');
+        const badgeSev = active.length === 0 ? 'ok' : (active.length === oldCount ? 'warning' : 'critical');   // D3 collectors
         const badgeText = active.length === 0
             ? _collT('coll.events.none_active', 'sem eventos ativos')
             : _collTp(active.length > 1 ? 'coll.events.active_many' : 'coll.events.active_one',
@@ -57371,7 +57375,7 @@ WHERE servicename LIKE '%Agent%'` }
                     <i class="fas fa-satellite-dish" style="color:var(--color-text-tertiary);font-size:12px;"></i>
                     <span style="font-size:12px;color:var(--color-text-secondary);font-weight:600;">${_collT('coll.events.title', 'Eventos do collector')}</span>
                     <span style="font-size:10px;color:var(--color-text-disabled);">${_collT('coll.events.subtitle', 'timeouts / SQL down vistos pelo collector central no momento da coleta (auto-monitoria, nao frota)')}</span>
-                    <span class="coll-badge" style="margin-left:auto;background:${badgeColor}22;color:${badgeColor};">${badgeText}</span>
+                    <span class="coll-badge" style="margin-left:auto;background:var(--sev-${badgeSev}-tint);color:var(--sev-${badgeSev}-text);">${badgeText}</span>
                     <i class="fas ${chev}" style="color:var(--color-text-tertiary);font-size:11px;"></i>
                 </div>`;
         if (_collOfflineExpanded) {
@@ -57384,12 +57388,12 @@ WHERE servicename LIKE '%Agent%'` }
                     const resolved = !!ev.Is_Resolved;
                     const old = !resolved && isOld(ev);
                     const st = resolved
-                        ? '<span class="coll-badge" style="background:#10b98122;color:#10b981;">' + _collT('coll.events.resolved', 'resolvido') + '</span>'
+                        ? '<span class="coll-badge" style="background:var(--sev-ok-tint);color:var(--sev-ok-text);">' + _collT('coll.events.resolved', 'resolvido') + '</span>'
                         : old
-                            ? '<span class="coll-badge" style="background:#f59e0b22;color:#f59e0b;" title="' + _collT('coll.events.old_title', 'Evento com mais de 24h por resolver — pode ja nao estar ativo. Confirmar na aba Services do servidor antes de agir.') + '">' + _collT('coll.events.old_badge', 'antigo — confirmar') + '</span>'
-                            : '<span class="coll-badge" style="background:#ef444422;color:#ef4444;">' + _collT('coll.events.active_badge', 'ativo') + '</span>';
+                            ? '<span class="coll-badge" style="background:var(--sev-warning-tint);color:var(--sev-warning-text);" title="' + _collT('coll.events.old_title', 'Evento com mais de 24h por resolver — pode ja nao estar ativo. Confirmar na aba Services do servidor antes de agir.') + '">' + _collT('coll.events.old_badge', 'antigo — confirmar') + '</span>'
+                            : '<span class="coll-badge" style="background:var(--sev-critical-tint);color:var(--sev-critical-text);">' + _collT('coll.events.active_badge', 'ativo') + '</span>';
                     const when = ev.Event_Time ? String(ev.Event_Time).replace('T', ' ').substring(0, 19) : '—';
-                    const act = resolved ? '—' : '<button onclick="collOfflineResolve(' + (Number(ev.Event_ID) || 0) + ')" style="background:#10b981;color:white;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;">' + _collT('coll.events.resolve', 'Resolver') + '</button>';
+                    const act = resolved ? '—' : '<button onclick="collOfflineResolve(' + (Number(ev.Event_ID) || 0) + ')" style="background:var(--sev-ok-solid);color:var(--sev-ok-on);border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;">' + _collT('coll.events.resolve', 'Resolver') + '</button>';
                     const instName = _collOffEsc(ev.Instance || ev.Server_Name || '');
                     return `<tr style="border-top:1px solid var(--color-border);">
                         <td style="padding:6px 10px;font-size:12px;font-weight:600;"><a href="javascript:void(0)"
@@ -57489,7 +57493,7 @@ WHERE servicename LIKE '%Agent%'` }
                         </div>
                     </div>
                     <div style="padding:16px 20px;background:rgba(245,158,11,0.05);border-bottom:1px solid var(--color-border);">
-                        <h4 style="margin:0 0 10px 0;color:#fbbf24;font-size:13px;">
+                        <h4 style="margin:0 0 10px 0;color:var(--sev-attention-text);font-size:13px;">
                             <i class="fas fa-plus-circle"></i> ${_collT('coll.mute.add', 'Adicionar novo mute')}
                         </h4>
                         <div style="display:grid;grid-template-columns:180px 220px 1fr 100px 100px;gap:8px;align-items:end;">
@@ -57509,7 +57513,7 @@ WHERE servicename LIKE '%Agent%'` }
                                 <label style="display:block;color:var(--color-text-tertiary);font-size:10px;margin-bottom:3px;">${_collT('coll.mute.f_hours', 'Mute Hours')}</label>
                                 <input type="number" id="kpi-mute-input-hours" value="24" min="1" max="720" style="width:100%;padding:6px 8px;background:var(--color-bg-sunken);border:1px solid var(--color-border);border-radius:4px;color:var(--color-text-primary);font-size:12px;"/>
                             </div>
-                            <button data-write-gated="1" onclick="kpiMuteCreate()" style="padding:7px 12px;background:#f59e0b;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">
+                            <button data-write-gated="1" onclick="kpiMuteCreate()" style="padding:7px 12px;background:var(--sev-warning-solid);color:var(--sev-warning-on);border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">
                                 <i class="fas fa-plus"></i> ${_collT('coll.mute.btn', 'Mute')}
                             </button>
                         </div>
@@ -57555,7 +57559,7 @@ WHERE servicename LIKE '%Agent%'` }
                 const muteUntil = new Date(m.Mute_Until);
                 const now = new Date();
                 const hrsLeft = Math.max(0, Math.floor((muteUntil - now) / 3600000));
-                const colorLeft = hrsLeft < 4 ? '#ef4444' : hrsLeft < 24 ? '#f59e0b' : '#10b981';
+                const colorLeft = hrsLeft < 4 ? 'var(--sev-critical-text)' : hrsLeft < 24 ? 'var(--sev-warning-text)' : 'var(--sev-ok-text)';
                 const safeKpi = String(m.Kpi_Type || '').replace(/"/g, '&quot;');
                 const safeInst = String(m.Instance || '').replace(/"/g, '&quot;');
                 return `
@@ -57590,7 +57594,7 @@ WHERE servicename LIKE '%Agent%'` }
                     <tbody>${rows}</tbody>
                 </table>`;
         } catch (e) {
-            body.innerHTML = `<div style="padding:20px;color:#fca5a5;">${_collT('coll.mute.err_load', 'Erro:')} ${e.message}</div>`;
+            body.innerHTML = `<div style="padding:20px;color:var(--sev-critical-text);">${_collT('coll.mute.err_load', 'Erro:')} ${e.message}</div>`;
         }
     }
 
@@ -57673,7 +57677,7 @@ WHERE servicename LIKE '%Agent%'` }
             collRenderSummary(data.summary);
             collApplyFilters();
         } catch (e) {
-            if (body) body.innerHTML = `<div style="padding:40px;color:#ef4444;">Erro: ${e.message}</div>`;
+            if (body) body.innerHTML = `<div style="padding:40px;color:var(--sev-critical-text);">Erro: ${e.message}</div>`;
         }
     }
     window.collRefresh = collRefresh;
@@ -57688,9 +57692,10 @@ WHERE servicename LIKE '%Agent%'` }
             });
             if (!r.ok) { el.textContent = ''; return; }
             const d = await r.json();
-            const colors = { RUNNING:'#10b981', STOPPED:'#ef4444', PAUSED:'#f59e0b' };
-            const color = colors[d.state] || 'var(--color-text-disabled)';
-            el.innerHTML = `<span class="coll-badge" style="background:${color}33;color:${color};">Service: ${d.state}</span>`;
+            const sevs = { RUNNING:'ok', STOPPED:'critical', PAUSED:'warning' };   // D3 collectors
+            const sev = sevs[d.state];
+            const estilo = sev ? `background:var(--sev-${sev}-tint);color:var(--sev-${sev}-text);` : 'background:rgba(100,116,139,0.15);color:var(--color-text-tertiary);';
+            el.innerHTML = `<span class="coll-badge" style="${estilo}">Service: ${d.state}</span>`;
         } catch (e) { el.textContent = ''; }
     }
 
@@ -57824,7 +57829,7 @@ WHERE servicename LIKE '%Agent%'` }
         let h = '<div class="step-table-wrap" style="max-height:65vh;"><table class="coll-table"><thead><tr>';
         COLL_COLUMNS.forEach(col => {
             const isActive = sc === col.sortKey;
-            const arrow = isActive ? (sd === 'desc' ? ' &#9660;' : ' &#9650;') : ' <span style="color:var(--color-border-strong);">&#9651;&#9661;</span>';
+            const arrow = isActive ? (sd === 'desc' ? ' &#9660;' : ' &#9650;') : ' <span style="color:var(--color-text-tertiary);">&#9651;&#9661;</span>';
             h += `<th style="cursor:pointer;user-select:none;position:sticky;top:0;z-index:5;background:var(--color-bg-panel);border-bottom:2px solid ${isActive ? 'rgba(59,130,246,0.6)' : 'rgba(71,85,105,0.3)'};" `
                 + `onclick="collSortBy('${col.sortKey}')">${col.label}${arrow}</th>`;
         });
@@ -57844,7 +57849,7 @@ WHERE servicename LIKE '%Agent%'` }
                 + `<td>${_collDelayCell(t)}</td>`
                 + `<td>${t.servers_collected == null ? '—' : t.servers_collected}</td>`
                 + `<td>${_fmtDur(t.collection_duration_ms)}</td>`
-                + `<td style="color:${(t.failure_count_24h||0)>0?'#ef4444':'var(--color-text-tertiary)'};font-weight:${(t.failure_count_24h||0)>0?'600':'400'};">${t.failure_count_24h||0}</td>`
+                + `<td style="color:${(t.failure_count_24h||0)>0?'var(--sev-critical-text)':'var(--color-text-tertiary)'};font-weight:${(t.failure_count_24h||0)>0?'600':'400'};">${t.failure_count_24h||0}</td>`
                 + '</tr>';
         });
         h += '</tbody></table></div>';
@@ -57880,18 +57885,18 @@ WHERE servicename LIKE '%Agent%'` }
             return '<span style="color:var(--color-text-disabled);">—</span>';
         }
         if (st === 'NEVER_RAN') {
-            return '<span style="color:var(--color-border-strong);">nunca</span>';
+            return '<span style="color:var(--color-text-tertiary);">nunca</span>';   // D3: -border-strong nao e' cor de texto
         }
         const delay = t._delaySeconds;
         if (delay == null || delay === 0) {
             return '<span style="color:var(--color-text-disabled);">—</span>';
         }
         const txt = _fmtAgo(delay);
-        if (st === 'FAILED') return `<span style="color:#ef4444;font-weight:600;">${txt}</span>`;
-        if (st === 'STALE')  return `<span style="color:#f59e0b;">${txt}</span>`;
+        if (st === 'FAILED') return `<span style="color:var(--sev-critical-text);font-weight:600;">${txt}</span>`;
+        if (st === 'STALE')  return `<span style="color:var(--sev-warning-text);">${txt}</span>`;
         if (st === 'RECENT') return `<span style="color:var(--color-text-tertiary);">${txt}</span>`;
         // FRESH com delay > 0
-        return `<span style="color:#fbbf24;">${txt}</span>`;
+        return `<span style="color:var(--sev-attention-text);">${txt}</span>`;
     }
 
     // Versao do _collDelayCell para o detail modal. Ensure _delaySeconds is
@@ -57922,10 +57927,10 @@ WHERE servicename LIKE '%Agent%'` }
     function _collLastRunCell(t) {
         if (_collIsQuiet(t)) {
             const ago = _fmtAgo(t.last_run_ago_seconds);
-            return `<span style="color:#a78bfa;">Sem eventos ha ${ago}</span>`;
+            return `<span style="color:var(--coll-quiet-text);">Sem eventos ha ${ago}</span>`;
         }
         if (t.last_run_ago_seconds == null) {
-            return '<span style="color:var(--color-border-strong);">Nunca</span>';
+            return '<span style="color:var(--color-text-tertiary);">Nunca</span>';
         }
         return `${_fmtAgo(t.last_run_ago_seconds)}${t.last_run ? ' ago' : ''}`;
     }
@@ -57942,7 +57947,7 @@ WHERE servicename LIKE '%Agent%'` }
         if (_collIsQuiet(task)) {
             const ago = _fmtAgo(task.last_run_ago_seconds);
             const iso = task.last_run || '—';
-            return `<span style="color:#a78bfa;">Sem eventos ha ${ago}</span> <span style="color:var(--color-text-disabled);font-size:11px;">(Last_Swap_Time: ${_esc(iso)})</span>`;
+            return `<span style="color:var(--coll-quiet-text);">Sem eventos ha ${ago}</span> <span style="color:var(--color-text-disabled);font-size:11px;">(Last_Swap_Time: ${_esc(iso)})</span>`;
         }
         return _esc(task.last_run || 'Nunca');
     }
@@ -58146,7 +58151,7 @@ WHERE servicename LIKE '%Agent%'` }
                 <div>${_collT('coll.det.duration', 'Duracao ultimo ciclo')}</div><div>${_fmtDur(task.collection_duration_ms)}</div>
                 <div>${_collT('coll.det.rows', 'Rows recolhidas')}</div><div title="${_collT('coll.det.rows_title', 'Numero de rows inseridas no STG no ultimo ciclo (nao distinto de servers)')}">${task.servers_collected==null?'—':task.servers_collected}</div>
                 <div>${_collT('coll.det.active_slot', 'Active slot')}</div><div>${_esc(task.active_slot||'—')}</div>
-                <div>${_collT('coll.det.failures_24h', 'Falhas nas 24h')}</div><div style="color:${(task.failure_count_24h||0)>0?'#ef4444':'#10b981'};font-weight:600;">${task.failure_count_24h||0}</div>
+                <div>${_collT('coll.det.failures_24h', 'Falhas nas 24h')}</div><div style="color:${(task.failure_count_24h||0)>0?'var(--sev-critical-text)':'var(--sev-ok-text)'};font-weight:600;">${task.failure_count_24h||0}</div>
                 <div>${_collT('coll.det.class', 'Classe')}</div><div>${_esc(task.class||'')}</div>
                 <div>${_collT('coll.det.module', 'Modulo')}</div><div>${_esc(task.module||'')}</div>
                 <div>${_collT('coll.det.target_tables', 'Target tables')}</div><div>${(task.target_tables||[]).map(t=>'<code>'+_esc(t)+'</code>').join('<br>') || '—'}</div>
@@ -58178,7 +58183,7 @@ WHERE servicename LIKE '%Agent%'` }
                          {k:'Mensagem',lbl:_collT('coll.col.message','Mensagem'),wrap:true}]
                     );
                 }
-            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
+            } catch (e) { body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
         } else if (tabName === 'config') {
             body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_config', 'A carregar config...') + '</div>';
             try {
@@ -58189,7 +58194,7 @@ WHERE servicename LIKE '%Agent%'` }
                 const d = await r.json();
                 body.innerHTML = `<div style="color:var(--color-text-tertiary);font-size:11px;margin-bottom:6px;">${_collT('coll.det.config_source', 'Source:')} ${_esc(d.source_path||'')}</div>`
                     + `<pre>${_esc(JSON.stringify(d.config, null, 2))}</pre>`;
-            } catch (e) { body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
+            } catch (e) { body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>'; }
         } else if (tabName === 'runs') {
             body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_runs', 'A carregar historico...') + '</div>';
             try {
@@ -58223,7 +58228,7 @@ WHERE servicename LIKE '%Agent%'` }
                     );
                 }
             } catch (e) {
-                body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
+                body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
             }
         } else if (tabName === 'audit') {
             body.innerHTML = '<div style="padding:20px;color:var(--color-text-tertiary);">' + _collT('coll.det.loading_audit', 'A carregar historico de activacoes/desactivacoes...') + '</div>';
@@ -58252,7 +58257,7 @@ WHERE servicename LIKE '%Agent%'` }
                     );
                 }
             } catch (e) {
-                body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
+                body.innerHTML = '<div style="color:var(--sev-critical-text);padding:20px;">' + _collT('coll.det.error', 'Erro:') + ' ' + _esc(e.message) + '</div>';
             }
         }
     };
@@ -58544,7 +58549,7 @@ WHERE servicename LIKE '%Agent%'` }
             const isActive = st.col === (col.sortK || col.k);
             const arrow = isActive
                 ? (st.dir === 'desc' ? ' &#9660;' : ' &#9650;')
-                : ' <span style="color:var(--color-border-strong);">&#9651;&#9661;</span>';
+                : ' <span style="color:var(--color-text-tertiary);">&#9651;&#9661;</span>';
             h += `<th style="cursor:pointer;user-select:none;position:sticky;top:0;z-index:5;background:var(--color-bg-panel);`
                 + `border-bottom:2px solid ${isActive ? 'rgba(59,130,246,0.6)' : 'rgba(71,85,105,0.3)'};`
                 + (col.w ? `min-width:${col.w};` : '')
