@@ -52392,8 +52392,14 @@ window.showDiskDrilldown = async function(drive, label) {
             // 2026-09-18 (owner): os cards filtram o ecra. "Drilled" = instancias com dados live neste ciclo.
             const _drilledSet = new Set([].concat(data.live_queries||[], data.live_blocking||[], data.live_tempdb||[], data.live_waits||[], data.live_ag_queues||[], data.live_idle||[], data.live_long_tran||[]).map(x => x.instance).filter(Boolean));
             const drilled = instances.filter(i => _drilledSet.has(i.instance));
-            const groups = { online: online, partial: partial, offline: offline, no_data: noData, cpu: cpuHigh, mem: memHigh, ple: lowPle, blocking: blocked, drilled: drilled };
-            const labels = { online: 'Online', partial: 'Parcial', offline: 'Offline', no_data: t('live.no_data_short'), cpu: 'CPU >50%', mem: 'MEM >85%', ple: 'Low PLE', blocking: 'Blocking', drilled: 'Drilled' };
+            // 2026-09-18 (owner): card "Espaco" = instancias com filegroups/discos em risco (space_risk)
+            const spaceRows = data.space_risk || [];
+            const spaceSet = new Set(spaceRows.map(r => r.instance));
+            const spaceInst = instances.filter(i => spaceSet.has(i.instance));
+            const spaceMaxPct = spaceRows.reduce((m, r) => Math.max(m, Number(r.pct_used || 0)), 0);
+            const spaceWorst = {}; spaceRows.forEach(r => { spaceWorst[r.instance] = Math.max(spaceWorst[r.instance] || 0, Number(r.pct_used || 0)); });
+            const groups = { online: online, partial: partial, offline: offline, no_data: noData, cpu: cpuHigh, mem: memHigh, ple: lowPle, blocking: blocked, drilled: drilled, space: spaceInst };
+            const labels = { online: 'Online', partial: 'Parcial', offline: 'Offline', no_data: t('live.no_data_short'), cpu: 'CPU >50%', mem: 'MEM >85%', ple: 'Low PLE', blocking: 'Blocking', drilled: 'Drilled', space: _kpiT('live.fleet_space_card', 'Espaço') };
             const fKey = window._fleetFilter && groups[window._fleetFilter] ? window._fleetFilter : null;
             const fSet = fKey ? new Set(groups[fKey].map(i => i.instance)) : null;
             const soFiltro = arr => fSet ? (arr || []).filter(x => fSet.has(x.instance)) : (arr || []);
@@ -52410,6 +52416,7 @@ window.showDiskDrilldown = async function(drive, label) {
             h += _fleetCard(labels.ple, lowPle.length, lowPle.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-clock', 'ple', tabId, fKey);
             h += _fleetCard(labels.blocking, blocked.length, blocked.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-lock', 'blocking', tabId, fKey);
             h += _fleetCard(labels.drilled, problemCount, 'var(--color-text-link)', 'fa-satellite-dish', 'drilled', tabId, fKey);
+            h += _fleetCard(labels.space, spaceInst.length, spaceInst.length > 0 ? (spaceMaxPct >= 98 ? 'var(--sev-critical-text)' : 'var(--sev-warning-text)') : 'var(--sev-ok-text)', 'fa-hdd', 'space', tabId, fKey);
             h += '</div>';
             if (fKey) {
                 h += `<div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:6px 10px;background:var(--sev-info-tint);border:1px solid var(--sev-info-text);border-radius:6px;font-size:12px;color:var(--sev-info-text);">`
@@ -52552,8 +52559,9 @@ window.showDiskDrilldown = async function(drive, label) {
             }
 
             const worst = [...(fSet ? groups[fKey] : online)].sort((a,b) => {
-                const scoreA = (a.blocked||0)*1000 + (a.cpu_pct||0)*10 + (10000/(a.ple||9999)) + (a.mem_pct||0);
-                const scoreB = (b.blocked||0)*1000 + (b.cpu_pct||0)*10 + (10000/(b.ple||9999)) + (b.mem_pct||0);
+                const spA = spaceWorst[a.instance] || 0, spB = spaceWorst[b.instance] || 0;   // 2026-09-18: espaco critico pesa (>=98%: 800; em risco: 300)
+                const scoreA = (a.blocked||0)*1000 + (spA >= 98 ? 800 : spA > 0 ? 300 : 0) + (a.cpu_pct||0)*10 + (10000/(a.ple||9999)) + (a.mem_pct||0);
+                const scoreB = (b.blocked||0)*1000 + (spB >= 98 ? 800 : spB > 0 ? 300 : 0) + (b.cpu_pct||0)*10 + (10000/(b.ple||9999)) + (b.mem_pct||0);
                 return scoreB - scoreA;
             }).slice(0, fSet ? 40 : 8);   // com filtro: as instancias do card (ate 40), nao so' as 8 piores
             if (worst.length > 0) {
@@ -52566,7 +52574,8 @@ window.showDiskDrilldown = async function(drive, label) {
                     const blk = i.blocked || 0;
                     const name = i.instance.split('_')[0];
                     let borderC = blk > 0 ? 'var(--sev-critical-text)' : cpu > 90 ? 'var(--sev-critical-text)' : cpu > 70 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';   // D1: era var(--color-border) como cor de texto
-                    let reason = blk > 0 ? `🔒 ${blk} blocked` : cpu > 70 ? `CPU ${cpu}%` : ple < 300 ? `PLE ${ple}s` : `MEM ${mem}%`;
+                    const spI = spaceWorst[i.instance] || 0;
+                    let reason = blk > 0 ? `🔒 ${blk} blocked` : spI >= 98 ? `💾 ${spI.toFixed(1)}%` : cpu > 70 ? `CPU ${cpu}%` : ple < 300 ? `PLE ${ple}s` : spI > 0 ? `💾 ${spI.toFixed(1)}%` : `MEM ${mem}%`;
                     h += `<div onclick="_fleetSwitchTo('${i.instance}','queries')" title="${i.instance}" style="background:var(--color-bg-panel);border:1px solid ${borderC};border-radius:8px;padding:8px 12px;cursor:pointer;min-width:100px;"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;margin-bottom:4px;">${name}</div><div style="color:${borderC};font-size:12px;font-weight:600;">${reason}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;">${i.env}</div></div>`;
                 });
                 h += '</div>';
@@ -52598,9 +52607,19 @@ window.showDiskDrilldown = async function(drive, label) {
         window._fleetCopySql = _fleetCopySql;
         // 2026-09-18 (owner): filegroups e discos >= 90% usados, ordenados por espaco livre (menos livre primeiro)
         function _fleetSpacePanel(rows) {
-            rows = (rows || []).slice().sort((a, b) => (a.free_mb || 0) - (b.free_mb || 0)).slice(0, 8);
+            // discos partilhados (cluster): o mesmo volume visto por varias instancias do mesmo host conta uma vez
+            const vistos = new Map();
+            (rows || []).slice().sort((a, b) => (a.free_mb || 0) - (b.free_mb || 0)).forEach(r => {
+                // volume partilhado de cluster: mesma letra/caminho com o MESMO total e o MESMO livre (ao MB) e' o mesmo disco,
+                // mesmo quando as instancias estao em hosts diferentes (SQLMDMPRD03/04 G: na prova de 18/09)
+                const k = r.kind === 'disk' ? 'disk|' + String(r.object || '').toLowerCase() + '|' + Math.round(r.total_mb || 0) + '|' + Math.round(r.free_mb || 0) : 'fg|' + r.instance + '|' + r.database + '|' + r.object;
+                if (vistos.has(k)) { const p = vistos.get(k); if (p.instance !== r.instance) (p.tambem = p.tambem || []).push(r.instance); }
+                else vistos.set(k, Object.assign({}, r));
+            });
+            const totalRisco = vistos.size;
+            rows = Array.from(vistos.values()).slice(0, 8);
             let h = '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-hdd" style="margin-right:6px;color:var(--sev-critical-text);"></i>' + _kpiT('live.fleet_space_title', 'ESPAÇO CRÍTICO (frota)') + '</div>';
+            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-hdd" style="margin-right:6px;color:var(--sev-critical-text);"></i>' + _kpiT('live.fleet_space_title', 'ESPAÇO CRÍTICO (frota)') + (rows.length ? ' <span style="font-weight:400;color:var(--color-text-tertiary);">(' + totalRisco + ')</span>' : '') + '</div>';
             if (!rows.length) {
                 return h + '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + _kpiT('live.fleet_space_empty', 'Sem filegroups nem discos acima de 90%') + '</div></div>';
             }
@@ -52610,7 +52629,7 @@ window.showDiskDrilldown = async function(drive, label) {
                 const sev = pct >= 98 ? 'critical' : pct >= 95 ? 'warning' : 'attention';
                 const obj = r.kind === 'disk' ? esc(r.object) : esc(r.database) + ' · ' + esc(r.object);
                 const inst = esc(r.instance || '');
-                const tip = `${inst} — ${obj}: ${pct.toFixed(1)}% · ${_kpiT('live.fleet_space_free', 'livre')} ${Math.round(r.free_mb || 0)} MB / ${Math.round(r.total_mb || 0)} MB`;
+                const tip = `${inst} — ${obj}: ${pct.toFixed(1)}% · ${_kpiT('live.fleet_space_free', 'livre')} ${Math.round(r.free_mb || 0)} MB / ${Math.round(r.total_mb || 0)} MB` + (r.tambem && r.tambem.length ? ` · ${_kpiT('live.fleet_space_also', 'também em')} ${r.tambem.map(esc).join(', ')}` : '');
                 h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;padding:2px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${inst}','io')" title="${tip}">`
                    + `<div style="width:120px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${inst}</div>`
                    + `<i class="fas ${r.kind === 'disk' ? 'fa-hdd' : 'fa-layer-group'}" style="color:var(--color-text-tertiary);font-size:12px;flex-shrink:0;" aria-hidden="true"></i>`
