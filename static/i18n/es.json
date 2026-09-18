@@ -3493,5 +3493,12 @@
     "backup_delayed": "BACKUPS RETRASADOS\n\nBases de datos sin backup dentro del plazo esperado (FULL: 7 días, DIFF: 24 h, LOG: 2 h).\n\nPOR QUÉ IMPORTA: es una brecha de RPO, no un fallo reportado — el job puede estar desactivado, no haberse ejecutado nunca, o la programación real ser distinta de la asumida.\n\nQUÉ HACER: confirmar la programación real del job del SQL Agent para esta base de datos y compararla con la hora del último backup.",
     "backup_jobs_disabled": "JOBS DE BACKUP DESACTIVADOS\n\nJobs de backup que no se van a ejecutar: desactivados (enabled=0), o activos pero con todas las programaciones apagadas.\n\nPOR QUÉ IMPORTA: normalmente es señal de una pausa manual no documentada que nadie reactivó — la base de datos puede llevar semanas sin protección de backup sin que nadie lo note. La programación apagada es el caso más peligroso de los dos, porque el job parece activo.\n\nQUÉ HACER: confirmar con el equipo si fue intencional; si no lo fue, reactivar el job o la programación.",
     "backup_no_checksum": "BACKUPS SIN CHECKSUM\n\nBases de datos con al menos 1 backup hecho sin WITH CHECKSUM en los últimos 7 días, o marcado como dañado.\n\nPOR QUÉ IMPORTA: sin checksum SQL Server no valida las páginas durante el backup — una corrupción silenciosa puede copiarse sin aviso, y RESTORE VERIFYONLY no la detecta. Solo se descubre en el restore, tarde.\n\nQUÉ HACER: activar WITH CHECKSUM en los jobs de backup de estas instancias.\n\nCada fila = par único (instancia + base de datos). Incluye FULL, DIFF y LOG."
+  },
+  "fixo": {
+    "predictive_title": "Análisis predictivo",
+    "confirm_new_password": "Confirmar nueva contraseña",
+    "diagnose_subtitle": "Pegue la consulta problemática para analizar estadísticas e índices",
+    "full_db_analysis": "Análisis completo de la base de datos",
+    "required": "(obligatorio)"
   }
 }

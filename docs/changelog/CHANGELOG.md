@@ -9,6 +9,11 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **i18n: teste de guarda para texto escrito à mão** (18/09). Um varredor determinista conta as strings e o HTML em
+  português fora do dicionário no portal e falha se o número subir; a base fica gravada no teste e só pode descer.
+  Os cinco textos da marcação estática (títulos das modais preditiva e de diagnóstico, "(obrigatório)", confirmação
+  de senha) passam a `fixo.*` em pt/pt-BR/en/es. [tier: Std]
+
 - **Ajuda "?" das modais de backup em quatro idiomas** (owner 17/09). Os cinco textos (falhas, falhas de log, em atraso,
   jobs desativados, sem checksum) estavam escritos à mão em português sem acentos; passam a `kpi_info.*` em pt/pt-BR/en/es.
   [tier: Std]
