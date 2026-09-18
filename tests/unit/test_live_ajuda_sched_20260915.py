@@ -9,7 +9,7 @@ PORTAL = (ROOT / "templates" / "watcherdb_portal.html").read_text(encoding="utf-
 SHELL = PORTAL[PORTAL.index("function openLiveMonitoringModal()"):PORTAL.index("function _liveLoadChannels")]
 SCHED = PORTAL[PORTAL.index("function _liveRenderSchedulers(data) {"):PORTAL.index("// Auto-open via URL param ?autoLive=1")]
 PROGS = ["fleet", "queries", "waits", "blocking", "plancache", "memory", "tempdb", "io", "tlog", "connections", "jobs",
-         "alwayson", "schedulers", "errorlog"]
+         "alwayson", "schedulers", "errorlog", "space"]   # 2026-09-18: programa Espaco
 
 
 def test_um_botao_de_ajuda_acessivel_e_painel_fora_do_ecra():

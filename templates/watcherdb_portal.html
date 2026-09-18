@@ -51491,13 +51491,15 @@ window.showDiskDrilldown = async function(drive, label) {
                     <span style="display:inline-flex;align-items:center;gap:4px;color:var(--sev-critical-text);font-weight:700;font-size:13px;flex-shrink:0;">
                         <span style="width:8px;height:8px;background:#ef4444;border-radius:50%;animation:live-pulse 1.5s infinite;"></span> LIVE
                     </span>
+                    <span style="display:inline-flex;align-items:stretch;"><!-- 2026-09-18 (owner): filtro dentro do canal; escrever/colar selecciona -->
                     <input id="live-channel-search-${tabId}" type="text" placeholder="${t('live.filter_instance')}"
-                           oninput="liveFilterChannels('${tabId}', this.value)" autocomplete="off"
-                           style="width:110px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;">
+                           oninput="liveFilterChannels('${tabId}', this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();_liveChannelPickFirst('${tabId}');}" autocomplete="off"
+                           style="width:150px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-right:none;border-radius:5px 0 0 5px;color:var(--color-text-bright);font-size:12px;">
                     <select id="live-channel-${tabId}" onchange="liveChangeChannel('${tabId}', this.value)"
-                            style="max-width:240px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text-bright);font-size:12px;font-weight:500;">
+                            style="max-width:240px;padding:4px 8px;background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:0 5px 5px 0;color:var(--color-text-bright);font-size:12px;font-weight:500;">
                         <option value="">${t('live.channel_placeholder')}</option>
                     </select>
+                    </span>
                     <div style="flex-basis:100%;height:0;"></div><!-- 2026-09-18 (owner): programas todos na 2.a linha, ErrLog e ? incluidos -->
                     <button onclick="liveSetProgram('${tabId}','fleet')" class="live-prog-btn" data-prog="fleet" style="${_pb}" title="Fleet Dashboard">📡 Fleet</button>
                     <span style="width:1px;height:14px;background:var(--color-border);"></span>
@@ -51515,6 +51517,7 @@ window.showDiskDrilldown = async function(drive, label) {
                     <button onclick="liveSetProgram('${tabId}','jobs')" class="live-prog-btn" data-prog="jobs" style="${_pb}">Jobs</button>
                     <button onclick="liveSetProgram('${tabId}','alwayson')" class="live-prog-btn" data-prog="alwayson" style="${_pb}">AG</button>
                     <button onclick="liveSetProgram('${tabId}','schedulers')" class="live-prog-btn" data-prog="schedulers" style="${_pb}">Sched</button>
+                    <button onclick="liveSetProgram('${tabId}','space')" class="live-prog-btn" data-prog="space" style="${_pb}" title="${_kpiT('live.prog_space_tip', 'Filegroups e discos da instância (última coleta)')}">${_kpiT('live.prog_space', 'Espaço')}</button>
                     <button onclick="liveSetProgram('${tabId}','errorlog')" class="live-prog-btn" data-prog="errorlog" style="${_pb}">ErrLog</button>
                     <button type="button" id="live-help-btn-${tabId}" class="live-help-btn" aria-expanded="false" aria-controls="live-help-${tabId}" onclick="liveToggleHelp('${tabId}')" title="${t('live.help_tip')}" style="${_pb};font-weight:700;">?</button>
                     <div style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
@@ -51709,6 +51712,8 @@ window.showDiskDrilldown = async function(drive, label) {
         function _liveRenderChannelOptions(tabId, filter) {
             const sel = document.getElementById('live-channel-' + tabId);
             if (!sel) return;
+            const _inp = document.getElementById('live-channel-search-' + tabId);   // 2026-09-18: com ?autoLive=1 a modal nasce antes do i18n
+            if (_inp) _inp.placeholder = t('live.filter_instance');
             const byEnv = _liveChannelsByEnv[tabId] || {};
             const current = sel.value || localStorage.getItem('live-last-channel') || '';
             const q = (filter || '').toLowerCase();
@@ -51746,9 +51751,30 @@ window.showDiskDrilldown = async function(drive, label) {
             }
         }
 
+        let _liveTypeAheadT = null;
+        function _liveChannelCandidates(sel) {
+            const pinned = t('live.selected_group');
+            return Array.from(sel.options).filter(o => o.value && !(o.parentElement && o.parentElement.label === pinned));
+        }
         function liveFilterChannels(tabId, q) {
             _liveRenderChannelOptions(tabId, q);
+            // 2026-09-18 (owner): escrever ou colar vai seleccionando o canal -- nome exacto ou correspondencia unica muda o canal
+            clearTimeout(_liveTypeAheadT);
+            const txt = (q || '').trim().toLowerCase();
+            const sel = document.getElementById('live-channel-' + tabId);
+            if (!txt || !sel) return;
+            const opts = _liveChannelCandidates(sel);
+            const alvo = opts.find(o => o.value.toLowerCase() === txt) || (opts.length === 1 ? opts[0] : null);
+            if (!alvo || alvo.value === _liveInstance) return;
+            _liveTypeAheadT = setTimeout(() => { sel.value = alvo.value; liveChangeChannel(tabId, alvo.value); }, 450);
         }
+        function _liveChannelPickFirst(tabId) {
+            const sel = document.getElementById('live-channel-' + tabId);
+            if (!sel) return;
+            const first = _liveChannelCandidates(sel)[0];
+            if (first && first.value !== _liveInstance) { clearTimeout(_liveTypeAheadT); sel.value = first.value; liveChangeChannel(tabId, first.value); }
+        }
+        window._liveChannelPickFirst = _liveChannelPickFirst;
 
         function _liveShowLoading(tabId, msg) {
             const screen = document.getElementById('live-screen-' + tabId);
@@ -51795,7 +51821,7 @@ window.showDiskDrilldown = async function(drive, label) {
 
         // 2026-09-15 (owner: "se por em um tem que por nos outros"): ajuda "?" do separador activo em todo o LIVE. Um so botao
         // no fim da barra; painel fora do live-screen (o refresh de 15 s nao o apaga); segue o separador. Parecer do frontend.
-        const _LIVE_HELP_PROGS = ['fleet', 'queries', 'waits', 'blocking', 'plancache', 'memory', 'tempdb', 'io', 'tlog', 'connections', 'jobs', 'alwayson', 'schedulers', 'errorlog'];
+        const _LIVE_HELP_PROGS = ['fleet', 'queries', 'waits', 'blocking', 'plancache', 'memory', 'tempdb', 'io', 'tlog', 'connections', 'jobs', 'alwayson', 'schedulers', 'errorlog', 'space'];
         let _liveSchedDetailsOpen = false;   // 2026-09-15: <details> do Sched aberto entre refreshes
         function _liveSchedToggle(el) { _liveSchedDetailsOpen = !!el.open; }
         function _liveHelpHtml(program, tabId) {
@@ -52135,6 +52161,7 @@ window.showDiskDrilldown = async function(drive, label) {
             if (program === 'waits') return _liveRenderWaits(data, tabId);
             if (program === 'blocking') return _liveRenderBlocking(data);
             if (program === 'io') return _liveRenderIO(data);
+            if (program === 'space') return _liveRenderSpace(data);
             if (program === 'jobs') return _liveRenderJobs(data);
             if (program === 'memory') return _liveRenderMemory(data);
             if (program === 'connections') return _liveRenderConnections(data);
@@ -52392,8 +52419,14 @@ window.showDiskDrilldown = async function(drive, label) {
             // 2026-09-18 (owner): os cards filtram o ecra. "Drilled" = instancias com dados live neste ciclo.
             const _drilledSet = new Set([].concat(data.live_queries||[], data.live_blocking||[], data.live_tempdb||[], data.live_waits||[], data.live_ag_queues||[], data.live_idle||[], data.live_long_tran||[]).map(x => x.instance).filter(Boolean));
             const drilled = instances.filter(i => _drilledSet.has(i.instance));
-            const groups = { online: online, partial: partial, offline: offline, no_data: noData, cpu: cpuHigh, mem: memHigh, ple: lowPle, blocking: blocked, drilled: drilled };
-            const labels = { online: 'Online', partial: 'Parcial', offline: 'Offline', no_data: t('live.no_data_short'), cpu: 'CPU >50%', mem: 'MEM >85%', ple: 'Low PLE', blocking: 'Blocking', drilled: 'Drilled' };
+            // 2026-09-18 (owner): card "Espaco" = instancias com filegroups/discos em risco (space_risk)
+            const spaceRows = data.space_risk || [];
+            const spaceSet = new Set(spaceRows.map(r => r.instance));
+            const spaceInst = instances.filter(i => spaceSet.has(i.instance));
+            const spaceMaxPct = spaceRows.reduce((m, r) => Math.max(m, Number(r.pct_used || 0)), 0);
+            const spaceWorst = {}; spaceRows.forEach(r => { spaceWorst[r.instance] = Math.max(spaceWorst[r.instance] || 0, Number(r.pct_used || 0)); });
+            const groups = { online: online, partial: partial, offline: offline, no_data: noData, cpu: cpuHigh, mem: memHigh, ple: lowPle, blocking: blocked, drilled: drilled, space: spaceInst };
+            const labels = { online: 'Online', partial: 'Parcial', offline: 'Offline', no_data: t('live.no_data_short'), cpu: 'CPU >50%', mem: 'MEM >85%', ple: 'Low PLE', blocking: 'Blocking', drilled: 'Drilled', space: _kpiT('live.fleet_space_card', 'Espaço') };
             const fKey = window._fleetFilter && groups[window._fleetFilter] ? window._fleetFilter : null;
             const fSet = fKey ? new Set(groups[fKey].map(i => i.instance)) : null;
             const soFiltro = arr => fSet ? (arr || []).filter(x => fSet.has(x.instance)) : (arr || []);
@@ -52404,12 +52437,13 @@ window.showDiskDrilldown = async function(drive, label) {
             h += _fleetCard(labels.online, online.length, 'var(--sev-ok-text)', 'fa-check-circle', 'online', tabId, fKey);
             h += _fleetCard(labels.partial, partial.length, partial.length>0?'var(--sev-warning-text)':'var(--color-text-tertiary)', 'fa-exclamation', 'partial', tabId, fKey);
             h += _fleetCard(labels.offline, offline.length, offline.length>0?'var(--sev-critical-text)':'var(--color-text-tertiary)', 'fa-times-circle', 'offline', tabId, fKey);
-            h += _fleetCard(labels.no_data, noData.length, 'var(--color-text-tertiary)', 'fa-question-circle', 'no_data', tabId, fKey);
+            h += _fleetCard(labels.no_data, noData.length, 'var(--color-text-tertiary)', 'fa-eye-slash', 'no_data', tabId, fKey);
             h += _fleetCard(labels.cpu, cpuHigh.length, cpuHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-microchip', 'cpu', tabId, fKey);
             h += _fleetCard(labels.mem, memHigh.length, memHigh.length>0?'var(--sev-warning-text)':'var(--sev-ok-text)', 'fa-memory', 'mem', tabId, fKey);
             h += _fleetCard(labels.ple, lowPle.length, lowPle.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-clock', 'ple', tabId, fKey);
             h += _fleetCard(labels.blocking, blocked.length, blocked.length>0?'var(--sev-critical-text)':'var(--sev-ok-text)', 'fa-lock', 'blocking', tabId, fKey);
             h += _fleetCard(labels.drilled, problemCount, 'var(--color-text-link)', 'fa-satellite-dish', 'drilled', tabId, fKey);
+            h += _fleetCard(labels.space, spaceInst.length, spaceInst.length > 0 ? (spaceMaxPct >= 98 ? 'var(--sev-critical-text)' : 'var(--sev-warning-text)') : 'var(--sev-ok-text)', 'fa-hdd', 'space', tabId, fKey);
             h += '</div>';
             if (fKey) {
                 h += `<div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:6px 10px;background:var(--sev-info-tint);border:1px solid var(--sev-info-text);border-radius:6px;font-size:12px;color:var(--sev-info-text);">`
@@ -52552,8 +52586,9 @@ window.showDiskDrilldown = async function(drive, label) {
             }
 
             const worst = [...(fSet ? groups[fKey] : online)].sort((a,b) => {
-                const scoreA = (a.blocked||0)*1000 + (a.cpu_pct||0)*10 + (10000/(a.ple||9999)) + (a.mem_pct||0);
-                const scoreB = (b.blocked||0)*1000 + (b.cpu_pct||0)*10 + (10000/(b.ple||9999)) + (b.mem_pct||0);
+                const spA = spaceWorst[a.instance] || 0, spB = spaceWorst[b.instance] || 0;   // 2026-09-18: espaco critico pesa (>=98%: 800; em risco: 300)
+                const scoreA = (a.blocked||0)*1000 + (spA >= 98 ? 800 : spA > 0 ? 300 : 0) + (a.cpu_pct||0)*10 + (10000/(a.ple||9999)) + (a.mem_pct||0);
+                const scoreB = (b.blocked||0)*1000 + (spB >= 98 ? 800 : spB > 0 ? 300 : 0) + (b.cpu_pct||0)*10 + (10000/(b.ple||9999)) + (b.mem_pct||0);
                 return scoreB - scoreA;
             }).slice(0, fSet ? 40 : 8);   // com filtro: as instancias do card (ate 40), nao so' as 8 piores
             if (worst.length > 0) {
@@ -52566,7 +52601,8 @@ window.showDiskDrilldown = async function(drive, label) {
                     const blk = i.blocked || 0;
                     const name = i.instance.split('_')[0];
                     let borderC = blk > 0 ? 'var(--sev-critical-text)' : cpu > 90 ? 'var(--sev-critical-text)' : cpu > 70 ? 'var(--sev-warning-text)' : 'var(--color-text-tertiary)';   // D1: era var(--color-border) como cor de texto
-                    let reason = blk > 0 ? `🔒 ${blk} blocked` : cpu > 70 ? `CPU ${cpu}%` : ple < 300 ? `PLE ${ple}s` : `MEM ${mem}%`;
+                    const spI = spaceWorst[i.instance] || 0;
+                    let reason = blk > 0 ? `🔒 ${blk} blocked` : spI >= 98 ? `💾 ${spI.toFixed(1)}%` : cpu > 70 ? `CPU ${cpu}%` : ple < 300 ? `PLE ${ple}s` : spI > 0 ? `💾 ${spI.toFixed(1)}%` : `MEM ${mem}%`;
                     h += `<div onclick="_fleetSwitchTo('${i.instance}','queries')" title="${i.instance}" style="background:var(--color-bg-panel);border:1px solid ${borderC};border-radius:8px;padding:8px 12px;cursor:pointer;min-width:100px;"><div style="color:var(--color-text-bright);font-weight:600;font-size:12px;margin-bottom:4px;">${name}</div><div style="color:${borderC};font-size:12px;font-weight:600;">${reason}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;">${i.env}</div></div>`;
                 });
                 h += '</div>';
@@ -52574,11 +52610,30 @@ window.showDiskDrilldown = async function(drive, label) {
             return h;
         }
 
+        // 2026-09-18 (owner): "?" em todos os cards com o que medem (textos fieis a get_fleet_dashboard)
+        function _fleetCardHelp(key) {
+            // (uma chamada _kpiT por linha: a guarda de texto a mao e' por linha)
+            switch (key) {
+                case 'online': return _kpiT('live.card_help_online', 'Instâncias com métricas de performance (CPU, memória, PLE) no último ciclo do coletor.');
+                case 'partial': return _kpiT('live.card_help_partial', 'Instâncias vistas pelo coletor de disponibilidade/disco mas sem métricas de performance neste ciclo.');
+                case 'offline': return _kpiT('live.card_help_offline', 'Sem dados no ciclo e com falha de ping: o servidor não responde.');
+                case 'no_data': return _kpiT('live.card_help_no_data', 'Sem dados em nenhuma tabela do coletor neste ciclo, com ping OK.');
+                case 'cpu': return _kpiT('live.card_help_cpu', 'Instâncias online com CPU ≥ 50% no último snapshot (Processor_Pct).');
+                case 'mem': return _kpiT('live.card_help_mem', 'Instâncias online com memória ≥ 85% no último snapshot (Memory_Usage_Pct).');
+                case 'ple': return _kpiT('live.card_help_ple', 'Instâncias online com Page Life Expectancy < 300 s no último snapshot.');
+                case 'blocking': return _kpiT('live.card_help_blocking', 'Instâncias com sessões bloqueadas na última coleta de blocking.');
+                case 'drilled': return _kpiT('live.card_help_drilled', 'Instâncias onde o servidor fez drill ao vivo neste ciclo (queries, blocking, tempdb, waits, AG, sessões): só as problemáticas, CPU ≥ 50%, MEM ≥ 90%, blocking ou PLE < 300 s, até 15.');
+                case 'space': return _kpiT('live.card_help_space', 'Instâncias com filegroups ou discos em risco: filegroups pela regra do KPI (menos de 10% livre efetivo, crescimento ilimitado excluído) e discos com 10% ou menos livre. No painel, ordenados pelo espaço livre.');
+                default: return '';
+            }
+        }
         function _fleetCard(label, value, color, icon, key, tabId, activeKey) {
             const on = key && key === activeKey;
+            const help = _fleetCardHelp(key).replace(/"/g, '&quot;');
+            const ajuda = help ? `<span title="${help}" aria-label="${help}" onclick="event.stopPropagation()" style="position:absolute;top:4px;right:6px;width:16px;height:16px;line-height:14px;border-radius:50%;font-size:12px;color:var(--color-text-tertiary);border:1px solid var(--color-border);cursor:help;text-align:center;">?</span>` : '';
             const click = key ? ` onclick="_fleetToggleFilter('${tabId}','${key}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" aria-pressed="${on ? 'true' : 'false'}"` : '';
             const frame = on ? 'border:2px solid var(--sev-info-text);background:var(--sev-info-tint);' : 'border:1px solid var(--color-border);background:var(--color-bg-panel);';
-            return `<div${click} style="${frame}border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;${key ? 'cursor:pointer;' : ''}"><div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
+            return `<div${click} style="position:relative;${frame}border-radius:8px;padding:10px 18px 10px 14px;min-width:100px;text-align:center;${key ? 'cursor:pointer;' : ''}">${ajuda}<div style="font-size:22px;font-weight:700;color:${color};">${value}</div><div style="color:var(--color-text-tertiary);font-size:12px;margin-top:2px;"><i class="fas ${icon}" style="margin-right:4px;color:${color};"></i>${label}</div></div>`;
         }
         // 2026-09-18 (owner): cards do Fleet filtram o ecra; re-render a partir do cache, sem novo pedido
         function _fleetToggleFilter(tabId, key) {
@@ -52598,9 +52653,19 @@ window.showDiskDrilldown = async function(drive, label) {
         window._fleetCopySql = _fleetCopySql;
         // 2026-09-18 (owner): filegroups e discos >= 90% usados, ordenados por espaco livre (menos livre primeiro)
         function _fleetSpacePanel(rows) {
-            rows = (rows || []).slice().sort((a, b) => (a.free_mb || 0) - (b.free_mb || 0)).slice(0, 8);
+            // discos partilhados (cluster): o mesmo volume visto por varias instancias do mesmo host conta uma vez
+            const vistos = new Map();
+            (rows || []).slice().sort((a, b) => (a.free_mb || 0) - (b.free_mb || 0)).forEach(r => {
+                // volume partilhado de cluster: mesma letra/caminho com o MESMO total e o MESMO livre (ao MB) e' o mesmo disco,
+                // mesmo quando as instancias estao em hosts diferentes (SQLMDMPRD03/04 G: na prova de 18/09)
+                const k = r.kind === 'disk' ? 'disk|' + String(r.object || '').toLowerCase() + '|' + Math.round(r.total_mb || 0) + '|' + Math.round(r.free_mb || 0) : 'fg|' + r.instance + '|' + r.database + '|' + r.object;
+                if (vistos.has(k)) { const p = vistos.get(k); if (p.instance !== r.instance) (p.tambem = p.tambem || []).push(r.instance); }
+                else vistos.set(k, Object.assign({}, r));
+            });
+            const totalRisco = vistos.size;
+            rows = Array.from(vistos.values()).slice(0, 8);
             let h = '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-hdd" style="margin-right:6px;color:var(--sev-critical-text);"></i>' + _kpiT('live.fleet_space_title', 'ESPAÇO CRÍTICO (frota)') + '</div>';
+            h += '<div style="color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><i class="fas fa-hdd" style="margin-right:6px;color:var(--sev-critical-text);"></i>' + _kpiT('live.fleet_space_title', 'ESPAÇO CRÍTICO (frota)') + (rows.length ? ' <span style="font-weight:400;color:var(--color-text-tertiary);">(' + totalRisco + ')</span>' : '') + '</div>';
             if (!rows.length) {
                 return h + '<div style="color:var(--sev-ok-text);font-size:12px;text-align:center;padding:10px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>' + _kpiT('live.fleet_space_empty', 'Sem filegroups nem discos acima de 90%') + '</div></div>';
             }
@@ -52610,8 +52675,8 @@ window.showDiskDrilldown = async function(drive, label) {
                 const sev = pct >= 98 ? 'critical' : pct >= 95 ? 'warning' : 'attention';
                 const obj = r.kind === 'disk' ? esc(r.object) : esc(r.database) + ' · ' + esc(r.object);
                 const inst = esc(r.instance || '');
-                const tip = `${inst} — ${obj}: ${pct.toFixed(1)}% · ${_kpiT('live.fleet_space_free', 'livre')} ${Math.round(r.free_mb || 0)} MB / ${Math.round(r.total_mb || 0)} MB`;
-                h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;padding:2px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${inst}','io')" title="${tip}">`
+                const tip = `${inst} — ${obj}: ${pct.toFixed(1)}% · ${_kpiT('live.fleet_space_free', 'livre')} ${Math.round(r.free_mb || 0)} MB / ${Math.round(r.total_mb || 0)} MB` + (r.tambem && r.tambem.length ? ` · ${_kpiT('live.fleet_space_also', 'também em')} ${r.tambem.map(esc).join(', ')}` : '');
+                h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;padding:2px 0;border-bottom:1px solid var(--color-bg-sunken);cursor:pointer;" onclick="_fleetSwitchTo('${inst}','space')" title="${tip}">`
                    + `<div style="width:120px;flex-shrink:0;color:var(--color-text-link);font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${inst}</div>`
                    + `<i class="fas ${r.kind === 'disk' ? 'fa-hdd' : 'fa-layer-group'}" style="color:var(--color-text-tertiary);font-size:12px;flex-shrink:0;" aria-hidden="true"></i>`
                    + `<div style="flex:1;min-width:0;color:var(--color-text-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">${obj}</div>`
@@ -52632,6 +52697,54 @@ window.showDiskDrilldown = async function(drive, label) {
             }
         }
 
+        // 2026-09-18 (owner): programa Espaco -- filegroups e discos da instancia (ultima coleta do coletor, STG)
+        function _liveRenderSpace(data) {
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            const disks = data.disks || [], fgs = data.filegroups || [];
+            if (!disks.length && !fgs.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + _kpiT('live.space_no_data', 'Sem dados de filegroups nem de discos para esta instância na última coleta.') + '</div>';
+            const sevDisk = pf => pf <= 5 ? 'critical' : pf <= 10 ? 'warning' : pf <= 20 ? 'attention' : 'ok';
+            const sevFg = ef => ef == null ? 'ok' : ef < 2 ? 'critical' : ef < 5 ? 'warning' : ef < 10 ? 'attention' : 'ok';
+            const barra = (pctUsado, sev) => `<div style="display:flex;align-items:center;gap:6px;"><div style="flex:1;height:8px;background:var(--color-bg-sunken);border-radius:4px;overflow:hidden;"><div style="width:${Math.max(0, Math.min(100, pctUsado)).toFixed(1)}%;height:100%;background:var(--sev-${sev}-border);"></div></div><span style="width:52px;text-align:right;color:var(--sev-${sev}-text);font-weight:600;">${pctUsado.toFixed(1)}%</span></div>`;
+            const carimbo = (rows) => { const ts = rows.map(r => r.Update_TS || r.update_ts).filter(Boolean).sort().pop(); return ts ? String(ts).replace('T', ' ').substring(0, 19) : ''; };
+            const th = 'padding:6px 8px;text-align:left;color:var(--color-text-tertiary);font-weight:600;border-bottom:1px solid var(--color-border);';
+            const thR = th + 'text-align:right;';
+            const td = 'padding:5px 8px;border-bottom:1px solid var(--color-bg-panel);';
+            const tdR = td + 'text-align:right;font-variant-numeric:tabular-nums;';
+            let h = '';
+            h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;margin-bottom:12px;">';
+            h += `<div style="display:flex;align-items:baseline;gap:10px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><span><i class="fas fa-hdd" style="margin-right:6px;color:var(--sev-info-text);"></i>${_kpiT('live.space_disks', 'DISCOS')} (${disks.length})</span><span style="font-weight:400;">${carimbo(disks) ? _kpiT('live.space_collected', 'coleta') + ' ' + esc(carimbo(disks)) : ''}</span></div>`;
+            if (disks.length) {
+                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="${th}">Volume</th><th style="${thR}">Total</th><th style="${thR}">${_kpiT('live.space_used', 'Usado')}</th><th style="${thR}">${_kpiT('live.fleet_space_free', 'livre')}</th><th style="${th}width:34%;">% ${_kpiT('live.space_used', 'Usado')}</th></tr></thead><tbody>`;
+                disks.slice().sort((a, b) => (a.Percent_Free || 0) - (b.Percent_Free || 0)).forEach(d => {
+                    const pf = Number(d.Percent_Free || 0), sev = sevDisk(pf);
+                    h += `<tr><td style="${td}color:var(--color-text-bright);font-family:var(--font-mono);">${esc(d.Drive)}</td><td style="${tdR}">${formatSizeMB(Math.round(d.Total_MB || 0))}</td><td style="${tdR}">${formatSizeMB(Math.round(d.Used_MB || 0))}</td><td style="${tdR}color:var(--sev-${sev}-text);font-weight:600;">${formatSizeMB(Math.round(d.Free_MB || 0))}</td><td style="${td}">${barra(100 - pf, sev)}</td></tr>`;
+                });
+                h += '</tbody></table>';
+            } else {
+                h += '<div style="color:var(--color-text-tertiary);font-size:12px;padding:6px 0;">' + _kpiT('live.space_no_disks', 'Sem dados de disco para esta instância.') + '</div>';
+            }
+            h += '</div>';
+            h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
+            h += `<div style="display:flex;align-items:baseline;gap:10px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><span><i class="fas fa-layer-group" style="margin-right:6px;color:var(--sev-info-text);"></i>${_kpiT('live.space_filegroups', 'FILEGROUPS')} (${fgs.length > 80 ? '80 / ' : ''}${fgs.length})</span><span style="font-weight:400;">${carimbo(fgs) ? _kpiT('live.space_collected', 'coleta') + ' ' + esc(carimbo(fgs)) : ''}</span></div>`;
+            if (fgs.length) {
+                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="${th}">Database</th><th style="${th}">Filegroup</th><th style="${thR}">Total</th><th style="${thR}">${_kpiT('live.space_used', 'Usado')}</th><th style="${thR}">${_kpiT('live.fleet_space_free', 'livre')}</th><th style="${th}">${_kpiT('live.space_cap', 'Tecto')}</th><th style="${th}width:26%;">% ${_kpiT('live.space_used', 'Usado')}</th></tr></thead><tbody>`;
+                const eff = f => { const gt = String(f.Growth_Type || '').toUpperCase(); const mx = Number(f.Max_Size_MB || 0), tot = Number(f.Total_MB || 0), used = Number(f.Used_MB || 0);
+                    if (gt === 'UNLIMITED') return null; if (mx > 0 && mx > tot) return (mx - used) * 100 / mx; return 100 - Number(f.Percent_Used || 0); };
+                // 450 filegroups numa instancia grande (prova de 18/09): mostra os 80 piores; o titulo diz quantos ha
+                const ordenados = fgs.slice().sort((a, b) => { const ea = eff(a), eb = eff(b); return (ea == null ? 999 : ea) - (eb == null ? 999 : eb); });
+                const mostrados = ordenados.slice(0, 80);
+                mostrados.forEach(f => {
+                    const ef = eff(f), sev = sevFg(ef); const gt = String(f.Growth_Type || '').toUpperCase(); const mx = Number(f.Max_Size_MB || 0), tot = Number(f.Total_MB || 0);
+                    const tecto = gt === 'UNLIMITED' ? `<span style="color:var(--color-text-tertiary);">${_kpiT('live.space_unlimited', 'ilimitado (disco)')}</span>` : (mx > 0 && mx > tot) ? formatSizeMB(Math.round(mx)) : `<span style="color:var(--color-text-tertiary);">${_kpiT('live.space_capped', 'alocado')}</span>`;
+                    h += `<tr><td style="${td}color:var(--color-text-bright);">${esc(f.Database)}</td><td style="${td}font-family:var(--font-mono);">${esc(f.Filegroup)}</td><td style="${tdR}">${formatSizeMB(Math.round(tot))}</td><td style="${tdR}">${formatSizeMB(Math.round(f.Used_MB || 0))}</td><td style="${tdR}color:var(--sev-${sev}-text);font-weight:600;">${formatSizeMB(Math.round(f.Free_MB || 0))}</td><td style="${td}">${tecto}</td><td style="${td}">${barra(Number(f.Percent_Used || 0), sev)}</td></tr>`;
+                });
+                h += '</tbody></table>';
+            } else {
+                h += '<div style="color:var(--color-text-tertiary);font-size:12px;padding:6px 0;">' + _kpiT('live.space_no_fgs', 'Sem dados de filegroups para esta instância.') + '</div>';
+            }
+            h += '</div>';
+            return h;
+        }
         function _liveRenderIO(data) {
             const files = data.files || [];
             if (!files.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + t('live.no_io_data') + '</div>';

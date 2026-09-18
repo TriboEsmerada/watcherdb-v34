@@ -663,6 +663,27 @@ ORDER BY r.start_time;
 """
 
 
+@router.get("/{instance}/space")
+async def get_space(instance: str):
+    """Espaco por instancia (2026-09-18, owner): filegroups e discos da ULTIMA coleta do coletor (STG do WatcherDB_Intelligence),
+    via execute_intelligence_query (sql_monitoring, SELECT). Nao toca na instancia monitorizada."""
+    inst = (instance or "").replace("'", "''")
+    fgs = execute_intelligence_query(f"""
+        SELECT f.[Database], f.Filegroup, f.Total_MB, f.Used_MB, f.Free_MB, f.Percent_Used, f.Max_Size_MB, f.Growth_Type, f.Update_TS
+        FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_FG_USAGE_STG f WITH (NOLOCK)
+        WHERE f.Instance = '{inst}'
+        ORDER BY f.Percent_Used DESC""", raise_on_error=False) or []
+    disks = execute_intelligence_query(f"""
+        SELECT d.Drive, d.Total_MB, d.Free_MB, d.Used_MB, d.Percent_Free, d.Update_TS
+        FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_DISK_USAGE_STG d WITH (NOLOCK)
+        WHERE d.Instance = '{inst}'
+        ORDER BY d.Percent_Free ASC""", raise_on_error=False) or []
+    return _live_json({
+        "instance": instance, "timestamp": time.time(),
+        "filegroups": fgs, "disks": disks,
+    })
+
+
 @router.get("/{instance}/jobs")
 async def get_jobs_running(instance: str):
     """Jobs SQL Agent em execucao."""
