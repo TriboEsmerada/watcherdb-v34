@@ -757,9 +757,9 @@
             pointer-events: auto;
             min-width: 360px;
             max-width: 420px;
-            background: #1a1f2e;
-            border: 1px solid #ef4444;
-            border-left: 4px solid #ef4444;
+            background: var(--color-bg-elevated);   /* D4 security: era #1a1f2e fixo (toast escuro em Light) */
+            border: 1px solid var(--sev-critical-border);
+            border-left: 4px solid var(--sev-critical-border);
             border-radius: 8px;
             padding: 14px 16px 10px;
             box-shadow: 0 8px 32px rgba(239, 68, 68, 0.25), 0 0 0 1px rgba(0,0,0,0.1);
@@ -795,8 +795,8 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.15);
+            color: var(--sev-critical-text);
+            background: var(--sev-critical-tint);
             padding: 2px 8px;
             border-radius: 4px;
         }
@@ -817,8 +817,8 @@
             transition: all 0.15s;
         }
         .toast-close:hover {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            color: var(--sev-critical-text);
+            background: var(--sev-critical-tint);
         }
         .toast-body {
             font-size: 13px;
@@ -3804,12 +3804,12 @@
         .report-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--color-bg-panel); font-size: 11px; color: var(--color-border-strong); text-align: center; }
 
         /* Generate button */
-        .report-btn-generate {
-            background: rgba(234, 88, 12, 0.15); border: 1px solid rgba(234, 88, 12, 0.3);
-            color: #fb923c; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+        .report-btn-generate {   /* D4 security: laranja fixo (1,69 em Light) -> warning do contrato */
+            background: var(--sev-warning-tint); border: 1px solid var(--sev-warning-border);
+            color: var(--sev-warning-text); padding: 8px 16px; border-radius: 6px; cursor: pointer;
             font-size: 14px; display: flex; align-items: center; gap: 6px; transition: all .15s;
         }
-        .report-btn-generate:hover { background: rgba(234, 88, 12, 0.25); transform: translateY(-1px); }
+        .report-btn-generate:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
         /* ========================================
          * LOGIN OVERLAY - WatcherDB V3.2 Auth
@@ -8470,7 +8470,7 @@
                     return;
                 }
             content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Espaço</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de espaço está disponível apenas para instâncias de servidor específicas.
@@ -8523,7 +8523,7 @@
                     return;
                 }
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Memória</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de memória está disponível apenas para instâncias de servidor específicas.
@@ -8575,7 +8575,7 @@
                     return;
                 }
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de CPU</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de CPU está disponível apenas para instâncias de servidor específicas.
@@ -8623,7 +8623,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Backup</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de backup está disponível apenas para instâncias de servidor específicas.
@@ -8666,7 +8666,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> ${t('page.user_analysis')}</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de usuários está disponível apenas para instâncias de servidor específicas.
@@ -15566,7 +15566,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Segurança</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de segurança está disponível apenas para instâncias de servidor específicas.
@@ -15606,7 +15606,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> TDE Encryption</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de TDE está disponível apenas para instâncias de servidor específicas.
@@ -15646,7 +15646,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Análise de Log</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de log está disponível apenas para instâncias de servidor específicas.
@@ -15686,7 +15686,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> Always On</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de Always On está disponível apenas para instâncias de servidor específicas.
@@ -15711,7 +15711,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> SQL Diagnostics</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             O SQL Diagnostics está disponível apenas para instâncias de servidor específicas.
@@ -15749,7 +15749,7 @@
             if (tab.tabType === 'dashboard-kpis' || tab.server.server_id === 'dashboard-kpis') {
                 const content = tab.contentElement;
                 content.innerHTML = `
-                    <div class="card" style="background: #1e3a5f; border-left: 4px solid #3b82f6;">
+                    <div class="card" style="background: var(--sev-info-tint); border-left: 4px solid var(--sev-info-border);">
                         <h4><i class="fas fa-info-circle"></i> ${t('services.sql_services')}</h4>
                         <p style="color: var(--color-text-tertiary); margin-top: 12px;">
                             A análise de serviços está disponível apenas para instâncias de servidor específicas.
@@ -20449,25 +20449,24 @@
                 // Helper para status badge
                 const getStatusBadge = (status, severity) => {
                     if (status === 'pass') {
-                        return '<span class="badge" style="background:#10b981; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-check" style="margin-right:4px;"></i>PASS</span>';
+                        return '<span class="badge" style="background:var(--sev-ok-tint); color:var(--sev-ok-text);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-check" style="margin-right:4px;"></i>PASS</span>';   // D4 security: tint/text
                     } else if (status === 'fail') {
-                        const color = severity === 'critical' ? getSevTokens('CRITICAL').fill : severity === 'high' ? getSevTokens('WARNING').fill : getSevTokens('ATTENTION').fill;
-                        return `<span class="badge" style="background:${color}; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-times" style="margin-right:4px;"></i>FAIL</span>`;
+                        const sev = severity === 'critical' ? 'critical' : severity === 'high' ? 'warning' : 'attention';
+                        return `<span class="badge" style="background:var(--sev-${sev}-tint); color:var(--sev-${sev}-text);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-times" style="margin-right:4px;"></i>FAIL</span>`;
                     } else if (status === 'warning') {
-                        return '<span class="badge" style="background:#f59e0b; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-exclamation-triangle" style="margin-right:4px;"></i>WARNING</span>';
+                        return '<span class="badge" style="background:var(--sev-warning-tint); color:var(--sev-warning-text);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-exclamation-triangle" style="margin-right:4px;"></i>WARNING</span>';
                     } else {
-                        return '<span class="badge" style="background:#6b7280; color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-question" style="margin-right:4px;"></i>UNKNOWN</span>';
+                        return '<span class="badge" style="background:rgba(100,116,139,0.15); color:var(--color-text-tertiary);padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;"><i class="fas fa-question" style="margin-right:4px;"></i>UNKNOWN</span>';
                     }
                 };
 
                 // Helper para severity badge
                 const getSeverityBadge = (severity) => {
-                    const colors = {
-                        'critical': '#ef4444',
-                        'high': '#f59e0b',
-                        'medium': '#fbbf24',
-                        'low': 'var(--color-text-link)',
-                        'info': 'var(--color-text-tertiary)'
+                    const sevs = {   // D4 security: par tint/text do contrato (era branco sobre solido)
+                        'critical': 'critical',
+                        'high': 'warning',
+                        'medium': 'attention',
+                        'low': 'info'
                     };
                     const labels = {
                         'critical': t('security.severity_critical'),
@@ -20476,14 +20475,15 @@
                         'low': t('security.severity_low'),
                         'info': t('security.severity_info')
                     };
-                    const color = colors[severity] || 'var(--color-text-tertiary)';
+                    const sev = sevs[severity];
+                    const estilo = sev ? `background:var(--sev-${sev}-tint); color:var(--sev-${sev}-text);` : 'background:rgba(100,116,139,0.15); color:var(--color-text-tertiary);';
                     const label = labels[severity] || severity;
-                    return `<span class="badge" style="background:${color}; color:#fff; font-size:11px;">${label}</span>`;
+                    return `<span class="badge" style="${estilo} font-size:11px;">${label}</span>`;
                 };
 
                 // Cards de resumo
                 const securityScore = summary.security_score || 0;
-                const scoreColor = securityScore >= 80 ? '#10b981' : securityScore >= 60 ? '#f59e0b' : '#ef4444';
+                const scoreSev = securityScore >= 80 ? 'ok' : securityScore >= 60 ? 'warning' : 'critical';   // D4 security
 
                 // Renderizar categorias
                 let categoriesHtml = '';
@@ -20523,11 +20523,11 @@
                                             </div>
                                         ` : ''}
                                         ${check.recommendation ? `
-                                            <div style="margin-top: 12px; padding: 12px; background: #1e3a5f; border-left: 3px solid var(--color-text-link); border-radius: 4px;">
+                                            <div style="margin-top: 12px; padding: 12px; background: var(--sev-info-tint); border-left: 3px solid var(--sev-info-border); border-radius: 4px;">
                                                 <div style="display: flex; align-items: start; gap: 8px;">
                                                     <i class="fas fa-lightbulb" style="color: var(--color-text-link); margin-top: 2px;"></i>
                                                     <div style="flex: 1;">
-                                                        <strong style="color: #93c5fd; font-size: 12px;">${t('security.recommendation')}</strong>
+                                                        <strong style="color: var(--sev-info-text); font-size: 12px;">${t('security.recommendation')}</strong>
                                                         <p style="color: var(--color-text-secondary); font-size: 12px; margin: 4px 0 0 0;">${check.recommendation}</p>
                                                     </div>
                                                 </div>
@@ -20573,35 +20573,35 @@
                         </div>
                         
                     <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 16px;">
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, ${scoreColor}22, ${scoreColor}11); border: 2px solid ${scoreColor};">
+                        <div class="stat-card" style="position:relative; background: var(--sev-${scoreSev}-tint); border: 2px solid var(--sev-${scoreSev}-border);">
                             <span class="card-help-btn help-green" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-score');" title="${t('ui.help')}">?</span>
                             <div class="label">${t('security.score')}</div>
-                            <div class="value" style="color: ${scoreColor}; font-size: 32px; font-weight: bold;">${securityScore}%</div>
+                            <div class="value" style="color: var(--sev-${scoreSev}-text); font-size: 32px; font-weight: bold;">${securityScore}%</div>
                 </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #10b98133, #10b98122); border: 1px solid #10b981;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-ok-tint); border: 1px solid var(--sev-ok-border);">
                             <span class="card-help-btn help-green" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-passed');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #6ee7b7;">${t('security.passed')}</div>
-                            <div class="value" style="color: #10b981;">${summary.passed || 0}</div>
+                            <div class="label" style="color: var(--sev-ok-text);">${t('security.passed')}</div>
+                            <div class="value" style="color: var(--sev-ok-text);">${summary.passed || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #dc262633, #dc262622); border: 1px solid #dc2626;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-critical-tint); border: 1px solid var(--sev-critical-border);">
                             <span class="card-help-btn help-red" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-failed');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fca5a5;">${t('security.failed')}</div>
-                            <div class="value" style="color: #f87171;">${summary.failed || 0}</div>
+                            <div class="label" style="color: var(--sev-critical-text);">${t('security.failed')}</div>
+                            <div class="value" style="color: var(--sev-critical-text);">${summary.failed || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #d9770633, #d9770622); border: 1px solid #d97706;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-attention-tint); border: 1px solid var(--sev-attention-border);">
                             <span class="card-help-btn help-orange" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-warnings');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fcd34d;">${t('security.warnings')}</div>
-                            <div class="value" style="color: #fbbf24;">${summary.warnings || 0}</div>
+                            <div class="label" style="color: var(--sev-attention-text);">${t('security.warnings')}</div>
+                            <div class="value" style="color: var(--sev-attention-text);">${summary.warnings || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #be123c33, #be123c22); border: 1px solid #be123c;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-overflow-tint); border: 1px solid var(--sev-overflow-border);">
                             <span class="card-help-btn help-red" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-critical');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fda4af;">${t('security.critical')}</div>
-                            <div class="value" style="color: #fb7185;">${summary.critical_issues || 0}</div>
+                            <div class="label" style="color: var(--sev-overflow-text);">${t('security.critical')}</div>
+                            <div class="value" style="color: var(--sev-overflow-text);">${summary.critical_issues || 0}</div>
                         </div>
-                        <div class="stat-card" style="position:relative; background: linear-gradient(135deg, #ea580c33, #ea580c22); border: 1px solid #ea580c;">
+                        <div class="stat-card" style="position:relative; background: var(--sev-warning-tint); border: 1px solid var(--sev-warning-border);">
                             <span class="card-help-btn help-orange" onclick="event.stopPropagation(); showCardHelp(this.parentElement, 'sec-high');" title="${t('ui.help')}">?</span>
-                            <div class="label" style="color: #fdba74;">${t('security.high')}</div>
-                            <div class="value" style="color: #fb923c;">${summary.high_issues || 0}</div>
+                            <div class="label" style="color: var(--sev-warning-text);">${t('security.high')}</div>
+                            <div class="value" style="color: var(--sev-warning-text);">${summary.high_issues || 0}</div>
                         </div>
                     </div>
 
@@ -20626,8 +20626,8 @@
                 }
                 debugLog(`? Erro ao carregar Security Analysis: ${error.message}`, 'error');
                 content.innerHTML = `
-                    <div class="card" style="border-left: 4px solid #ef4444;">
-                        <h4 style="color: #ef4444; margin: 0 0 12px 0;">
+                    <div class="card" style="border-left: 4px solid var(--sev-critical-border);">
+                        <h4 style="color: var(--sev-critical-text); margin: 0 0 12px 0;">
                             <i class="fas fa-exclamation-triangle"></i> ${t('security.error_loading')}
                         </h4>
                         <p style="color: var(--color-text-tertiary); margin: 0;">${error.message}</p>
