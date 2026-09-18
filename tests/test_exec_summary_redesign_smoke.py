@@ -43,7 +43,7 @@ class TestThemeAwareV33Scale(unittest.TestCase):
         self.assertIn(".rep-ico-info { background:color-mix(in srgb, var(--sev-info-solid) 15%, transparent); color:var(--sev-info-solid); }", PORTAL)
 
     def test_stat_numbers_tokenized(self):
-        self.assertIn(".rep-exec-stat b.ok { color:var(--sev-ok-solid); }", PORTAL)
+        self.assertIn(".rep-exec-stat b.ok { color:var(--sev-ok-text); }", PORTAL)   # D2: -solid nao serve de cor de texto
 
     def test_attn_tokenized(self):
         self.assertIn(".rep-exec-attn a { color:var(--color-accent);", PORTAL)

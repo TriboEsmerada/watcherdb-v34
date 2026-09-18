@@ -57,6 +57,7 @@
         @font-face { font-family:'Inter'; font-style:normal; font-weight:700; font-display:swap; src:url('/static/vendor/fonts/inter/inter-latin-700-normal.woff2') format('woff2'); }
 
         :root {
+            color-scheme: dark;   /* D2 contrato: scrollbars, inputs e selects nativos seguem o tema */
             /* === CORES BASE === */
             --color-bg-primary: #0a0f1a;      /* Fundo principal (mais escuro para contraste) */
             --color-bg-secondary: #1a2332;    /* Cards e sidebar */
@@ -67,9 +68,9 @@
             /* === CORES DE TEXTO (WCAG AAA) === */
             --color-text-primary: #f1f5f9;    /* Texto principal (14.5:1) */
             --color-text-secondary: #cbd5e1;  /* Texto secundário (9.2:1) */
-            --color-text-tertiary: #94a3b8;   /* Metadados (6.8:1) */
+            --color-text-tertiary: #9daabe;   /* Metadados (D2: 4,64 sobre bg-elevated; era #94a3b8 = 4,26) */
             --color-text-inverse: #0a0f1a;    /* Texto em fundos claros */
-            --color-text-disabled: #64748b;   /* Texto desabilitado */
+            --color-text-disabled: #8e9cb2;   /* Texto desabilitado (D2: só controlos desactivados; era #64748b = 3,07) */
 
             /* === CORES SEMÂNTICAS (Ultra Suavizadas - 50% menos fadiga) === */
             --color-success: #10b981;         /* Verde muito suave - OK */
@@ -99,8 +100,8 @@
             --color-bg-hover:      var(--color-bg-tertiary);   /* var(--color-bg-tertiary) - 3 refs sem def */
             --color-bg-panel:      #1e293b;   /* paineis aninhados, inputs */
             --color-bg-sunken:     #0f172a;   /* table headers, code blocks */
-            --color-text-link:     #60a5fa;   /* links e accents */
-            --color-accent:        #3b82f6;   /* T-tabs: barra/borda selecao metric-cards (CPU/Mem/Overview) */
+            --color-text-link:     #6badfb;   /* links e accents (D2: 4,68 sobre bg-elevated; era #60a5fa = 4,30) */
+            --color-accent:        #4189f7;   /* T-tabs: barra/borda selecao metric-cards (D2: 3,0 sobre bg-elevated) */
             --card-bg:             var(--color-bg-panel);   /* T-tabs: fundo paineis aninhados (AlwaysOn) */
             /* Neutros adicionais (tema Claro/Escuro 2026-06-17) — valor dark exato p/ zero regressao */
             --color-bg-panel-2:    #1f2937;   /* paineis alternativos (gray-800) */
@@ -112,15 +113,18 @@
 
             /* Escala de severidade unificada (T2 - preparacao, inerte ate uso) */
             --sev-ok-text: #34d399;       --sev-ok-tint: rgba(16,185,129,0.12);
-            --sev-ok-border: #10b981;     --sev-ok-solid: #059669;     --sev-ok-on: #ffffff;
-            --sev-info-text: #60a5fa;     --sev-info-tint: rgba(37,99,235,0.14);
+            --sev-ok-border: #10b981;     --sev-ok-solid: #047857;     --sev-ok-on: #ffffff;   /* D2: branco sobre solid 5,48 (era 3,77) */
+            --sev-info-text: #6badfb;     --sev-info-tint: rgba(37,99,235,0.14);   /* D2 */
             --sev-info-border: #3b82f6;   --sev-info-solid: #2563eb;   --sev-info-on: #ffffff;
             --sev-warning-text: #fbbf24;  --sev-warning-tint: rgba(245,158,11,0.13);
             --sev-warning-border: #f59e0b;--sev-warning-solid: #d97706;--sev-warning-on: #0a0f1a;
-            --sev-critical-text: #f87171; --sev-critical-tint: rgba(220,38,38,0.15);
-            --sev-critical-border: #ef4444;--sev-critical-solid: #dc2626;--sev-critical-on: #ffffff;
+            --sev-critical-text: #fa8a8a; --sev-critical-tint: rgba(220,38,38,0.15);   /* D2: 4,72 sobre bg-elevated (era 3,95) */
+            --sev-critical-border: #f25050;--sev-critical-solid: #dc2626;--sev-critical-on: #ffffff;
             --sev-overflow-text: #fca5a5; --sev-overflow-tint: rgba(124,45,18,0.30);
             --sev-overflow-border: #dc2626;--sev-overflow-solid: #7c2d12;--sev-overflow-on: #fecaca;
+            /* D2 contrato: attention existia só em Light/HC; em Dark o JS caía num fallback fixo */
+            --sev-attention-text: #fcd34d;  --sev-attention-tint: rgba(234,179,8,0.12);
+            --sev-attention-border: #eab308;--sev-attention-solid: #a16207;--sev-attention-on: #ffffff;
 
             /* === TIPOGRAFIA === */
             --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -226,28 +230,40 @@
             --color-text-primary:  #0f172a;   /* texto principal escuro */
             --color-text-secondary: #334155;
             --color-text-tertiary: #475569;
-            --color-text-disabled: #94a3b8;
+            --color-text-disabled: #59697f;   /* D2: 4,5 sobre bg-tertiary (era #94a3b8 = 2,56) */
             --color-text-inverse:  #f8fafc;
             --color-text-bright:   #0f172a;
             --color-text-faint:    #475569;
-            --color-text-link:     #2563eb;
+            --color-text-link:     #1d4ed8;   /* D2: 5,44 sobre bg-tertiary */
             --color-border:        #cbd5e1;
             --color-border-strong: #94a3b8;
             --color-accent:        #2563eb;
             --rgb-surface-deep:    241 245 249;  /* slate-100 (light) */
             --rgb-surface-panel:   255 255 255;  /* branco (light) */
             /* severidade: texto/tint com contraste em fundo claro */
-            --sev-ok-text:       #15803d;  --sev-ok-tint: rgba(16,185,129,0.14);
+            --sev-ok-text:       #166534;  --sev-ok-tint: rgba(16,185,129,0.14);   /* D2: era #15803d = 4,39 sobre tint */
             --sev-info-text:     #1d4ed8;  --sev-info-tint: rgba(37,99,235,0.10);
-            --sev-warning-text:  #b45309;  --sev-warning-tint: rgba(217,119,6,0.14);
+            --sev-warning-text:  #a3470a;  --sev-warning-tint: rgba(217,119,6,0.14);   /* D2: era #b45309 = 4,31 sobre bg-sunken */
             --sev-critical-text: #b91c1c;  --sev-critical-tint: rgba(220,38,38,0.10);
-            --sev-overflow-text: #b91c1c;  --sev-overflow-tint: rgba(124,45,18,0.12);
+            --sev-overflow-text: #7f1d1d;  --sev-overflow-tint: rgba(124,45,18,0.12);   /* D2: distinto de critical */
             --sev-attention-text: #854d0e;  --sev-attention-tint: rgba(161,98,7,0.12);
+            /* D2 contrato: o que abaixo herdava o dark passa a ter valor claro */
+            color-scheme: light;
+            --color-success: #166534;  --color-success-bg: #dcfce7;  --color-success-hover: #14532d;
+            --color-warning: #a3470a;  --color-warning-bg: #fef3c7;  --color-warning-hover: #92400e;
+            --color-danger:  #b91c1c;  --color-danger-bg:  #fee2e2;  --color-danger-hover:  #991b1b;
+            --color-info:    #1d4ed8;  --color-info-bg:    #dbeafe;  --color-info-hover:    #1e40af;
+            --sev-ok-border: #059669;        --sev-ok-solid: #166534;        --sev-ok-on: #ffffff;
+            --sev-info-border: #2563eb;      --sev-info-solid: #1d4ed8;      --sev-info-on: #ffffff;
+            --sev-warning-border: #d97706;   --sev-warning-solid: #a3470a;   --sev-warning-on: #ffffff;
+            --sev-critical-border: #dc2626;  --sev-critical-solid: #b91c1c;  --sev-critical-on: #ffffff;
+            --sev-attention-border: #a16207; --sev-attention-solid: #854d0e; --sev-attention-on: #ffffff;
+            --sev-overflow-border: #b91c1c;  --sev-overflow-solid: #7c2d12;  --sev-overflow-on: #ffffff;
         }
 
         /* Tema Alto Contraste (WCAG AAA) -- propagado do V6 (2026-06-24) */
         html[data-theme="high-contrast"] {
-            --color-bg-primary: #000000;  --color-bg-secondary: #0a0a0a;  --color-bg-tertiary: #111111;
+            --color-bg-primary: #000000;  --color-bg-secondary: #0a0a0a;  --color-bg-tertiary: #1a1a1a;   /* D2: hover distinguível */
             --color-text-primary: #ffffff;  --color-text-secondary: #f0f0f0;  --color-text-tertiary: #d0d0d0;
             --color-border: #ffffff;
             --sev-critical-text: #ff6666; --sev-critical-solid: #ff6666; --sev-critical-tint: rgba(255,102,102,0.15); --sev-critical-border: #ff6666;
@@ -255,10 +271,24 @@
             --sev-ok-text:       #00ff88; --sev-ok-solid:       #00ff88; --sev-ok-tint:       rgba(0,255,136,0.15);   --sev-ok-border:       #00ff88;
             --sev-info-text:     #4da6ff; --sev-info-solid:     #4da6ff; --sev-info-tint:     rgba(77,166,255,0.15);  --sev-info-border:     #4da6ff;
             --sev-attention-text:#ffd000; --sev-attention-solid:#ffd000; --sev-attention-tint:rgba(255,208,0,0.15);
+            /* D2 contrato: deixa de herdar navy/azuis do dark */
+            color-scheme: dark;
+            --color-bg-hover: #1f1f1f;  --color-bg-elevated: #0a0a0a;  --color-bg-panel: #0a0a0a;  --card-bg: #0a0a0a;
+            --color-bg-panel-2: #111111;  --color-bg-sunken: #000000;  --color-bg-overlay: rgba(0,0,0,0.9);
+            --color-border-strong: #ffffff;  --color-accent: #4da6ff;  --color-text-inverse: #000000;
+            --color-text-disabled: #a0a0a0;  --color-text-bright: #ffffff;  --color-text-faint: #f0f0f0;  --color-text-link: #4da6ff;
+            --rgb-surface-deep: 0 0 0;  --rgb-surface-panel: 10 10 10;
+            --color-success-bg: #003320;  --color-warning-bg: #332900;  --color-danger-bg: #330000;  --color-info-bg: #001a33;
+            /* texto sobre sólidos fluorescentes: preto (era branco herdado: 1,3-1,5 sobre amarelo/verde) */
+            --sev-ok-on: #000000;  --sev-info-on: #000000;  --sev-warning-on: #000000;  --sev-critical-on: #000000;
+            --sev-attention-border: #ffd000;  --sev-attention-on: #000000;
+            --sev-overflow-text: #ff9999;  --sev-overflow-tint: rgba(255,153,153,0.15);  --sev-overflow-border: #ff9999;  --sev-overflow-solid: #ff9999;  --sev-overflow-on: #000000;
         }
         html[data-theme="high-contrast"] *, html[data-theme="high-contrast"] *::before, html[data-theme="high-contrast"] *::after {
             background-image: none !important; box-shadow: none !important; text-shadow: none !important;
         }
+        /* D2 contrato: trilhos das barras de relatório com fronteira visível em HC */
+        html[data-theme="high-contrast"] .rep-track, html[data-theme="high-contrast"] .kpi-report-bar .track { border-color: var(--color-border); }
 
         /* Tema claro: contraste dos controlos de acento (segmented + botoes roxos) */
         html[data-theme="light"] .kpi-layout-seg { border-color: #cbd5e1; }
@@ -1377,15 +1407,15 @@
         .gap-card.warn { background: var(--sev-warning-tint); border-left-color: var(--sev-warning-solid); }
         .gap-card.info { background: var(--sev-info-tint); border-left-color: var(--sev-info-solid); }
         .gap-card-ico { font-size: 20px; color: var(--color-text-tertiary); }
-        .gap-card.crit .gap-card-ico { color: var(--sev-critical-solid); }
-        .gap-card.warn .gap-card-ico { color: var(--sev-warning-solid); }
-        .gap-card.info .gap-card-ico { color: var(--sev-info-solid); }
+        .gap-card.crit .gap-card-ico { color: var(--sev-critical-text); }   /* D2: -solid nao e' cor de texto/icone */
+        .gap-card.warn .gap-card-ico { color: var(--sev-warning-text); }
+        .gap-card.info .gap-card-ico { color: var(--sev-info-text); }
         .gap-card-label { font-weight: 600; font-size: 14px; color: var(--color-text-secondary); }
         .gap-card-value { font-size: 28px; font-weight: 700; margin: 6px 0; color: var(--color-text-bright); font-variant-numeric: tabular-nums; }
         .gap-pill { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-        .gap-pill.crit { background: var(--sev-critical-tint); color: var(--sev-critical-solid); }
-        .gap-pill.warn { background: var(--sev-warning-tint); color: var(--sev-warning-solid); }
-        .gap-pill.info { background: var(--sev-info-tint); color: var(--sev-info-solid); }
+        .gap-pill.crit { background: var(--sev-critical-tint); color: var(--sev-critical-text); }   /* D2 */
+        .gap-pill.warn { background: var(--sev-warning-tint); color: var(--sev-warning-text); }
+        .gap-pill.info { background: var(--sev-info-tint); color: var(--sev-info-text); }
         .gap-pill.muted { color: var(--color-text-tertiary); }
         .stat-card {
             background: var(--color-bg-secondary);
@@ -1860,7 +1890,7 @@
         .kpi-report-chart h3 { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--color-text-tertiary); margin:0 0 12px; }
         .kpi-report-bar { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:12px; }
         .kpi-report-bar .nm { width:130px; text-align:right; color:var(--color-text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .kpi-report-bar .track { flex:1; height:12px; background:var(--color-bg-tertiary); border-radius:3px; overflow:hidden; }
+        .kpi-report-bar .track { flex:1; height:12px; background:var(--color-bg-tertiary); border:1px solid transparent; border-radius:3px; overflow:hidden; }
         .kpi-report-bar .fill { height:100%; border-radius:3px; }
         .kpi-report-bar .vl { width:46px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
         .kpi-report-bar[role="button"] { padding:2px 4px; margin-left:-4px; border-radius:5px; }
@@ -1913,7 +1943,7 @@
         .rep-ico { border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .rep-listrow .rep-ico { width:clamp(24px, 2.6vh, 30px); height:clamp(24px, 2.6vh, 30px); font-size:clamp(11px, 1.15vh, 13px); }
         .rep-listrow .nm { width:140px; color:var(--color-text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; }
-        .rep-track { flex:1; height:8px; background:var(--color-bg-tertiary); border-radius:99px; overflow:hidden; }
+        .rep-track { flex:1; height:8px; background:var(--color-bg-tertiary); border:1px solid transparent; border-radius:99px; overflow:hidden; }
         .rep-fill { height:100%; border-radius:99px; }
         .rep-listrow .vl { width:42px; text-align:right; font-weight:800; font-variant-numeric:tabular-nums; }
         .rep-section-title { font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-tertiary); margin:8px 0 14px; }
@@ -1955,7 +1985,7 @@
         .rep-ico-warn { background:color-mix(in srgb, var(--sev-warning-solid) 15%, transparent); color:var(--sev-warning-solid); }
         .rep-exec-txt { display:flex; flex-direction:column; }
         .rep-exec-stat b { font-size:clamp(23px, 2.5vh, 30px); font-weight:700; line-height:1; display:block; font-variant-numeric:tabular-nums; color:var(--color-text-primary); }
-        .rep-exec-stat b.ok { color:var(--sev-ok-solid); } .rep-exec-stat b.crit { color:var(--sev-critical-solid); } .rep-exec-stat b.warn { color:var(--sev-warning-solid); }
+        .rep-exec-stat b.ok { color:var(--sev-ok-text); } .rep-exec-stat b.crit { color:var(--sev-critical-text); } .rep-exec-stat b.warn { color:var(--sev-warning-text); }   /* D2: era -solid como texto */
         .rep-exec-txt span { font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-text-tertiary); margin-top:clamp(3px, 0.4vh, 5px); display:block; white-space:nowrap; }
         .rep-exec-attn { margin-top:auto; padding-top:clamp(8px, 1.15vh, 14px); border-top:1px solid var(--color-border); display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; font-size:13px; color:var(--sev-critical-solid); }
         .rep-exec-attn i { flex-shrink:0; }
@@ -3845,12 +3875,13 @@
         .user-badge:hover { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
         .user-badge .user-avatar {
             width: 28px; height: 28px; border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background-color: var(--sev-info-solid);   /* D2: fallback quando o HC apaga o gradiente */
+            background-image: linear-gradient(135deg, #3b82f6, #8b5cf6);
             display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 12px; font-weight: 700;
+            color: var(--sev-info-on); font-size: 12px; font-weight: 700;
         }
         .user-badge .user-name { color: var(--color-text-bright); font-size: 12px; font-weight: 600; }
-        .user-badge .user-role { color: var(--color-text-disabled); font-size: 10px; text-transform: uppercase; }
+        .user-badge .user-role { color: var(--color-text-tertiary); font-size: 10px; text-transform: uppercase; }   /* D2: era -disabled */
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* User Profile Dropdown (Microsoft-style) */

@@ -40,7 +40,7 @@ class TestGapCardsTokenizedV33(unittest.TestCase):
         self.assertIn(".gap-card.info { background: var(--sev-info-tint)", PORTAL)
 
     def test_gap_pills_v33_tokens(self):
-        self.assertIn(".gap-pill.crit { background: var(--sev-critical-tint); color: var(--sev-critical-solid); }", PORTAL)
+        self.assertIn(".gap-pill.crit { background: var(--sev-critical-tint); color: var(--sev-critical-text); }", PORTAL)   # D2
 
     def test_reduced_motion(self):
         self.assertIn("@media (prefers-reduced-motion: reduce) { .gap-card", PORTAL)
