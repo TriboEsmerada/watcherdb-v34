@@ -53887,6 +53887,9 @@ ORDER BY used_memory_kb DESC` }
 
     // ======================== RULE ENGINE ========================
 
+    // 2026-09-18 (i18n dos relatorios): traducao por id da regra, com o texto original como recurso.
+    // Os detalhes DINAMICOS (funcoes com dados) ficam no original ate' ao lote 2b.
+    function _repT(k, fb) { try { const v = (typeof t === 'function') ? t(k) : null; return (v && v !== k) ? v : fb; } catch (e) { return fb; } }
     function evaluateRules(rules, data) {
         const findings = [];
         for (const rule of rules) {
@@ -53896,14 +53899,15 @@ ORDER BY used_memory_kb DESC` }
                     const det = typeof rule.detail === 'function' ? rule.detail(data) : rule.detail;
                     const rec = typeof rule.recommendation === 'function' ? rule.recommendation(data) : rule.recommendation;
                     const sq = typeof rule.sqlQueries === 'function' ? rule.sqlQueries(data) : (rule.sqlQueries || []);
+                    const detEstatico = typeof rule.detail !== 'function' || rule.detail.length === 0;
                     findings.push({
                         id: rule.id,
-                        title: rule.title,
+                        title: _repT('rep.' + rule.id + '.title', rule.title),
                         severity: sev,
-                        detail: det,
-                        recommendation: rec,
+                        detail: detEstatico ? _repT('rep.' + rule.id + '.detail', det) : det,
+                        recommendation: typeof rule.recommendation === 'string' ? _repT('rep.' + rule.id + '.rec', rec) : rec,
                         diagLinks: rule.diagLinks || [],
-                        sqlQueries: sq
+                        sqlQueries: (sq || []).map((q, i) => Object.assign({}, q, { title: _repT('rep.' + rule.id + '.sql.' + i, q.title) }))
                     });
                 }
             } catch (e) {
@@ -53950,7 +53954,7 @@ ORDER BY used_memory_kb DESC` }
         // Overall status
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         // Memory Clerks
@@ -54020,7 +54024,7 @@ ORDER BY used_memory_kb DESC` }
 
         // Build findings HTML
         const findingsHtml = findings.length === 0
-            ? '<p style="color:#4ade80;font-size:14px;">Nenhum problema detectado. A configuracao de memoria esta saudavel.</p>'
+            ? '<p style="color:#4ade80;font-size:14px;">' + _repT('rep.none_detected_mem', 'Nenhum problema detectado. A configuracao de memoria esta saudavel.') + '</p>'
             : findings.map(f => `
                 <div class="report-finding report-finding-${f.severity.toLowerCase()}">
                     <strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong>
@@ -54133,7 +54137,7 @@ ORDER BY used_memory_kb DESC` }
         // Overall status
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         // CPU Wait Stats
@@ -54219,7 +54223,7 @@ ORDER BY used_memory_kb DESC` }
 
         // Build findings HTML
         const findingsHtml = findings.length === 0
-            ? '<p style="color:#4ade80;font-size:14px;">Nenhum problema detectado. A configuracao de CPU esta saudavel.</p>'
+            ? '<p style="color:#4ade80;font-size:14px;">' + _repT('rep.none_detected_cpu', 'Nenhum problema detectado. A configuracao de CPU esta saudavel.') + '</p>'
             : findings.map(f => `
                 <div class="report-finding report-finding-${f.severity.toLowerCase()}">
                     <strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong>
@@ -54572,7 +54576,7 @@ WHERE servicename LIKE '%Agent%'` }
         // Overall status
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
         const critCount = findings.filter(f => f.severity === 'CRITICAL').length;
         const warnCount = findings.filter(f => f.severity === 'WARNING').length;
@@ -54592,7 +54596,7 @@ WHERE servicename LIKE '%Agent%'` }
                     }).join('')}
                 </table>`;
         } else {
-            failedHtml = '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> Nenhuma falha nas ultimas 24h.</p>';
+            failedHtml = '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> ' + _repT('rep.no_failures_24h', 'Nenhuma falha nas ultimas 24h.') + '</p>';
         }
 
         // Running Jobs table
@@ -54610,7 +54614,7 @@ WHERE servicename LIKE '%Agent%'` }
                     }).join('')}
                 </table>`;
         } else {
-            runningHtml = '<p style="color:var(--color-text-tertiary);font-size:13px;">Nenhum job em execucao no momento.</p>';
+            runningHtml = '<p style="color:var(--color-text-tertiary);font-size:13px;">' + _repT('rep.no_running_jobs', 'Nenhum job em execucao no momento.') + '</p>';
         }
 
         // Maintenance analysis table
@@ -54624,7 +54628,7 @@ WHERE servicename LIKE '%Agent%'` }
                         const statusColor = status === 'Sucesso' || status === 'Success' ? '#4ade80' : status === 'Falhou' || status === 'Failed' ? '#f87171' : 'var(--color-text-tertiary)';
                         const lastRun = j.last_run_datetime ? new Date(j.last_run_datetime).toLocaleString('pt-PT') : '-';
                         const nextRun = j.next_run_datetime ? new Date(j.next_run_datetime).toLocaleString('pt-PT') : '-';
-                        const enabled = j.enabled ? '<span style="color:#4ade80">Sim</span>' : '<span style="color:#f87171">Nao</span>';
+                        const enabled = j.enabled ? '<span style="color:#4ade80">' + _repT('rep.yes', 'Sim') + '</span>' : '<span style="color:#f87171">' + _repT('rep.no', 'Nao') + '</span>';
                         return '<tr><td style="font-weight:bold">' + (j.job_name || '-') + '</td><td>' + (j.maintenance_type || '-') + '</td><td style="color:' + statusColor + '">' + status + '</td><td>' + lastRun + '</td><td>' + nextRun + '</td><td>' + enabled + '</td></tr>';
                     }).join('')}
                 </table>
@@ -54641,7 +54645,7 @@ WHERE servicename LIKE '%Agent%'` }
             }).slice(0, 25);
             allJobsHtml = `
                 <table class="report-table">
-                    <tr><th>Job</th><th>Status</th><th>Ultima Exec.</th><th style="text-align:right">Duracao</th><th>Proxima Exec.</th><th>Ativo</th></tr>
+                    <tr><th>${_repT('rep.h_job', 'Job')}</th><th>${_repT('rep.h_status', 'Status')}</th><th>${_repT('rep.h_last_run', 'Ultima Exec.')}</th><th style="text-align:right">${_repT('rep.h_duration', 'Duracao')}</th><th>${_repT('rep.h_next_run', 'Proxima Exec.')}</th><th>${_repT('rep.h_enabled', 'Ativo')}</th></tr>
                     ${sortedJobs.map(j => {
                         const status = j.last_run_status || '-';
                         const statusColor = status === 'Sucesso' || status === 'Success' ? '#4ade80' : status === 'Falhou' || status === 'Failed' ? '#f87171' : 'var(--color-text-tertiary)';
@@ -54649,7 +54653,7 @@ WHERE servicename LIKE '%Agent%'` }
                         const dur = j.last_run_duration_sec || 0;
                         const durStr = dur >= 3600 ? (dur / 3600).toFixed(1) + 'h' : dur >= 60 ? Math.round(dur / 60) + 'min' : dur > 0 ? dur + 's' : '-';
                         const nextRun = j.next_run_datetime ? new Date(j.next_run_datetime).toLocaleString('pt-PT') : '-';
-                        const enabled = j.enabled ? 'Sim' : '<span style="color:#f87171">Nao</span>';
+                        const enabled = j.enabled ? _repT('rep.yes', 'Sim') : '<span style="color:#f87171">' + _repT('rep.no', 'Nao') + '</span>';
                         return '<tr><td>' + (j.job_name || '-') + '</td><td style="color:' + statusColor + ';font-weight:bold">' + status + '</td><td>' + lastRun + '</td><td style="text-align:right">' + durStr + '</td><td>' + nextRun + '</td><td>' + enabled + '</td></tr>';
                     }).join('')}
                 </table>
@@ -54658,7 +54662,7 @@ WHERE servicename LIKE '%Agent%'` }
 
         // Findings HTML
         const findingsHtml = findings.length === 0
-            ? '<p style="color:#4ade80;font-size:14px;">Nenhum problema detectado na configuracao de Jobs.</p>'
+            ? '<p style="color:#4ade80;font-size:14px;">' + _repT('rep.none_detected_jobs', 'Nenhum problema detectado na configuracao de Jobs.') + '</p>'
             : findings.map(f => `
                 <div class="report-finding report-finding-${f.severity.toLowerCase()}">
                     <strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong>
@@ -54795,7 +54799,7 @@ WHERE servicename LIKE '%Agent%'` }
         const totalDbs = items.length || data.summaryData?.total_databases || 0;
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         let gapsTableHtml = '';
@@ -54806,7 +54810,7 @@ WHERE servicename LIKE '%Agent%'` }
                 const sevColor = g.gap_severity === 'Critical' ? '#f87171' : g.gap_severity === 'High' ? '#fbbf24' : 'var(--color-text-tertiary)';
                 return '<tr><td style="font-weight:bold">' + (g.database_name||'-') + '</td><td>' + (g.gap_type||'-') + '</td><td>' + dt + '</td><td style="text-align:right">' + (g.gap_hours||0) + 'h</td><td style="color:' + sevColor + ';font-weight:bold">' + (g.gap_severity||'-') + '</td></tr>';
             }).join('')}</table>${allGapsSorted.length > 30 ? '<p style="color:var(--color-text-disabled);font-size:11px;">Mostrando 30 de ' + allGapsSorted.length + ' gaps</p>' : ''}`;
-        } else { gapsTableHtml = '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> Nenhum gap de backup detectado.</p>'; }
+        } else { gapsTableHtml = '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> ' + _repT('rep.no_backup_gap', 'Nenhum gap de backup detectado.') + '</p>'; }
 
         let failedHtml = '';
         if (failedBkpJobs.length > 0) {
@@ -54814,9 +54818,9 @@ WHERE servicename LIKE '%Agent%'` }
                 const dt = j.run_datetime ? new Date(j.run_datetime).toLocaleString('pt-PT') : '-';
                 return '<tr><td style="font-weight:bold;color:#f87171">' + (j.name||j.job_name||'-') + '</td><td>' + dt + '</td><td style="font-size:11px;color:var(--color-text-tertiary);max-width:300px;overflow:hidden;text-overflow:ellipsis">' + ((j.error_message||j.message||'-').substring(0,150)) + '</td></tr>';
             }).join('')}</table>`;
-        } else { failedHtml = '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> Nenhum job de backup falhado nas ultimas 24h.</p>'; }
+        } else { failedHtml = '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> ' + _repT('rep.no_failed_backup_jobs', 'Nenhum job de backup falhado nas ultimas 24h.') + '</p>'; }
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;font-size:14px;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;font-size:14px;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -54909,7 +54913,7 @@ WHERE servicename LIKE '%Agent%'` }
         const ioWarnings = ioData.filter(f => { const r = parseFloat(f.avg_read_latency_ms||0); const w = parseFloat(f.avg_write_latency_ms||0); return (r >= 20 || w >= 20) && r < 50 && w < 50; }).length;
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         let volTableHtml = '';
@@ -54921,12 +54925,12 @@ WHERE servicename LIKE '%Agent%'` }
                 const status = pct >= 95 ? 'CRITICO' : pct >= 90 ? 'ALTO' : pct >= 85 ? 'ALERTA' : 'OK';
                 return '<tr><td style="font-weight:bold">' + (v.drive||v.volume_mount_point||'-') + '</td><td style="text-align:right">' + (parseFloat(v.total_gb||0).toFixed(1)) + '</td><td style="text-align:right">' + (parseFloat(v.free_gb||v.available_gb||0).toFixed(1)) + '</td><td style="text-align:right;color:' + color + ';font-weight:bold">' + pct.toFixed(1) + '%</td><td style="color:' + color + '">' + status + '</td></tr>';
             }).join('')}</table>`;
-        } else { volTableHtml = '<p style="color:var(--color-text-tertiary);">Nenhum volume detectado.</p>'; }
+        } else { volTableHtml = '<p style="color:var(--color-text-tertiary);">' + _repT('rep.no_volume', 'Nenhum volume detectado.') + '</p>'; }
 
         let ioTableHtml = '';
         if (ioData.length > 0) {
             const sorted = [...ioData].sort((a,b) => Math.max(parseFloat(b.avg_read_latency_ms||0), parseFloat(b.avg_write_latency_ms||0)) - Math.max(parseFloat(a.avg_read_latency_ms||0), parseFloat(a.avg_write_latency_ms||0)));
-            ioTableHtml = `<table class="report-table"><tr><th>Database</th><th>Ficheiro</th><th style="text-align:right">Read ms</th><th style="text-align:right">Write ms</th><th>Status</th></tr>${sorted.slice(0,20).map(f => {
+            ioTableHtml = `<table class="report-table"><tr><th>${_repT('rep.h_database', 'Database')}</th><th>${_repT('rep.h_file', 'Ficheiro')}</th><th style="text-align:right">${_repT('rep.h_read_ms', 'Read ms')}</th><th style="text-align:right">${_repT('rep.h_write_ms', 'Write ms')}</th><th>${_repT('rep.h_status', 'Status')}</th></tr>${sorted.slice(0,20).map(f => {
                 const r = parseFloat(f.avg_read_latency_ms||0); const w = parseFloat(f.avg_write_latency_ms||0);
                 const maxL = Math.max(r, w);
                 const color = maxL >= 50 ? '#f87171' : maxL >= 20 ? '#fbbf24' : '#4ade80';
@@ -54935,7 +54939,7 @@ WHERE servicename LIKE '%Agent%'` }
             }).join('')}</table>`;
         } else { ioTableHtml = '<p style="color:var(--color-text-tertiary);">' + t('msg.no_data') + '</p>'; }
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         // Espaco recuperavel por drive e por database
         const logSpaceData = data.logSpaceData || [];
@@ -54991,7 +54995,7 @@ WHERE servicename LIKE '%Agent%'` }
             }).join('')}</table>
             <p style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px;"><strong>Estrategia recomendada:</strong> 1) ALTER DATABASE MODIFY FILE (SIZE) para reduzir tamanho alocado (seguro, sem fragmentacao). 2) Ajustar MAXSIZE. 3) DBCC SHRINKFILE apenas como ultima opcao (causa fragmentacao massiva nos indices).</p>`;
         } else {
-            recoverableDriveHtml = '<p style="color:var(--color-text-tertiary);">Dados de espaco recuperavel nao disponiveis.</p>';
+            recoverableDriveHtml = '<p style="color:var(--color-text-tertiary);">' + _repT('rep.no_recoverable', 'Dados de espaco recuperavel nao disponiveis.') + '</p>';
             recoverableDbHtml = recoverableDriveHtml;
         }
 
@@ -55075,7 +55079,7 @@ WHERE servicename LIKE '%Agent%'` }
         const syncHealth = overview.sync_health || overview.synchronization_health || 'N/A';
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         let replicasHtml = replicas.length > 0 ? `<table class="report-table"><tr><th>Replica</th><th>Role</th><th>Mode</th><th>Sync Health</th><th>Connected</th></tr>${replicas.map(r => {
@@ -55088,7 +55092,7 @@ WHERE servicename LIKE '%Agent%'` }
             return '<tr><td style="font-weight:bold">' + (db.database_name||'-') + '</td><td style="color:' + sColor + '">' + (db.synchronization_state_desc||'-') + '</td><td>' + (db.synchronization_health_desc||'-') + '</td><td>' + (db.is_failover_ready ? 'Sim' : 'Nao') + '</td></tr>';
         }).join('')}</table>` : '<p style="color:var(--color-text-tertiary);">Sem informacao de databases no AG.</p>';
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -55154,7 +55158,7 @@ WHERE servicename LIKE '%Agent%'` }
         const warnEvents = windowsEvents.filter(e => (e.level||e.entry_type||'').toLowerCase() === 'warning');
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         let winHtml = windowsEvents.length > 0 ? `<table class="report-table"><tr><th>${t('log.datetime_header')}</th><th>Tipo</th><th>Source</th><th>${t('log.message_header')}</th></tr>${windowsEvents.slice(0,25).map(e => {
@@ -55171,7 +55175,7 @@ WHERE servicename LIKE '%Agent%'` }
             return '<tr><td>' + dt + '</td><td style="color:' + color + ';font-weight:bold">' + sev + '</td><td style="font-size:11px;max-width:400px;overflow:hidden;text-overflow:ellipsis">' + ((e.message||e.text||'-').substring(0,250)) + '</td></tr>';
         }).join('')}</table>` : '<p style="color:var(--color-text-tertiary);">Sem erros SQL Server disponiveis.</p>';
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -55239,7 +55243,7 @@ WHERE servicename LIKE '%Agent%'` }
         const critical = summary.critical_issues || 0;
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         // Group checks by category
@@ -55257,7 +55261,7 @@ WHERE servicename LIKE '%Agent%'` }
         });
         if (!checksHtml) checksHtml = '<p style="color:var(--color-text-tertiary);">' + t('msg.no_data') + '</p>';
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -55322,7 +55326,7 @@ WHERE servicename LIKE '%Agent%'` }
         const critical = services.filter(s => s.is_critical && s.status !== 'Running');
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         let svcHtml = services.length > 0 ? `<table class="report-table"><tr><th>Servico</th><th>Status</th><th>Startup</th><th>' + t('services.account') + '</th><th>Critico</th></tr>${services.map(s => {
@@ -55330,7 +55334,7 @@ WHERE servicename LIKE '%Agent%'` }
             return '<tr><td style="font-weight:bold">' + (s.display_name||s.service_name||s.name||'-') + '</td><td style="color:' + color + ';font-weight:bold">' + (s.status||'-') + '</td><td>' + (s.start_type||s.startup_type||'-') + '</td><td style="font-size:11px;color:var(--color-text-tertiary)">' + (s.service_account||s.account||'-') + '</td><td>' + (s.is_critical ? '<span style="color:#f87171">' + t('services.yes') + '</span>' : t('services.no')) + '</td></tr>';
         }).join('')}</table>` : '<p style="color:var(--color-text-tertiary);">' + t('services.no_services_data') + '</p>';
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -55404,15 +55408,15 @@ WHERE servicename LIKE '%Agent%'` }
         const weakPwd = dt.weak_passwords || [];
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         const makeTable = (items, cols) => {
-            if (!items || items.length === 0) return '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> Nenhum encontrado.</p>';
+            if (!items || items.length === 0) return '<p style="color:#4ade80;font-size:13px;"><i class="fas fa-check-circle"></i> ' + _repT('rep.none_found', 'Nenhum encontrado.') + '</p>';
             return `<table class="report-table"><tr>${cols.map(c=>'<th>'+c.label+'</th>').join('')}</tr>${items.slice(0,20).map(i => '<tr>' + cols.map(c => '<td>' + (i[c.key]||'-') + '</td>').join('') + '</tr>').join('')}</table>${items.length > 20 ? '<p style="color:var(--color-text-disabled);font-size:11px;">Mostrando 20 de ' + items.length + '</p>' : ''}`;
         };
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -55481,21 +55485,21 @@ WHERE servicename LIKE '%Agent%'` }
         const tdeActive = encrypted.length > 0;
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
-        let certHtml = tdeStatus.length > 0 ? `<table class="report-table"><tr><th>Certificado</th><th>Expiracao</th><th>Dias Restantes</th><th>Status</th></tr>${tdeStatus.map(c => {
+        let certHtml = tdeStatus.length > 0 ? `<table class="report-table"><tr><th>${_repT('rep.h_cert', 'Certificado')}</th><th>${_repT('rep.h_expiry', 'Expiracao')}</th><th>${_repT('rep.h_days_left', 'Dias Restantes')}</th><th>${_repT('rep.h_status', 'Status')}</th></tr>${tdeStatus.map(c => {
             const days = c.expiry_date ? Math.floor((new Date(c.expiry_date) - new Date()) / 86400000) : null;
             const color = days === null ? 'var(--color-text-tertiary)' : days < 0 ? '#f87171' : days < 30 ? '#f87171' : days < 90 ? '#fbbf24' : '#4ade80';
             const status = days === null ? 'Desconhecido' : days < 0 ? 'EXPIRADO' : days < 30 ? 'CRITICO' : days < 90 ? 'ALERTA' : 'OK';
             return '<tr><td style="font-weight:bold">' + (c.certificate_name||c.name||'-') + '</td><td>' + (c.expiry_date ? new Date(c.expiry_date).toLocaleDateString('pt-PT') : '-') + '</td><td style="color:' + color + ';font-weight:bold">' + (days !== null ? days : '?') + '</td><td style="color:' + color + '">' + status + '</td></tr>';
         }).join('')}</table>` : '<p style="color:var(--color-text-tertiary);">Sem informacao de certificados.</p>';
 
-        let encHtml = encrypted.length > 0 ? `<table class="report-table"><tr><th>Database</th><th>Estado</th><th>Algoritmo</th></tr>${encrypted.map(db => {
+        let encHtml = encrypted.length > 0 ? `<table class="report-table"><tr><th>${_repT('rep.h_database', 'Database')}</th><th>${_repT('rep.h_state', 'Estado')}</th><th>${_repT('rep.h_algorithm', 'Algoritmo')}</th></tr>${encrypted.map(db => {
             return '<tr><td style="font-weight:bold;color:#4ade80">' + (db.database_name||db.name||'-') + '</td><td>' + (db.encryption_state_desc||db.state||'Encrypted') + '</td><td>' + (db.algorithm||db.encryptor_type||'-') + '</td></tr>';
-        }).join('')}</table>` : '<p style="color:var(--color-text-tertiary);">Nenhuma database encriptada.</p>';
+        }).join('')}</table>` : '<p style="color:var(--color-text-tertiary);">' + _repT('rep.no_encrypted_db', 'Nenhuma database encriptada.') + '</p>';
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -55596,7 +55600,7 @@ WHERE servicename LIKE '%Agent%'` }
         const timestamp = now.toLocaleString('pt-PT');
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         const cpuPct = data.cpuPercent !== null ? data.cpuPercent + '%' : 'N/A';
@@ -55608,16 +55612,16 @@ WHERE servicename LIKE '%Agent%'` }
 
         // Attention items table
         const attentionItems = data.attention || [];
-        const attentionHtml = attentionItems.length > 0 ? `<table class="report-table"><tr><th>Database/Servico</th><th>Problema</th></tr>${attentionItems.map(a => '<tr><td style="font-weight:bold;color:#fbbf24">' + (a.db||'-') + '</td><td>' + (a.msg||'-') + '</td></tr>').join('')}</table>` : '<p style="color:#4ade80;">Nenhum item de atencao.</p>';
+        const attentionHtml = attentionItems.length > 0 ? `<table class="report-table"><tr><th>${_repT('rep.h_db_service', 'Database/Servico')}</th><th>${_repT('rep.h_problem', 'Problema')}</th></tr>${attentionItems.map(a => '<tr><td style="font-weight:bold;color:#fbbf24">' + (a.db||'-') + '</td><td>' + (a.msg||'-') + '</td></tr>').join('')}</table>` : '<p style="color:#4ade80;">Nenhum item de atencao.</p>';
 
         // Backup gaps table
         const gapsList = data.realGaps || [];
-        const gapsHtml = gapsList.length > 0 ? `<table class="report-table"><tr><th>Database</th><th>Tipo</th><th>Horas Gap</th><th>Severidade</th></tr>${gapsList.slice(0,20).map(g => {
+        const gapsHtml = gapsList.length > 0 ? `<table class="report-table"><tr><th>${_repT('rep.h_database', 'Database')}</th><th>${_repT('rep.h_type', 'Tipo')}</th><th>${_repT('rep.h_gap_hours', 'Horas Gap')}</th><th>${_repT('rep.h_severity', 'Severidade')}</th></tr>${gapsList.slice(0,20).map(g => {
             const sevColor = g.severity === 'Critical' ? '#f87171' : g.severity === 'HIGH' ? '#fb923c' : '#fbbf24';
             return '<tr><td>' + (g.database_name||'-') + '</td><td>' + (g.gap_type||'-') + '</td><td style="color:' + sevColor + ';font-weight:bold">' + ((g.gap_hours||0).toFixed(1)) + '</td><td style="color:' + sevColor + '">' + (g.severity||'-') + '</td></tr>';
         }).join('')}</table>${gapsList.length > 20 ? '<p style="color:var(--color-text-tertiary);font-size:11px;">... e mais ' + (gapsList.length-20) + ' gaps</p>':''}` : '<p style="color:#4ade80;">Sem gaps de backup.</p>';
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -55746,7 +55750,7 @@ WHERE servicename LIKE '%Agent%'` }
         const timestamp = now.toLocaleString('pt-PT');
         const hasCritical = findings.some(f => f.severity === 'CRITICAL');
         const hasWarning = findings.some(f => f.severity === 'WARNING');
-        const statusLabel = hasCritical ? 'CRITICO' : hasWarning ? 'ALERTA' : 'SAUDAVEL';
+        const statusLabel = hasCritical ? _repT('rep.status_critical', 'CRITICO') : hasWarning ? _repT('rep.status_alert', 'ALERTA') : _repT('rep.status_healthy', 'SAUDAVEL');
         const statusClass = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
 
         const dbGroups = data.dbGroups || {};
@@ -55798,7 +55802,7 @@ WHERE servicename LIKE '%Agent%'` }
             </thead><tbody id="spcFgTbody">${_spcFgBuildBody()}</tbody></table>`
             : '<p style="color:var(--color-text-tertiary);">' + t('msg.no_data') + '</p>';
 
-        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">Nenhum problema detectado.</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
+        const findingsHtml = findings.length === 0 ? '<p style="color:#4ade80;">' + _repT('rep.none_detected', 'Nenhum problema detectado.') + '</p>' : findings.map(f => `<div class="report-finding report-finding-${f.severity.toLowerCase()}"><strong><span class="report-badge report-badge-${f.severity.toLowerCase()}" style="margin-right:8px;">${f.severity}</span> [${f.id}] ${f.title}</strong><p style="margin:6px 0 0;">${f.detail}</p>${f.recommendation ? '<div class="rec"><i class="fas fa-lightbulb"></i> ' + f.recommendation + '</div>' : ''}${buildActionLinks(f.diagLinks, f.sqlQueries)}</div>`).join('');
 
         return `<div class="report-content" id="report-pdf-content">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">

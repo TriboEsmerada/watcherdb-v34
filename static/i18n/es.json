@@ -3500,5 +3500,472 @@
     "diagnose_subtitle": "Pegue la consulta problemática para analizar estadísticas e índices",
     "full_db_analysis": "Análisis completo de la base de datos",
     "required": "(obligatorio)"
+  },
+  "rep": {
+    "none_detected": "Ningún problema detectado.",
+    "none_detected_mem": "Ningún problema detectado. La configuración de memoria es saludable.",
+    "none_detected_cpu": "Ningún problema detectado. La configuración de CPU es saludable.",
+    "none_detected_jobs": "Ningún problema detectado en la configuración de jobs.",
+    "no_failures_24h": "Sin fallos en las últimas 24 h.",
+    "no_running_jobs": "Ningún job en ejecución en este momento.",
+    "no_backup_gap": "Ningún gap de backup detectado.",
+    "no_failed_backup_jobs": "Ningún job de backup fallido en las últimas 24 h.",
+    "none_found": "Ninguno encontrado.",
+    "no_volume": "Ningún volumen detectado.",
+    "no_encrypted_db": "Ninguna base de datos cifrada.",
+    "no_recoverable": "Datos de espacio recuperable no disponibles.",
+    "yes": "Sí",
+    "no": "No",
+    "status_critical": "CRÍTICO",
+    "status_alert": "ALERTA",
+    "status_healthy": "SALUDABLE",
+    "h_job": "Job",
+    "h_status": "Estado",
+    "h_last_run": "Última ejec.",
+    "h_duration": "Duración",
+    "h_next_run": "Próxima ejec.",
+    "h_enabled": "Activo",
+    "h_database": "Base de datos",
+    "h_file": "Archivo",
+    "h_read_ms": "Lectura ms",
+    "h_write_ms": "Escritura ms",
+    "h_cert": "Certificado",
+    "h_expiry": "Expiración",
+    "h_days_left": "Días restantes",
+    "h_db_service": "Base/Servicio",
+    "h_problem": "Problema",
+    "h_type": "Tipo",
+    "h_gap_hours": "Horas de gap",
+    "h_severity": "Severidad",
+    "h_state": "Estado",
+    "h_algorithm": "Algoritmo",
+    "CPU001": {
+      "title": "CPU del sistema operativo crítica",
+      "rec": "Identificar queries con CPU alto (Top CPU Queries). Verificar si hay procesos no-SQL consumiendo CPU. Considerar escalar recursos.",
+      "sql": {
+        "0": "Top 20 queries por CPU (ahora)"
+      }
+    },
+    "CPU002": {
+      "title": "SQL Server con uso de CPU elevado",
+      "rec": "Analizar las queries activas con mayor consumo de CPU. Verificar planes de ejecución e índices faltantes.",
+      "sql": {
+        "0": "Top 15 queries acumuladas por CPU (plan cache)"
+      }
+    },
+    "CPU003": {
+      "title": "MAXDOP distinto de la recomendación",
+      "sql": {
+        "0": "Verificar la configuración MAXDOP actual",
+        "1": "Recomendación MAXDOP según el hardware",
+        "2": "Queries con waits de paralelismo (ahora)",
+        "3": "Sugerencia: cambiar MAXDOP (copiar a SSMS)"
+      }
+    },
+    "CPU004": {
+      "title": "Cost Threshold for Parallelism en el valor por defecto",
+      "sql": {
+        "0": "Verificar el Cost Threshold actual",
+        "1": "Sugerencia: cambiar el Cost Threshold (copiar a SSMS)"
+      }
+    },
+    "CPU005": {
+      "title": "Worker threads cerca del límite",
+      "rec": "Investigar queries largas o bloqueos que mantienen threads ocupados. Verificar que Max Worker Threads esté bien configurado.",
+      "sql": {
+        "0": "Detalle de worker threads por scheduler"
+      }
+    },
+    "CPU006": {
+      "title": "Presión de CPU en los schedulers",
+      "rec": "Hay tareas listas pero sin CPU disponible. Optimizar queries pesadas o considerar añadir CPUs al servidor.",
+      "sql": {
+        "0": "Resumen de presión en los schedulers",
+        "1": "Tareas en estado RUNNABLE (esperando CPU)"
+      }
+    },
+    "CPU007": {
+      "title": "Signal waits elevados (contención de CPU)",
+      "rec": "Reducir la carga de CPU: optimizar queries, ajustar el paralelismo (MAXDOP) o añadir más CPUs.",
+      "sql": {
+        "0": "Top wait stats relacionados con CPU"
+      }
+    },
+    "CPU008": {
+      "title": "Compilaciones excesivas",
+      "rec": "Activar \"Optimize for Ad Hoc Workloads\" (sp_configure). Verificar si las queries ad hoc están parametrizadas.",
+      "sql": {
+        "0": "Contadores de compilación",
+        "1": "Optimize for Ad Hoc Workloads + plan cache",
+        "2": "Plan cache: single-use vs reutilizados",
+        "3": "Sugerencia: activar Optimize for Ad Hoc (copiar a SSMS)"
+      }
+    },
+    "CPU009": {
+      "title": "Configuración de CPU adecuada"
+    },
+    "MEM001": {
+      "title": "Memoria del SO agotada",
+      "rec": "Reducir el Max Server Memory de SQL Server para liberar al menos 2-4 GB para el SO.",
+      "sql": {
+        "0": "Memoria del proceso SQL Server",
+        "1": "Top 10 memory clerks (mayores consumidores)",
+        "2": "Sugerencia: reducir Max Server Memory (copiar a SSMS)"
+      }
+    },
+    "MEM002": {
+      "title": "Max Server Memory por encima de la recomendación de Microsoft",
+      "sql": {
+        "0": "Verificar Max/Min Server Memory",
+        "1": "Sugerencia: ajustar Max Server Memory (copiar a SSMS)"
+      }
+    },
+    "MEM003": {
+      "title": "Memory pressure elevada",
+      "sql": {
+        "0": "Queries con mayor consumo de memoria (grants)",
+        "1": "Reducir Max Server Memory temporalmente (buffer pool shrink)"
+      }
+    },
+    "MEM004": {
+      "title": "Min Server Memory no configurado",
+      "rec": "Configurar Min Server Memory al 50-70% del Max Server Memory para evitar que el SO le \"robe\" memoria a SQL Server.",
+      "detail": "Min Server Memory está configurado en 0 MB. Bajo presión, Windows puede reclamar toda la memoria de SQL Server (memory drain).",
+      "sql": {
+        "0": "Verificar Min/Max Server Memory",
+        "1": "Sugerencia: configurar Min Server Memory (copiar a SSMS)"
+      }
+    },
+    "MEM005": {
+      "title": "Plan cache potencialmente elevado",
+      "rec": "Verificar si \"Optimize for Ad Hoc Workloads\" está activo (sp_configure). Considerar DBCC FREEPROCCACHE si es necesario.",
+      "sql": {
+        "0": "Optimize for Ad Hoc Workloads",
+        "1": "Plan cache por tipo (single-use vs reutilizados)",
+        "2": "Sugerencia: activar Optimize for Ad Hoc (copiar a SSMS)"
+      }
+    },
+    "MEM006": {
+      "title": "Resource Governor con eventos OOM",
+      "rec": "Investigar qué pools tienen límites de memoria insuficientes. Considerar aumentar MAX_MEMORY_PERCENT en los pools afectados.",
+      "sql": {
+        "0": "Pools del Resource Governor y configuración"
+      }
+    },
+    "MEM007": {
+      "title": "Configuración de memoria adecuada"
+    },
+    "JOB001": {
+      "title": "Jobs con fallos en las últimas 24 h",
+      "rec": "Verificar el mensaje de error de cada job fallido en el Job History del SQL Agent. Corregir la causa raíz antes de la próxima programación.",
+      "sql": {
+        "0": "Jobs que fallaron en las últimas 24 h"
+      }
+    },
+    "JOB002": {
+      "title": "Jobs cuya última ejecución falló",
+      "rec": "Investigar cada job con la última ejecución fallida. Ejecutarlo manualmente para comprobar si el problema persiste.",
+      "sql": {
+        "0": "Jobs cuya última ejecución falló"
+      }
+    },
+    "JOB003": {
+      "title": "Jobs en ejecución prolongada",
+      "rec": "Verificar si los jobs están bloqueados (sp_who2, sys.dm_exec_requests). Comparar la duración con ejecuciones anteriores.",
+      "sql": {
+        "0": "Jobs en ejecución ahora"
+      }
+    },
+    "JOB004": {
+      "title": "Proporción elevada de jobs desactivados",
+      "rec": "Revisar la lista de jobs desactivados. Eliminar los que ya no hacen falta y reactivar los que deberían estar activos.",
+      "sql": {
+        "0": "Jobs desactivados"
+      }
+    },
+    "JOB005": {
+      "title": "Cobertura de mantenimiento incompleta",
+      "rec": "Crear planes de mantenimiento (Rebuild Indexes, Update Statistics, Integrity Check) para todas las bases de datos. Usar Ola Hallengren o Maintenance Plans.",
+      "sql": {
+        "0": "Bases sin mantenimiento"
+      }
+    },
+    "JOB006": {
+      "title": "Jobs de mantenimiento desactivados",
+      "rec": "Verificar y reactivar los jobs de mantenimiento desactivados. La desactivación prolongada causa fragmentación de índices y estadísticas desactualizadas.",
+      "sql": {
+        "0": "Jobs de mantenimiento y su estado"
+      }
+    },
+    "JOB007": {
+      "title": "Ningún job configurado",
+      "rec": "Verificar que el servicio SQL Server Agent esté en ejecución. Configurar jobs de backup, mantenimiento y monitorización.",
+      "detail": "No se encontró ningún job del SQL Agent en esta instancia. Puede indicar que el SQL Agent no está configurado o que los jobs fueron eliminados.",
+      "sql": {
+        "0": "Verificar el estado del SQL Agent"
+      }
+    },
+    "JOB008": {
+      "title": "Configuración de jobs adecuada"
+    },
+    "BKP001": {
+      "title": "Bases de datos sin backup FULL reciente",
+      "rec": "Ejecutar un backup FULL de inmediato. Verificar la programación del job de backup y los logs de error.",
+      "sql": {
+        "0": "Bases de datos sin backup FULL reciente"
+      }
+    },
+    "BKP002": {
+      "title": "Bases de datos sin backup DIFF reciente",
+      "rec": "Verificar la programación de los backups diferenciales. Configurarla si no existe."
+    },
+    "BKP003": {
+      "title": "Bases en FULL recovery sin backup de LOG",
+      "rec": "Configurar backup de LOG (15-60 min). Si no es necesario, cambiar el recovery model a SIMPLE.",
+      "sql": {
+        "0": "Bases en FULL recovery sin backup de LOG reciente"
+      }
+    },
+    "BKP004": {
+      "title": "Jobs de backup fallidos",
+      "rec": "Verificar el mensaje de error de cada job. Causas comunes: disco lleno, permisos, red inaccesible."
+    },
+    "BKP005": {
+      "title": "Bases de datos sin ningún backup registrado",
+      "rec": "Ejecutar un backup FULL de inmediato e incluirlas en el plan de backup."
+    },
+    "BKP006": {
+      "title": "Backups OK",
+      "detail": "Todos los backups están al día. Ningún gap crítico detectado."
+    },
+    "DSK001": {
+      "title": "Volúmenes con uso crítico (>= 95%)",
+      "rec": "Ampliar el disco, mover datos o limpiar archivos temporales/backups antiguos de inmediato.",
+      "sql": {
+        "0": "Espacio en disco por volumen"
+      }
+    },
+    "DSK002": {
+      "title": "Volúmenes con uso alto (>= 90%)",
+      "rec": "Planificar la ampliación del disco. Verificar el autogrowth de las bases y limpiar archivos innecesarios."
+    },
+    "DSK003": {
+      "title": "Latencia de I/O crítica (>= 50 ms)",
+      "rec": "Investigar el subsistema de storage. Considerar migrar a SSD/NVMe. Verificar fragmentación y contención.",
+      "sql": {
+        "0": "Latencia de I/O por archivo"
+      }
+    },
+    "DSK004": {
+      "title": "Latencia de I/O alta (>= 20 ms)",
+      "rec": "Monitorizar la tendencia. Considerar reorganizar archivos o añadir más spindles."
+    },
+    "DSK000": {
+      "title": "I/O no evaluado (datos no disponibles)",
+      "rec": "Repetir el análisis. Si persiste, verificar la conectividad y los permisos de la cuenta de monitorización en el servidor destino.",
+      "detail": "La consulta de latencia de I/O falló en esta recogida. Las conclusiones de este informe NO cubren la latencia de disco — ese punto quedó sin evaluar."
+    },
+    "DSK005": {
+      "title": "Discos OK",
+      "detail": "Todos los volúmenes por debajo del 85% y latencia de I/O normal."
+    },
+    "AG001": {
+      "title": "Réplica con sync_health NOT_HEALTHY",
+      "rec": "Verificar la conectividad de red entre réplicas. Consultar las DMVs de AG y el error log.",
+      "sql": {
+        "0": "Estado de las réplicas"
+      }
+    },
+    "AG002": {
+      "title": "Bases de datos no sincronizadas",
+      "rec": "Verificar el estado de la base en el AG. Puede ser necesario reanudar la sincronización."
+    },
+    "AG005": {
+      "title": "Informe generado desde una réplica secundaria",
+      "rec": "Generar el informe en la réplica primaria para obtener datos de sincronización completos."
+    },
+    "AG003": {
+      "title": "Listener no configurado",
+      "rec": "Configurar el AG Listener con VNN e IP dedicada para un failover transparente.",
+      "detail": "Listener no configurado o no online. Las aplicaciones no tendrán failover automático transparente.",
+      "sql": {
+        "0": "Listeners configurados"
+      }
+    },
+    "AG004": {
+      "title": "Always On saludable",
+      "detail": "Todas las réplicas saludables y bases sincronizadas."
+    },
+    "LOG001": {
+      "title": "Errores críticos en SQL Server (severity >= 17)",
+      "rec": "Investigar cada error de severidad alta. Errores 823/824/825: I/O. Error 9002: log lleno. Error 17: recursos insuficientes.",
+      "sql": {
+        "0": "Errores recientes en el errorlog"
+      }
+    },
+    "LOG002": {
+      "title": "Errores de login repetidos",
+      "rec": "Verificar el origen de las IPs. Considerar políticas de bloqueo y auditoría SQL."
+    },
+    "LOG003": {
+      "title": "Eventos de failover detectados",
+      "rec": "Verificar la causa del failover. Analizar los logs de Always On/Cluster para determinar si fue planificado.",
+      "detail": "Evento(s) de failover detectados en el log. El servidor puede haber sufrido una interrupción."
+    },
+    "LOG004": {
+      "title": "Logs OK",
+      "detail": "Sin errores críticos ni eventos de failover detectados."
+    },
+    "SEC001": {
+      "title": "Score de seguridad crítico (< 60)",
+      "rec": "Revisar todas las verificaciones fallidas. Priorizar las correcciones de severidad Critical y High."
+    },
+    "SEC002": {
+      "title": "Score de seguridad moderado (60-79)",
+      "rec": "Revisar las verificaciones fallidas y los avisos. Planificar correcciones a corto plazo."
+    },
+    "SEC003": {
+      "title": "Verificaciones críticas fallidas",
+      "rec": "Corregir los problemas críticos de inmediato: login sa, permisos excesivos, falta de auditoría."
+    },
+    "SEC004": {
+      "title": "Seguridad OK"
+    },
+    "SVC001": {
+      "title": "SQL Server Engine detenido",
+      "rec": "Iniciar el servicio SQL Server de inmediato. Revisar los event logs para la causa de la parada.",
+      "detail": "El servicio SQL Server Engine no está en ejecución. Todas las operaciones de base de datos están indisponibles."
+    },
+    "SVC002": {
+      "title": "SQL Agent detenido",
+      "rec": "Iniciar el SQL Server Agent. Verificar que el startup type esté en Automatic.",
+      "detail": "SQL Server Agent no está en ejecución. Los jobs de backup, mantenimiento y monitorización no se ejecutan.",
+      "sql": {
+        "0": "Estado de los servicios SQL"
+      }
+    },
+    "SVC003": {
+      "title": "Servicios automáticos detenidos",
+      "rec": "Verificar por qué hay servicios automáticos detenidos. Iniciarlos si es necesario."
+    },
+    "SVC004": {
+      "title": "Servicios OK",
+      "detail": "Todos los servicios críticos en ejecución."
+    },
+    "USR001": {
+      "title": "Usuarios huérfanos detectados",
+      "rec": "Eliminar los usuarios huérfanos o asociarlos a logins existentes con ALTER USER ... WITH LOGIN.",
+      "sql": {
+        "0": "Usuarios huérfanos"
+      }
+    },
+    "USR002": {
+      "title": "Permisos excesivos (sysadmin)",
+      "rec": "Revisar la necesidad de sysadmin. Usar roles más restrictivos siempre que sea posible.",
+      "sql": {
+        "0": "Miembros de sysadmin"
+      }
+    },
+    "USR003": {
+      "title": "Logins sin sesión conectada",
+      "rec": "No desactivar en base a esta lista: sin sesión ahora no prueba inactividad. Confirmar con auditoría de logins o con los equipos de aplicación."
+    },
+    "USR004": {
+      "title": "Contraseñas débiles",
+      "rec": "Cambiar las contraseñas de inmediato. Implementar una política de complejidad."
+    },
+    "USR005": {
+      "title": "Usuarios OK",
+      "detail": "Ningún usuario huérfano ni contraseña débil detectados."
+    },
+    "TDE001": {
+      "title": "Certificados por expirar (< 30 días)",
+      "rec": "Renovar los certificados TDE de inmediato. Hacer backup del nuevo certificado y de la clave privada.",
+      "sql": {
+        "0": "Certificados TDE y fechas de expiración"
+      }
+    },
+    "TDE002": {
+      "title": "Certificados por expirar (< 90 días)",
+      "rec": "Planificar la renovación de los certificados TDE."
+    },
+    "TDE003": {
+      "title": "Bases de datos sin cifrado",
+      "rec": "Evaluar si las bases contienen datos sensibles que deban cifrarse."
+    },
+    "TDE004": {
+      "title": "TDE OK",
+      "detail": "TDE activo y certificados válidos."
+    },
+    "OVW001": {
+      "title": "CPU de SQL Server elevado",
+      "rec": "Identificar las queries más pesadas con sys.dm_exec_query_stats. Considerar Resource Governor para limitar workloads.",
+      "sql": {
+        "0": "Top queries por CPU"
+      }
+    },
+    "OVW002": {
+      "title": "CPU de SQL Server en alerta",
+      "rec": "Monitorizar la evolución. Verificar si hay queries ad hoc o missing indexes que contribuyan."
+    },
+    "OVW003": {
+      "title": "Memoria de SQL Server elevada",
+      "rec": "Verificar el max server memory. Identificar los memory clerks con mayor consumo.",
+      "sql": {
+        "0": "Top memory clerks"
+      }
+    },
+    "OVW004": {
+      "title": "Memoria de SQL Server en alerta",
+      "rec": "Monitorizar la evolución del uso de memoria."
+    },
+    "OVW005": {
+      "title": "Servicios críticos detenidos",
+      "rec": "Verificar y reiniciar de inmediato los servicios SQL Server detenidos."
+    },
+    "OVW006": {
+      "title": "Bases de datos con problemas",
+      "rec": "Analizar cada base en la lista de problemas y tomar la acción correctiva."
+    },
+    "OVW007": {
+      "title": "Gaps de backup detectados",
+      "rec": "Verificar la programación de los backups y corregir los gaps."
+    },
+    "OVW008": {
+      "title": "Espacio crítico (filegroups)",
+      "rec": "Ampliar los archivos de datos o añadir un nuevo archivo al filegroup."
+    },
+    "OVW009": {
+      "title": "Overview OK",
+      "detail": "Todos los indicadores del Overview están dentro de los límites normales."
+    },
+    "SPC001": {
+      "title": "Filegroups con espacio crítico (< 2% libre)",
+      "rec": "Ampliar los archivos de datos (ALTER DATABASE ... MODIFY FILE) o añadir nuevos archivos al filegroup. Verificar que el auto-growth esté activo.",
+      "sql": {
+        "0": "Archivos de datos de la instancia (asignado + maxsize + growth)",
+        "1": "Espacio usado por filegroup (ejecutar en el contexto de la base: USE <db>)"
+      }
+    },
+    "SPC002": {
+      "title": "Filegroups con espacio en alerta (2-5% libre)",
+      "rec": "Planificar la ampliación de los archivos. Monitorizar el crecimiento."
+    },
+    "SPC003": {
+      "title": "Disco crítico (< 5% libre)",
+      "rec": "Liberar espacio en disco con urgencia. Mover archivos de datos a volúmenes con más espacio."
+    },
+    "SPC004": {
+      "title": "Disco en alerta (5-10% libre)",
+      "rec": "Planificar la ampliación de storage. Monitorizar el uso."
+    },
+    "SPC005": {
+      "title": "Riesgo de overflow detectado",
+      "rec": "Verificar el MAXSIZE de los archivos y el espacio disponible en disco."
+    },
+    "SPC006": {
+      "title": "Espacio OK",
+      "detail": "Todos los filegroups y discos con espacio adecuado."
+    }
   }
 }

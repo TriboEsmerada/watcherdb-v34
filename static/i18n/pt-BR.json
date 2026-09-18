@@ -362,5 +362,95 @@
   },
   "fixo": {
     "full_db_analysis": "Análise completa do banco de dados"
+  },
+  "rep": {
+    "none_detected": "Nenhum problema detectado.",
+    "none_detected_mem": "Nenhum problema detectado. A configuração de memória está saudável.",
+    "none_detected_cpu": "Nenhum problema detectado. A configuração de CPU está saudável.",
+    "none_detected_jobs": "Nenhum problema detectado na configuração de jobs.",
+    "no_backup_gap": "Nenhuma falha de backup detectada.",
+    "no_volume": "Nenhum volume detectado.",
+    "h_file": "Arquivo",
+    "JOB007": {
+      "rec": "Verificar se o serviço SQL Server Agent está em execução. Configurar jobs de backup, manutenção e monitoramento."
+    },
+    "BKP005": {
+      "title": "Bases de dados sem nenhum backup registrado"
+    },
+    "BKP006": {
+      "detail": "Todos os backups estão em dia. Nenhuma falha crítica detectada."
+    },
+    "DSK001": {
+      "rec": "Expandir o disco, mover dados ou limpar arquivos temporários/backups antigos imediatamente."
+    },
+    "DSK002": {
+      "rec": "Planear a expansão do disco. Verificar o autogrowth das bases e limpar arquivos desnecessários."
+    },
+    "DSK003": {
+      "sql": {
+        "0": "Latência de I/O por arquivo"
+      }
+    },
+    "DSK004": {
+      "rec": "Monitorar a tendência. Considerar reorganizar arquivos ou adicionar mais spindles."
+    },
+    "DSK000": {
+      "rec": "Repetir a análise. Se persistir, verificar a conectividade e as permissões da conta de monitoramento no servidor alvo."
+    },
+    "LOG003": {
+      "title": "Eventos de failover detectados",
+      "detail": "Evento(s) de failover detectados no log. O servidor pode ter sofrido uma interrupção."
+    },
+    "LOG004": {
+      "detail": "Sem erros críticos nem eventos de failover detectados."
+    },
+    "SVC002": {
+      "detail": "O SQL Server Agent não está em execução. Os jobs de backup, manutenção e monitoramento não correm."
+    },
+    "USR001": {
+      "title": "Usuários órfãos detectados",
+      "rec": "Remover os usuários órfãos ou associá-los a logins existentes com ALTER USER ... WITH LOGIN.",
+      "sql": {
+        "0": "Usuários órfãos"
+      }
+    },
+    "USR003": {
+      "rec": "Não desativar com base nesta lista: sem sessão agora não prova inatividade. Confirmar com auditoria de logins ou com as equipes aplicacionais."
+    },
+    "USR005": {
+      "title": "Usuários OK",
+      "detail": "Nenhum usuário órfão nem password fraca detectados."
+    },
+    "OVW002": {
+      "rec": "Monitorar a evolução. Verificar se há queries ad hoc ou missing indexes a contribuir."
+    },
+    "OVW004": {
+      "rec": "Monitorar a evolução da utilização de memória."
+    },
+    "OVW007": {
+      "title": "Falhas de backup detectadas"
+    },
+    "OVW008": {
+      "rec": "Expandir os arquivos de dados ou adicionar um novo arquivo ao filegroup."
+    },
+    "SPC001": {
+      "rec": "Expandir os arquivos de dados (ALTER DATABASE ... MODIFY FILE) ou adicionar novos arquivos ao filegroup. Verificar se o auto-growth está ativo.",
+      "sql": {
+        "0": "Arquivos de dados da instância (alocado + maxsize + growth)"
+      }
+    },
+    "SPC002": {
+      "rec": "Planear a expansão dos arquivos. Monitorar o crescimento."
+    },
+    "SPC003": {
+      "rec": "Libertar espaço em disco com urgência. Mover arquivos de dados para volumes com mais espaço."
+    },
+    "SPC004": {
+      "rec": "Planear a expansão de storage. Monitorar a utilização."
+    },
+    "SPC005": {
+      "title": "Risco de overflow detectado",
+      "rec": "Verificar o MAXSIZE dos arquivos e o espaço disponível em disco."
+    }
   }
 }

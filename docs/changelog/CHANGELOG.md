@@ -9,6 +9,10 @@ e este projecto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- **Relatórios de diagnóstico em quatro idiomas (títulos, recomendações, detalhes fixos e títulos de SQL das 77
+  regras, mais os rótulos dos geradores)** (18/09). Tradução num único ponto, por id da regra, com o texto original
+  como recurso; os detalhes dinâmicos (frases montadas com dados) ficam para o lote seguinte. [tier: Std]
+
 - **i18n: teste de guarda para texto escrito à mão** (18/09). Um varredor determinista conta as strings e o HTML em
   português fora do dicionário no portal e falha se o número subir; a base fica gravada no teste e só pode descer.
   Os cinco textos da marcação estática (títulos das modais preditiva e de diagnóstico, "(obrigatório)", confirmação

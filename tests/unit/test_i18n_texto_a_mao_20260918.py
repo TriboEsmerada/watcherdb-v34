@@ -10,12 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PORTAL = (ROOT / "templates/watcherdb_portal.html").read_text(encoding="utf-8")
-BASE_JS, BASE_TAGS = 886, 294
+BASE_JS, BASE_TAGS = 863, 268
 
 import re
 
 _PT = re.compile(r"\b(nao|sao|voce|Clique|Nenhum|Nenhuma|Carregando|Aguarde|Ultima|ultima|atualiz|actualiz|Erro ao|Sem dados|Falha ao|Detalhes|Fechar|Filtrar|Mostrar|ocultar|Executar|Verificar|Confirmar|Selecione|selecione|instancia|instância|base de dados|bases de dados|agendamento|utilizador|ficheiro|tamanho|dias|horas|minutos|PORQUE|O QUE|QUANDO|COMO)\b|[ãõçáéíóúâêôà]", re.I)
-_JA_I18N = re.compile(r"\bt\(|_kpiT\(|_kpiTp\(|_collT\(|_collTp\(|_chT\(|data-i18n|i18n\.|WatcherI18N")
+_JA_I18N = re.compile(r"\bt\(|_kpiT\(|_kpiTp\(|_collT\(|_collTp\(|_chT\(|_repT\(|data-i18n|i18n\.|WatcherI18N")
 _NAO_VISIVEL = re.compile(r"console\.|logger\.|\.debug\(|debugLog|//|/\*|^\s*\*|\[DBG\]|n[aã]o encontrado|inv[aá]lido ao carregar|contentArea|Container de resultados")
 _ES = re.compile(r"\b(instancias con|Monitorea|Sin |páginas|sospechosas|días|Verifica si|Filtra instancias)\b")
 _RECURSOS = ("CARD_HELP_TEXTS", "BACKUP_KPI_INFO")   # dicionarios que sao so' recurso do i18n (as chaves existem)
