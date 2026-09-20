@@ -52161,7 +52161,7 @@ window.showDiskDrilldown = async function(drive, label) {
             if (program === 'waits') return _liveRenderWaits(data, tabId);
             if (program === 'blocking') return _liveRenderBlocking(data);
             if (program === 'io') return _liveRenderIO(data);
-            if (program === 'space') return _liveRenderSpace(data);
+            if (program === 'space') return _liveRenderSpace(data, tabId);
             if (program === 'jobs') return _liveRenderJobs(data);
             if (program === 'memory') return _liveRenderMemory(data);
             if (program === 'connections') return _liveRenderConnections(data);
@@ -52697,11 +52697,39 @@ window.showDiskDrilldown = async function(drive, label) {
             }
         }
 
-        // 2026-09-18 (owner): programa Espaco -- filegroups e discos da instancia (ultima coleta do coletor, STG)
-        function _liveRenderSpace(data) {
+        // 2026-09-18 (owner): programa Espaco v2 -- filegroups primeiro, seccoes recolhiveis, filtro cruzado ao clicar
+        let _liveSpaceOpen = { fg: true, disk: true };
+        let _liveSpaceFilter = null;   // { kind: 'fg', db, fg } | { kind: 'disk', drive } | null
+        function _liveSpaceToggle(kind, el) { _liveSpaceOpen[kind] = !!el.open; }
+        function _liveSpaceClick(kind, a, b, tabId) {
+            const mesmo = _liveSpaceFilter && _liveSpaceFilter.kind === kind && (kind === 'disk' ? _liveSpaceFilter.drive === a : (_liveSpaceFilter.db === a && _liveSpaceFilter.fg === b));
+            _liveSpaceFilter = mesmo ? null : (kind === 'disk' ? { kind: 'disk', drive: a } : { kind: 'fg', db: a, fg: b });
+            const cached = _liveLastData['space'];
+            const screen = document.getElementById('live-screen-' + tabId);
+            if (cached && screen) _liveRenderAndSet(screen, 'space', cached, tabId);
+        }
+        window._liveSpaceToggle = _liveSpaceToggle; window._liveSpaceClick = _liveSpaceClick;
+        function _liveRenderSpace(data, tabId) {
+            tabId = tabId || (document.querySelector('select[id^="live-channel-"]') || { id: 'live-channel-' }).id.replace('live-channel-', '');
             const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-            const disks = data.disks || [], fgs = data.filegroups || [];
+            const escJs = s => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const disks = data.disks || [], fgs = data.filegroups || [], links = data.links || [];
             if (!disks.length && !fgs.length) return '<div style="color:var(--color-text-tertiary);text-align:center;padding:40px;">' + _kpiT('live.space_no_data', 'Sem dados de filegroups nem de discos para esta instância na última coleta.') + '</div>';
+            const norm = s => String(s || '').toLowerCase();
+            const fgKey = (db, fg) => norm(db) + '|' + norm(fg);
+            const drivesDoFg = {}, fgsDoDrive = {};
+            links.forEach(l => { const k = fgKey(l.database, l.filegroup), d = norm(l.drive); (drivesDoFg[k] = drivesDoFg[k] || new Set()).add(d); (fgsDoDrive[d] = fgsDoDrive[d] || new Set()).add(k); });
+            const f = _liveSpaceFilter;
+            let fgsVis = fgs, disksVis = disks, faixa = '';
+            if (f && f.kind === 'fg') {
+                const set = drivesDoFg[fgKey(f.db, f.fg)] || new Set();
+                disksVis = disks.filter(d => set.has(norm(d.Drive)));
+                faixa = `<b>${esc(f.db)} · ${esc(f.fg)}</b> → ${disksVis.length} ${_kpiT('live.space_disks', 'DISCOS').toLowerCase()}`;
+            } else if (f && f.kind === 'disk') {
+                const set = fgsDoDrive[norm(f.drive)] || new Set();
+                fgsVis = fgs.filter(g => set.has(fgKey(g.Database, g.Filegroup)));
+                faixa = `<b>${esc(f.drive)}</b> → ${fgsVis.length} ${_kpiT('live.space_filegroups', 'FILEGROUPS').toLowerCase()}`;
+            }
             const sevDisk = pf => pf <= 5 ? 'critical' : pf <= 10 ? 'warning' : pf <= 20 ? 'attention' : 'ok';
             const sevFg = ef => ef == null ? 'ok' : ef < 2 ? 'critical' : ef < 5 ? 'warning' : ef < 10 ? 'attention' : 'ok';
             const barra = (pctUsado, sev) => `<div style="display:flex;align-items:center;gap:6px;"><div style="flex:1;height:8px;background:var(--color-bg-sunken);border-radius:4px;overflow:hidden;"><div style="width:${Math.max(0, Math.min(100, pctUsado)).toFixed(1)}%;height:100%;background:var(--sev-${sev}-border);"></div></div><span style="width:52px;text-align:right;color:var(--sev-${sev}-text);font-weight:600;">${pctUsado.toFixed(1)}%</span></div>`;
@@ -52710,39 +52738,50 @@ window.showDiskDrilldown = async function(drive, label) {
             const thR = th + 'text-align:right;';
             const td = 'padding:5px 8px;border-bottom:1px solid var(--color-bg-panel);';
             const tdR = td + 'text-align:right;font-variant-numeric:tabular-nums;';
+            const selStyle = 'background:var(--sev-info-tint);outline:1px solid var(--sev-info-text);';
+            const cab = (kind, icone, titulo, n, rows) => `<summary style="cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:10px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;user-select:none;"><i class="fas fa-chevron-${_liveSpaceOpen[kind] ? 'down' : 'right'}" style="width:12px;font-size:12px;" aria-hidden="true"></i><span><i class="fas ${icone}" style="margin-right:6px;color:var(--sev-info-text);"></i>${titulo} (${n})</span><span style="font-weight:400;">${carimbo(rows) ? _kpiT('live.space_collected', 'coleta') + ' ' + esc(carimbo(rows)) : ''}</span></summary>`;
             let h = '';
-            h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;margin-bottom:12px;">';
-            h += `<div style="display:flex;align-items:baseline;gap:10px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><span><i class="fas fa-hdd" style="margin-right:6px;color:var(--sev-info-text);"></i>${_kpiT('live.space_disks', 'DISCOS')} (${disks.length})</span><span style="font-weight:400;">${carimbo(disks) ? _kpiT('live.space_collected', 'coleta') + ' ' + esc(carimbo(disks)) : ''}</span></div>`;
-            if (disks.length) {
-                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="${th}">Volume</th><th style="${thR}">Total</th><th style="${thR}">${_kpiT('live.space_used', 'Usado')}</th><th style="${thR}">${_kpiT('live.fleet_space_free', 'livre')}</th><th style="${th}width:34%;">% ${_kpiT('live.space_used', 'Usado')}</th></tr></thead><tbody>`;
-                disks.slice().sort((a, b) => (a.Percent_Free || 0) - (b.Percent_Free || 0)).forEach(d => {
-                    const pf = Number(d.Percent_Free || 0), sev = sevDisk(pf);
-                    h += `<tr><td style="${td}color:var(--color-text-bright);font-family:var(--font-mono);">${esc(d.Drive)}</td><td style="${tdR}">${formatSizeMB(Math.round(d.Total_MB || 0))}</td><td style="${tdR}">${formatSizeMB(Math.round(d.Used_MB || 0))}</td><td style="${tdR}color:var(--sev-${sev}-text);font-weight:600;">${formatSizeMB(Math.round(d.Free_MB || 0))}</td><td style="${td}">${barra(100 - pf, sev)}</td></tr>`;
-                });
-                h += '</tbody></table>';
-            } else {
-                h += '<div style="color:var(--color-text-tertiary);font-size:12px;padding:6px 0;">' + _kpiT('live.space_no_disks', 'Sem dados de disco para esta instância.') + '</div>';
+            if (f) {
+                h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:6px 10px;background:var(--sev-info-tint);border:1px solid var(--sev-info-text);border-radius:6px;font-size:12px;color:var(--sev-info-text);"><i class="fas fa-filter"></i> ${_kpiT('live.space_filter', 'Filtro')}: ${faixa}`
+                   + `<button onclick="_liveSpaceClick('${f.kind}','${escJs(f.kind === 'disk' ? f.drive : f.db)}','${escJs(f.kind === 'disk' ? '' : f.fg)}','${tabId}')" title="${_kpiT('live.space_filter_clear', 'Limpar filtro')}" style="margin-left:auto;background:none;border:1px solid var(--sev-info-text);color:var(--sev-info-text);border-radius:4px;padding:1px 8px;cursor:pointer;font-size:12px;">×</button></div>`;
+                if (!links.length) h += `<div style="margin-bottom:10px;font-size:12px;color:var(--color-text-tertiary);">${_kpiT('live.space_no_links', 'Sem relação ficheiro → volume nesta coleta; o filtro não tem efeito.')}</div>`;
             }
-            h += '</div>';
-            h += '<div style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">';
-            h += `<div style="display:flex;align-items:baseline;gap:10px;color:var(--color-text-tertiary);font-size:12px;font-weight:600;margin-bottom:8px;"><span><i class="fas fa-layer-group" style="margin-right:6px;color:var(--sev-info-text);"></i>${_kpiT('live.space_filegroups', 'FILEGROUPS')} (${fgs.length > 80 ? '80 / ' : ''}${fgs.length})</span><span style="font-weight:400;">${carimbo(fgs) ? _kpiT('live.space_collected', 'coleta') + ' ' + esc(carimbo(fgs)) : ''}</span></div>`;
-            if (fgs.length) {
-                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="${th}">Database</th><th style="${th}">Filegroup</th><th style="${thR}">Total</th><th style="${thR}">${_kpiT('live.space_used', 'Usado')}</th><th style="${thR}">${_kpiT('live.fleet_space_free', 'livre')}</th><th style="${th}">${_kpiT('live.space_cap', 'Tecto')}</th><th style="${th}width:26%;">% ${_kpiT('live.space_used', 'Usado')}</th></tr></thead><tbody>`;
-                const eff = f => { const gt = String(f.Growth_Type || '').toUpperCase(); const mx = Number(f.Max_Size_MB || 0), tot = Number(f.Total_MB || 0), used = Number(f.Used_MB || 0);
-                    if (gt === 'UNLIMITED') return null; if (mx > 0 && mx > tot) return (mx - used) * 100 / mx; return 100 - Number(f.Percent_Used || 0); };
-                // 450 filegroups numa instancia grande (prova de 18/09): mostra os 80 piores; o titulo diz quantos ha
-                const ordenados = fgs.slice().sort((a, b) => { const ea = eff(a), eb = eff(b); return (ea == null ? 999 : ea) - (eb == null ? 999 : eb); });
-                const mostrados = ordenados.slice(0, 80);
-                mostrados.forEach(f => {
-                    const ef = eff(f), sev = sevFg(ef); const gt = String(f.Growth_Type || '').toUpperCase(); const mx = Number(f.Max_Size_MB || 0), tot = Number(f.Total_MB || 0);
+            // ---- FILEGROUPS (primeiro) ----
+            const eff = g => { const gt = String(g.Growth_Type || '').toUpperCase(); const mx = Number(g.Max_Size_MB || 0), tot = Number(g.Total_MB || 0), used = Number(g.Used_MB || 0);
+                if (gt === 'UNLIMITED') return null; if (mx > 0 && mx > tot) return (mx - used) * 100 / mx; return 100 - Number(g.Percent_Used || 0); };
+            const ordenados = fgsVis.slice().sort((a, b) => { const ea = eff(a), eb = eff(b); return (ea == null ? 999 : ea) - (eb == null ? 999 : eb); });
+            const mostrados = (f && f.kind === 'disk') ? ordenados : ordenados.slice(0, 80);
+            h += `<details ${_liveSpaceOpen.fg ? 'open' : ''} ontoggle="_liveSpaceToggle('fg', this)" style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;margin-bottom:12px;">`;
+            h += cab('fg', 'fa-layer-group', _kpiT('live.space_filegroups', 'FILEGROUPS'), (mostrados.length < fgsVis.length ? mostrados.length + ' / ' : '') + fgsVis.length, fgs);
+            if (mostrados.length) {
+                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="${th}">Database</th><th style="${th}">Filegroup</th><th style="${thR}">Total</th><th style="${thR}">${_kpiT('live.space_used', 'Usado')}</th><th style="${thR}">${_kpiT('live.fleet_space_free', 'livre')}</th><th style="${th}">${_kpiT('live.space_cap', 'Tecto')}</th><th style="${th}">${_kpiT('live.space_files_on', 'Volumes')}</th><th style="${th}width:24%;">% ${_kpiT('live.space_used', 'Usado')}</th></tr></thead><tbody>`;
+                mostrados.forEach(g => {
+                    const ef = eff(g), sev = sevFg(ef); const gt = String(g.Growth_Type || '').toUpperCase(); const mx = Number(g.Max_Size_MB || 0), tot = Number(g.Total_MB || 0);
                     const tecto = gt === 'UNLIMITED' ? `<span style="color:var(--color-text-tertiary);">${_kpiT('live.space_unlimited', 'ilimitado (disco)')}</span>` : (mx > 0 && mx > tot) ? formatSizeMB(Math.round(mx)) : `<span style="color:var(--color-text-tertiary);">${_kpiT('live.space_capped', 'alocado')}</span>`;
-                    h += `<tr><td style="${td}color:var(--color-text-bright);">${esc(f.Database)}</td><td style="${td}font-family:var(--font-mono);">${esc(f.Filegroup)}</td><td style="${tdR}">${formatSizeMB(Math.round(tot))}</td><td style="${tdR}">${formatSizeMB(Math.round(f.Used_MB || 0))}</td><td style="${tdR}color:var(--sev-${sev}-text);font-weight:600;">${formatSizeMB(Math.round(f.Free_MB || 0))}</td><td style="${td}">${tecto}</td><td style="${td}">${barra(Number(f.Percent_Used || 0), sev)}</td></tr>`;
+                    const vols = Array.from(drivesDoFg[fgKey(g.Database, g.Filegroup)] || []); const volsTxt = vols.length ? esc(vols.slice(0, 3).join(', ')) + (vols.length > 3 ? ` +${vols.length - 3}` : '') : '';
+                    const sel = f && f.kind === 'fg' && norm(f.db) === norm(g.Database) && norm(f.fg) === norm(g.Filegroup);
+                    h += `<tr onclick="_liveSpaceClick('fg','${escJs(g.Database)}','${escJs(g.Filegroup)}','${tabId}')" style="cursor:pointer;${sel ? selStyle : ''}" aria-pressed="${sel ? 'true' : 'false'}"><td style="${td}color:var(--color-text-bright);">${esc(g.Database)}</td><td style="${td}font-family:var(--font-mono);">${esc(g.Filegroup)}</td><td style="${tdR}">${formatSizeMB(Math.round(tot))}</td><td style="${tdR}">${formatSizeMB(Math.round(g.Used_MB || 0))}</td><td style="${tdR}color:var(--sev-${sev}-text);font-weight:600;">${formatSizeMB(Math.round(g.Free_MB || 0))}</td><td style="${td}">${tecto}</td><td style="${td}color:var(--color-text-tertiary);font-family:var(--font-mono);">${volsTxt}</td><td style="${td}">${barra(Number(g.Percent_Used || 0), sev)}</td></tr>`;
                 });
                 h += '</tbody></table>';
             } else {
                 h += '<div style="color:var(--color-text-tertiary);font-size:12px;padding:6px 0;">' + _kpiT('live.space_no_fgs', 'Sem dados de filegroups para esta instância.') + '</div>';
             }
-            h += '</div>';
+            h += '</details>';
+            // ---- DISCOS ----
+            h += `<details ${_liveSpaceOpen.disk ? 'open' : ''} ontoggle="_liveSpaceToggle('disk', this)" style="background:var(--color-bg-panel);border:1px solid var(--color-border);border-radius:8px;padding:12px;">`;
+            h += cab('disk', 'fa-hdd', _kpiT('live.space_disks', 'DISCOS'), disksVis.length, disks);
+            if (disksVis.length) {
+                h += `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="${th}">Volume</th><th style="${thR}">Total</th><th style="${thR}">${_kpiT('live.space_used', 'Usado')}</th><th style="${thR}">${_kpiT('live.fleet_space_free', 'livre')}</th><th style="${thR}">${_kpiT('live.space_filegroups', 'FILEGROUPS').toLowerCase()}</th><th style="${th}width:34%;">% ${_kpiT('live.space_used', 'Usado')}</th></tr></thead><tbody>`;
+                disksVis.slice().sort((a, b) => (a.Percent_Free || 0) - (b.Percent_Free || 0)).forEach(d => {
+                    const pf = Number(d.Percent_Free || 0), sev = sevDisk(pf); const nfg = (fgsDoDrive[norm(d.Drive)] || new Set()).size;
+                    const sel = f && f.kind === 'disk' && norm(f.drive) === norm(d.Drive);
+                    h += `<tr onclick="_liveSpaceClick('disk','${escJs(d.Drive)}','','${tabId}')" style="cursor:pointer;${sel ? selStyle : ''}" aria-pressed="${sel ? 'true' : 'false'}"><td style="${td}color:var(--color-text-bright);font-family:var(--font-mono);">${esc(d.Drive)}</td><td style="${tdR}">${formatSizeMB(Math.round(d.Total_MB || 0))}</td><td style="${tdR}">${formatSizeMB(Math.round(d.Used_MB || 0))}</td><td style="${tdR}color:var(--sev-${sev}-text);font-weight:600;">${formatSizeMB(Math.round(d.Free_MB || 0))}</td><td style="${tdR}color:var(--color-text-tertiary);">${nfg || ''}</td><td style="${td}">${barra(100 - pf, sev)}</td></tr>`;
+                });
+                h += '</tbody></table>';
+            } else {
+                h += '<div style="color:var(--color-text-tertiary);font-size:12px;padding:6px 0;">' + _kpiT('live.space_no_disks', 'Sem dados de disco para esta instância.') + '</div>';
+            }
+            h += '</details>';
             return h;
         }
         function _liveRenderIO(data) {
