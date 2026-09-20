@@ -678,9 +678,33 @@ async def get_space(instance: str):
         FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_DISK_USAGE_STG d WITH (NOLOCK)
         WHERE d.Instance = '{inst}'
         ORDER BY d.Percent_Free ASC""", raise_on_error=False) or []
+    # 2026-09-18 (owner, v2): relacao filegroup <-> volume pelo prefixo mais longo do caminho fisico (Drive na STG e' so' a
+    # letra; os discos sao pontos de montagem). Pares distintos (database, filegroup, drive).
+    links = []
+    try:
+        files = execute_intelligence_query(f"""
+            SELECT DISTINCT df.[Database], df.Filegroup, df.Physical_Path, df.Drive
+            FROM {INTELLIGENCE_SCHEMA}.KPI_MSSQL_DATAFILES_STG df WITH (NOLOCK)
+            WHERE df.Instance = '{inst}'""", raise_on_error=False) or []
+        vols = sorted({str(d.get("Drive") or "") for d in disks if d.get("Drive")}, key=len, reverse=True)
+        vols_l = [(v, v.lower()) for v in vols]
+        vistos = set()
+        for fl in files:
+            path = str(fl.get("Physical_Path") or "").lower()
+            alvo = next((v for v, vl in vols_l if vl and path.startswith(vl)), None)
+            if alvo is None:
+                letra = str(fl.get("Drive") or "")
+                alvo = next((v for v, vl in vols_l if vl == letra.lower()), None)
+            if not alvo:
+                continue
+            k = (fl.get("Database"), fl.get("Filegroup"), alvo)
+            if k not in vistos:
+                vistos.add(k); links.append({"database": k[0], "filegroup": k[1], "drive": k[2]})
+    except Exception:
+        links = []
     return _live_json({
         "instance": instance, "timestamp": time.time(),
-        "filegroups": fgs, "disks": disks,
+        "filegroups": fgs, "disks": disks, "links": links,
     })
 
 
