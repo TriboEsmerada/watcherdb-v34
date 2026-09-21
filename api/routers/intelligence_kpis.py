@@ -1321,6 +1321,7 @@ async def get_problematic_instances(kpi_type: str, all: bool = Query(False, desc
             cls = classify_tlog(
                 _rows,
                 {'warning': _th('tlog_usage', 'warning'), 'critical': _th('tlog_usage', 'critical')},
+                unlimited_free_gb={'warning': _th('filegroup_unlimited_free_gb', 'warning'), 'critical': _th('filegroup_unlimited_free_gb', 'critical')},
                 fresh_minutes=FRESHNESS_WINDOWS['capacity'],
                 log_late_hours=_th('backup_delay_log', 'warning'))
             if kpi_type == "transaction-logs-critical":
