@@ -27,7 +27,7 @@ LOG_LATE_H = 1  # registry backup_delay_log.warning (1h)
 def _row(inst, db, pct, env='PRD', rm='FULL', last_log_h=0.5, upd_min=30, **extra):
     r = {
         'Instance': inst, 'Database': db, 'Env': env, 'Percent_Used': pct,
-        'Used_MB': pct * 10, 'Current_MB': 1000, 'Max_Available_MB': 2000,
+        'Used_MB': pct * 10, 'Current_MB': 1000, 'Max_Available_MB': 2097152,   # 2026-09-21 (owner, ctrlm_tap_report): sentinela = sem tecto real
         'Update_TS': NOW - timedelta(minutes=upd_min),
         'Recovery_Model': rm,
         'Last_Log_Backup_Date': (NOW - timedelta(hours=last_log_h)) if last_log_h is not None else None,

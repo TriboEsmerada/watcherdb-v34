@@ -111,6 +111,8 @@ LEFT JOIN lastlog_ag lag
 LEFT JOIN lastlog ll
        ON ll.Instance_N = LTRIM(RTRIM(UPPER(t.Instance)))
       AND ll.Database_N = LTRIM(RTRIM(UPPER(t.[Database])))
+-- 2026-09-21: bases RESTORING/RECOVERING/OFFLINE nao entram no KPI (sem linha em DB_SETTINGS = neutro)
+WHERE ds.State_Desc IS NULL OR UPPER(LTRIM(RTRIM(ds.State_Desc))) = 'ONLINE'
 """
 
 
@@ -137,7 +139,8 @@ def _log_backup_age(recovery_model, hours_since_log_backup, log_late_hours):
 def _tlog_severity(row, pct, warn, crit, ufree_warn_mb, ufree_crit_mb, demand_mb):
     """Severidade de uma base (2026-09-21, limitado/ilimitado). Devolve (sev, pct_eff, reason, attention_flag).
 
-    kind: LEGACY (sem ficheiros: regra antiga por alocado), FIXED (crescimento 0), LIMITED (tecto real), UNLIMITED
+    kind: LEGACY (sem ficheiros: % do tecto real da TLOG_STG quando existe, senao alocado), FIXED (crescimento 0),
+    LIMITED (tecto real), UNLIMITED
     (disk-bound). pct = % do alocado; pct_eff = % do tecto efectivo (LIMITED) ou pct (LEGACY/FIXED) ou None (UNLIMITED).
     """
     kind = (row.get("Log_Kind") or "LEGACY").upper()
@@ -145,12 +148,17 @@ def _tlog_severity(row, pct, warn, crit, ufree_warn_mb, ufree_crit_mb, demand_mb
     ng = _to_float(row.get("Next_Growth_MB")) or 0.0
     cur = _to_float(row.get("Current_MB")) or 0.0
     used = _to_float(row.get("Used_MB")) or 0.0
-    ceiling = _to_float(row.get("Ceiling_MB")) or 0.0
+    ceiling = _to_float(row.get("Ceiling_MB")) or _to_float(row.get("Max_Available_MB")) or 0.0
     if kind == "LIMITED":
         cap = ceiling if vol is None else min(ceiling, cur + vol) if ceiling > 0 else cur + vol
         pct_eff = (used * 100.0 / cap) if cap and cap > 0 else pct
     elif kind == "UNLIMITED":
         pct_eff = None
+    elif kind == "LEGACY" and 0 < ceiling < 2097152:
+        # 2026-09-21 (owner, ctrlm_tap_report): sem ficheiros no coletor (base read-only, etc.) mas a TLOG_STG conhece o tecto
+        # real (Max_Available_MB) -> % do tecto, nunca do alocado. Tecto abaixo do alocado = ficheiro que nao cresce.
+        cap = max(ceiling, cur)
+        pct_eff = (used * 100.0 / cap) if cap > 0 else pct
     else:
         pct_eff = pct
     attn = "AUTOGROW_PEQUENO" if (pct > crit and ng > 0 and (ng < cur * 0.01 or ng <= 64)) else None

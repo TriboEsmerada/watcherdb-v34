@@ -289,3 +289,72 @@ def test_formatos_pt_e_int_sem_ponto_zero(monkeypatch):
     assert out["raw"]["open_transactions"][0]["last_batch"] == "EXEC x"
     assert len(d["summary"]) == 5 and d["summary"][1]["label"] == "Causa atual (log_reuse_wait)"
     assert d["header"]["subtitle"].startswith("SRV\I01 ·") or d["header"]["subtitle"].startswith("SRV_I01 ·")
+
+
+# ---- 2026-09-21 (owner, ctrlm_tap_report): base read-only / standby / snapshot, base recente, backups por snapshot, margem por tecto
+def _ro_state(**kw):
+    st = _state(lrw="LOG_BACKUP", size_mb=48, growth_mb=10, max_size=500)
+    st[0].update({"is_read_only": 1, "create_date": NOW - timedelta(days=900), "source_database_id": None})
+    st[0].update(kw)
+    return st
+
+
+def test_read_only_cadeia_parada_e_info_e_triagem_read_only(monkeypatch):
+    # ctrlm_tap_report: 47,6 / 48 MB (99,3 %), max_size 500, volume com 383 GB livres, sem backup de log ha' 933 dias
+    out = _run(monkeypatch, {"state": _ro_state(), "counters": _counters(size_mb=48, used_mb=47.6), "bk30": [],
+                             "log_stats": [{"status": "ok", "total_vlf_count": 4, "active_vlf_count": 1, "log_backup_time": NOW - timedelta(days=933)}],
+                             "vols": _vols(free_gb=383.0, headroom_mb=452)})
+    d = out["diagnosis"]
+    ids = {p["id"]: p for p in d["problems"]}
+    assert "chain_frozen" in ids and ids["chain_frozen"]["severity"] == "info"
+    assert "chain_stopped" not in ids and "drive_low" not in ids
+    assert ids["log_usage"]["severity"] == "info"
+    assert ids["growth_bad"]["severity"] == "info"          # FILEGROWTH 10 MB: irrelevante sem escritas
+    assert d["header"]["verdict"] == "ok" and not any(p["severity"] in ("critical", "warning") for p in d["problems"])
+    assert out["raw"]["derived"]["triage"] == "READ ONLY" and out["raw"]["derived"]["frozen_kind"] == "READ ONLY"
+    assert d["principal"]["headline"] == "BASE READ ONLY: LOG SEM ESCRITAS" and d["since"] is None
+    assert d["header"]["subtitle"].endswith("· READ ONLY")
+    assert d["summary"][2]["value"] == "n/a" and d["summary"][0]["severity"] == "ok"
+    assert any(r["k"] == "Estado" and r["v"] == "ONLINE · READ ONLY" for r in d["side"]["rows"])
+    assert "READ ONLY" in d["nextStep"]["text"]
+
+
+def test_standby_e_snapshot_tambem_congelam(monkeypatch):
+    out = _run(monkeypatch, {"state": _ro_state(is_read_only=0, is_in_standby=1), "bk30": []})
+    assert out["raw"]["derived"]["frozen_kind"] == "STANDBY" and out["raw"]["derived"]["chain_state"] == "frozen"
+    out2 = _run(monkeypatch, {"state": _ro_state(is_read_only=0, source_database_id=7), "bk30": []})
+    assert out2["raw"]["derived"]["frozen_kind"] == "SNAPSHOT"
+    # read-write normal continua a cadeia parada CRITICAL
+    out3 = _run(monkeypatch, {"state": _ro_state(is_read_only=0), "bk30": [],
+                              "log_stats": [{"status": "ok", "total_vlf_count": 4, "active_vlf_count": 1, "log_backup_time": None}]})
+    assert out3["raw"]["derived"]["chain_state"] == "never" and out3["diagnosis"]["header"]["verdict"] == "critical"
+
+
+def test_base_recente_sem_backup_de_log_e_aviso_nao_critico(monkeypatch):
+    st = _state(lrw="LOG_BACKUP", size_mb=1024)
+    st[0]["create_date"] = NOW - timedelta(hours=3)
+    out = _run(monkeypatch, {"state": st, "counters": _counters(size_mb=1024, used_mb=300), "bk30": [],
+                             "log_stats": [{"status": "ok", "total_vlf_count": 8, "active_vlf_count": 2, "log_backup_time": None}]})
+    d = out["diagnosis"]
+    ids = {p["id"]: p for p in d["problems"]}
+    assert "chain_new" in ids and ids["chain_new"]["severity"] == "warning" and "chain_stopped" not in ids
+    assert out["raw"]["derived"]["chain_state"] == "new" and "rec_log_backup" in {r["id"] for r in d["recommendations"]}
+    assert d["header"]["verdict"] == "warning"
+
+
+def test_backups_por_snapshot_dao_pista_e_margem_por_tecto_nao_e_disco(monkeypatch):
+    bk = [{"backup_type": "D", "backup_day": (NOW - timedelta(days=1)).date().isoformat(), "backups": 1, "total_mb": 10.0,
+           "max_size_mb": 10.0, "last_finish": NOW - timedelta(days=1), "copy_only_count": 0, "snapshot_count": 1}]
+    out = _run(monkeypatch, {"bk30": bk, "log_stats": [{"status": "ok", "total_vlf_count": 8, "active_vlf_count": 2, "log_backup_time": None}]})
+    ids = {p["id"] for p in out["diagnosis"]["problems"]}
+    assert "chain_snapshot_hint" in ids and "chain_stopped" in ids and out["raw"]["derived"]["snapshot_backups"] == 1
+    # margem limitada pelo max_size (452 MB) com disco folgado e efectivo baixo: nao e' DISCO nem no_room
+    out2 = _run(monkeypatch, {"state": _state(lrw="LOG_BACKUP", size_mb=48, growth_mb=10, max_size=500), "counters": _counters(size_mb=48, used_mb=47.6),
+                              "vols": _vols(free_gb=383.0, headroom_mb=452)})
+    ids2 = {p["id"]: p for p in out2["diagnosis"]["problems"]}
+    assert "drive_low" not in ids2 and ids2["log_usage"]["severity"] == "warning"
+    # disco mesmo curto continua critico (regressao do teste de 02/09)
+    out3 = _run(monkeypatch, {"state": _state(lrw="LOG_BACKUP", size_mb=27729), "counters": _counters(size_mb=27729, used_mb=27457),
+                              "vols": _vols(free_gb=0.5, headroom_mb=512)})
+    ids3 = {p["id"]: p for p in out3["diagnosis"]["problems"]}
+    assert ids3["drive_low"]["severity"] == "critical" and ids3["log_usage"]["severity"] == "critical"

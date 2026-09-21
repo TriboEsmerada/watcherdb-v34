@@ -183,6 +183,7 @@ SET LOCK_TIMEOUT 3000;
 SELECT d.database_id, d.name AS database_name, d.state_desc, d.user_access_desc,
        d.recovery_model_desc, d.log_reuse_wait_desc,
        d.is_read_only, d.is_in_standby, d.is_auto_shrink_on,
+       d.create_date, d.source_database_id,
        d.is_published, d.is_subscribed, d.is_cdc_enabled,
        HAS_DBACCESS(N'{_esc(db)}') AS has_db_access,
        (SELECT COUNT(*) FROM sys.master_files c WITH (NOLOCK) WHERE c.database_id = d.database_id AND c.type = 1) AS log_file_count,
@@ -312,7 +313,8 @@ SELECT b.type AS backup_type, CAST(b.backup_finish_date AS DATE) AS backup_day, 
        CAST(SUM(b.backup_size) / 1048576.0 AS DECIMAL(18,1)) AS total_mb,
        CAST(MAX(b.backup_size) / 1048576.0 AS DECIMAL(18,1)) AS max_size_mb,
        MAX(b.backup_finish_date) AS last_finish,
-       SUM(CASE WHEN b.is_copy_only = 1 THEN 1 ELSE 0 END) AS copy_only_count
+       SUM(CASE WHEN b.is_copy_only = 1 THEN 1 ELSE 0 END) AS copy_only_count,
+       SUM(CASE WHEN b.is_snapshot = 1 THEN 1 ELSE 0 END) AS snapshot_count
 FROM msdb.dbo.backupset b WITH (NOLOCK)
 WHERE b.database_name = N'{_esc(db)}'
   AND b.backup_finish_date >= DATEADD(DAY, -30, GETDATE())
@@ -568,6 +570,15 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
     last_full = by_type.get("D", {}).get("last")
     hours_since_log = ((now - last_log).total_seconds() / 3600.0) if last_log else None
     log_needs_backup = recovery in ("FULL", "BULK_LOGGED")
+    # 2026-09-21 (owner, ctrlm_tap_report): base "congelada" nao recebe escritas -> o log nao cresce nem trunca;
+    # cadeia de backup parada e LOG_BACKUP deixam de ser risco de 9002 enquanto ficar assim.
+    is_read_only = int(_n(st.get("is_read_only"), 0) or 0) == 1
+    is_standby = int(_n(st.get("is_in_standby"), 0) or 0) == 1
+    is_db_snapshot = st.get("source_database_id") not in (None, 0, "0", "")
+    frozen_kind = "STANDBY" if is_standby else ("SNAPSHOT" if is_db_snapshot else ("READ ONLY" if is_read_only else None))
+    created_at = _dt(st.get("create_date"))
+    db_age_h = ((now - created_at).total_seconds() / 3600.0) if created_at else None
+    snapshot_backups = sum(int(_n(r.get("snapshot_count"), 0) or 0) for r in bk30)
 
     if max_log_bkp_mb:
         alvo_mb = max(max_log_bkp_mb * 2, LOG_MIN_MB)
@@ -586,6 +597,12 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
     # Capacidade EFECTIVA (owner 02/09): margem ja e' MIN(disco livre, max_size - size)
     effective_limit_mb = (log_size_mb + headroom_mb) if (log_size_mb and headroom_mb is not None) else None
     effective_pct = (100.0 * used_mb / effective_limit_mb) if (effective_limit_mb and used_mb is not None) else None
+    # 2026-09-21: margem "apertada" so' quando e' o DISCO que limita (ou o tecto ja' esta' quase): 452 MB de margem
+    # num log de 48 MB com max_size 500 MB (efectivo a 10 %) nao e' falta de espaco.
+    vol_free_mb = (vol_free_gb * 1024.0) if vol_free_gb is not None else None
+    headroom_tight = (headroom_mb is not None and headroom_mb < HEADROOM_MIN_MB
+                      and (vol_free_mb is None or vol_free_mb < HEADROOM_MIN_MB
+                           or (effective_pct is not None and effective_pct > tl_warn)))
 
     vlf_total = _n(log_stats.get("total_vlf_count")) or _n(vlf_info.get("vlf_count"))
     vlf_active = _n(log_stats.get("active_vlf_count")) or _n(vlf_info.get("active_vlf_count"))
@@ -643,6 +660,13 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
     chain_state = None  # never | late | ok | simple | unknown
     if not log_needs_backup and recovery:
         chain_state = "simple"
+    elif log_needs_backup and frozen_kind:
+        chain_state = "frozen"
+        prob("chain_frozen", f"Base {frozen_kind}: o log não recebe escritas",
+             f"sys.databases: is_read_only / is_in_standby / source_database_id · {pct_txt}{size_txt}"
+             + (f" · último backup de log {_fmt_dt_full(last_log)}" if last_log is not None else " · sem backup de log registado em 30 dias"),
+             "Sem escritas o log não cresce nem trunca: a cadeia de backup parada não é risco de 9002 enquanto a base ficar assim",
+             "info", "fa-lock", summary=f"{frozen_kind} · cadeia de backup não aplicável")
     elif log_needs_backup:
         if last_log is None:
             if ag_name and not bk30 and not log_stats:
@@ -651,6 +675,11 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
                      f"msdb desta réplica sem backups de {db_name} nos últimos 30 dias e dm_db_log_stats indisponível — o backup de log pode correr noutra réplica (backup preference)",
                      "Sem confirmar a cadeia não se sabe se o log vai truncar", "warning", "fa-question-circle", conf="heuristic", rec_ids=["rec_log_backup"],
                      summary="Backup de log pode correr noutra réplica do AG")
+            elif db_age_h is not None and db_age_h < 24:
+                chain_state = "new"
+                prob("chain_new", f"Base criada há {_num(db_age_h, 0)} h ainda sem backup de log",
+                     f"sys.databases.create_date = {_fmt_dt_full(created_at)}; msdb: 0 backups tipo L", "Esperado nas primeiras horas; se o job não a apanhar, vira cadeia parada",
+                     "warning", "fa-hourglass-start", source="history", rec_ids=["rec_log_backup"], summary="Base recente · sem backup de log")
             else:
                 chain_state = "never"
                 prob("chain_stopped", f"Recovery {recovery} sem nenhum backup de log registado",
@@ -673,12 +702,12 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
         if last_full is None and not ag_name and bk30 is not None and not by_type.get("D"):
             prob("no_full", f"Recovery {recovery} sem full backup nos últimos 30 dias",
                  "msdb: 0 backups tipo D em 30 dias — sem full não há cadeia e o BACKUP LOG falha",
-                 "Sem ponto de partida para restore; log backup não funciona", "critical", "fa-database", source="history", rec_ids=["rec_full"],
+                 "Sem ponto de partida para restore; log backup não funciona", ("warning" if chain_state == "new" else "critical"), "fa-database", source="history", rec_ids=["rec_full"],
                  summary="msdb: 0 full backups em 30 dias")
             rec("rec_full", "Criar full backup (cadeia inexistente)", "Sem FULL o backup de log falha; confirmar política/TSM.",
                 "very_high", "low", ["no_full"], "fa-database",
                 f"-- comentado; o WatcherDB nao executa:\n-- BACKUP DATABASE {db_q} TO DISK = N'<path>\\{db_name}_full.bak' WITH CHECKSUM, COMPRESSION;\nSELECT TOP 5 type, backup_finish_date, backup_size/1048576 AS mb FROM msdb.dbo.backupset WHERE database_name = N'{_esc(db_name)}' ORDER BY backup_finish_date DESC;")
-    if chain_state in ("never", "late", "unknown"):
+    if chain_state in ("never", "late", "unknown", "new"):
         rec("rec_log_backup", "Verificar / religar backup de log",
             (f"A cadeia de backup está parada há {h_txt} h." if last_log is not None else "Sem nenhum backup de log registado; sem ele o log nunca trunca em FULL."),
             "very_high", "low", ["chain_stopped", "chain_late", "chain_unknown"], "fa-history",
@@ -687,6 +716,12 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
             rec("rec_log_backup_now", "Executar backup de log (manual, se apropriado)", "Pode permitir o truncamento do log e recuperar espaço.",
                 "high", "low", ["chain_stopped", "chain_late"], "fa-upload",
                 f"-- comentado; decisao humana (destino e retencao conforme a politica):\n-- BACKUP LOG {db_q} TO DISK = N'<path>\\{db_name}_log_manual.trn' WITH CHECKSUM, COMPRESSION;\nSELECT name, log_reuse_wait_desc FROM sys.databases WHERE name = N'{_esc(db_name)}';")
+
+    if chain_state == "never" and snapshot_backups > 0:
+        prob("chain_snapshot_hint", f"{snapshot_backups} backup(s) por snapshot (VSS/storage) em 30 dias",
+             "msdb.dbo.backupset.is_snapshot = 1 — a ferramenta externa pode gerir a cadeia fora do BACKUP LOG nativo",
+             "Confirmar com a equipa de backup antes de tratar como cadeia parada", "info", "fa-camera", source="history", conf="heuristic",
+             summary="Backups por snapshot registados")
 
     # 2) Causa de retencao anormal (log_reuse_wait fora de NOTHING/LOG_BACKUP/CHECKPOINT)
     if lrw and lrw not in _RETAINED_OK:
@@ -752,7 +787,7 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
     # 3) Uso do log (registry) — graduado pela capacidade EFECTIVA
     if used_pct is not None and used_pct > tl_warn:
         file_crit = used_pct > tl_crit
-        no_room = (headroom_mb is not None and headroom_mb < HEADROOM_MIN_MB) or bool(growth_disabled)
+        no_room = headroom_tight or bool(growth_disabled)
         eff_crit = effective_pct is not None and effective_pct > tl_crit
         if effective_pct is None:
             sev = "critical" if file_crit else "warning"
@@ -763,6 +798,8 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
         else:
             sev = "warning"
             eff_txt = f"limite efetivo a {_num(effective_pct, 0)}% ({_gb(effective_limit_mb)} = ficheiro + {_gb(headroom_mb)} de margem)"
+        if frozen_kind and not no_room:
+            sev = "info"
         growth_txt_p = (f"+{_mb(first_log.get('log_growth_value'))}" if first_log and int(_n(first_log.get("is_percent_growth"), 0) or 0) == 0 else (f"+{first_log.get('log_growth_value'):g}%" if first_log else "?"))
         prob("log_usage", f"Log com {_num(used_pct, 1)}% de uso",
              f"{_gb(used_mb)} usados de {_gb(log_size_mb)} · {eff_txt}" + (f" · max_size {_gb(first_log.get('log_max_size_mb'))}" if first_log.get("log_max_size_mb") else " · max_size ilimitado (tecto = disco)"),
@@ -773,8 +810,8 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
              summary=f"{_gb(used_mb)} usados de {_gb(log_size_mb)}" + (f" · {_num(effective_pct, 0)}% do limite efetivo" if effective_pct is not None else ""))
 
     # 4) Disco / runway
-    if headroom_mb is not None and headroom_mb < HEADROOM_MIN_MB:
-        sev = "critical" if (used_pct or 0) > tl_warn else "warning"
+    if headroom_tight:
+        sev = "critical" if (used_pct or 0) > tl_warn and not frozen_kind else "warning"
         prob("drive_low", f"Margem de crescimento do log: {_mb(headroom_mb)}",
              f"volume {vol0.get('volume_mount_point')} com {_num(vol_free_gb, 1)} GB livres ({_num(vol_free_pct, 1)}%)" + (" · limitado por max_size" if first_log.get("log_max_size_mb") else ""),
              "Sem margem o próximo autogrow falha (9002) — mais urgente que tudo o resto", sev, "fa-hdd", rec_ids=["rec_disk"],
@@ -786,7 +823,7 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
              f"margem {_mb(headroom_mb)} / geração {_mb(daily_mb)} por dia (média 7d via msdb){gap_note}" + (f" · IO do ficheiro sugere {_mb(daily_mb_io)}/dia" if daily_mb_io else ""),
              "É a previsão que transforma estado em ação: DRIVE_ENCHE é acionável, '99% usado' sozinho não é", sev, "fa-chart-line", conf="heuristic", rec_ids=["rec_disk"],
              summary=f"Com base na geração atual de ~{_num(daily_mb / 24.0, 0)} MB/h")
-    if (headroom_mb is not None and headroom_mb < HEADROOM_MIN_MB) or (runway_days is not None and runway_days <= RUNWAY_DAYS_WARN):
+    if headroom_tight or (runway_days is not None and runway_days <= RUNWAY_DAYS_WARN):
         rec("rec_disk", "Garantir espaço no volume do log", "Libertar/expandir o volume, ou ficheiro de log temporário noutro volume (remover depois).",
             "very_high", "low", ["drive_low", "runway", "log_usage"], "fa-hdd",
             f"SELECT mf.name, vs.volume_mount_point, vs.available_bytes/1073741824.0 AS free_gb, vs.total_bytes/1073741824.0 AS total_gb\nFROM sys.master_files mf CROSS APPLY sys.dm_os_volume_stats(mf.database_id, mf.file_id) vs WHERE mf.database_id = DB_ID(N'{_esc(db_name)}') AND mf.type = 1;\n-- temporario (comentado): ALTER DATABASE {db_q} ADD LOG FILE (NAME = N'{log_logical_q}_tmp', FILENAME = N'<outro_volume>\\{db_name}_log_tmp.ldf', SIZE = 4096MB, FILEGROWTH = 512MB);")
@@ -815,14 +852,14 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
             f"-- comentado; em janela:\n-- USE {db_q}; DBCC SHRINKFILE (N'{log_logical_q}', 512);\n-- ALTER DATABASE {db_q} MODIFY FILE (NAME = N'{log_logical_q}', SIZE = 4096MB);\n-- ALTER DATABASE {db_q} MODIFY FILE (NAME = N'{log_logical_q}', SIZE = 8192MB);  -- repetir ate ao alvo")
     if growth_disabled:
         prob("growth_disabled", "Autogrow do log DESLIGADO", f"{', '.join(str(f.get('log_logical_name')) for f in growth_disabled)}: growth = 0",
-             "Quando encher não cresce: 9002 imediato", "critical" if (used_pct or 0) > tl_warn else "warning", "fa-ban", rec_ids=["rec_growth"],
+             "Quando encher não cresce: 9002 imediato", "critical" if (used_pct or 0) > tl_warn and not frozen_kind else "warning", "fa-ban", rec_ids=["rec_growth"],
              summary="growth = 0 no ficheiro de log")
     if growth_bad_files:
         f0 = growth_bad_files[0]
         gtxt = f"{f0.get('log_growth_value'):g}%" if int(_n(f0.get("is_percent_growth"), 0) or 0) == 1 else _mb(f0.get("log_growth_value"))
         prob("growth_bad", f"FILEGROWTH do log = {gtxt}",
              f"{f0.get('log_logical_name')}: crescimento {'percentual' if int(_n(f0.get('is_percent_growth'), 0) or 0) == 1 else 'pequeno'} gera muitos VLFs e autogrows lentos" + (f" · Log Growths desde o arranque: {_i(log_growths)}" if log_growths else ""),
-             "Barato de corrigir, evita o próximo incidente", "warning", "fa-expand-arrows-alt", rec_ids=["rec_growth"],
+             "Barato de corrigir, evita o próximo incidente", ("info" if frozen_kind else "warning"), "fa-expand-arrows-alt", rec_ids=["rec_growth"],
              summary="Crescimento percentual ou pequeno gera VLFs a mais")
     if growth_disabled or growth_bad_files:
         rec("rec_growth", "Corrigir FILEGROWTH do log (512 MB fixos)", "Crescimento fixo em MB (não %), 256–1024 MB conforme a geração.",
@@ -862,7 +899,9 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
         notes.append("sem acesso a base (HAS_DBACCESS = 0): dm_db_log_stats/dm_db_log_info indisponiveis (secundaria AG nao legivel ou sem user)")
 
     # ---------------------------------------------------------------- triagem (heuristica, ordem do pacote 03)
-    if chain_state in ("never", "late"):
+    if chain_state == "frozen":
+        triage = ("READ ONLY", f"base {frozen_kind.lower()} — o log não recebe escritas; cadeia de backup e LOG_BACKUP não são risco")
+    elif chain_state in ("never", "late"):
         triage = ("CADEIA PARADA", "backup de log parado/inexistente — o log nunca trunca em FULL sem ele")
     elif lrw == "ACTIVE_TRANSACTION":
         triage = ("TRANSACAO ABERTA", f"sessão {tran_sid} segura o log há {_num(tran_min, 0)} min" if tran_min is not None else "transação aberta segura o log")
@@ -870,7 +909,7 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
         triage = ("REPLICA", "fila do mirror/AG segura o log — resolver no drill de mirroring/AG")
     elif lrw == "REPLICATION":
         triage = ("REPLICACAO", "log reader/CDC não consumiu o log")
-    elif (headroom_mb is not None and headroom_mb < HEADROOM_MIN_MB) or (runway_days is not None and runway_days <= RUNWAY_DAYS_CRIT):
+    elif headroom_tight or (runway_days is not None and runway_days <= RUNWAY_DAYS_CRIT):
         triage = ("DISCO", "margem de crescimento a esgotar-se — garantir espaço primeiro")
     elif potencial_mb > 0 and lrw in _RETAINED_OK and (log_size_mb or 0) > alvo_mb * TARGET_X_WARN:
         triage = ("SHRINK", f"nada retém e o log está {(log_size_mb or 0)/alvo_mb:.0f}x acima do alvo ({_gb(alvo_mb)})")
@@ -886,6 +925,8 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
     # ---------------------------------------------------------------- tiles (mockup: 5)
     if chain_state == "simple":
         last_log_val, last_log_sub, last_log_sev = "n/a", "recovery SIMPLE", "info"
+    elif chain_state == "frozen":
+        last_log_val, last_log_sub, last_log_sev = "n/a", f"{frozen_kind}: sem escritas no log", "info"
     elif last_log is None:
         last_log_val, last_log_sub, last_log_sev = ("desconhecido" if chain_state == "unknown" else "NUNCA"), ("noutra réplica?" if chain_state == "unknown" else "sem backup de log registado"), ("warning" if chain_state == "unknown" else "critical")
     else:
@@ -897,7 +938,7 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
          "sub": (f"{_gb(used_mb)} / {_gb(log_size_mb)}" if log_size_mb else "") + (f" · {_num(effective_pct, 0)}% do limite efetivo ({_gb(effective_limit_mb)})" if effective_pct is not None else ""),
          "icon": "fa-chart-line",
          "severity": ("critical" if ((effective_pct if effective_pct is not None else used_pct) or 0) > tl_crit or bool(growth_disabled)
-                      else ("warning" if (used_pct or 0) > tl_warn else "ok"))},
+                      else ("warning" if (used_pct or 0) > tl_warn and not frozen_kind else "ok"))},
         {"label": "Causa atual (log_reuse_wait)", "value": lrw or "?",
          "sub": _REASON_TEXT.get(lrw, ("", ""))[0] or ("nada retém" if lrw == "NOTHING" else ("aguarda backup de log" if lrw == "LOG_BACKUP" else "")),
          "icon": "fa-database", "severity": "critical" if (lrw and lrw not in _RETAINED_OK) else "ok"},
@@ -938,7 +979,7 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
         {"k": "Database", "v": db_name},
         {"k": "Instância", "v": display_inst},
         {"k": "Recovery", "v": recovery or "?"},
-        {"k": "Estado", "v": state_desc or "?"},
+        {"k": "Estado", "v": (state_desc or "?") + (f" · {frozen_kind}" if frozen_kind else "")},
         {"k": "Tamanho (atual)", "v": (f"{_gb(log_size_mb)} · usado {_gb(used_mb)} ({_num(used_pct, 1)}%)" if used_pct is not None else (_gb(log_size_mb) if log_size_mb else "?"))},
         {"k": "Máx. configurado", "v": max_txt},
         {"k": "Growth", "v": growth_txt},
@@ -966,6 +1007,7 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
         "DISCO": "1) Libertar/expandir o volume do log (ou ficheiro temporário noutro volume).\n2) Resolver a causa de retenção/cadência.\n3) Reavaliar runway.",
         "SHRINK": "1) Confirmar que nada retém (log_reuse_wait NOTHING/LOG_BACKUP).\n2) Backup de log.\n3) DBCC SHRINKFILE até ao alvo (repetir 2-3 se o VLF ativo estiver no fim).\n4) Corrigir FILEGROWTH.",
         "CRESCIMENTO": "1) Ver se o log desce após o próximo backup de log.\n2) Se não desce: encurtar cadência ou aceitar tamanho de trabalho.\n3) Corrigir FILEGROWTH se for % ou pequeno.",
+        "READ ONLY": "1) Nada a fazer enquanto a base não receber escritas.\n2) Se voltar a READ_WRITE em FULL: religar o backup de log nesse momento.\n3) Base histórica: considerar SIMPLE ou descontinuar.",
         "SAUDAVEL": "Nada a fazer agora. Se o card voltar a alarmar, reabrir este diagnóstico.",
     }
     next_step = {"text": f"TRIAGEM: {triage[0]} ({triage[1]}).\n" + steps.get(triage[0], ""),
@@ -987,7 +1029,11 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
     since_ts = None
     tkey = triage[0]
     used_chip = f"log a {_num(used_pct, 1)}%" if used_pct is not None else "uso n/d"
-    if tkey == "CADEIA PARADA":
+    if tkey == "READ ONLY":
+        headline = f"BASE {frozen_kind}: LOG SEM ESCRITAS"
+        chain = [frozen_kind, recovery or "?", lrw or "?", used_chip, "sem crescimento", "cadeia de backup não aplicável"]
+        note = "Enquanto a base não receber escritas o log não cresce; ao voltar a READ_WRITE em FULL, religar o backup de log."
+    elif tkey == "CADEIA PARADA":
         headline = "CADEIA DE BACKUP DE LOG INTERROMPIDA"
         chain = [recovery or "?", ("Sem backup de log" if last_log is None else "Backup de log atrasado"), lrw or "LOG_BACKUP",
                  "Log não trunca", "Crescimento contínuo", "Risco de erro 9002 / indisponibilidade"]
@@ -1029,7 +1075,7 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
                  "severity": verdict, "icon": ("fa-check" if verdict == "ok" else "fa-exclamation"),
                  "risk": {"level": verdict, "text": risk_text, "cta": risk_cta}}
 
-    out["diagnosis"] = {"header": {"title": f"Transaction log — {db_name}", "subtitle": f"{display_inst} · Recovery: {recovery or '?'} · {lrw or '?'}", "verdict": verdict},
+    out["diagnosis"] = {"header": {"title": f"Transaction log — {db_name}", "subtitle": f"{display_inst} · Recovery: {recovery or '?'} · {lrw or '?'}" + (f" · {frozen_kind}" if frozen_kind else ""), "verdict": verdict},
                         "since": ({"ts": since_ts.isoformat()} if since_ts else None),
                         "principal": principal,
                         "summary": summary, "problems": problems, "recommendations": recs,
@@ -1042,5 +1088,6 @@ async def tlog_diagnosis(server_id: str, database: str = Query(...),
                               "effective_limit_mb": effective_limit_mb, "effective_pct": effective_pct,
                               "daily_mb": daily_mb, "daily_mb_io": daily_mb_io, "runway_days": runway_days, "headroom_mb": headroom_mb,
                               "hours_since_log_backup": hours_since_log, "chain_state": chain_state, "triage": triage[0],
+                              "frozen_kind": frozen_kind, "db_age_h": db_age_h, "snapshot_backups": snapshot_backups,
                               "thresholds": {"tlog_usage": [tl_warn, tl_crit], "backup_delay_log_h": [lb_warn, lb_crit]}}}
     return out

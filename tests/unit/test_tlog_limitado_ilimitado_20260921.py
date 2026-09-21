@@ -106,3 +106,38 @@ def test_query_traz_as_colunas_novas_e_continua_select_only():
     for col in ('Log_Kind', 'Ceiling_MB', 'Volume_Free_MB', 'Next_Growth_MB', 'KPI_MSSQL_DATAFILES_STG', "File_Type = 'LOG'", '2097152'):
         assert col in q
     assert 'INSERT' not in q.upper() and 'UPDATE ' not in q.upper() and 'DELETE' not in q.upper()
+
+
+# ---- 2026-09-21 (owner, ctrlm_tap_report): base sem ficheiros mas com tecto real na TLOG_STG
+def test_legacy_com_tecto_real_usa_o_tecto():
+    # ctrlm_tap_report: read-only (sem linha em DATAFILES), log 48 MB, max_size 500 MB, 99,1 % do alocado
+    r = _row('SQLHDSPRD405_I01', 'ctrlm_tap_report', 99.12, 'LEGACY', cur=48, ceiling=500)
+    for k in ('Drive', 'Volume_Free_MB', 'Next_Growth_MB'):
+        r.pop(k)
+    r['Used_MB'] = 47.58
+    cls = classify_tlog([r], TH, now=NOW, unlimited_free_gb=GB)
+    assert not cls['critical'] and not cls['warning']
+    assert cls['reconciliation']['normal'] == 1
+
+
+def test_legacy_com_tecto_real_perto_do_tecto_e_critico():
+    r = _row('A', 'ro', 99.0, 'LEGACY', cur=480, ceiling=500)
+    for k in ('Drive', 'Volume_Free_MB', 'Next_Growth_MB'):
+        r.pop(k)
+    assert _sev([r])[('A', 'ro')] == ('CRITICAL', 'TECTO')       # 475,2 / 500 = 95,04 %
+    r2 = _row('A', 'ro2', 99.0, 'LEGACY', cur=450, ceiling=500)
+    assert _sev([r2])[('A', 'ro2')] == ('WARNING', 'TECTO')      # 445,5 / 500 = 89,1 %
+
+
+def test_legacy_com_tecto_abaixo_do_alocado_ou_sentinela_usa_o_alocado():
+    # max_size reduzido abaixo do tamanho actual: o ficheiro nao cresce -> % do alocado
+    r = _row('A', 'shrunk', 96.0, 'LEGACY', cur=1000, ceiling=2)
+    for k in ('Drive', 'Volume_Free_MB', 'Next_Growth_MB'):
+        r.pop(k)
+    assert _sev([r])[('A', 'shrunk')] == ('CRITICAL', 'TECTO')
+    # sentinela 2 TB (Max_Available_MB por omissao) continua a regra antiga
+    r2 = _row('A', 'sent', 96.0, 'LEGACY', cur=1000, ceiling=2097152)
+    for k in ('Drive', 'Volume_Free_MB', 'Next_Growth_MB'):
+        r2.pop(k)
+    assert _sev([r2])[('A', 'sent')] == ('CRITICAL', 'TECTO')
+    assert "State_Desc" in TLOG_BASE_QUERY and "'ONLINE'" in TLOG_BASE_QUERY
