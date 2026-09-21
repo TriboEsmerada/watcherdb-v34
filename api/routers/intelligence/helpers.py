@@ -883,6 +883,7 @@ async def collect_disk_and_tlog(results: Dict[str, Any]) -> None:
         cls = classify_tlog(
             tlog_rows,
             {'warning': _th('tlog_usage', 'warning'), 'critical': _th('tlog_usage', 'critical')},
+            unlimited_free_gb={'warning': _th('filegroup_unlimited_free_gb', 'warning'), 'critical': _th('filegroup_unlimited_free_gb', 'critical')},
             fresh_minutes=_CAPACITY_FRESHNESS_MIN,
             log_late_hours=_th('backup_delay_log', 'warning'))
         tlog_data = [a for a in cls["per_instance"] if a["Critical"] > 0 or a["Warning"] > 0]

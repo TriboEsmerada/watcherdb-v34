@@ -68,12 +68,36 @@ lastlog_ag AS (
     FROM lastlog l
     JOIN ag a ON a.Instance_N = l.Instance_N AND a.Database_N = l.Database_N
     GROUP BY a.AgName, l.Database_N
+),
+logfiles AS (
+    -- 2026-09-21 (owner): tecto e disco por base, a partir dos ficheiros LOG. Drive na STG e' so' a letra (mount
+    -- points colapsam); Volume_Free_MB = 0 = sem visibilidade -> NULL; crescimento em % convertido para MB.
+    SELECT LTRIM(RTRIM(UPPER(Instance)))   AS Instance_N,
+           LTRIM(RTRIM(UPPER([Database]))) AS Database_N,
+           MIN(Drive)                      AS Drive,
+           MAX(CASE WHEN Is_Unlimited = 1 OR Max_Size_MB >= 2097152 THEN 1 ELSE 0 END) AS Any_Unlimited,
+           SUM(CASE WHEN Is_Unlimited = 1 OR Max_Size_MB >= 2097152 THEN 0 ELSE Max_Size_MB END) AS Max_Size_MB_Lim,
+           MIN(NULLIF(Volume_Free_MB, 0))  AS Volume_Free_MB,
+           SUM(CASE WHEN Is_Percent_Growth = 1 THEN Size_MB * Growth_MB / 100.0 ELSE Growth_MB END) AS Next_Growth_MB
+    FROM {schema}.KPI_MSSQL_DATAFILES_STG WITH (NOLOCK)
+    WHERE File_Type = 'LOG'
+    GROUP BY LTRIM(RTRIM(UPPER(Instance))), LTRIM(RTRIM(UPPER([Database])))
 )
 SELECT t.Instance, t.[Database], ISNULL(e.Env, 'Undefined') AS Env,
        t.Percent_Used, t.Used_MB, t.Current_MB, t.Max_Available_MB, t.Update_TS,
        ds.Recovery_Model,
-       COALESCE(lag.Last_Log_Backup_Date, ll.Last_Log_Backup_Date) AS Last_Log_Backup_Date
+       COALESCE(lag.Last_Log_Backup_Date, ll.Last_Log_Backup_Date) AS Last_Log_Backup_Date,
+       CASE WHEN lf.Instance_N IS NULL                                   THEN 'LEGACY'
+            WHEN ISNULL(lf.Next_Growth_MB, 0) = 0                         THEN 'FIXED'
+            WHEN lf.Any_Unlimited = 1 OR t.Max_Available_MB >= 2097152    THEN 'UNLIMITED'
+            ELSE 'LIMITED' END AS Log_Kind,
+       CASE WHEN t.Max_Available_MB IS NULL OR t.Max_Available_MB <= 0 THEN t.Current_MB
+            ELSE ISNULL(NULLIF(lf.Max_Size_MB_Lim, 0), t.Max_Available_MB) END AS Ceiling_MB,
+       lf.Drive, lf.Volume_Free_MB, lf.Next_Growth_MB
 FROM {schema}.KPI_MSSQL_TLOG_USAGE_ACTIVE t WITH (NOLOCK)
+LEFT JOIN logfiles lf
+       ON lf.Instance_N = LTRIM(RTRIM(UPPER(t.Instance)))
+      AND lf.Database_N = LTRIM(RTRIM(UPPER(t.[Database])))
 LEFT JOIN {schema}.KPI_MSSQL_INST_ENVS e WITH (NOLOCK)
        ON LTRIM(RTRIM(UPPER(e.Instance))) = LTRIM(RTRIM(UPPER(t.Instance)))
 LEFT JOIN {schema}.KPI_MSSQL_DB_SETTINGS_STG ds WITH (NOLOCK)
@@ -110,7 +134,45 @@ def _log_backup_age(recovery_model, hours_since_log_backup, log_late_hours):
     return "OK"
 
 
-def classify_tlog(rows, thresholds, now=None, fresh_minutes=1440, log_late_hours=None):
+def _tlog_severity(row, pct, warn, crit, ufree_warn_mb, ufree_crit_mb, demand_mb):
+    """Severidade de uma base (2026-09-21, limitado/ilimitado). Devolve (sev, pct_eff, reason, attention_flag).
+
+    kind: LEGACY (sem ficheiros: regra antiga por alocado), FIXED (crescimento 0), LIMITED (tecto real), UNLIMITED
+    (disk-bound). pct = % do alocado; pct_eff = % do tecto efectivo (LIMITED) ou pct (LEGACY/FIXED) ou None (UNLIMITED).
+    """
+    kind = (row.get("Log_Kind") or "LEGACY").upper()
+    vol = _to_float(row.get("Volume_Free_MB"))          # None = sem visibilidade
+    ng = _to_float(row.get("Next_Growth_MB")) or 0.0
+    cur = _to_float(row.get("Current_MB")) or 0.0
+    used = _to_float(row.get("Used_MB")) or 0.0
+    ceiling = _to_float(row.get("Ceiling_MB")) or 0.0
+    if kind == "LIMITED":
+        cap = ceiling if vol is None else min(ceiling, cur + vol) if ceiling > 0 else cur + vol
+        pct_eff = (used * 100.0 / cap) if cap and cap > 0 else pct
+    elif kind == "UNLIMITED":
+        pct_eff = None
+    else:
+        pct_eff = pct
+    attn = "AUTOGROW_PEQUENO" if (pct > crit and ng > 0 and (ng < cur * 0.01 or ng <= 64)) else None
+    enche = pct > warn
+    if kind in ("LIMITED", "LEGACY", "FIXED") and pct_eff is not None and pct_eff > crit:
+        return "CRITICAL", pct_eff, "TECTO", attn
+    if enche and vol is not None and ng > 0 and vol < ng:
+        return "CRITICAL", pct_eff, "AUTOGROW_NAO_CABE", attn
+    if enche and vol is not None and demand_mb > vol:
+        return "CRITICAL", pct_eff, "VOLUME_SATURADO", attn
+    if kind == "UNLIMITED" and enche and vol is not None and vol <= ufree_crit_mb:
+        return "CRITICAL", pct_eff, "VOLUME_BAIXO", attn
+    if kind in ("LIMITED", "LEGACY", "FIXED") and pct_eff is not None and pct_eff > warn:
+        return "WARNING", pct_eff, "TECTO", attn
+    if kind == "UNLIMITED" and enche and vol is None:
+        return "WARNING", pct_eff, "SEM_VISIBILIDADE", attn
+    if kind == "UNLIMITED" and vol is not None and vol <= ufree_warn_mb:
+        return "WARNING", pct_eff, "VOLUME_BAIXO", attn
+    return "OK", pct_eff, None, attn
+
+
+def classify_tlog(rows, thresholds, now=None, fresh_minutes=1440, log_late_hours=None, unlimited_free_gb=None):
     """Classifica as linhas da TLOG_BASE_QUERY (uma por base).
 
     rows: dicts com Instance/[Database]/Env/Percent_Used/Used_MB/Current_MB/
@@ -137,24 +199,32 @@ def classify_tlog(rows, thresholds, now=None, fresh_minutes=1440, log_late_hours
     cutoff = now - timedelta(minutes=fresh_minutes)
     warn = float(thresholds["warning"])
     crit = float(thresholds["critical"])
-
+    ufree = unlimited_free_gb or {}
+    ufree_warn_mb = float(ufree.get("warning", 10)) * 1024.0
+    ufree_crit_mb = float(ufree.get("critical", 5)) * 1024.0
     critical, warning = [], []
     per_inst = {}
     inst_worst = {}
     rows_fresh = normal = 0
-
+    # 2026-09-21: 1.a passagem -- procura por volume (soma dos proximos crescimentos das bases a encher no mesmo disco)
+    fresh_rows = []
+    demand = {}
     for row in rows or []:
         has_ts = "Update_TS" in row
         upd = _parse_dt(row.get("Update_TS")) if has_ts else None
         if has_ts and (upd is None or upd < cutoff):
             continue
+        fresh_rows.append((row, upd))
+        drv = row.get("Drive")
+        if drv and (_to_float(row.get("Percent_Used")) or 0.0) > warn:
+            k = ((row.get("Instance") or "").strip().upper(), str(drv).upper())
+            demand[k] = demand.get(k, 0.0) + (_to_float(row.get("Next_Growth_MB")) or 0.0)
+    for row, upd in fresh_rows:
         rows_fresh += 1
-
         env_key = _norm_env(row)  # normaliza row['Env'] in place (infere do nome)
         inst = (row.get("Instance") or "").strip()
         db = row.get("Database") or ""
         pct = _to_float(row.get("Percent_Used")) or 0.0
-
         agg = per_inst.setdefault((inst, row["Env"]), {
             "Instance": inst, "Env": row["Env"], "Total_Databases": 0,
             "Critical": 0, "Warning": 0, "Normal": 0, "Last_Check": None,
@@ -162,12 +232,16 @@ def classify_tlog(rows, thresholds, now=None, fresh_minutes=1440, log_late_hours
         agg["Total_Databases"] += 1
         if upd is not None and (agg["Last_Check"] is None or upd > agg["Last_Check"]):
             agg["Last_Check"] = upd
-
-        if pct > crit:
-            sev = "CRITICAL"
+        drv = row.get("Drive")
+        dem = demand.get((inst.upper(), str(drv).upper()), 0.0) if drv else 0.0
+        sev, pct_eff, reason, attn = _tlog_severity(row, pct, warn, crit, ufree_warn_mb, ufree_crit_mb, dem)
+        row["Log_Kind"] = row.get("Log_Kind") or "LEGACY"
+        row["Pct_Eff"] = round(pct_eff, 2) if pct_eff is not None else None
+        row["Reason"] = reason
+        row["Attention_Flag"] = attn
+        if sev == "CRITICAL":
             agg["Critical"] += 1
-        elif pct > warn:
-            sev = "WARNING"
+        elif sev == "WARNING":
             agg["Warning"] += 1
         else:
             agg["Normal"] += 1
@@ -202,7 +276,11 @@ def classify_tlog(rows, thresholds, now=None, fresh_minutes=1440, log_late_hours
         row["Instance_Severity"] = inst_worst.get(row.get("Instance", "").strip(), row["Severity"])
 
     def _sort_key(r):
-        return (-(_to_float(r.get("Percent_Used")) or 0.0), r.get("Instance") or "", str(r.get("Database") or ""))
+        # 2026-09-21: o que manda e' o % efectivo (tecto/disco); sem ele, o % do alocado
+        p = _to_float(r.get("Pct_Eff"))
+        if p is None:
+            p = _to_float(r.get("Percent_Used")) or 0.0
+        return (-p, r.get("Instance") or "", str(r.get("Database") or ""))
 
     critical.sort(key=_sort_key)
     warning.sort(key=_sort_key)
