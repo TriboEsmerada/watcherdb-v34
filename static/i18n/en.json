@@ -3097,6 +3097,8 @@
     "help_io_how": "Numbers are cumulative since SQL Server started: latency is an average over that period, not the current moment. Colours follow the configured disk latency thresholds.",
     "help_io_when": "Latency above the threshold on busy files, especially log writes or data reads.",
     "help_io_next": "Check Waits for PAGEIOLATCH or WRITELOG now and take the file and disk to the storage team.",
+    "fleet_theme_sub_stg": "{n} rows · last collection {ts} · {t} instances collected",
+    "fleet_theme_note_stg": "No channel selected: last collector snapshot, not live. Only what is out of the ordinary. Click a row to open that instance in this program, live.",
     "fleet_theme_title": "Fleet · {theme}",
     "fleet_theme_sub": "{n} rows · {d} instances drilled this cycle · {t} in the fleet",
     "fleet_theme_note": "No channel selected: only the instances with a problem right now (the same drill as Fleet). Click a row to open that instance in this program; pick a channel to see everything.",

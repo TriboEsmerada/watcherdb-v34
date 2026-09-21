@@ -3097,6 +3097,8 @@
     "help_io_how": "Los números se acumulan desde el arranque de SQL Server: la latencia es una media de ese periodo, no del momento. Los colores siguen los umbrales de latencia de disco configurados.",
     "help_io_when": "Latencia por encima del umbral en ficheros con mucho tráfico, sobre todo escritura en el log o lectura en los datos.",
     "help_io_next": "Confirme en Waits si hay PAGEIOLATCH o WRITELOG ahora y lleve el fichero y el disco al equipo de almacenamiento.",
+    "fleet_theme_sub_stg": "{n} filas · última recolección {ts} · {t} instancias recolectadas",
+    "fleet_theme_note_stg": "Sin canal seleccionado: última recolección del colector, no es en vivo. Solo lo que está fuera de lo normal. Haga clic en una fila para abrir la instancia en este programa en vivo.",
     "fleet_theme_title": "Flota · {theme}",
     "fleet_theme_sub": "{n} filas · {d} instancias con drill en este ciclo · {t} en la flota",
     "fleet_theme_note": "Sin canal seleccionado: solo las instancias con problema ahora (el mismo drill de Fleet). Haga clic en una fila para abrir la instancia en este programa; elija un canal para ver todo.",

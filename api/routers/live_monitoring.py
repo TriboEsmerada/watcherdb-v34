@@ -1187,6 +1187,145 @@ SELECT
 """
 
 
+# 2026-09-21 (owner, lote 2 da frota por tema): TLog/Memory/Jobs/Sched/IO sem canal, da ULTIMA COLETA (staging V1).
+# So' SELECT via execute_intelligence_query (sql_monitoring). Caminho com 3 segmentos: /fleet/{program} colidiria com
+# /{instance}/tlog, /{instance}/memory, ... declarados acima.
+_FLEET_THEME_STG = ("tlog", "memory", "jobs", "schedulers", "io")
+
+
+def _fleet_theme_tlog():
+    """Painel T-Log da frota (owner: igual ao relatorio TLOG_CONSUMO_FROTA sem os 2 primeiros graficos): TODAS as bases da
+    TLOG_USAGE_ACTIVE com a regra do KPI, + volumes (DISK_USAGE) + n.o de ficheiros de log (DATAFILES). Devolve (rows, total, extra)."""
+    from datetime import datetime
+    from api.routers.intelligence.helpers import _th
+    from api.routers.intelligence.tlog_usage_classes import TLOG_BASE_QUERY, classify_tlog, _log_backup_age, _to_float
+    S = INTELLIGENCE_SCHEMA
+    late_h = float(_th("backup_delay_log", "warning") or 24)
+    base = [dict(r) for r in (execute_intelligence_query(TLOG_BASE_QUERY.format(schema=S), raise_on_error=False) or [])]
+    cls = classify_tlog(base, {"warning": _th("tlog_usage", "warning"), "critical": _th("tlog_usage", "critical")},
+                        unlimited_free_gb={"warning": _th("filegroup_unlimited_free_gb", "warning"), "critical": _th("filegroup_unlimited_free_gb", "critical")},
+                        log_late_hours=late_h)
+    sev = {}
+    for lst, s in ((cls.get("critical") or [], "CRITICAL"), (cls.get("warning") or [], "WARNING")):
+        for r in lst:
+            sev[(str(r.get("Instance") or "").upper(), str(r.get("Database") or "").upper())] = s
+    insts = {str(r.get("Instance") or "").upper() for r in base}
+    disks_raw = execute_intelligence_query(f"SELECT Instance, Drive, Total_MB, Free_MB, Percent_Free FROM {S}.KPI_MSSQL_DISK_USAGE_STG WITH (NOLOCK)", raise_on_error=False) or []
+    by_inst = {}
+    for d in disks_raw:
+        by_inst.setdefault(str(d.get("Instance") or "").upper(), []).append(d)
+    nf_rows = execute_intelligence_query(f"SELECT Instance, [Database], COUNT(*) AS n FROM {S}.KPI_MSSQL_DATAFILES_STG WITH (NOLOCK) WHERE File_Type = 'LOG' GROUP BY Instance, [Database]", raise_on_error=False) or []
+    nf = {(str(x.get("Instance") or "").upper(), str(x.get("Database") or "").upper()): int(x.get("n") or 0) for x in nf_rows}
+    now = datetime.now()
+    rows = []
+    for r in base:
+        inst, db = str(r.get("Instance") or ""), str(r.get("Database") or "")
+        key = (inst.upper(), db.upper())
+        kind = (r.get("Log_Kind") or "LEGACY").upper()
+        used = _to_float(r.get("Used_MB")) or 0.0
+        cur = _to_float(r.get("Current_MB")) or 0.0
+        pct = _to_float(r.get("Percent_Used")) or 0.0
+        ceiling = _to_float(r.get("Ceiling_MB")) or 0.0
+        vf = _to_float(r.get("Volume_Free_MB"))
+        pe = _to_float(r.get("Pct_Eff"))
+        if pe is None:   # UNLIMITED: ate' onde pode crescer hoje = alocado + livre no volume (relatorio 21/09)
+            cap = (cur + vf) if vf else 0.0
+            pe = (used * 100.0 / cap) if cap > 0 else pct
+        t = ceiling if (kind in ("LIMITED", "FIXED") or (kind == "LEGACY" and 0 < ceiling < 2097152)) else None
+        last_log = r.get("Last_Log_Backup_Date")
+        if isinstance(last_log, str):   # execute_intelligence_query devolve datas ja' em ISO
+            try:
+                last_log = datetime.fromisoformat(last_log[:26])
+            except ValueError:
+                last_log = None
+        hours = max(0.0, round((now - last_log).total_seconds() / 3600.0, 1)) if isinstance(last_log, datetime) else None
+        ba = _log_backup_age(r.get("Recovery_Model"), hours, late_h)
+        letter = str(r.get("Drive") or "").upper().rstrip(":\\")[:1]
+        disk = None
+        for d in by_inst.get(inst.upper(), []):
+            drv = str(d.get("Drive") or "").upper()
+            dfree = _to_float(d.get("Free_MB"))
+            mesmo_livre = vf is not None and dfree is not None and abs(dfree - vf) < 1
+            if mesmo_livre:                      # o volume do log (mount points de cluster nao partilham a letra)
+                disk = d
+                break
+            if letter and drv.startswith(letter + ":") and disk is None:
+                disk = d
+        rows.append({"i": inst, "d": db, "e": r.get("Env") or "Undefined", "r": str(r.get("Recovery_Model") or "?").upper(), "k": kind,
+                     "u": round(used, 1), "c": round(cur, 1), "p": round(pct, 1), "t": t, "pe": round(pe, 2), "s": sev.get(key, "OK"),
+                     "g": _to_float(r.get("Next_Growth_MB")), "dr": (str(disk.get("Drive")) if disk else (letter or None)),
+                     "vf": vf, "vt": _to_float(disk.get("Total_MB")) if disk else None, "vp": _to_float(disk.get("Percent_Free")) if disk else None,
+                     "lb": last_log.isoformat() if isinstance(last_log, datetime) else (str(last_log) if last_log else None), "ba": ba,
+                     "nf": nf.get(key, 0), "rs": r.get("Reason"), "Update_TS": r.get("Update_TS")})
+    disks = [{"i": str(d.get("Instance")), "dr": str(d.get("Drive")), "t": _to_float(d.get("Total_MB")), "f": _to_float(d.get("Free_MB")), "pf": _to_float(d.get("Percent_Free"))}
+             for d in disks_raw if str(d.get("Instance") or "").upper() in insts]
+    return rows, len(insts), {"disks": disks, "late_h": late_h, "critical": len(cls.get("critical") or []), "warning": len(cls.get("warning") or [])}
+
+
+def _fleet_theme_rows(program: str):
+    """Linhas da frota para um tema, lidas da staging. Devolve (rows, total_instances[, extra])."""
+    S = INTELLIGENCE_SCHEMA
+    if program == "tlog":
+        return _fleet_theme_tlog()
+    if program == "memory":
+        rows = execute_intelligence_query(f"""
+            SELECT o.Instance, o.Status, o.Memory_Usage_Pct, o.PLE_Seconds, o.Total_Memory_MB, o.Available_Memory_MB, o.Max_Server_Memory_MB,
+                   m.Memory_Pressure_Pct, m.Recommended_Max_Memory_MB, m.Max_Memory_Status, m.Buffer_Pool_MB, m.SQL_Plans_MB, o.Update_TS
+            FROM {S}.KPI_MSSQL_OS_PERF_STG o WITH (NOLOCK)
+            LEFT JOIN {S}.KPI_MSSQL_SQL_MEMORY_CONFIG_STG m WITH (NOLOCK) ON m.Instance = o.Instance
+            WHERE ISNULL(o.Status, 'OK') <> 'OK' OR ISNULL(m.Max_Memory_Status, 'OK') <> 'OK'
+               OR ISNULL(o.PLE_Seconds, 9999) < 300 OR ISNULL(o.Available_Memory_MB, 99999) < 1024
+            ORDER BY CASE WHEN o.Status = 'CRITICAL' THEN 0 WHEN o.Status = 'WARNING' THEN 1 ELSE 2 END, o.Available_Memory_MB ASC""", raise_on_error=False) or []
+        tot = execute_intelligence_query(f"SELECT COUNT(*) AS n FROM {S}.KPI_MSSQL_OS_PERF_STG WITH (NOLOCK)", raise_on_error=False) or []
+        return rows, int((tot[0] or {}).get("n") or 0) if tot else 0
+    if program == "jobs":
+        rows = execute_intelligence_query(f"""
+            SELECT TOP 80 Instance, JobName, LastRunStatus, LastRunDate, LastRunDurationSec, NextRunDate, Category, IsEnabled, HasSchedule, Update_TS
+            FROM {S}.KPI_MSSQL_AGENT_JOBS_STG WITH (NOLOCK)
+            WHERE LastRunStatus IN ('Failed', 'Cancelled') AND IsEnabled = 1
+            ORDER BY CASE WHEN LastRunStatus = 'Failed' THEN 0 ELSE 1 END, LastRunDate DESC""", raise_on_error=False) or []
+        tot = execute_intelligence_query(f"SELECT COUNT(DISTINCT Instance) AS n FROM {S}.KPI_MSSQL_AGENT_JOBS_STG WITH (NOLOCK)", raise_on_error=False) or []
+        return rows, int((tot[0] or {}).get("n") or 0) if tot else 0
+    if program == "schedulers":
+        rows = execute_intelligence_query(f"""
+            SELECT s.Instance, ISNULL(w.Status, 'OK') AS Status, s.Max_Workers, s.Current_Workers, s.Running_Workers, w.Suspended_Workers, s.Worker_Usage_Pct,
+                   s.Total_Schedulers, s.Avg_Runnable_Tasks, s.Max_Runnable_Tasks, s.Total_Pending_IO, s.Avg_Work_Queue, s.Update_TS
+            FROM {S}.KPI_MSSQL_SCHEDULER_HEALTH_STG s WITH (NOLOCK)
+            LEFT JOIN {S}.KPI_MSSQL_WORKER_THREADS_STG w WITH (NOLOCK) ON w.Instance = s.Instance
+            WHERE ISNULL(w.Status, 'OK') <> 'OK' OR ISNULL(s.Max_Runnable_Tasks, 0) > 0 OR ISNULL(s.Total_Pending_IO, 0) > 0 OR ISNULL(s.Worker_Usage_Pct, 0) > 50
+            ORDER BY CASE WHEN ISNULL(w.Status, 'OK') <> 'OK' THEN 0 ELSE 1 END, s.Worker_Usage_Pct DESC, s.Max_Runnable_Tasks DESC""", raise_on_error=False) or []
+        tot = execute_intelligence_query(f"SELECT COUNT(*) AS n FROM {S}.KPI_MSSQL_SCHEDULER_HEALTH_STG WITH (NOLOCK)", raise_on_error=False) or []
+        return rows, int((tot[0] or {}).get("n") or 0) if tot else 0
+    if program == "io":
+        rows = execute_intelligence_query(f"""
+            SELECT TOP 80 Instance, Database_Name, File_Type, File_Name, Size_MB, Read_Latency_Ms, Write_Latency_Ms, Num_Of_Reads, Num_Of_Writes, Status, Update_TS
+            FROM {S}.KPI_MSSQL_FILE_IO_STG WITH (NOLOCK)
+            WHERE Status IN ('WARNING', 'CRITICAL')
+            ORDER BY CASE WHEN Status = 'CRITICAL' THEN 0 ELSE 1 END, (ISNULL(Read_Latency_Ms, 0) + ISNULL(Write_Latency_Ms, 0)) DESC""", raise_on_error=False) or []
+        tot = execute_intelligence_query(f"SELECT COUNT(DISTINCT Instance) AS n FROM {S}.KPI_MSSQL_FILE_IO_STG WITH (NOLOCK)", raise_on_error=False) or []
+        return rows, int((tot[0] or {}).get("n") or 0) if tot else 0
+    return [], 0
+
+
+@router.get("/fleet/theme/{program}")
+async def get_fleet_theme(program: str):
+    """Frota por tema a partir da staging (2026-09-21, owner): so' SELECT na WatcherDB_Intelligence, nunca nas instancias."""
+    prog = (program or "").strip().lower()
+    if prog not in _FLEET_THEME_STG:
+        raise HTTPException(status_code=404, detail=f"fleet theme desconhecido: {prog}")
+    res = _fleet_theme_rows(prog)
+    rows, total = res[0], res[1]
+    extra = res[2] if len(res) > 2 else {}
+    ts = None
+    for r in rows:
+        v = r.get("Update_TS")
+        if v is not None and (ts is None or str(v) > str(ts)):
+            ts = v
+    payload = {"fleet_theme": prog, "rows": rows, "count": len(rows), "total_instances": total, "collected_at": ts, "timestamp": time.time()}
+    payload.update(extra)
+    return _live_json(payload)
+
+
 @router.get("/fleet/dashboard")
 async def get_fleet_dashboard():
     """
