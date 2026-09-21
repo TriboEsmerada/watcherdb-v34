@@ -82,7 +82,7 @@ def test_tlog_falls_back_to_legacy_when_dm_db_log_stats_missing(monkeypatch):
 def test_portal_neutral_state_without_instance():
     assert "function _liveShowNoInstance(tabId, program)" in PORTAL
     assert "_liveShowNoInstance(tabId, program);  // 2026-09-11" in PORTAL
-    assert "if (!instance) { if (_liveProgram !== 'fleet') _liveShowNoInstance(tabId, null); return; }" in PORTAL
+    assert "if (!instance) { if (_liveProgram !== 'fleet') liveSetProgram(tabId, _liveProgram); return; }" in PORTAL   # 2026-09-21: o programa decide (frota por tema ou neutro)
     assert "_kpiTp('live.error_http', 'Erro HTTP {code}', { code: errCode })" in PORTAL
     assert "${r.commit_lag_sec||0}" not in PORTAL
     assert "if (_instAtCall !== _liveInstance || _progAtCall !== _liveProgram) return;" in PORTAL
