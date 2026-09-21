@@ -9,7 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PORTAL = (ROOT / "templates/watcherdb_portal.html").read_text(encoding="utf-8")
 LIVE = PORTAL[PORTAL.index("const _liveLastData = {};"):PORTAL.index("// Auto-open via URL param ?autoLive=1")]
-TEMAS = ("queries", "blocking", "tempdb", "waits", "alwayson", "connections", "errorlog", "space")
+TEMAS = ("queries", "blocking", "tempdb", "waits", "alwayson", "connections", "errorlog", "space",
+         "tlog", "memory", "jobs", "schedulers", "io")   # 2026-09-21 lote 2: os 5 ultimos vem da staging
 
 
 def test_modo_frota_por_tema_existe_e_cobre_os_8_temas():
@@ -27,7 +28,7 @@ def test_sem_canal_o_programa_decide_e_o_refresh_usa_o_fleet():
     assert "const isFleet = _liveFleetMode();" in LIVE
     assert "if ((_liveInstance || _liveFleetMode()) && !_livePaused) {" in LIVE
     # o despacho so' entra em modo frota (sem instancia) e com payload do Fleet (instances)
-    assert "if (program !== 'fleet' && !_liveInstance && _LIVE_FLEET_THEME[program] && data && data.instances) return _liveRenderFleetTheme(program, data, tabId);" in LIVE
+    assert "if (program !== 'fleet' && !_liveInstance && _LIVE_FLEET_THEME[program] && data && (data.instances || data.fleet_theme)) return _liveRenderFleetTheme(program, data, tabId);" in LIVE   # lote 2: payload da staging
     # medidores: escondidos em modo frota, voltam ao escolher canal
     assert "s.style.display = _liveFleetMode(program) ? 'none' : '';" in LIVE and "_liveGaugesVisible(tabId, true);" in LIVE
     # programas sem vista de frota mantem o estado neutro (o ramo else de liveSetProgram continua)
