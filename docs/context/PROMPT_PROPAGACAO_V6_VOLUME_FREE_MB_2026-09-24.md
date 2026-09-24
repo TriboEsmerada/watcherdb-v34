@@ -2,9 +2,9 @@
 
 **Data:** 2026-09-24
 **Origem:** WatcherDB V3.4 + WatcherDB Intelligence V1
-**Commits:** `e38409f`, `ed35ccc` (V1, ramo `wave-b-indexacao-dmv`, publicados)
+**Commits:** `e38409f`, `ed35ccc`, `18f9117` (V1, ramo `wave-b-indexacao-dmv`, publicados)
 
-Três correções no recolhedor e no canónico. O V6 tem cópias próprias destes
+Quatro correções no recolhedor e no canónico. O V6 tem cópias próprias destes
 ficheiros — confirma cada uma na tua árvore antes de aplicar, porque a V1 e a
 V3.4 já tinham divergido entre si e é provável que o V6 também tenha.
 
@@ -185,6 +185,139 @@ Efeito em produção: **nenhum** — as tabelas vivas já estão a 256.
 
 ---
 
+## 4. O recolhedor só via 43 das 59 instâncias (`18f9117`)
+
+> Esta era a rubrica "Cobertura do `collect_datafiles`" que a versão anterior
+> desta nota deixava em aberto, com a observação *"vale mais do que tudo o que
+> está acima"*. Ficou resolvida na mesma sessão. **Aplica esta antes das outras
+> três** — corrigir o JOIN torna corretos os ficheiros que lá estão; isto põe lá
+> os que faltam.
+
+### O defeito
+
+`collect_datafiles.py` percorre as bases de `sys.databases` e monta, por base,
+um bloco `USE [base]; ... INSERT #Datafiles ...` dentro de um `N'...'`, cada um
+envolvido em `BEGIN TRY ... BEGIN CATCH END CATCH`.
+
+O `CATCH` vazio dava a ilusão de que uma base problemática era simplesmente
+saltada. Não é o que acontece. Numa réplica **secundária** de AG, o `USE` falha
+com **erro 976** (*The target database is not configured for online access*), e
+o 976 tem severidade que aborta o lote inteiro — o `TRY/CATCH` por base **não o
+apanha**. Basta uma base nessas condições para o servidor inteiro não entregar
+nada, com as outras ~90 bases dele. Daí o número oscilar entre execuções: muda
+conforme qual a base que calha primeiro e qual o estado do AG nesse momento.
+
+O mesmo vale para o **978** (réplica legível que exige
+`ApplicationIntent=ReadOnly`) e para o **916** (a conta não tem acesso à base).
+
+### Porque este ficheiro ficou para trás
+
+Não é um defeito novo. O `CHANGELOG_JOBS_COLETA.md:406-414` regista que em
+**2026-02-17** este exato problema foi corrigido nos outros três recolhedores
+com SQL dinâmico por base. O `collect_datafiles.py` ficou de fora dessa wave e
+era o único que ainda dependia só do `CATCH`. **Confirma na tua árvore se o V6
+herdou a wave de Fevereiro completa ou pela metade.**
+
+### A correção
+
+Filtrar **antes** do loop, em vez de esperar que o `CATCH` salve. É o filtro já
+provado em `collect_tlog_usage.py:41-47`:
+
+```sql
+DECLARE @SqlVersion INT = CAST(SERVERPROPERTY('ProductMajorVersion') AS INT);
+
+IF OBJECT_ID('tempdb..#AGSecondary') IS NOT NULL DROP TABLE #AGSecondary;
+CREATE TABLE #AGSecondary (database_id INT);
+
+IF @SqlVersion >= 11
+BEGIN
+    INSERT INTO #AGSecondary (database_id)
+    EXEC sys.sp_executesql N'
+        SELECT DISTINCT drs.database_id
+        FROM sys.dm_hadr_database_replica_states drs
+        INNER JOIN sys.dm_hadr_availability_replica_states ars
+                ON ars.replica_id = drs.replica_id
+        WHERE drs.is_local = 1 AND ars.role_desc = ''SECONDARY''';
+END
+```
+
+e, no `WHERE` que escolhe as bases:
+
+```sql
+AND HAS_DBACCESS(d.name) = 1
+AND d.database_id NOT IN (SELECT database_id FROM #AGSecondary);
+```
+
+O `TRY/CATCH` fica como defesa secundária, não como mecanismo primário.
+
+**O gate de versão não é decorativo.** As DMV `sys.dm_hadr_*` só existem em SQL
+2012+. Se o texto que as menciona não estiver dentro de um `sp_executesql`
+aninhado **e** atrás do `ProductMajorVersion >= 11`, o lote inteiro falha a
+compilar nas instâncias antigas da frota (2008 R2) — trocavas um buraco de
+cobertura por outro maior. Com o gate, nessas instâncias `#AGSecondary` fica
+vazia e `NOT IN (vazio)` deixa passar tudo, que é o comportamento certo: num
+servidor sem AG não há secundários para excluir.
+
+### Bónus na mesma passagem
+
+`FILEPROPERTY(df.name, 'SpaceUsed')` era chamado **três vezes por ficheiro**
+(espaço usado, espaço livre e percentagem). Passa a uma só, por `CROSS APPLY`:
+
+```sql
+CROSS APPLY (SELECT FILEPROPERTY(df.name, 'SpaceUsed') AS SpaceUsedPages) su
+```
+
+No `SQLIDSPRD03_I01` são ~1 490 leituras em vez de ~4 460, e as três colunas
+passam a ser coerentes entre si por virem da mesma leitura.
+
+### A esteira, medida antes de aplicar
+
+O filtro exclui **todos** os secundários locais, incluindo os legíveis. Num
+servidor que hoje funcione e tenha secundários legíveis, esses ficheiros
+deixariam de ser recolhidos. Medida na frota: das **191** bases de AG com
+ficheiros, as **191** tinham linha na `KPI_MSSQL_TLOG_USAGE_ACTIVE` — que já
+aplica este mesmo filtro, logo foram recolhidas no primário. Perda: **zero**.
+
+Corre o equivalente no V6 antes de aplicar:
+`docs/context/sql/esteira_filtro_ag_2026-09-24.sql`.
+
+### Medição na frota, antes e depois
+
+| | Antes | Depois |
+|---|---|---|
+| Instâncias com ficheiros | 43 (18-19 nalguns ciclos) | **58 de 59** |
+| Instâncias em falta | 16 | **1** (`SQLHDSPRD213_I01`, 31,96% livre) |
+| Bases sem ficheiro de log | 37 em 17 instâncias | **8 em 3** |
+| Coerência do `Volume_Free_MB` | 3 948 / 0 errados | **7 709 / 0 errados** |
+
+As instâncias recuperadas incluem as que mais importavam: `SQLMDMPRD04_I01`
+(2,81% livre), `SQLHDSPRD405_I01` (8,82%), `SQLMDMPRD02_I01` (10,67%).
+
+A última linha é o no-regression do `ed35ccc` (secção 1): o número de ficheiros
+quase duplicou e continuam zero errados. **Corre-a depois de aplicares** — é a
+melhor prova de que as duas correções seguram juntas.
+
+### Consequência para o KPI de T-Log
+
+O ramo `LEGACY` — inventado a 21/09 para classificar bases sem ficheiro de log
+conhecido — **não é uma categoria legítima de bases**. É este buraco de
+cobertura com outro nome. Caiu de 37 bases para 8. Se o V6 tem a mesma
+classificação, revê-a depois de aplicar: o que sobra são poucos casos e merecem
+diagnóstico próprio, não um ramo de fallback.
+
+### Armadilha do ficheiro
+
+Todo o corpo do SQL por base vive dentro de um template `N'...'`. **Qualquer
+plica solta fecha o literal**, incluindo dentro de um comentário. A primeira
+versão deste lote levava um comentário em português abreviado (`le' o ficheiro`)
+e os 6 servidores de TST responderam
+`Incorrect syntax near 'o'. (102)`. Apanhado pelo `--dry-run`, zero registos
+gravados. Há um teste a guardar isto
+(`test_sem_plicas_soltas_no_sql_dinamico`) que distingue as três plicas
+legítimas de concatenação (`USE ' + QUOTENAME(d.name) + N';`) das ilegítimas.
+
+---
+
 ## Cuidados ao aplicar no V6
 
 1. **Confirma os números de linha na tua árvore.** A V1 e a V3.4 têm cópias do
@@ -211,11 +344,17 @@ Scripts idempotentes com `--check` (valida âncoras, não escreve) e `--preview 
 | Script | Árvore |
 |---|---|
 | `docs/context/DATAFILES_VOLUME_JOIN_2026-09-23_apply.py` | V1 |
+| `docs/context/DATAFILES_COBERTURA_2026-09-24_apply.py` | V1 |
 | `docs/context/CANONICAL_DRIVE_260_2026-09-24_apply.py` | V1 |
 | `docs/context/CANONICAL_DRIVE_260_2026-09-24_apply.py` | V3.4 |
 
-Testes: `tests/unit/test_datafiles_volume_join_20260923.py` (7 âncoras, offline,
-sem BD).
+Testes, offline e sem BD:
+`tests/unit/test_datafiles_volume_join_20260923.py` (7 âncoras) e
+`tests/unit/test_datafiles_cobertura_20260924.py` (10 âncoras).
+
+Consultas de verificação (V3.4, correm com `docs/context/sql/_run.py`, só
+leitura): `coerencia_volume_free_2026-09-23.sql`,
+`cobertura_datafiles_2026-09-24.sql`, `esteira_filtro_ag_2026-09-24.sql`.
 
 ---
 
@@ -223,14 +362,12 @@ sem BD).
 
 Levantado durante a sessão, por dimensionar:
 
-- **Cobertura do `collect_datafiles`.** Cada execução recolhe de **18 ou 19 de
-  42 servidores**, e o conjunto muda. `TIMEOUT_SECONDS = 60` em
-  `base_collector.py:118`; as falhas são ~12 timeouts, 5× erro 976 (secundário
-  de AG sem leitura), 1× erro 978 (exige `ApplicationIntent=ReadOnly`) e 1× erro
-  139 (`OATXP01` é anterior ao SQL Server 2008 e não suporta
-  `DECLARE @sql NVARCHAR(MAX) = N''`). Corrigir o JOIN torna corretos os
-  ficheiros que lá estão; não põe lá os que faltam. **Vale mais do que tudo o
-  que está acima.**
+- **SQL Server 2005/2008 no `collect_datafiles`.** Resolvida a cobertura
+  (secção 4), sobra o `OATXP01`: erro **139**, porque é anterior ao SQL Server
+  2008 e não suporta `DECLARE @sql NVARCHAR(MAX) = N''` (inicialização na mesma
+  linha da declaração). Exige separar declaração de atribuição em todo o
+  recolhedor, e provavelmente o caminho de cursor completo. É a única instância
+  da frota nessa condição.
 - **Gravação silenciosa.** A execução das 15:19 de 2026-09-23 recolheu 1 936
   registos e nenhum dos seis slots BLUE/GREEN ficou atualizado. O log não tem
   uma única linha de armazenamento, nem de sucesso nem de falha.
