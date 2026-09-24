@@ -1,0 +1,1 @@
+SELECT 'VERSAO' AS Bloco, Instance, Version, Is_Available, Update_TS FROM dbo.KPI_MSSQL_INST_AVAILABILITY_STG WITH (NOLOCK) WHERE Instance LIKE 'SQLHDSPRD502%' OR Instance LIKE 'OATXP01%' OR Version LIKE '10.%' OR Version LIKE '9.%' ORDER BY Version;
