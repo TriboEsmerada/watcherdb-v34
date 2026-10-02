@@ -19,9 +19,10 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 
 from api.error_helpers import safe_http_error
+from api.role_redaction import RoleRedactingRoute
 from pydantic import BaseModel
 
 from modules.performance.base import InvestigationResult
@@ -29,7 +30,24 @@ from modules.performance.investigators import get_investigator, get_registry
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/performance", tags=["Performance Intelligence"])
+# 2026-09-24 (P0 atribuicao app): este router devolve texto SQL cru, logins e hosts, tal como o
+# LIVE, e nao tinha nenhum gate de role. Redaccao ao nivel do router (viewer ve hash/oculto;
+# dba/admin veem tudo) e gate de escrita nos POST que gravam ou embutem SQL em prosa.
+router = APIRouter(
+    prefix="/api/v1/performance",
+    tags=["Performance Intelligence"],
+    route_class=RoleRedactingRoute,
+)
+
+
+async def _perf_write_gate(request: Request) -> None:
+    """dba/admin para escrever (eixo ler-vs-escrever do RBAC, decisao do owner 2026-08-16).
+
+    Usar no decorador (`dependencies=[Depends(_perf_write_gate)]`), nunca no corpo: o FastAPI
+    resolve as dependencias antes do corpo, logo o viewer recebe 403 e nao 422 (R2-01 do QA).
+    """
+    from api.routers.auth_compat import _require_dba
+    await _require_dba(request)
 
 RUNBOOKS_DIR = Path(__file__).resolve().parent.parent.parent / "modules" / "performance" / "runbooks"
 
@@ -296,7 +314,7 @@ class ActionHistoryRecord(BaseModel):
     investigation_id: Optional[str] = None
 
 
-@router.post("/action-history")
+@router.post("/action-history", dependencies=[Depends(_perf_write_gate)])
 async def register_action(rec: ActionHistoryRecord):
     from api.connection_pool import execute_on_intelligence
     from datetime import datetime
@@ -332,7 +350,7 @@ class TicketRequest(BaseModel):
     pending_approval: bool = True
 
 
-@router.post("/ticket-response")
+@router.post("/ticket-response", dependencies=[Depends(_perf_write_gate)])
 async def ticket_response(req: TicketRequest):
     from api.async_db import async_execute_on_intelligence
     from modules.performance.engines.ticket_generator import TicketResponseGenerator

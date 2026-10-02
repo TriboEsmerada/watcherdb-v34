@@ -101,70 +101,16 @@ async def _live_role_gate(request: Request) -> None:
 # query. Sai um hash estavel, que deixa o viewer agrupar ocorrencias da mesma
 # query e dizer "sao todas a mesma" sem ver o texto.
 
-_REDACTED = "[oculto - requer nivel dba]"
-
-_SQL_FIELDS = frozenset({
-    "sql_text", "full_sql_text", "full_query_text", "blocked_sql", "blocker_sql",
-})
-_IDENTITY_FIELDS = frozenset({
-    "login_name", "blocked_login", "blocker_login",
-    "host_name", "client_host", "blocked_host", "blocker_host",
-    "program_name",
-})
-
-
-def _redact_node(node):
-    """Percorre a arvore da resposta e redige os campos sensiveis."""
-    if isinstance(node, list):
-        return [_redact_node(item) for item in node]
-    if isinstance(node, dict):
-        saida = {}
-        for chave, valor in node.items():
-            if chave in _SQL_FIELDS and isinstance(valor, str) and valor.strip():
-                digest = hashlib.sha256(valor.encode("utf-8", "replace")).hexdigest()[:12]
-                saida[chave] = f"{_REDACTED} #{digest}"
-            elif chave in _IDENTITY_FIELDS and isinstance(valor, str) and valor.strip():
-                saida[chave] = _REDACTED
-            else:
-                saida[chave] = _redact_node(valor)
-        return saida
-    return node
-
-
-def _role_do_pedido(request: Request) -> Optional[str]:
-    """Role do utilizador, posto no request.state pelo AuthEnforcementMiddleware."""
-    user = getattr(request.state, "user", None)
-    if isinstance(user, dict):
-        return user.get("role")
-    return None
-
-
-class _RoleRedactingRoute(APIRoute):
-    """Redige a resposta quando quem pede e' `viewer`. `dba`/`admin` veem tudo."""
-
-    def get_route_handler(self) -> Callable:
-        handler_original = super().get_route_handler()
-
-        async def handler(request: Request) -> Response:
-            response = await handler_original(request)
-            if _role_do_pedido(request) != "viewer":
-                return response
-            corpo = getattr(response, "body", None)
-            if not corpo or "application/json" not in response.headers.get("content-type", ""):
-                return response
-            try:
-                payload = json.loads(corpo)
-            except Exception:
-                # Fail-closed seria devolver 500 num ecra de diagnostico; aqui o
-                # risco e' o inverso do habitual: um corpo que nao e' JSON nao
-                # contem os campos que nos preocupam.
-                return response
-            novo = json.dumps(_redact_node(payload), default=str).encode("utf-8")
-            response.body = novo
-            response.headers["content-length"] = str(len(novo))
-            return response
-
-        return handler
+# 2026-09-24 (P0 atribuicao app): a implementacao vive em api/role_redaction.py, partilhada com o
+# Performance Module. Os nomes privados mantem-se para nao tocar no resto deste ficheiro.
+from api.role_redaction import (  # noqa: E402
+    REDACTED as _REDACTED,
+    SQL_FIELDS as _SQL_FIELDS,
+    IDENTITY_FIELDS as _IDENTITY_FIELDS,
+    redact_node as _redact_node,
+    role_do_pedido as _role_do_pedido,
+    RoleRedactingRoute as _RoleRedactingRoute,
+)
 
 
 router = APIRouter(
