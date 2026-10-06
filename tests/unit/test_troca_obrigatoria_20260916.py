@@ -70,9 +70,11 @@ def test_o_portal_obriga_e_nao_deixa_fechar():
 
 def test_o_login_nao_entra_no_portal_com_a_obrigacao_por_cumprir():
     i = PORTAL.index("setAuthData(data.access_token, data.user);")
-    bloco = PORTAL[i:i + 600]
-    assert "if (data.must_change_password) { _mcpForcarTroca(); return; }" in bloco
-    assert bloco.index("_mcpForcarTroca(); return;") < bloco.index("loadPreferencesFromServer")
+    bloco = PORTAL[i:i + 1000]   # 2026-10-06: o ramo cresceu de 1 para 8 linhas
+    # 2026-10-06: o overlay e' escondido antes de abrir a caixa (MCP_LOGIN_OVERLAY_2026-10-06).
+    assert "if (data.must_change_password) {" in bloco
+    assert bloco.index("hideLoginOverlay();") < bloco.index("_mcpForcarTroca();")
+    assert bloco.index("_mcpForcarTroca();") < bloco.index("loadPreferencesFromServer")
 
 
 def test_a_sessao_ja_aberta_tambem_e_apanhada():

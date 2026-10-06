@@ -296,7 +296,10 @@ GO
 
 CREATE TABLE dbo.KPI_MSSQL_DISK_USAGE_STG (
     Instance            VARCHAR(64)     NOT NULL,
-    Drive               VARCHAR(8)      NOT NULL,
+    -- 2026-09-24: VARCHAR(8) truncava mount points. Producao ja' estava a 256
+    -- (alargada a' mao em Dez/2025); so' o canonical e' que ficou para tras.
+    -- Caso real mais comprido na frota: C:\ClusterStorage\I06_TEMPDB\ (29).
+    Drive               VARCHAR(260)    NOT NULL,
     Total_MB            DECIMAL(18,2)   NULL,
     Free_MB             DECIMAL(18,2)   NULL,
     Used_MB             DECIMAL(18,2)   NULL,
@@ -457,7 +460,10 @@ GO
 
 CREATE TABLE dbo.KPI_MSSQL_DISK_USAGE_HIST (
     Instance            VARCHAR(64)     NOT NULL,
-    Drive               VARCHAR(8)      NOT NULL,
+    -- 2026-09-24: VARCHAR(8) truncava mount points. Producao ja' estava a 256
+    -- (alargada a' mao em Dez/2025); so' o canonical e' que ficou para tras.
+    -- Caso real mais comprido na frota: C:\ClusterStorage\I06_TEMPDB\ (29).
+    Drive               VARCHAR(260)    NOT NULL,
     Total_MB            DECIMAL(18,2)   NULL,
     Free_MB             DECIMAL(18,2)   NULL,
     Used_MB             DECIMAL(18,2)   NULL,

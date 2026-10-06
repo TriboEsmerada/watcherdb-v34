@@ -1,0 +1,2 @@
+SELECT 'SERVICOS' AS Bloco, COUNT(*) AS Linhas, COUNT(DISTINCT Instance) AS Instancias, MAX(Update_TS) AS Ultima_Escrita, DATEDIFF(MINUTE, MAX(Update_TS), GETDATE()) AS Minutos_Desde, SUM(CASE WHEN Service_Status <> 'OK' THEN 1 ELSE 0 END) AS Nao_OK FROM dbo.KPI_MSSQL_SERVICE_STATUS_STG WITH (NOLOCK);
+SELECT 'ACTIVE' AS Bloco, Environment, Active_Slot, Last_Swap_Time, Servers_Collected FROM dbo.KPI_STG_ACTIVE_TABLE WITH (NOLOCK) WHERE Table_Name = 'KPI_MSSQL_SERVICE_STATUS_STG' ORDER BY Environment;
