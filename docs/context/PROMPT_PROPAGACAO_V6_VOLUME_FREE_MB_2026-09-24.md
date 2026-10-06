@@ -2,9 +2,9 @@
 
 **Data:** 2026-09-24
 **Origem:** WatcherDB V3.4 + WatcherDB Intelligence V1
-**Commits:** `e38409f`, `ed35ccc`, `18f9117` (V1, ramo `wave-b-indexacao-dmv`, publicados)
+**Commits:** `e38409f`, `ed35ccc`, `18f9117`, `e8325ee`, `9754062` (V1, ramo `wave-b-indexacao-dmv`, publicados)
 
-Quatro correções no recolhedor e no canónico. O V6 tem cópias próprias destes
+Seis correções no recolhedor e no canónico, mais um arquivo com gatilho. O V6 tem cópias próprias destes
 ficheiros — confirma cada uma na tua árvore antes de aplicar, porque a V1 e a
 V3.4 já tinham divergido entre si e é provável que o V6 também tenha.
 
@@ -318,6 +318,118 @@ legítimas de concatenação (`USE ' + QUOTENAME(d.name) + N';`) das ilegítimas
 
 ---
 
+## 5. Uma thread presa segurava o ciclo entre a coleta e o `store()` (`e8325ee`)
+
+> Era a rubrica "Gravação silenciosa" que esta nota deixava em aberto. **Não
+> era defeito de gravação**: o `store()` nunca chegava a ser chamado.
+
+### O mecanismo
+
+`asyncio.to_thread` e `run_in_executor(None, ...)` usam sempre o executor por
+omissão do loop. O `wait_for` do `base_collector` cancela a *corrotina* aos
+60 s, mas não a thread — a query ou a ligação continuam vivas. O
+`execute_query` abandona a thread de propósito (`FIND-20260702-001`: fechar a
+conexão com fetch em curso dava corrupção de heap e crash-loop). E o
+`asyncio.run`, ao sair, chama `loop.shutdown_default_executor(THREAD_JOIN_TIMEOUT)`
+— faz **join** a essas threads, até **300 s**, *depois* de `Coleta concluida`
+e *antes* do `store()`.
+
+Medido nos logs: 55 s por ciclo de QA com dois servidores inalcançáveis;
+**300,0 s exactos** a 23/09 (a assinatura do tecto); e o ciclo das 15:19 de
+23/09 morto por um restart 47 s antes de o tecto o libertar — 1 936 registos
+recolhidos, zero gravados, zero linhas de log.
+
+**Confirma a versão de Python do serviço do V6** (`sc qc <serviço>`): o
+`timeout` do `shutdown_default_executor` só existe a partir do 3.12. Em 3.11 a
+espera é **ilimitada**. O V1 corre em `pythoncore-3.14`.
+
+### Dois lotes, um commit — e só um deles funcionou
+
+1. **`conn.timeout`** (`SQL_ATTR_QUERY_TIMEOUT`, `TIMEOUT_SECONDS − 5`) para
+   órfãs de *query*. **Efeito medido: nenhum.** Os servidores que dão timeout
+   estão inalcançáveis (`08001`), e o `conn.timeout` só existe depois de haver
+   ligação. Fica na mesma — fecha o caminho dos 17 timeouts de PRD de 23/09,
+   esses sim custo de query — mas não é o que resolve o intervalo.
+2. **Executor próprio** do `AsyncServerCollector` para órfãs de *ligação*:
+   9 caminhos de rede saem do `to_thread` (incluindo `pyodbc.connect`, o retry
+   via SQL Browser, o `ServiceChecker` por WMI e o `_load_port_cache`, que
+   também liga à Intelligence). O `base_collector` larga-o num `finally` no fim
+   da coleta com `shutdown(wait=False, cancel_futures=True)`. **Efeito medido
+   em 4 ciclos: 55 s → 0 s.** Threads 336 → 161, não acumulam.
+
+`wait=True` reintroduziria o defeito no nosso código. Há um teste que
+**cronometra** o `shutdown` em vez de ler o texto. Fica um `weakref.finalize`
+como rede para os consumidores sem ciclo de vida (`discover_databases.py`,
+`async_data_collector.py`).
+
+**Dimensionado a `min(32, cpu+4)` de propósito** — igual ao default. Este lote
+trata do join, não da fila. `MAX_CONCURRENT = 50` contra 20 workers, com o
+relógio do `wait_for` a correr enquanto o pedido espera na fila, é medição
+separada; mexer nas duas coisas ao mesmo tempo tornava-a inútil.
+
+Scripts: `docs/context/QUERY_TIMEOUT_ODBC_2026-09-24_apply.py` e
+`docs/context/EXECUTOR_DEDICADO_2026-09-24_apply.py` (V1). Testes:
+`test_query_timeout_odbc_20260924.py` (12), `test_executor_dedicado_20260924.py` (11).
+
+---
+
+## 6. Recolha de estado dos serviços SQL parada há 134 dias (`9754062`)
+
+O V6 **lê a mesma Intelligence** (4 routers: `intelligence_kpis`,
+`kpis_metadata`, `ops_dashboard`, `shift_handover`), por isso **ficou arranjado
+sem propagação nenhuma**. Regista-se aqui para o V6 saber o que mudou por baixo
+dele e o que tem de limpar do seu lado.
+
+`KPI_MSSQL_SERVICE_STATUS_STG` estava congelada a 13/05 18:37 — 151 linhas,
+todas `Running`/`OK`. Se um SQL Agent caísse, o portal mostrava Maio. Não era
+um recolhedor avariado: a 06/03 (`708a365`) foi posto em `DEPRECATED_KPIS` como
+*"substituído por INST_AVAILABILITY_STG"*, mas essa tabela tem 8 colunas e
+nenhuma de serviço — substituiu a metade "instância responde", a metade
+"Agent / Full-text / Browser parados" ficou sem substituto. O
+`collect_service_status.py` nunca teve adaptador no serviço e correu até 13/05
+por outro caminho.
+
+Restauro, zero DDL: adaptador + export + 3 tasks a 15 min + gate de versão
+(`ProductVersion` com `PARSENAME` — `ProductMajorVersion` devolve NULL antes do
+2012 e excluiria um 2008 R2 SP1 legítimo; `sys.dm_server_services` é 2008 R2
+SP1+; a DMV vai dentro de `sp_executesql` e o `ELSE` devolve um resultset
+vazio) + saída de `DEPRECATED_KPIS`. Medido: 145 linhas, 59 instâncias, última
+escrita há 1 minuto, `OATXP01` (SQL 2005) ausente do log.
+
+**Do lado do V6:** se tiver um `kpis_metadata` com a nota *"problemas técnicos
+com DECLARE, não recomendado para coleta rápida"* para este KPI, é fóssil — a
+query não tem `DECLARE` nenhum. E se tiver o seu próprio badge de frescura,
+deixa de disparar sozinho.
+
+---
+
+## 7. `GROUP BY Drive` no read path — arquivado com gatilho, **não corrigido**
+
+O V6 tem o mesmo padrão em `api/routers/intelligence_kpis.py:1385` e `:3508`.
+Aplica-se a mesma decisão.
+
+O cartão *Uso de FileGroups* e a modal de drill agrupam
+`KPI_MSSQL_DATAFILES_STG` por `Drive`, que é `LEFT(caminho, 3)`. Onde uma letra
+aloja vários volumes, isso deita fora a correcção por ficheiro do `ed35ccc`
+(secção 1): o cartão fica com o `MIN` da letra, a modal com o `MAX`. Na frota:
+`SQLIDSPRD03_I01` tem **31 volumes sob `F:`**.
+
+Medido no universo exacto do KPI (`docs/context/sql/impacto_group_by_drive_2026-09-24.sql`
+no V3.4): 5 prefixos ambíguos, 237 ficheiros, 69 → 90 linhas, **Warning 2 → 2,
+Critical 0 → 0, zero veredictos mudam**. Os 21 volumes escondidos estão todos
+em OK. O `MIN` erra para o alarme — nunca esconde; o erro é de magnitude.
+Higiene, não urgência.
+
+**Gatilho de re-medição:** o bloco `[3]` desse SQL devolver linhas. Correr
+trimestral — a frota cresce em mount points. Quando disparar, corrigir a
+**exibição** (volume real pelo prefixo mais longo do `Physical_Path`, molde
+`live_monitoring.py:681-695`), não a contagem. **Nunca** a via "coluna nova na
+`DATAFILES_STG`": é uma `VIEW` sobre 6 slots criados por `SELECT * INTO`, que
+nunca herdam `ALTER` — foi assim que houve 9 meses de drift — e tem veto do
+especialista V1.
+
+---
+
 ## Cuidados ao aplicar no V6
 
 1. **Confirma os números de linha na tua árvore.** A V1 e a V3.4 têm cópias do
@@ -368,9 +480,14 @@ Levantado durante a sessão, por dimensionar:
   linha da declaração). Exige separar declaração de atribuição em todo o
   recolhedor, e provavelmente o caminho de cursor completo. É a única instância
   da frota nessa condição.
-- **Gravação silenciosa.** A execução das 15:19 de 2026-09-23 recolheu 1 936
-  registos e nenhum dos seis slots BLUE/GREEN ficou atualizado. O log não tem
-  uma única linha de armazenamento, nem de sucesso nem de falha.
+- **Fila do executor.** `MAX_CONCURRENT = 50` contra um executor de
+  `min(32, cpu+4)` workers (20 na máquina do V1). O `connect()` também passa
+  pelo executor, e o relógio do `wait_for(60 s)` corre enquanto o pedido espera
+  na fila — parte dos timeouts pode ser auto-infligida. Deixado de fora da
+  secção 5 de propósito para não confundir a medição. Vale medir antes de mexer.
+- **Dois servidores inalcançáveis em QA** (`SQLMDMDEV03_I01`, `SQLMDMQLT03_I01`),
+  `08001` há 6+ ciclos, o recolhedor já escreve `REPEATED_FAILURE` com
+  firewall/DNS/porta. Rede, não código. Se o V6 partilha a frota, vê-os também.
 - **`KPI_MSSQL_DISK_USAGE_AGG_VIEW` conta linhas.** Uma instância com 31
   volumes pesa dez vezes mais na contagem da frota do que uma com 3, sem estar
   pior. E um LUN de 4 TB a 12% livre (480 GB de folga) conta igual a um `C:` de
