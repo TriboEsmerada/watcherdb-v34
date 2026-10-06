@@ -687,6 +687,7 @@ _AUTH_PUBLIC_PREFIXES = (
 # carrega e mostra a caixa de troca; o que nao passa sao os pedidos de dados.
 _AUTH_MCP_ALLOWED = frozenset({
     "/api/auth/change-password",
+    "/api/auth/heartbeat",   # 2026-10-06: so' marca online; sem isto a sessao em troca leva 403 a cada 60 s
     "/api/auth/me",
     "/api/auth/logout",
     "/api/auth/validate",

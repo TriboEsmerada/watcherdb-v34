@@ -5178,7 +5178,14 @@
 
                 // 2026-09-16: password definida por outra pessoa -> troca antes de entrar. Sai aqui de
                 // proposito: qualquer pedido a seguir levaria 403 do middleware e sujaria o ecra de erros.
-                if (data.must_change_password) { _mcpForcarTroca(); return; }
+                if (data.must_change_password) {
+                    // 2026-10-06: a caixa de troca (z-index 1000) abria por baixo do overlay de login
+                    // (z-index 999999) e o utilizador via o login outra vez. Esconder o overlay primeiro;
+                    // preferencias, servidores e heartbeat ficam para o reload que a troca dispara.
+                    hideLoginOverlay();
+                    _mcpForcarTroca();
+                    return;
+                }
 
                 // Load preferences from server
                 await loadPreferencesFromServer();
