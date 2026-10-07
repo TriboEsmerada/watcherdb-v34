@@ -173,8 +173,15 @@ def test_portal_diagnosis_layout_anchors():
     # nomenclatura L1-L5 fora do render da Performance
     assert 'L2: Executive Summary' not in portal and 'L3: Investigation Summary' not in portal
     # nenhum bloco <script> novo sem nonce (contagem de blocos com nonce == total)
-    scripts = re.findall(r'<script(?![^>]*\bsrc=)([^>]*)>', portal)
+    # 2026-10-06: so' tags no inicio da linha -- o JS do portal contem '<script' num comentario
+    # (l.~30003) e num regex literal (l.~30011) desde 09/09, e isso nao e' uma tag.
+    scripts = re.findall(r'^\s*<script(?![^>]*\bsrc=)([^>]*)>', portal, re.M)
+    assert scripts, 'nenhuma tag <script> inline encontrada: a ancora ao inicio da linha deixou de servir'
     assert all('nonce' in s for s in scripts), 'script inline sem nonce'
+    # pressuposto da ancora: nenhuma tag <script> real a meio de uma linha
+    a_meio = [m for m in re.finditer(r'(?<!^)(?<![\s])<script\b[^>]*>', portal, re.M)
+              if not portal[max(0, m.start() - 80):m.start()].rstrip().endswith(('//', '/', '`', '"', "'"))]
+    assert not a_meio, 'tag <script> fora do inicio da linha: rever a guarda do nonce'
 
 
 # ---------------------------------------------------------------- 5. i18n
