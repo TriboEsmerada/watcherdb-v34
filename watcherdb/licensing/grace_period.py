@@ -63,7 +63,8 @@ def _resolve_marker_path(programdata_dir: Optional[Path] = None) -> Path:
     env_override = os.getenv("WATCHERDB_INSTALL_MARKER_PATH")
     if env_override:
         return Path(env_override)
-    base = programdata_dir or DEFAULT_PROGRAMDATA
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: DATA_DIR_SERVICO
+    base = programdata_dir or (Path(_data_dir) if _data_dir else DEFAULT_PROGRAMDATA)
     return base / DEFAULT_MARKER_FILENAME
 
 

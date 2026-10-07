@@ -610,6 +610,22 @@ if (-not $existingService) {
     Write-Ok "Servico $ServiceName reconfigurado (upgrade)."
 }
 
+# 2026-10-07 (lote DATA_DIR_SERVICO): o servico tem de saber onde esta a pasta de dados. O codigo
+# resolve WATCHERDB_DATA_DIR em 3 niveis (watcherdb/core/paths.py) e o licenciamento tambem; sem a
+# variavel um bundle frozen procura em C:\ProgramData\WatcherDB, mas este instalador provisionou em
+# $DataDir (DataFolderName do SOT) -> "No master key available" e licenca fail-close. Ambiente POR
+# SERVICO (HKLM\...\Services\<nome>\Environment, REG_MULTI_SZ): o SCM aplica-o no proximo arranque,
+# sem reboot, sem tocar no ambiente da maquina nem noutros servicos. Entradas alheias sao preservadas.
+Write-Step 'PASSO (i-ter): ambiente do servico (WATCHERDB_DATA_DIR, WATCHERDB_PORT)'
+$svcRegPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName"
+$svcEnvWanted = [ordered]@{ 'WATCHERDB_DATA_DIR' = $DataDir; 'WATCHERDB_PORT' = [string]$rv.WebPort }
+$svcEnvExisting = @()
+try { $svcEnvExisting = @((Get-ItemProperty -Path $svcRegPath -Name Environment -ErrorAction Stop).Environment) } catch { $svcEnvExisting = @() }
+$svcEnvKept = @($svcEnvExisting | Where-Object { $_ -and (($_ -split '=', 2)[0] -notin @($svcEnvWanted.Keys)) })
+$svcEnvMerged = @($svcEnvKept) + @($svcEnvWanted.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" })
+Set-ItemProperty -Path $svcRegPath -Name Environment -Type MultiString -Value $svcEnvMerged
+Write-Ok "Ambiente do servico: WATCHERDB_DATA_DIR=$DataDir, WATCHERDB_PORT=$($rv.WebPort) (entradas alheias preservadas: $($svcEnvKept.Count))."
+
 # RISCO#5 (cross-check adversarial deploy-architect): SeServiceLogonRight.
 # So relevante para contas nao-builtin (AD dedicada ou gMSA) -- NetworkService/
 # LocalService/LocalSystem ja tem o direito por natureza, sem GPO a gerir.

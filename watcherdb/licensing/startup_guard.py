@@ -74,6 +74,9 @@ def _resolve_license_path() -> Path:
     candidates = []
     if env_path:
         candidates.append(Path(env_path))
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: pasta de dados do servico (DATA_DIR_SERVICO)
+    if _data_dir:
+        candidates.append(Path(_data_dir) / "license.dat")
     candidates.append(Path(r"C:\ProgramData\WatcherDB\license.dat"))
     # Bundle fallback — caller passa base_dir se quiser
     return next((p for p in candidates if p.exists()), candidates[-1])
@@ -85,6 +88,9 @@ def _resolve_public_key_path(base_dir: Optional[Path] = None) -> Path:
     candidates = []
     if env_path:
         candidates.append(Path(env_path))
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: DATA_DIR_SERVICO
+    if _data_dir:
+        candidates.append(Path(_data_dir) / "ed25519_public.pem")
     candidates.append(Path(r"C:\ProgramData\WatcherDB\ed25519_public.pem"))
     if base_dir:
         candidates.append(base_dir / "deploy" / "keys" / "ed25519_public.pem")
@@ -269,6 +275,9 @@ def _public_key_candidates_tried(base_dir: Optional[Path]) -> list:
     candidates = []
     if env_path:
         candidates.append(Path(env_path))
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: DATA_DIR_SERVICO
+    if _data_dir:
+        candidates.append(Path(_data_dir) / "ed25519_public.pem")
     candidates.append(Path(r"C:\ProgramData\WatcherDB\ed25519_public.pem"))
     if base_dir:
         candidates.append(base_dir / "deploy" / "keys" / "ed25519_public.pem")

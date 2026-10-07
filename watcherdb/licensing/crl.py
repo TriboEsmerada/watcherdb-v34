@@ -142,6 +142,9 @@ def _resolve_crl_path(base_dir: Optional[Path] = None) -> Path:
     candidates = []
     if env:
         candidates.append(Path(env))
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: DATA_DIR_SERVICO
+    if _data_dir:
+        candidates.append(Path(_data_dir) / DEFAULT_CRL_FILENAME)
     candidates.append(DEFAULT_PROGRAMDATA / DEFAULT_CRL_FILENAME)
     if base_dir:
         candidates.append(Path(base_dir) / DEFAULT_CRL_FILENAME)
