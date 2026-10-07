@@ -75,6 +75,7 @@ class Relatorio:
     base_criada: Optional[bool] = None
     utilizador_criado: Optional[bool] = None
     login_existe: Optional[bool] = None
+    login_criado: bool = False
     passos: List[PassoScript] = field(default_factory=list)
     resultado: str = "pendente"
 
@@ -126,6 +127,7 @@ def executar(
     connect: Optional[Callable] = None,
     log: Callable[[str], None] = print,
     relatorio_path: Optional[Path] = None,
+    login_password: Optional[str] = None,
 ) -> Relatorio:
     """Executa (ou planeia) o setup. `connect(servidor, base, trust)` e' injectavel para testes."""
     validar_identificador(base, "nome da base")
@@ -165,6 +167,18 @@ def executar(
             rel.base_criada = not existia
             cur.execute("SELECT 1 FROM sys.server_principals WHERE name = ?", login)
             rel.login_existe = cur.fetchone() is not None
+            if not rel.login_existe and login_password:
+                # lote E: o instalador cria o login do produto no servidor da base (password parametrizada,
+                # nunca concatenada nem registada; CHECK_EXPIRATION OFF = login de servico, rotacao por comando)
+                cur.execute(
+                    f"DECLARE @s NVARCHAR(MAX) = N'CREATE LOGIN [{login}] WITH PASSWORD = N''' + REPLACE(?, '''', '''''') "
+                    f"+ N''', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF, DEFAULT_DATABASE = master;'; EXEC sp_executesql @s;",
+                    login_password,
+                )
+                cur.execute("SELECT 1 FROM sys.server_principals WHERE name = ?", login)
+                rel.login_existe = cur.fetchone() is not None
+                rel.login_criado = rel.login_existe
+                log(f"  login [{login}] {'criado' if rel.login_criado else 'NAO criado'} em {servidor}")
         # 2. utilizador do login na base
         with connect(servidor, base, trust_server_cert) as c:
             cur = c.cursor()

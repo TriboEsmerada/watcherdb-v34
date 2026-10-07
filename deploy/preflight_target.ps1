@@ -1,35 +1,35 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Preflight check no target machine antes de install WatcherDB V3.3 MSI.
+    Preflight check no target machine antes de instalar o WatcherDB V3.4 (ZIP + install.ps1).
 
 .DESCRIPTION
-    Valida pre-requisitos antes de correr msiexec. Falha graciosa com fix hints.
+    Valida pre-requisitos antes de correr install.ps1. Falha graciosa com fix hints.
     Diferente do preflight_runner.ps1 (que valida build runner) - este foca em
     target machine de install (DBA workstation ou monitoring server).
 
     Checks (10 phases):
-      1. Admin rights (msiexec exige)
+      1. Admin rights (install.ps1 exige)
       2. Windows version (Server 2016+ / Win 10/11)
       3. ODBC Driver 17 ou 18 for SQL Server
       4. SQL Server TCP reachable (param: -SqlServer)
-      5. Login sql_monitoring exists + tem VIEW SERVER STATE (param: -SqlServer)
+      5. Login do produto existe (informativo; params: -SqlServer, -SqlLogin)
       6. AD service account resolvable (param: -ServiceAccount)
-      7. Porta 8433 livre
+      7. Porta do produto livre (param: -WebPort)
       8. Disk space >500 MB no C:\
-      9. Service WatcherDBWebServiceV33 nao pre-existing (clean install)
+      9. Servico do produto nao pre-existente (param: -ServiceName)
      10. .NET Framework 4.7.2+ (some MSI components precisam)
 
 .PARAMETER SqlServer
     SQL Server target (e.g. SQLHDSTST505\I01) para validar conectividade + login.
-    REGRA OURO #2: usar identidade sql_monitoring nas queries.
+    REGRA OURO #2: o produto so' liga com o seu login SQL (-SqlLogin), nunca Trusted_Connection.
 
 .PARAMETER ServiceAccount
     Optional AD service account (e.g. DOMAIN\svc_watcherdb_v33).
     Default: NetworkService (no validation needed).
 
 .PARAMETER SkipSqlCheck
-    Skip Phases 4-5 (SQL connectivity) se sql_monitoring ainda nao foi criado.
+    Skip Phases 4-5 (SQL connectivity) se o login do produto ainda nao foi criado.
 
 .EXAMPLE
     # NetworkService scenario, SQL Server local:
@@ -42,7 +42,7 @@
         -ServiceAccount "DOMAIN\svc_watcherdb_v33"
 
 .EXAMPLE
-    # SQL Server skip (sql_monitoring nao criado ainda):
+    # SQL Server skip (login do produto nao criado ainda):
     powershell.exe -ExecutionPolicy Bypass -File deploy\preflight_target.ps1 `
         -SqlServer "localhost" -SkipSqlCheck
 
@@ -61,7 +61,11 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$SqlServer,
     [string]$ServiceAccount = '',
-    [switch]$SkipSqlCheck
+    [switch]$SkipSqlCheck,
+    # 2026-10-07 (lote E): vem do release_vars via install.ps1; sem valores fixos de versao.
+    [int]$WebPort = 8434,
+    [string]$ServiceName = 'WatcherDBWebServiceV34',
+    [string]$SqlLogin = 'watcherdb'
 )
 
 $ErrorActionPreference = 'Continue'
@@ -87,7 +91,7 @@ function Test-Check {
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "  WatcherDB V3.3 - Target Machine Preflight" -ForegroundColor Cyan
+Write-Host "  WatcherDB - Target Machine Preflight" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  SqlServer:      $SqlServer"
 Write-Host "  ServiceAccount: $(if ($ServiceAccount) { $ServiceAccount } else { 'NetworkService (default)' })"
@@ -133,9 +137,9 @@ if ($SkipSqlCheck) {
     Test-Check $sqlReachable "$sqlHost`:$sqlPort reachable (TCP)" 'fail' "Check firewall, SQL Server TCP enabled, SQL Browser (named instances)"
 }
 
-# === Phase 5: sql_monitoring login + permissions =======================
+# === Phase 5: login do produto (informativo: o instalador pode cria-lo em f2/f3) ===
 Write-Host ""
-Write-Host "--- Phase 5: sql_monitoring login + VIEW SERVER STATE ---" -ForegroundColor Cyan
+Write-Host "--- Phase 5: login '$SqlLogin' (informativo) ---" -ForegroundColor Cyan
 if ($SkipSqlCheck) {
     Write-Host "[SKIP] -SkipSqlCheck flag set" -ForegroundColor Yellow
 } elseif (-not $sqlReachable) {
@@ -148,14 +152,14 @@ if ($SkipSqlCheck) {
         if (-not $sqlcmdPath) {
             Test-Check $false "sqlcmd available" 'warn' "Install SQL Server Command Line Utilities (msodbcsql + mssql-tools)"
         } else {
-            # Query VIA sql_monitoring se possivel — se nao tiver password aqui, skip
-            $query = "SELECT name FROM sys.server_principals WHERE name = 'sql_monitoring'"
+            # So' informativo: o login pode ainda nao existir (o instalador cria-o com -SqlLoginPassword / provision-login).
+            $query = "SELECT name FROM sys.server_principals WHERE name = '$($SqlLogin -replace "'", "''")'"
             $output = & sqlcmd -S $SqlServer -E -Q $query -h-1 -W -b 2>&1
-            $loginExists = $output -match 'sql_monitoring'
-            Test-Check $loginExists "Login 'sql_monitoring' exists on $SqlServer" 'fail' "DBA: CREATE LOGIN sql_monitoring; GRANT VIEW SERVER STATE TO sql_monitoring; (Regra Ouro #2: identidade DBA confirmada)"
+            $loginExists = $output -match [regex]::Escape($SqlLogin)
+            Test-Check $loginExists "Login '$SqlLogin' exists on $SqlServer" 'warn' "Sera' criado pelo instalador (-SqlLoginPassword) ou pelo DBA com os scripts de grants"
         }
     } catch {
-        Test-Check $false "sql_monitoring login check (got exception: $($_.Exception.Message))" 'warn'
+        Test-Check $false "login '$SqlLogin' check (got exception: $($_.Exception.Message))" 'warn'
     }
 }
 
@@ -179,11 +183,11 @@ if (-not $ServiceAccount) {
     Write-Host "[NOTE] Ensure '$ServiceAccount' has 'Log on as a service' right (GPO or Local Security Policy)" -ForegroundColor Gray
 }
 
-# === Phase 7: Porta 8433 livre ==========================================
+# === Phase 7: Porta do produto livre ====================================
 Write-Host ""
-Write-Host "--- Phase 7: Port 8433 available ---" -ForegroundColor Cyan
-$portInUse = (Get-NetTCPConnection -LocalPort 8433 -ErrorAction SilentlyContinue) | Select-Object -First 1
-Test-Check ($null -eq $portInUse) "Port 8433 is free" 'fail' "Process using 8433: $(if($portInUse){"PID $($portInUse.OwningProcess)"})"
+Write-Host "--- Phase 7: Port $WebPort available ---" -ForegroundColor Cyan
+$portInUse = (Get-NetTCPConnection -LocalPort $WebPort -ErrorAction SilentlyContinue) | Select-Object -First 1
+Test-Check ($null -eq $portInUse) "Port $WebPort is free" 'fail' "Process using ${WebPort}: $(if($portInUse){"PID $($portInUse.OwningProcess)"})"
 
 # === Phase 8: Disk space ================================================
 Write-Host ""
@@ -195,8 +199,8 @@ Test-Check ($freeMB -gt 500) "C:\ has >500 MB free (got: $freeMB MB)" 'fail' "Fr
 # === Phase 9: Service nao pre-existing ==================================
 Write-Host ""
 Write-Host "--- Phase 9: Clean install (no pre-existing service) ---" -ForegroundColor Cyan
-$preSvc = Get-Service WatcherDBWebServiceV33 -ErrorAction SilentlyContinue
-Test-Check ($null -eq $preSvc) "WatcherDBWebServiceV33 not pre-existing" 'warn' "Uninstall previous install first: msiexec /x <msi> /qn"
+$preSvc = Get-Service $ServiceName -ErrorAction SilentlyContinue
+Test-Check ($null -eq $preSvc) "$ServiceName not pre-existing" 'warn' "Servico ja' existe: o install.ps1 faz upgrade (sc.exe config); para instalacao limpa correr uninstall.ps1 primeiro"
 
 # === Phase 10: .NET Framework ===========================================
 Write-Host ""
@@ -218,7 +222,7 @@ if ($Failures.Count -gt 0) {
     Write-Host "FAILURES (must fix before install):" -ForegroundColor Red
     $Failures | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
     Write-Host ""
-    Write-Host "[RESULT] PREFLIGHT FAILED - fix above before msiexec /i" -ForegroundColor Red
+    Write-Host "[RESULT] PREFLIGHT FAILED - fix above before install.ps1" -ForegroundColor Red
     exit 1
 }
 
@@ -230,5 +234,5 @@ if ($Warnings.Count -gt 0) {
     exit 2
 }
 
-Write-Host "[RESULT] PREFLIGHT PASSED - target ready for msiexec /i" -ForegroundColor Green
+Write-Host "[RESULT] PREFLIGHT PASSED - target ready for install.ps1" -ForegroundColor Green
 exit 0

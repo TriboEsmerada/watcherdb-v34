@@ -1,5 +1,5 @@
 # ============================================================
-# WatcherDB V3.3 — Setup da Base de Dados
+# WatcherDB V3.4 — Setup da Base de Dados (wrapper do vendor; no cliente: watcherdb.exe setup-database)
 # ============================================================
 # Cria a BD WatcherDB_Intelligence e executa todos os scripts SQL
 # Executar como Administrador ou com conta com permissoes no SQL Server
@@ -25,7 +25,7 @@ Write-Host "[AUDIT] Script invocado por $env:USERDOMAIN\$env:USERNAME com Confir
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "  WatcherDB V3.3 — Setup da Base de Dados" -ForegroundColor Cyan
+Write-Host "  WatcherDB V3.4 — Setup da Base de Dados (wrapper do vendor; o cliente usa: watcherdb.exe setup-database)" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  Server:   $SqlServer" -ForegroundColor White
 Write-Host "  Database: $Database" -ForegroundColor White
@@ -161,6 +161,6 @@ Write-Host ""
 Write-Host "  PROXIMOS PASSOS:" -ForegroundColor Yellow
 Write-Host "  1. Verificar que a BD foi criada: SSMS → $SqlServer → $Database" -ForegroundColor White
 Write-Host "  2. Configurar .env com INTELLIGENCE_SERVER=$SqlServer" -ForegroundColor White
-Write-Host "  3. Reiniciar servico: net stop/start WatcherDBWebServiceV33" -ForegroundColor White
+Write-Host "  3. Reiniciar servico: Restart-Service WatcherDBWebServiceV34" -ForegroundColor White
 Write-Host "  4. Entrar com o administrador criado no Passo 3 -- o portal obriga a trocar a password no primeiro login" -ForegroundColor White
 Write-Host ""

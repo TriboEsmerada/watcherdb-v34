@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Instalador WatcherDB V3.3 Standard Edition (Etapa 3a - veiculo ZIP).
+    Instalador WatcherDB V3.4 Standard Edition (veiculo ZIP; orquestra os subcomandos do watcherdb.exe).
     Corre NO servidor do cliente, elevado (Administrator).
 
 .DESCRIPTION
@@ -26,7 +26,7 @@
 
 .PARAMETER InstallDir
     Destino do bundle. Default: %ProgramFiles%\<InstallFolderName do SOT>
-    (normalmente C:\Program Files\WatcherDB\V3.3).
+    (normalmente C:\Program Files\WatcherDB\V3.4).
 
 .PARAMETER DataDir
     Diretorio de estado gravavel (config/logs/secrets/inventory/cache).
@@ -87,10 +87,10 @@
 
 .PARAMETER SqlServer
     SQL Server alvo (ex. "SQLHDSTST505\I01") passado ao preflight_target.ps1
-    para validar conectividade + login sql_monitoring. Default 'localhost'.
+    para validar conectividade + login do produto (-SqlLogin). Default 'localhost'.
 
 .PARAMETER SkipSqlCheck
-    Passa -SkipSqlCheck ao preflight_target.ps1 (sql_monitoring ainda nao
+    Passa -SkipSqlCheck ao preflight_target.ps1 (login do produto ainda nao
     provisionado pelo DBA do cliente).
 
 .PARAMETER HealthTimeoutSeconds
@@ -177,6 +177,15 @@ param(
     [string]$SqlServer = 'localhost',
     [switch]$SkipSqlCheck,
 
+    # 2026-10-07 (lote E): base, login e frota configuraveis; o utilizador preenche, o instalador orquestra.
+    [string]$Database = 'WatcherDB',
+    [string]$SqlLogin = 'watcherdb',
+    [SecureString]$SqlLoginPassword,
+    [string]$InventoryPath = '',
+    [ValidateSet('Auto','Manual','Skip')]
+    [string]$ProvisionMode = 'Manual',
+    [switch]$SkipDatabaseSetup,
+    [switch]$DryRun,
     [int]$HealthTimeoutSeconds = 120
 )
 
@@ -192,7 +201,7 @@ if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.P
 
 Write-Host ''
 Write-Host '============================================================' -ForegroundColor Cyan
-Write-Host '  WatcherDB V3.3 Standard - Instalacao (Etapa 3a: ZIP)' -ForegroundColor Cyan
+Write-Host '  WatcherDB Standard - Instalacao (ZIP)' -ForegroundColor Cyan
 Write-Host '============================================================' -ForegroundColor Cyan
 Write-Host "  Timestamp: $(Get-Date -Format o)"
 Write-Host ''
@@ -234,6 +243,9 @@ Write-Host "  ServiceAccount:  $ServiceAccount"
 Write-Host "  FirewallProfile: $FirewallProfile"
 Write-Host "  RemoteSubnet:    $(if ($RemoteSubnet) { $RemoteSubnet } else { '(vazio -> Any, ver aviso abaixo)' })"
 Write-Host "  Silent:          $Silent"
+Write-Host "  Base/Login:      $Database / $SqlLogin em $SqlServer"
+Write-Host "  Inventario:      $(if ($InventoryPath) { $InventoryPath } else { '(sem -InventoryPath: usa servers.json existente)' })"
+Write-Host "  ProvisionMode:   $ProvisionMode$(if ($DryRun) { '  [DRY-RUN]' })"
 Write-Host ''
 
 $sourceBundleDir = Join-Path $scriptDir $BundleDirName
@@ -282,7 +294,7 @@ if ($SkipPreflight) {
         Write-Fail "preflight_target.ps1 nao encontrado em $scriptDir. Stage incompleto."
         exit 6
     }
-    $preflightArgs = @{ SqlServer = $SqlServer }
+    $preflightArgs = @{ SqlServer = $SqlServer; WebPort = $WebPort; ServiceName = $ServiceName; SqlLogin = $SqlLogin }
     if ($ServiceAccount -and $ServiceAccount -ne 'NT AUTHORITY\NetworkService') {
         $preflightArgs['ServiceAccount'] = $ServiceAccount
     }
@@ -514,6 +526,112 @@ if (Test-Path $masterKeyFile) {
 Write-Host ''
 
 # =============================================================================
+# PASSOS (f1..f4) - Inventario, base e schema, login na frota, .env  (lote E, 2026-10-07)
+# Subcomandos do watcherdb.exe (watcherdb/install): a logica vive em Python porque a cifra Fernet, o pyodbc e o
+# driver ODBC ja' estao no bundle; o servidor alvo nao tem Python nem sqlcmd garantido. Identidade de f2/f3: a
+# sessao Windows de quem corre este instalador (DBA), so' aqui, nunca persistida (decisao do owner 2026-10-07).
+# -DryRun: f1 so' escreve ficheiros de inventario, f2/f3 mostram o plano sem executar, f4 mostra o .env; o
+# instalador termina antes da licenca.
+# =============================================================================
+$wdbExe = Join-Path $InstallDir 'watcherdb.exe'
+$cfgDir = Join-Path $DataDir 'config'
+$serversJson = Join-Path $cfgDir 'servers.json'
+$sqlParts = $SqlServer -split '\\', 2
+$sqlHost = $sqlParts[0]
+$sqlInst = if ($sqlParts.Count -gt 1 -and $sqlParts[1]) { $sqlParts[1] } else { 'MSSQLSERVER' }
+$loginPwdPlain = $null
+if ($SqlLoginPassword) {
+    $bstrL = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SqlLoginPassword)
+    $loginPwdPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstrL)
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstrL) | Out-Null
+}
+function Invoke-WdbSub([string[]]$argv) {
+    & $wdbExe @argv
+    return $LASTEXITCODE
+}
+
+Write-Step 'PASSO (f1): inventario da frota (servers.json + scripts de grants por instancia)'
+if ($InventoryPath) {
+    if (-not (Test-Path $InventoryPath)) { Write-Fail "InventoryPath '$InventoryPath' nao existe."; exit 7 }
+    $rc = Invoke-WdbSub @('inventory', '--input', $InventoryPath, '--output-dir', $cfgDir, '--database', $Database, '--login', $SqlLogin, '--master-host', $sqlHost, '--master-instance', $sqlInst)
+    if ($rc -ne 0) { Write-Fail "inventory falhou (exit $rc). Corrigir o inventario e repetir."; exit 7 }
+    Write-Ok "Inventario processado -> $serversJson (scripts de grants em $cfgDir\grants)."
+} elseif (Test-Path $serversJson) {
+    Write-Ok "Sem -InventoryPath: a usar o servers.json existente em $cfgDir."
+} else {
+    Write-Warn "Sem -InventoryPath e sem ${serversJson}: a frota fica vazia ate' correres 'watcherdb.exe inventory'."
+}
+Write-Host ''
+
+Write-Step "PASSO (f2): base [$Database] e schema em $SqlServer (identidade: a tua sessao Windows, so' neste passo)"
+if ($SkipDatabaseSetup) {
+    Write-Warn "-SkipDatabaseSetup: base e schema NAO tocados (instalacao a apontar a uma base ja' existente)."
+} else {
+    $sdArgs = @('setup-database', '--server', $SqlServer, '--database', $Database, '--login', $SqlLogin)
+    if ($loginPwdPlain) { $sdArgs += '--create-login' }
+    if (-not $DryRun) { $sdArgs += '--execute' }
+    try {
+        if ($loginPwdPlain) { $env:WATCHERDB_LOGIN_PASSWORD = $loginPwdPlain }
+        $rc = Invoke-WdbSub $sdArgs
+    } finally {
+        Remove-Item Env:WATCHERDB_LOGIN_PASSWORD -ErrorAction SilentlyContinue
+    }
+    if ($rc -ne 0) { Write-Fail "setup-database falhou (exit $rc). Ver o relatorio em $DataDir\logs."; exit 7 }
+    Write-Ok "Base e schema $(if ($DryRun) { 'planeados (dry-run)' } else { 'aplicados' })."
+}
+Write-Host ''
+
+Write-Step "PASSO (f3): login [$SqlLogin] na frota (ProvisionMode=$ProvisionMode)"
+switch ($ProvisionMode) {
+    'Skip'   { Write-Warn "ProvisionMode=Skip: o login na frota NAO e' tocado (frota ja' provisionada ou a fazer depois)." }
+    'Manual' {
+        if (Test-Path $serversJson) {
+            $rc = Invoke-WdbSub @('provision-login', '--inventory', $serversJson, '--login', $SqlLogin, '--mode', 'manual')
+            if ($rc -ne 0) { Write-Fail "provision-login falhou (exit $rc)."; exit 7 }
+        } else { Write-Warn 'Sem servers.json: nada a provisionar.' }
+    }
+    'Auto'   {
+        if (-not (Test-Path $serversJson)) { Write-Fail 'ProvisionMode=Auto exige servers.json (usa -InventoryPath).'; exit 7 }
+        $n = @((Get-Content $serversJson -Raw | ConvertFrom-Json).monitored_servers | Where-Object { -not $_.use_windows_auth -and $_.enabled }).Count
+        Write-Warn "ProvisionMode=Auto (opt-in): o instalador vai CRIAR o login em $n instancias com a tua identidade DBA."
+        $plArgs = @('provision-login', '--inventory', $serversJson, '--login', $SqlLogin, '--mode', 'auto')
+        if (-not $DryRun) { $plArgs += @('--execute', '--confirm-count', "$n") }
+        $rc = Invoke-WdbSub $plArgs
+        if ($rc -ne 0) { Write-Fail "provision-login falhou (exit $rc). Relatorio em $DataDir\logs; rollback: watcherdb.exe provision-rollback --report <ficheiro>."; exit 7 }
+    }
+}
+Write-Host ''
+
+Write-Step 'PASSO (f4): .env do produto (chaves explicitas; password cifrada com a master key) e ACL'
+$cfArgs = @('configure', '--data-dir', $DataDir, '--server', $SqlServer, '--database', $Database, '--login', $SqlLogin, '--port', "$WebPort")
+if ($DryRun) { $cfArgs += '--preview' }
+try {
+    if ($loginPwdPlain) { $env:WATCHERDB_LOGIN_PASSWORD = $loginPwdPlain }
+    $rc = Invoke-WdbSub $cfArgs
+} finally {
+    Remove-Item Env:WATCHERDB_LOGIN_PASSWORD -ErrorAction SilentlyContinue
+    $loginPwdPlain = $null
+}
+if ($rc -ne 0) { Write-Fail "configure falhou (exit $rc)."; exit 7 }
+if (-not $DryRun) {
+    # condicao 4 do parecer de seguranca (2026-10-07): .env e config\ sem leitura para Users/Everyone
+    foreach ($p in @((Join-Path $DataDir '.env'), $cfgDir)) {
+        if (Test-Path $p) {
+            $acl = Get-Acl $p
+            $aberto = $acl.Access | Where-Object { $_.IdentityReference -match 'BUILTIN\\Users|\\Users$|Utilizadores|Everyone|Todos' }
+            if ($aberto) { Write-Fail "ACL de $p da acesso a Users/Everyone -- corrigir (icacls) antes de continuar."; exit 7 }
+        }
+    }
+    Write-Ok '.env escrito e ACL verificada (sem Users/Everyone).'
+}
+if ($DryRun) {
+    Write-Host ''
+    Write-Ok '-DryRun: plano concluido. Nada foi executado na base nem na frota; licenca, servico e firewall ficam por fazer.'
+    exit 0
+}
+Write-Host ''
+
+# =============================================================================
 # PASSO (g) - Licenca
 # =============================================================================
 Write-Step 'PASSO (g): license.dat'
@@ -733,6 +851,27 @@ Write-Ok "Health OK ($healthUrl -> 200) em $([math]::Round($swHealth.Elapsed.Tot
 Write-Host ''
 
 # =============================================================================
+# PASSO (k2) - preflight-fleet (lote E): liga com o login do produto a cada instancia, valida grants e escreve
+# o sql_auth_rollout.json so' com quem passou. Em Manual o DBA ainda pode nao ter corrido os scripts: avisa.
+# =============================================================================
+Write-Step "PASSO (k2): preflight-fleet (login [$SqlLogin] contra a frota)"
+if ($ProvisionMode -eq 'Skip' -or -not (Test-Path $serversJson)) {
+    Write-Warn "preflight-fleet saltado (ProvisionMode=Skip ou sem servers.json). Correr depois: watcherdb.exe preflight-fleet --login $SqlLogin"
+} else {
+    & $wdbExe preflight-fleet --inventory $serversJson --login $SqlLogin
+    $rcPf = $LASTEXITCODE
+    if ($rcPf -eq 0) {
+        Write-Ok 'preflight-fleet: todas as instancias passaram; sql_auth_rollout.json escrito.'
+    } elseif ($ProvisionMode -eq 'Auto' -and $rcPf -eq 1) {
+        Write-Fail 'preflight-fleet: login sysadmin ou com permissoes a mais numa instancia, ou nenhuma passou. Corrigir antes de usar o produto.'
+        exit 8
+    } else {
+        Write-Warn "preflight-fleet: exit $rcPf -- so' as instancias que passaram entram no sql_auth_rollout.json. Em Manual: correr os scripts de grants e repetir 'watcherdb.exe preflight-fleet --login $SqlLogin'."
+    }
+}
+Write-Host ''
+
+# =============================================================================
 # PASSO (l) - Registo HKLM (paridade Product.wxs InstalledVersion + tracking
 # de ServiceAccount para o RISCO#10, ver CONTEXTO acima e PASSO (d))
 # =============================================================================
@@ -749,7 +888,7 @@ Write-Host ''
 # Sumario
 # =============================================================================
 Write-Host '============================================================' -ForegroundColor Cyan
-Write-Host '  INSTALACAO CONCLUIDA - WatcherDB V3.3 Standard Edition' -ForegroundColor Cyan
+Write-Host "  INSTALACAO CONCLUIDA - $($rv.ProductName)" -ForegroundColor Cyan
 Write-Host '============================================================' -ForegroundColor Cyan
 Write-Host "  Versao:          $($rv.ProductVersion)"
 Write-Host "  Tipo:            $(if ($isUpgrade) { 'UPGRADE' } else { 'FRESH INSTALL' })"
@@ -757,6 +896,7 @@ Write-Host "  InstallDir:      $InstallDir"
 Write-Host "  DataDir:         $DataDir (preservado em upgrades/uninstall)"
 Write-Host "  Servico:         $ServiceName ($ServiceAccount) - RUNNING"
 Write-Host "  Porta:           $WebPort - http://localhost:$WebPort"
+Write-Host "  Base/Login:      $Database / $SqlLogin em $SqlServer (ProvisionMode=$ProvisionMode)"
 Write-Host "  Firewall:        $fwDisplayName (perfil $FirewallProfile, origem $remoteAddr)"
 if ($backupDir -and (Test-Path $backupDir)) {
     Write-Host "  Backup anterior: $backupDir (podes apagar apos confirmares que o upgrade esta OK)"

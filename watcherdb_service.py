@@ -474,7 +474,7 @@ def main() -> int:
     if sys.argv[1].lower() in ("wrap-master-key", "--wrap-master-key"):
         return wrap_master_key()
     if sys.argv[1].lower() in ("setup-database", "inventory", "inventory-template", "provision-login", "provision-rollback", "preflight-fleet",
-                               "bootstrap-admin", "install-help"):
+                               "configure", "bootstrap-admin", "install-help"):
         # 2026-10-07: subcomandos do instalador (watcherdb/install). Import TARDIO de proposito:
         # nada de watcherdb.*/api.* antes do dispatcher (erro 1053 com EDR no arranque do servico).
         from watcherdb.install.cli import main as _install_main
