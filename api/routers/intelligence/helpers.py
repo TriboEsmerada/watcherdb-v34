@@ -18,7 +18,9 @@ from datetime import datetime, timedelta
 import time
 import os
 import json
-from watcherdb.core.db_identity import resolve as _resolve_db_identity
+from watcherdb.core.db_identity import (  # 2026-10-07: nomes do servidor/base/login numa fonte unica
+    resolve as _resolve_db_identity, intelligence_server, intelligence_database, intelligence_sql_user,
+)
 from services.secrets import get_secret
 from pathlib import Path
 
@@ -138,15 +140,15 @@ _last_known_values = {
 }
 
 # Configuracao de conexao SQL Server Intelligence
-INTELLIGENCE_SERVER = os.getenv("INTELLIGENCE_SERVER") or os.getenv("SQL_SERVER", "SQLHDSTST505\\I01")
-INTELLIGENCE_DATABASE = os.getenv("INTELLIGENCE_DATABASE") or os.getenv("SQL_DATABASE", "WatcherDB_Intelligence")
+INTELLIGENCE_SERVER = intelligence_server()      # fonte unica: watcherdb.core.db_identity (2026-10-07)
+INTELLIGENCE_DATABASE = intelligence_database()
 INTELLIGENCE_SCHEMA = "dbo"
 # Identidade da ligacao: fonte unica em watcherdb.core.db_identity (achado
 # P-05). Sem variavel definida NAO ha default implicito -- resolve() devolve
 # UNSET (nunca Windows Auth) e o arranque do servico e' recusado la'.
 _DB_IDENTITY = _resolve_db_identity()
 INTELLIGENCE_USE_WINDOWS_AUTH = _DB_IDENTITY.use_windows_auth
-INTELLIGENCE_SQL_USER = os.getenv("INTELLIGENCE_SQL_USER") or os.getenv("SQL_USER", "sql_monitoring")
+INTELLIGENCE_SQL_USER = intelligence_sql_user()
 # get_secret decifra o formato "encrypted:<fernet>" que o .env usa. Ler com
 # os.getenv cru entregava o ciphertext ao pyodbc e o login falhava -- e' isso
 # que obrigava o SQL_TRUSTED_CONNECTION=yes a mascarar o problema (P-05).

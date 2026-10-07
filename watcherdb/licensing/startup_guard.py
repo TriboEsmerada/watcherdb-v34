@@ -69,31 +69,25 @@ def _write_event_log(event_id: int, message: str, event_type: str = "Information
 
 
 def _resolve_license_path() -> Path:
-    """Find license.dat em 3-tier priority (FIND-20260424-004 pattern)."""
+    """license.dat: o primeiro nivel CONFIGURADO e' autoritativo (2026-10-07, LICENSE_PATH_EXPLICITO).
+
+    WATCHERDB_LICENSE_PATH > <WATCHERDB_DATA_DIR>/license.dat > C:\\ProgramData\\WatcherDB\\license.dat (legado).
+    Antes devolvia-se o primeiro candidato existente: um caminho explicito sem ficheiro caia em silencio na
+    licenca de ProgramData -- numa maquina com outra instalacao (PC1: V3.3) validava-se a licenca errada em
+    vez de reportar 'licenca em falta' (e o grace nunca entrava).
+    """
     env_path = os.getenv("WATCHERDB_LICENSE_PATH")
-    candidates = []
     if env_path:
-        candidates.append(Path(env_path))
-    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: pasta de dados do servico (DATA_DIR_SERVICO)
+        return Path(env_path)
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # DATA_DIR_SERVICO
     if _data_dir:
-        candidates.append(Path(_data_dir) / "license.dat")
-    candidates.append(Path(r"C:\ProgramData\WatcherDB\license.dat"))
-    # Bundle fallback — caller passa base_dir se quiser
-    return next((p for p in candidates if p.exists()), candidates[-1])
+        return Path(_data_dir) / "license.dat"
+    return Path(r"C:\ProgramData\WatcherDB\license.dat")
 
 
 def _resolve_public_key_path(base_dir: Optional[Path] = None) -> Path:
-    """Find ed25519_public.pem em 3-tier priority (FIND-20260424-004)."""
-    env_path = os.getenv("WATCHERDB_PUBLIC_KEY_PATH")
-    candidates = []
-    if env_path:
-        candidates.append(Path(env_path))
-    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: DATA_DIR_SERVICO
-    if _data_dir:
-        candidates.append(Path(_data_dir) / "ed25519_public.pem")
-    candidates.append(Path(r"C:\ProgramData\WatcherDB\ed25519_public.pem"))
-    if base_dir:
-        candidates.append(base_dir / "deploy" / "keys" / "ed25519_public.pem")
+    """ed25519_public.pem: ver _public_key_candidates_tried (o explicito e' autoritativo; o bundle e' o fallback)."""
+    candidates = _public_key_candidates_tried(base_dir)
     return next((p for p in candidates if p.exists()), candidates[-1])
 
 
@@ -270,15 +264,21 @@ def validate_and_enforce(
 
 
 def _public_key_candidates_tried(base_dir: Optional[Path]) -> list:
-    """For diagnostic messages — rebuild candidate list."""
+    """Candidatos da chave publica, por ordem (2026-10-07, LICENSE_PATH_EXPLICITO).
+
+    WATCHERDB_PUBLIC_KEY_PATH, se definido, e' o UNICO candidato. Senao: <WATCHERDB_DATA_DIR>/ed25519_public.pem
+    quando ha' DATA_DIR, ou C:\\ProgramData\\WatcherDB\\ed25519_public.pem (legado) quando nao ha'; e por fim o
+    fallback do bundle (base_dir/deploy/keys), porque a chave publica viaja no pacote.
+    """
     env_path = os.getenv("WATCHERDB_PUBLIC_KEY_PATH")
-    candidates = []
     if env_path:
-        candidates.append(Path(env_path))
-    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: DATA_DIR_SERVICO
+        return [Path(env_path)]
+    candidates = []
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # DATA_DIR_SERVICO
     if _data_dir:
         candidates.append(Path(_data_dir) / "ed25519_public.pem")
-    candidates.append(Path(r"C:\ProgramData\WatcherDB\ed25519_public.pem"))
+    else:
+        candidates.append(Path(r"C:\ProgramData\WatcherDB\ed25519_public.pem"))
     if base_dir:
         candidates.append(base_dir / "deploy" / "keys" / "ed25519_public.pem")
     return candidates

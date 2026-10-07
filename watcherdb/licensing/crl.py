@@ -137,15 +137,21 @@ class CRL:
 
 
 def _resolve_crl_path(base_dir: Optional[Path] = None) -> Path:
-    """3-tier priority: env var → ProgramData → bundle fallback."""
+    """CRL: o explicito e' autoritativo (2026-10-07, LICENSE_PATH_EXPLICITO).
+
+    WATCHERDB_CRL_PATH, se definido, e' o unico candidato. Senao <WATCHERDB_DATA_DIR>/revoked_licenses.json
+    quando ha' DATA_DIR, ou ProgramData (legado) quando nao ha'; depois o fallback do bundle. Ausente = sem
+    revogacoes (load_crl_safe trata).
+    """
     env = os.getenv("WATCHERDB_CRL_PATH")
-    candidates = []
     if env:
-        candidates.append(Path(env))
-    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # 2026-10-07: DATA_DIR_SERVICO
+        return Path(env)
+    candidates = []
+    _data_dir = os.getenv("WATCHERDB_DATA_DIR")  # DATA_DIR_SERVICO
     if _data_dir:
         candidates.append(Path(_data_dir) / DEFAULT_CRL_FILENAME)
-    candidates.append(DEFAULT_PROGRAMDATA / DEFAULT_CRL_FILENAME)
+    else:
+        candidates.append(DEFAULT_PROGRAMDATA / DEFAULT_CRL_FILENAME)
     if base_dir:
         candidates.append(Path(base_dir) / DEFAULT_CRL_FILENAME)
     for c in candidates:

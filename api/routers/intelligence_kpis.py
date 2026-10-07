@@ -8,7 +8,9 @@ Busca dados das views agregadas do SQL Server Intelligence para exibir no dashbo
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from api.routers.auth_compat import _require_admin, _require_auth, _require_dba
-from watcherdb.core.db_identity import resolve as _resolve_db_identity
+from watcherdb.core.db_identity import (  # 2026-10-07: nomes do servidor/base/login numa fonte unica
+    resolve as _resolve_db_identity, intelligence_server, intelligence_database, intelligence_sql_user,
+)
 from services.secrets import get_secret
 from typing import Dict, List, Optional, Any
 import logging
@@ -274,8 +276,8 @@ limiter = Limiter(key_func=get_remote_address)
 import os
 
 # Prioridade: INTELLIGENCE_* > SQL_* > default
-INTELLIGENCE_SERVER = os.getenv("INTELLIGENCE_SERVER") or os.getenv("SQL_SERVER", "SQLHDSTST505\\I01")
-INTELLIGENCE_DATABASE = os.getenv("INTELLIGENCE_DATABASE") or os.getenv("SQL_DATABASE", "WatcherDB_Intelligence")
+INTELLIGENCE_SERVER = intelligence_server()      # fonte unica: watcherdb.core.db_identity (2026-10-07)
+INTELLIGENCE_DATABASE = intelligence_database()
 INTELLIGENCE_SCHEMA = "dbo"
 # Windows Auth: prioridade para SQL_TRUSTED_CONNECTION do .env
 # Identidade da ligacao: fonte unica em watcherdb.core.db_identity (achado
@@ -283,7 +285,7 @@ INTELLIGENCE_SCHEMA = "dbo"
 # UNSET (nunca Windows Auth) e o arranque do servico e' recusado la'.
 _DB_IDENTITY = _resolve_db_identity()
 INTELLIGENCE_USE_WINDOWS_AUTH = _DB_IDENTITY.use_windows_auth
-INTELLIGENCE_SQL_USER = os.getenv("INTELLIGENCE_SQL_USER") or os.getenv("SQL_USER", "sql_monitoring")
+INTELLIGENCE_SQL_USER = intelligence_sql_user()
 # get_secret decifra o formato "encrypted:<fernet>" que o .env usa. Ler com
 # os.getenv cru entregava o ciphertext ao pyodbc e o login falhava -- e' isso
 # que obrigava o SQL_TRUSTED_CONNECTION=yes a mascarar o problema (P-05).

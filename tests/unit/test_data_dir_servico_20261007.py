@@ -38,7 +38,9 @@ def test_chave_publica_na_pasta_de_dados(limpo, tmp_path):
     limpo.setenv("WATCHERDB_DATA_DIR", str(tmp_path))
     assert sg._resolve_public_key_path(None) == tmp_path / "ed25519_public.pem"
     tried = sg._public_key_candidates_tried(None)
-    assert tried.index(tmp_path / "ed25519_public.pem") < tried.index(Path(r"C:\\ProgramData\\WatcherDB\\ed25519_public.pem"))
+    # 2026-10-07 (LICENSE_PATH_EXPLICITO): com DATA_DIR definido o caminho fixo de ProgramData sai da lista
+    assert tried[0] == tmp_path / "ed25519_public.pem"
+    assert all("ProgramData" not in str(p) for p in tried)
 
 
 def test_a_variavel_especifica_continua_a_ganhar(limpo, tmp_path):

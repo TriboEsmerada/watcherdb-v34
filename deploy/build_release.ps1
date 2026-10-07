@@ -335,8 +335,9 @@ $script:KnownBaselineFailures = @(
     'tests.unit.test_qa_comprehensive.TestLevel6_ProjectHygiene::test_no_exe_in_repo',
     'tests.unit.test_qa_comprehensive.TestLevel6_ProjectHygiene::test_no_bak_files',
     'tests.unit.test_qa_comprehensive.TestLevel6_ProjectHygiene::test_no_log_files_at_root',
-    'tests.unit.test_qa_comprehensive.TestLevel6_ProjectHygiene::test_docs_organized_in_subdirs',
-    'tests.unit.test_startup_guard::test_startup_guard_grace_period_allows_missing_license'
+    'tests.unit.test_qa_comprehensive.TestLevel6_ProjectHygiene::test_docs_organized_in_subdirs'
+    # 2026-10-07: test_startup_guard_grace_period_allows_missing_license saiu da baseline -- passou a verde com
+    # o lote LICENSE_PATH_EXPLICITO (caminho explicito autoritativo; antes caia na licenca real de ProgramData).
 )
 
 if ($SkipTests) {

@@ -43,6 +43,40 @@ _FALSE = ("no", "false", "0")
 _TRUSTED_VAR = "SQL_TRUSTED_CONNECTION"
 _INTEL_VAR = "INTELLIGENCE_USE_WINDOWS_AUTH"
 
+# ---------------------------------------------------------------------------
+# Servidor, base e login do produto -- fonte unica (2026-10-07, NOME_BASE_LOGIN_CENTRAL)
+# ---------------------------------------------------------------------------
+# Omissoes do RUNTIME: a rede de seguranca da frota actual quando o .env nao define a chave. Nao confundir com
+# a omissao do INSTALADOR para instalacoes novas (WatcherDB / watcherdb), que escreve sempre as chaves
+# explicitas no .env (docs/context/DESIGN_INSTALADOR_V3.4_2026-10-07.md). Prioridade: INTELLIGENCE_* > SQL_*
+# (nomes antigos, ainda no .env de instalacoes anteriores) > omissao.
+DEFAULT_INTELLIGENCE_SERVER = "localhost"   # ate' 2026-10-07 era um servidor real do empregador (gate de IP)
+DEFAULT_INTELLIGENCE_DATABASE = "WatcherDB_Intelligence"
+DEFAULT_INTELLIGENCE_SQL_USER = "sql_monitoring"
+
+
+def _primeiro(*nomes: str, omissao: str) -> str:
+    for n in nomes:
+        v = os.getenv(n)
+        if v:
+            return v
+    return omissao
+
+
+def intelligence_server() -> str:
+    """Servidor\\instancia da base do produto (INTELLIGENCE_SERVER > SQL_SERVER > omissao)."""
+    return _primeiro("INTELLIGENCE_SERVER", "SQL_SERVER", omissao=DEFAULT_INTELLIGENCE_SERVER)
+
+
+def intelligence_database() -> str:
+    """Nome da base do produto (INTELLIGENCE_DATABASE > SQL_DATABASE > omissao)."""
+    return _primeiro("INTELLIGENCE_DATABASE", "SQL_DATABASE", omissao=DEFAULT_INTELLIGENCE_DATABASE)
+
+
+def intelligence_sql_user() -> str:
+    """Login SQL do produto (INTELLIGENCE_SQL_USER > SQL_USER > omissao)."""
+    return _primeiro("INTELLIGENCE_SQL_USER", "SQL_USER", omissao=DEFAULT_INTELLIGENCE_SQL_USER)
+
 
 @dataclass(frozen=True)
 class DbIdentity:
@@ -108,11 +142,11 @@ class DbIdentityError(RuntimeError):
 _REMEDY = (
     "Define no .env, de forma explicita:\n"
     "    INTELLIGENCE_USE_WINDOWS_AUTH=false\n"
-    "    INTELLIGENCE_SQL_USER=sql_monitoring\n"
+    f"    INTELLIGENCE_SQL_USER={DEFAULT_INTELLIGENCE_SQL_USER}\n"
     "    INTELLIGENCE_SQL_PASSWORD=<password>\n"
     "e remove ou alinha o SQL_TRUSTED_CONNECTION.\n"
     "Windows Auth so com decisao deliberada (INTELLIGENCE_USE_WINDOWS_AUTH=true) "
-    "-- a Regra de Ouro #2 reserva o acesso a BD ao sql_monitoring."
+    f"-- a Regra de Ouro #2 reserva o acesso a BD ao login do produto ({DEFAULT_INTELLIGENCE_SQL_USER})."
 )
 
 

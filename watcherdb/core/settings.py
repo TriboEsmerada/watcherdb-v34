@@ -19,6 +19,9 @@ from pathlib import Path
 from typing import Optional, List
 from pydantic_settings import BaseSettings
 from pydantic import Field
+from watcherdb.core.db_identity import (  # 2026-10-07: omissoes numa fonte unica
+    DEFAULT_INTELLIGENCE_SERVER, DEFAULT_INTELLIGENCE_DATABASE, DEFAULT_INTELLIGENCE_SQL_USER,
+)
 
 
 class WatcherDBSettings(BaseSettings):
@@ -46,10 +49,10 @@ class WatcherDBSettings(BaseSettings):
     odbc_driver: str = "ODBC Driver 17 for SQL Server"  # Change to "ODBC Driver 18 for SQL Server" if available
 
     # SQL Server Intelligence DB
-    intelligence_server: str = r"SQLHDSTST505\I01"
-    intelligence_database: str = "WatcherDB_Intelligence"
+    intelligence_server: str = DEFAULT_INTELLIGENCE_SERVER
+    intelligence_database: str = DEFAULT_INTELLIGENCE_DATABASE
     intelligence_use_windows_auth: bool = True
-    intelligence_sql_user: str = "sql_monitoring"
+    intelligence_sql_user: str = DEFAULT_INTELLIGENCE_SQL_USER
     intelligence_sql_password: str = ""
 
     # Inventario de servidores (E6, plano servers.json fonte unica 2026-08-19):

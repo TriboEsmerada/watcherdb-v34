@@ -17,6 +17,7 @@ import os
 from decimal import Decimal
 
 from watcherdb.core.auth import get_current_user, User, require_role, UserRole
+from watcherdb.core.db_identity import intelligence_server, intelligence_database  # 2026-10-07
 from modules.monitoring.space_analysis import (
     SpaceAnalysisEngine,
     get_space_analysis_for_all_servers,
@@ -34,8 +35,8 @@ router = APIRouter(
 # ========================================
 # CONFIGURAÇÃO DO WATCHERDB INTELLIGENCE
 # ========================================
-INTELLIGENCE_SERVER = os.getenv("INTELLIGENCE_SERVER", "SQLHDSTST505\\I01")
-INTELLIGENCE_DATABASE = os.getenv("INTELLIGENCE_DATABASE", "WatcherDB_Intelligence")
+INTELLIGENCE_SERVER = intelligence_server()      # fonte unica: watcherdb.core.db_identity (2026-10-07)
+INTELLIGENCE_DATABASE = intelligence_database()
 INTELLIGENCE_SCHEMA = "dbo"
 INTELLIGENCE_DRIVER = "ODBC Driver 17 for SQL Server"
 
@@ -129,7 +130,7 @@ async def get_space_analysis(
             return {
                 "success": True,
                 "server_id": server_id,
-                "source": "WatcherDB_Intelligence",
+                "source": INTELLIGENCE_DATABASE,
                 "filegroups": [],
                 "summary": {
                     "total_filegroups": 0,
@@ -147,7 +148,7 @@ async def get_space_analysis(
         return {
             "success": True,
             "server_id": server_id,
-            "source": "WatcherDB_Intelligence",
+            "source": INTELLIGENCE_DATABASE,
             "filegroups": filegroups,
             "summary": {
                 "total_filegroups": len(filegroups),

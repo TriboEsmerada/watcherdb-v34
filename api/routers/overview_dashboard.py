@@ -22,7 +22,9 @@ import re
 
 # Import do pool de conexões centralizado
 from api.connection_pool import get_intelligence_pool
-from watcherdb.core.db_identity import resolve as _resolve_db_identity
+from watcherdb.core.db_identity import (  # 2026-10-07: nomes do servidor/base/login numa fonte unica
+    resolve as _resolve_db_identity, intelligence_server, intelligence_database, intelligence_sql_user,
+)
 from services.secrets import get_secret
 from api.error_helpers import safe_http_error
 from api.models import DashboardResponse, GenericResponse, MessageResponse
@@ -34,13 +36,13 @@ router = APIRouter(prefix="/api/v1/overview", tags=["Overview Dashboard"])
 # ========================================
 # CONFIGURACAO DE CONEXAO SQL SERVER
 # ========================================
-INTELLIGENCE_SERVER = os.getenv("INTELLIGENCE_SERVER", "SQLHDSTST505\\I01")
-INTELLIGENCE_DATABASE = os.getenv("INTELLIGENCE_DATABASE", "WatcherDB_Intelligence")
+INTELLIGENCE_SERVER = intelligence_server()      # fonte unica: watcherdb.core.db_identity (2026-10-07)
+INTELLIGENCE_DATABASE = intelligence_database()
 INTELLIGENCE_SCHEMA = "dbo"
 # Identidade da ligacao: fonte unica em watcherdb.core.db_identity (achado
 # P-05). Sem variavel definida NAO ha default implicito -- nunca Windows Auth.
 INTELLIGENCE_USE_WINDOWS_AUTH = _resolve_db_identity().use_windows_auth
-INTELLIGENCE_SQL_USER = os.getenv("INTELLIGENCE_SQL_USER", "sql_monitoring")
+INTELLIGENCE_SQL_USER = intelligence_sql_user()
 # get_secret decifra o formato "encrypted:<fernet>" do .env (P-05).
 INTELLIGENCE_SQL_PASSWORD = get_secret("INTELLIGENCE_SQL_PASSWORD", "")
 INTELLIGENCE_DRIVER = "ODBC Driver 17 for SQL Server"

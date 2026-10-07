@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field
 from api.error_helpers import safe_http_error
 from api import threshold_overrides as _ovr
 from api.kpi_thresholds_registry import THRESHOLDS, REGISTRY_VERSION
+from watcherdb.core.db_identity import intelligence_database  # 2026-10-07
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +150,7 @@ async def set_threshold(
             raise HTTPException(
                 status_code=503,
                 detail=("A tabela WDB_KPI_THRESHOLDS ainda nao existe nesta "
-                        "WatcherDB_Intelligence — correr o bloco DDL "
+                        f"{intelligence_database()} — correr o bloco DDL "
                         "(CREATE_WDB_KPI_THRESHOLDS.sql) e repetir. Ate la o "
                         "produto usa os defaults."),
             )
